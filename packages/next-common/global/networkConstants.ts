@@ -4,15 +4,16 @@
 
 import acalaLogo from '~assets/parachains-logos/acala-logo.png';
 import alephzeroLogo from '~assets/parachains-logos/aleph-zero-logo.jpeg';
-import assethubLogo from '~assets/parachains-logos/assethub-logo.svg';
+import assethubLogo from '~assets/parachains-logos/assethub-logo.png';
 import astarLogo from '~assets/parachains-logos/astar-logo.png';
 import kusamaLogo from '~assets/parachains-logos/kusama-logo.gif';
 import moonbeamLogo from '~assets/parachains-logos/moonbeam-logo.png';
 import moonriverLogo from '~assets/parachains-logos/moonriver-logo.png';
 import polkadotLogo from '~assets/parachains-logos/polkadot-logo.jpg';
 import polymeshLogo from '~assets/parachains-logos/polymesh-logo.png';
-import rococoLogo from '~assets/parachains-logos/rococo-logo.svg';
 import westendLogo from '~assets/parachains-logos/westend-logo.png';
+import { StaticImageData } from 'next/image';
+import rococoLogo from '~assets/parachains-logos/rococo-logo.jpeg';
 
 export type Network = (typeof networks)[keyof typeof networks];
 export type TokenSymbol = (typeof tokenSymbol)[keyof typeof tokenSymbol];
@@ -108,7 +109,7 @@ export const chainProperties: ChainPropType = {
 		chainId: 0,
 		existentialDeposit: '0.1000',
 		logo: assethubLogo,
-		rpcEndpoint: 'wss://statemint.api.onfinality.io/public-ws',
+		rpcEndpoint: 'wss://polkadot-asset-hub-rpc.polkadot.io',
 		ss58Format: 0,
 		tokenDecimals: 10,
 		tokenSymbol: tokenSymbol.DOT
@@ -118,7 +119,7 @@ export const chainProperties: ChainPropType = {
 		chainId: 0,
 		existentialDeposit: '0.000033333333',
 		logo: assethubLogo,
-		rpcEndpoint: 'wss://statemine.api.onfinality.io/public-ws',
+		rpcEndpoint: 'wss://kusama-asset-hub-rpc.polkadot.io',
 		ss58Format: 2,
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.KSM
@@ -146,7 +147,9 @@ export const onrampTokens = {
 	ACALA: 'acala'
 };
 
-export const onrampTokenProperties = {
+export const onrampTokenProperties: {
+	[name: string]: { tokenSymbol: string; logo: StaticImageData; offramp?: boolean };
+} = {
 	[onrampTokens.POLKADOT]: {
 		tokenSymbol: 'dot',
 		logo: polkadotLogo,

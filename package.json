@@ -2,7 +2,13 @@
   "name": "polkasafe-next",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "packages/next-common/*",
+    "packages/next-substrate/*"
+  ],
   "scripts": {
+    "next": "yarn --cwd packages/next-substrate dev",
+    "dev": "npm-run-all --parallel next",
     "prepare": "husky install",
     "scan": "yarn workspace @polkasafe-next/scan scan",
     "lint": "yarn workspace @polkasafe-next/next-substrate lint && yarn workspace next-common lint",
@@ -34,6 +40,7 @@
     "eslint-plugin-sonarjs": "^0.21.0",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
+    "npm-run-all": "^4.1.5",
     "prettier": "^3.0.3",
     "prettier-plugin-tailwindcss": "^0.5.4"
   },

@@ -87,7 +87,7 @@ const WalletButtons = ({ setAccounts, setWallet, className, setNoAccounts, setNo
 	useEffect(() => {
 		getAccounts(loggedInWallet);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [network]);
 
 	const handleWalletClick = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, wallet: Wallet) => {
 		setAccounts([]);
@@ -108,7 +108,7 @@ const WalletButtons = ({ setAccounts, setWallet, className, setNoAccounts, setNo
 				}`}
 				disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.POLKADOT)}
-				icon={PolkadotWalletIcon}
+				icon={<PolkadotWalletIcon />}
 			/>
 			<WalletButton
 				className={`${
@@ -116,7 +116,7 @@ const WalletButtons = ({ setAccounts, setWallet, className, setNoAccounts, setNo
 				}`}
 				disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.SUBWALLET)}
-				icon={SubWalletIcon}
+				icon={<SubWalletIcon />}
 			/>
 			<WalletButton
 				className={`${
@@ -124,7 +124,7 @@ const WalletButtons = ({ setAccounts, setWallet, className, setNoAccounts, setNo
 				}`}
 				disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.TALISMAN)}
-				icon={TalismanIcon}
+				icon={<TalismanIcon />}
 			/>
 		</div>
 	);

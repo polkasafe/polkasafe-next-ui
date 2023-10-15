@@ -21,6 +21,8 @@ import WalletButtons from '@next-common/ui-components/WalletButtons';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 // import Image from 'next/image';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import getConnectAddressToken from '@next-substrate/utils/getConnectAddressToken';
+import { SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const ConnectWallet = () => {
@@ -43,10 +45,10 @@ const ConnectWallet = () => {
 	};
 
 	useEffect(() => {
-		if (accounts && accounts.length > 0 && !address) {
+		if (accounts && accounts.length > 0) {
 			setAddress(accounts[0].address);
 		}
-	}, [accounts, address]);
+	}, [accounts, network]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleConnectWallet = async () => {
@@ -61,11 +63,7 @@ const ConnectWallet = () => {
 
 			setLoading(true);
 
-			const tokenResponse = await nextApiClientFetch(
-				'api/v1/substrate/auth/getConnectAddressToken',
-				{},
-				{ address: substrateAddress }
-			);
+			const tokenResponse = await getConnectAddressToken(substrateAddress);
 
 			const { data: token, error: tokenError } = tokenResponse as { data: any; error: string };
 
@@ -182,16 +180,14 @@ const ConnectWallet = () => {
 
 		setLoading(true);
 		try {
-			const validate2FARes = await fetch(`${FIREBASE_FUNCTIONS_URL}/validate2FA`, {
-				body: JSON.stringify({
+			const { data: token, error: validate2FAError } = await nextApiClientFetch<string>(
+				`${SUBSTRATE_API_AUTH_URL}/2fa/validate2FA`,
+				{
 					authCode,
 					tfa_token: tfaToken
-				}),
-				headers: firebaseFunctionsHeader(network, substrateAddress),
-				method: 'POST'
-			});
-
-			const { data: token, error: validate2FAError } = (await validate2FARes.json()) as { data: string; error: string };
+				},
+				{ address: substrateAddress }
+			);
 
 			if (validate2FAError) {
 				if (validate2FAError === '2FA token expired.') {
@@ -301,7 +297,9 @@ const ConnectWallet = () => {
 				width={120}
 				className='mb-4 mt-1'
 			/> */}
-			<ConnectWalletImg />
+			<div className='mb-4 mt-1'>
+				<ConnectWalletImg />
+			</div>
 			{!api || !apiReady ? (
 				<Loader
 					size='large'
@@ -391,8 +389,8 @@ const ConnectWallet = () => {
 								setAccounts={setAccounts}
 							/>
 							{noExtension ? (
-								<p className='mt-[10px]  text-normal text-sm text-white text-center'>
-									Please Install {selectedWallet === Wallet.POLKADOT ? 'Polkadot-Js' : 'Subwallet'} Extension.
+								<p className='mt-[10px]  text-normal text-sm text-white text-center capitalize'>
+									Please Install {selectedWallet} Extension.
 								</p>
 							) : noAccounts ? (
 								<p className='mt-[10px]  text-normal text-sm text-white text-center'>

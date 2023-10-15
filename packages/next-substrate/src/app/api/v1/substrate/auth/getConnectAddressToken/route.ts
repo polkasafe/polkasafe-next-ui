@@ -15,7 +15,6 @@ import { headers } from 'next/headers';
 export async function POST(req: Request) {
 	const headersList = headers();
 	const address = headersList.get('x-address');
-	console.log('before address chekc', address);
 
 	if (!address) return NextResponse.json({ data: null, error: responseMessages.missing_params }, { status: 400 });
 	if (!getSubstrateAddress(address))

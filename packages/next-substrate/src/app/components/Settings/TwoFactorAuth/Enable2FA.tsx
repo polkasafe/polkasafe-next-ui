@@ -17,7 +17,9 @@ import {
 import Loader from '@next-common/ui-components/Loader';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import copyText from '@next-substrate/utils/copyText';
+import { SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
 
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import CancelBtn from '../CancelBtn';
 import ModalBtn from '../ModalBtn';
 
@@ -78,18 +80,12 @@ const Enable2FA = ({ className }: { className?: string }) => {
 			if (!authCode || Number.isNaN(authCode)) throw new Error('Please input a valid auth code');
 
 			// send as string just in case it starts with 0
-			const generate2FaRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/verify2FA`, {
-				body: JSON.stringify({
+			const { data: verify2FAData, error: verify2FAError } = await nextApiClientFetch<IUser>(
+				`${SUBSTRATE_API_AUTH_URL}/2fa/verify2FA`,
+				{
 					authCode: Number(authCode)
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: verify2FAData, error: verify2FAError } = (await generate2FaRes.json()) as {
-				data: IUser;
-				error: string;
-			};
+				}
+			);
 
 			if (verify2FAError || !verify2FAData) {
 				setLoading(false);
@@ -185,6 +181,7 @@ const Enable2FA = ({ className }: { className?: string }) => {
 							<article className='mt-4'>
 								<h2 className='text-base text-white mb-2'>Or Enter the Code to Your App (base32 encoded) :</h2>
 								{tFaSecret?.base32_secret && (
+									// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 									<span
 										onClick={() => copyText(tFaSecret?.base32_secret)}
 										className='p-2 cursor-pointer rounded-md bg-bg-secondary text-primary border border-solid border-text_secondary'

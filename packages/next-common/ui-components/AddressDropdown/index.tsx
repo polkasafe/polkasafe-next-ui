@@ -39,7 +39,7 @@ const AddressDropdown = ({ defaultAddress, className, accounts, disabled, onAcco
 						className='text-white'
 						address={account.address}
 					/>
-				)
+				),
 			});
 		} else {
 			addressItems.push({

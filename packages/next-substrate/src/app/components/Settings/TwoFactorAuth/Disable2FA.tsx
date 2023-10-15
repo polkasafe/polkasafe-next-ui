@@ -3,14 +3,12 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Button, Modal } from 'antd';
 import React, { useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NotificationStatus } from '@next-common/types';
 import { OutlineCloseIcon, PasswordOutlinedIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import CancelBtn from '../CancelBtn';
 import RemoveBtn from '../RemoveBtn';
 
@@ -18,7 +16,6 @@ const Disable2FA = ({ className }: { className?: string }) => {
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const { two_factor_auth, address, setUserDetailsContextState } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
 	const [showModal, setShowModal] = useState<boolean>(false);
 
 	const handleDisable2FA = async () => {
@@ -28,12 +25,9 @@ const Disable2FA = ({ className }: { className?: string }) => {
 		setLoading(true);
 		try {
 			// send as string just in case it starts with 0
-			const disable2FARes = await fetch(`${FIREBASE_FUNCTIONS_URL}/disable2FA`, {
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
+			const disable2FARes = await nextApiClientFetch('api/v1/substrate/auth/2fa/disable2FA');
 
-			const { data: disable2FAData, error: disable2FAError } = (await disable2FARes.json()) as {
+			const { data: disable2FAData, error: disable2FAError } = disable2FARes as {
 				data: string;
 				error: string;
 			};
