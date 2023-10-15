@@ -1,0 +1,48 @@
+{
+  "name": "next-substrate",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@onramp.money/onramp-web-sdk": "^1.4.5",
+    "@polkadot/api": "^10.9.1",
+    "@polkadot/api-augment": "^10.9.1",
+    "@polkadot/extension-dapp": "^0.46.5",
+    "@polkadot/extension-inject": "^0.46.5",
+    "@polkadot/react-identicon": "^3.5.1",
+    "@polkadot/react-qr": "^3.0.2",
+    "@svgr/webpack": "^8.1.0",
+    "@testing-library/jest-dom": "^5.16.5",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.0.1",
+    "antd": "5.0.7",
+    "dayjs": "^1.11.9",
+    "firebase-admin": "^11.11.0",
+    "next": "latest",
+    "nextjs-progressbar": "^0.0.16",
+    "react": "latest",
+    "react-dom": "latest",
+    "tsconfig": "^7.0.0",
+    "uuid": "^9.0.1",
+    "web-vitals": "^2.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/uuid": "^9.0.4",
+    "autoprefixer": "^10.4.16",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "postcss": "^8.4.31",
+    "raw-loader": "^4.0.2",
+    "tailwindcss": "3.3.3",
+    "typescript": "latest"
+  }
+}

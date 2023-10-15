@@ -3,24 +3,55 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
+    "prepare": "husky install",
+    "scan": "yarn workspace @polkasafe-next/scan scan",
+    "lint": "yarn workspace @polkasafe-next/next-substrate lint && yarn workspace next-common lint",
+    "lint-fix": "yarn workspace @polkasafe-next/next lint --fix && yarn workspace next-common lint --fix"
   },
   "dependencies": {
     "@types/node": "20.5.1",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
-    "antd": "^5.8.4",
-    "autoprefixer": "10.4.15",
-    "eslint": "8.47.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.0",
+    "@typescript-eslint/parser": "^6.7.0",
+    "eslint": "^8.49.0",
     "eslint-config-next": "13.4.19",
-    "next": "13.4.19",
-    "postcss": "8.4.28",
-    "react": "18.2.0",
-    "react-dom": "18.2.0",
-    "tailwindcss": "3.3.3",
+    "eslint-config-standard": "^17.0.0",
+    "eslint-plugin-header": "^3.1.1",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-simple-import-sort": "^10.0.0",
     "typescript": "5.1.6"
+  },
+  "devDependencies": {
+    "eslint-config-airbnb": "^19.0.4",
+    "eslint-config-airbnb-typescript": "^17.1.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-security": "^1.7.1",
+    "eslint-plugin-sonarjs": "^0.21.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^14.0.1",
+    "prettier": "^3.0.3",
+    "prettier-plugin-tailwindcss": "^0.5.4"
+  },
+  "lint-staged": {
+    "**/*.(ts|tsx)": [
+      "yarn tsc --noEmit"
+    ],
+    "**/*.(ts|tsx|js|jsx)": [
+      "yarn eslint --fix",
+      "yarn prettier --write"
+    ],
+    "**/*.(md|css|scss|html)": [
+      "yarn prettier --write"
+    ]
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
   }
 }

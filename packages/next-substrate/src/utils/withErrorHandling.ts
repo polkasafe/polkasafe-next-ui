@@ -1,0 +1,30 @@
+// Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
+// This software may be modified and distributed under the terms
+// of the Apache-2.0 license. See the LICENSE file for details.
+
+import { NextApiHandler } from 'next';
+
+import messages from './messages';
+
+type TWithErrorHandling = (handler: NextApiHandler) => NextApiHandler;
+
+const withErrorHandling: TWithErrorHandling = (handler) => {
+	return async (req, res) => {
+		// CORS preflight request
+		if (req.method === 'OPTIONS') return res.status(200).end();
+
+		try {
+			await handler(req, res);
+		} catch (error) {
+			// console log needed for logging on server
+			console.log('Error in API : ', error);
+			return res.status(Number(error.name) || 500).json({
+				...error,
+				message: error.message || messages.API_FETCH_ERROR
+			});
+		}
+		return undefined;
+	};
+};
+
+export default withErrorHandling;
