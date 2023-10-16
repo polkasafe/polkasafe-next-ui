@@ -23,6 +23,7 @@ const DragDrop = ({ setSignatories }: { setSignatories: React.Dispatch<React.Set
 		beforeUpload: (file) => {
 			const reader = new FileReader();
 
+			// eslint-disable-next-line consistent-return
 			reader.onload = (e) => {
 				console.log(e.target?.result);
 				const fileContent = e.target?.result as string;
@@ -30,6 +31,7 @@ const DragDrop = ({ setSignatories }: { setSignatories: React.Dispatch<React.Set
 					message.error('Please upload file in correct format.');
 					return false;
 				}
+				// eslint-disable-next-line consistent-return
 				JSON.parse(fileContent).forEach((a: string) => {
 					const substrateAddress = getSubstrateAddress(a);
 					if (!substrateAddress) {

@@ -7,7 +7,7 @@
 import { Dropdown, Form, Input, Tooltip } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import BN from 'bn.js';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { currencies, currencyProperties } from '@next-common/global/currencyConstants';
@@ -29,7 +29,7 @@ interface Props {
 	multipleCurrency?: boolean;
 }
 
-const BalanceInput = ({
+const BalanceInput: React.FC<Props> = ({
 	fromBalance,
 	className,
 	label = '',
@@ -104,7 +104,7 @@ const BalanceInput = ({
 					<ParachainIcon src={chainProperties[network].logo} />
 					{chainProperties[network].tokenSymbol}
 				</span>
-			)
+			) as any
 		}
 	];
 
@@ -116,7 +116,7 @@ const BalanceInput = ({
 					<CurrencyFlag src={currencyProperties[c].logo} />
 					{c} ({currencyProperties[c].symbol})
 				</span>
-			)
+			) as any
 		});
 	});
 

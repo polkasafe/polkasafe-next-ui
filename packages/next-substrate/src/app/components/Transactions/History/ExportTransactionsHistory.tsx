@@ -37,7 +37,7 @@ const ExportTransactionsHistory = ({ historyTxns, exportType, closeModal }: IExp
 		// to trigger a download
 		const a = document.createElement('a');
 		a.download = fileName;
-		a.href = window.URL.createObjectURL(blob);
+		a.href = typeof window !== 'undefined' && window.URL.createObjectURL(blob);
 		const clickEvt = new MouseEvent('click', {
 			bubbles: true,
 			cancelable: true,

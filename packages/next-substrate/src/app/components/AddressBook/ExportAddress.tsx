@@ -5,11 +5,15 @@
 import React from 'react';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import AddBtn from '@next-substrate/app/components/Settings/ModalBtn';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 import { ISharedAddressBookRecord } from '@next-common/types';
 
-const ExportAdress = ({ records }: { records: { [address: string]: ISharedAddressBookRecord } }) => {
-	const { toggleVisibility } = useModalContext();
+const ExportAdress = ({
+	records,
+	onCancel
+}: {
+	records: { [address: string]: ISharedAddressBookRecord };
+	onCancel: () => void;
+}) => {
 	const downloadFile = ({ data, fileName, fileType }: { data: any; fileName: string; fileType: string }) => {
 		// Create a blob with the data we want to download as a file
 		const blob = new Blob([data], { type: fileType });
@@ -17,7 +21,7 @@ const ExportAdress = ({ records }: { records: { [address: string]: ISharedAddres
 		// to trigger a download
 		const a = document.createElement('a');
 		a.download = fileName;
-		a.href = window.URL.createObjectURL(blob);
+		a.href = typeof window !== 'undefined' && window.URL.createObjectURL(blob);
 		const clickEvt = new MouseEvent('click', {
 			bubbles: true,
 			cancelable: true,
@@ -35,7 +39,7 @@ const ExportAdress = ({ records }: { records: { [address: string]: ISharedAddres
 			fileName: 'address-book.json',
 			fileType: 'text/json'
 		});
-		toggleVisibility();
+		onCancel();
 	};
 
 	const exportToCsv = () => {
@@ -66,7 +70,7 @@ const ExportAdress = ({ records }: { records: { [address: string]: ISharedAddres
 			fileName: 'address-book.csv',
 			fileType: 'text/csv'
 		});
-		toggleVisibility();
+		onCancel();
 	};
 
 	return (
@@ -78,7 +82,7 @@ const ExportAdress = ({ records }: { records: { [address: string]: ISharedAddres
 				</div>
 			</div>
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
-				<CancelBtn onClick={toggleVisibility} />
+				<CancelBtn onClick={onCancel} />
 				<AddBtn
 					onClick={exportToCsv}
 					title='Export'

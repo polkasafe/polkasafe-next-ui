@@ -10,7 +10,7 @@ import { responseMessages } from '@next-common/constants/response_messages';
 import { TOTP } from 'otpauth';
 import dayjs from 'dayjs';
 import { IUser } from '@next-common/types';
-import getLoginToken from '../../api-utils/getLoginToken';
+import getLoginToken from '../../../api-utils/getLoginToken';
 
 // eslint-disable-next-line import/prefer-default-export, @typescript-eslint/no-unused-vars
 export async function POST(req: Request) {

@@ -207,7 +207,7 @@ export interface ITransaction {
 	block_number: number;
 	from: string;
 	to: string | string[];
-	id: string;
+	id?: string;
 	token: string;
 	amount_usd: number;
 	amount_token: string;

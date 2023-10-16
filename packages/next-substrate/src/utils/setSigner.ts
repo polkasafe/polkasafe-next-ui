@@ -8,7 +8,7 @@ import APP_NAME from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
 
 export default async function setSigner(api: ApiPromise, chosenWallet: Wallet) {
-	const injectedWindow = window as Window & InjectedWindow;
+	const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 	const wallet = injectedWindow.injectedWeb3[chosenWallet];
 

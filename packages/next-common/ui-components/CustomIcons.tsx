@@ -92,368 +92,424 @@ import PolkadotWalletSVG from '@next-common/assets/wallet/polkadotjs-icon.svg';
 import SubWalletSVG from '@next-common/assets/wallet/subwallet-icon.svg';
 import HistorySVG from '~assets/History.svg';
 
-export const AddIcon = (props: Partial<CustomIconComponentProps>) => (
+export const AddIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={AddSVG}
 		{...props}
 	/>
 );
 
-export const AddressBookIcon = (props: Partial<CustomIconComponentProps>) => (
+export const AddressBookIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={AddressBookSVG}
 		{...props}
 	/>
 );
 
-export const AppsIcon = (props: Partial<CustomIconComponentProps>) => (
+export const AppsIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={AppsSVG}
 		{...props}
 	/>
 );
 
-export const AssetsIcon = (props: Partial<CustomIconComponentProps>) => (
+export const AssetsIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={AssetsSVG}
 		{...props}
 	/>
 );
 
-export const ArrowDownLeftIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ArrowDownLeftIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={ArrowDownLeftSVG}
 		{...props}
 	/>
 );
 
-export const ArrowRightIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ArrowRightIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={ArrowRightSVG}
 		{...props}
 	/>
 );
 
-export const ArrowUpRightIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ArrowUpRightIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={ArrowUpRightSVG}
 		{...props}
 	/>
 );
 
-export const Circle3DotsIcon = (props: Partial<CustomIconComponentProps>) => (
+export const Circle3DotsIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={Circle3DotsSVG}
 		{...props}
 	/>
 );
 
-export const CircleArrowDownIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CircleArrowDownIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={CircleArrowDownSVG}
 		{...props}
 	/>
 );
 
-export const CircleArrowUpIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CircleArrowUpIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={CircleArrowUpSVG}
 		{...props}
 	/>
 );
 
-export const CircleCheckIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CircleCheckIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={CircleCheckSVG}
 		{...props}
 	/>
 );
 
-export const CirclePlusIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CirclePlusIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={CirclePlusSVG}
 		{...props}
 	/>
 );
 
-export const CircleWatchIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CircleWatchIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={CircleWatchSVG}
 		{...props}
 	/>
 );
 
-export const CopyIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CopyIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={CopySVG}
 		{...props}
 	/>
 );
 
-export const DatePickerIcon = (props: Partial<CustomIconComponentProps>) => (
+export const DatePickerIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={DatePickerSVG}
 		{...props}
 	/>
 );
 
-export const DeleteIcon = (props: Partial<CustomIconComponentProps>) => (
+export const DeleteIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={DeleteSVG}
 		{...props}
 	/>
 );
 
-export const DollarIcon = (props: Partial<CustomIconComponentProps>) => (
+export const DollarIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={DollarSVG}
 		{...props}
 	/>
 );
 
-export const DonateIcon = (props: Partial<CustomIconComponentProps>) => (
+export const DonateIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={DonateSVG}
 		{...props}
 	/>
 );
 
-export const EditIcon = (props: Partial<CustomIconComponentProps>) => (
+export const EditIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={EditSVG}
 		{...props}
 	/>
 );
 
-export const ExternalLinkIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ExternalLinkIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={ExternalLinkSVG}
 		{...props}
 	/>
 );
 
-export const HomeIcon = (props: Partial<CustomIconComponentProps>) => (
+export const HomeIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={HomeSVG}
 		{...props}
 	/>
 );
 
-export const KeyIcon = (props: Partial<CustomIconComponentProps>) => (
+export const KeyIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={KeySVG}
 		{...props}
 	/>
 );
 
-export const LineIcon = (props: Partial<CustomIconComponentProps>) => (
+export const LineIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={LineSVG}
 		{...props}
 	/>
 );
 
-export const MenuIcon = (props: Partial<CustomIconComponentProps>) => (
+export const MenuIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={MenuSVG}
 		{...props}
 	/>
 );
 
-export const NoTransactionIcon = (props: Partial<CustomIconComponentProps>) => (
+export const NoTransactionIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={NoTransactionSVG}
 		{...props}
 	/>
 );
 
-export const NoQueuedTransactionIcon = (props: Partial<CustomIconComponentProps>) => (
+export const NoQueuedTransactionIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={NoQueuedTransactionSVG}
 		{...props}
 	/>
 );
 
-export const NotificationIcon = (props: Partial<CustomIconComponentProps>) => (
+export const NotificationIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={NotificationSVG}
 		{...props}
 	/>
 );
 
-export const NoNotificationIcon = (props: Partial<CustomIconComponentProps>) => (
+export const NoNotificationIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={NoNotificationSVG}
 		{...props}
 	/>
 );
 
-export const OutlineCheckIcon = (props: Partial<CustomIconComponentProps>) => (
+export const OutlineCheckIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={OutlineCheckSVG}
 		{...props}
 	/>
 );
 
-export const OutlineCloseIcon = (props: Partial<CustomIconComponentProps>) => (
+export const OutlineCloseIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={OutlineCloseSVG}
 		{...props}
 	/>
 );
 
-export const PencilNotificationIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PencilNotificationIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={PencilNotificationSVG}
 		{...props}
 	/>
 );
 
-export const PasteIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PasteIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={PasteSVG}
 		{...props}
 	/>
 );
 
-export const PencilIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PencilIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={PencilSVG}
 		{...props}
 	/>
 );
 
-export const SearchIcon = (props: Partial<CustomIconComponentProps>) => (
+export const SearchIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={SearchSVG}
 		{...props}
 	/>
 );
 
-export const SquareDownArrowIcon = (props: Partial<CustomIconComponentProps>) => (
+export const SquareDownArrowIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={SquareDownArrowSVG}
 		{...props}
 	/>
 );
 
-export const SettingsIcon = (props: Partial<CustomIconComponentProps>) => (
+export const SettingsIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={SettingsSVG}
 		{...props}
 	/>
 );
 
-export const TransactionIcon = (props: Partial<CustomIconComponentProps>) => (
+export const TransactionIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={TransactionSVG}
 		{...props}
 	/>
 );
 
-export const TrashIcon = (props: Partial<CustomIconComponentProps>) => (
+export const TrashIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={TrashSVG}
 		{...props}
 	/>
 );
 
-export const UserPlusIcon = (props: Partial<CustomIconComponentProps>) => (
+export const UserPlusIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={UserPlusSVG}
 		{...props}
 	/>
 );
 
-export const WarningIcon = (props: Partial<CustomIconComponentProps>) => (
+export const WarningIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={WarningSVG}
 		{...props}
 	/>
 );
 
-export const WarningRoundedIcon = (props: Partial<CustomIconComponentProps>) => (
+export const WarningRoundedIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={WarningRoundedSVG}
 		{...props}
 	/>
 );
 
-export const WarningCircleIcon = (props: Partial<CustomIconComponentProps>) => (
+export const WarningCircleIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={WarningCircleSVG}
 		{...props}
 	/>
 );
 
-export const WalletIcon = (props: Partial<CustomIconComponentProps>) => (
+export const WalletIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={WalletSVG}
 		{...props}
 	/>
 );
 
-export const MultisigLockIcon = (props: Partial<CustomIconComponentProps>) => (
+export const MultisigLockIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={MultisigLockSVG}
 		{...props}
 	/>
 );
 
-export const PolkadotLogoTextIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PolkadotLogoTextIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={PolkadotLogoTextSVG}
 		{...props}
 	/>
 );
 
-export const PolkasafeIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PolkasafeIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={PolkasafeSVG}
 		{...props}
 	/>
 );
 
-export const PolkasafeLogoIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PolkasafeLogoIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={PolkasafeLogoSVG}
 		{...props}
 	/>
 );
 
-export const PolkasafeTextIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PolkasafeTextIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={PolkasafeTextSVG}
 		{...props}
 	/>
 );
 
-export const SubscanIcon = (props: Partial<CustomIconComponentProps>) => (
+export const SubscanIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={SubscanSVG}
 		{...props}
 	/>
 );
 
-export const QRIcon = (props: Partial<CustomIconComponentProps>) => (
+export const QRIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={QRSVG}
 		{...props}
 	/>
 );
-export const PSIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PSIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={PSSVG}
 		{...props}
 	/>
 );
-export const ChainIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ChainIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={ChainSVG}
 		{...props}
 	/>
 );
-export const BrainIcon = (props: Partial<CustomIconComponentProps>) => (
+export const BrainIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={BrainSVG}
 		{...props}
@@ -462,203 +518,223 @@ export const BrainIcon = (props: Partial<CustomIconComponentProps>) => (
 
 // PARACHAINS ICONS
 
-export const KusamaIcon = (props: Partial<CustomIconComponentProps>) => (
+export const KusamaIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={KusamaSVG}
 		{...props}
 	/>
 );
 
-export const PolkadotIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PolkadotIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={PolkadotSVG}
 		{...props}
 	/>
 );
-export const CloseIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CloseIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={CloseSVG}
 		{...props}
 	/>
 );
-export const ImportArrowIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ImportArrowIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={ImportArrowSVG}
 		{...props}
 	/>
 );
-export const ExportArrowIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ExportArrowIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={ExportArrowSVG}
 		{...props}
 	/>
 );
-export const ShareIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ShareIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={ShareSVG}
 		{...props}
 	/>
 );
-export const CopyGreyIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CopyGreyIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={CopyGreySVG}
 		{...props}
 	/>
 );
-export const UploadBoxIcon = (props: Partial<CustomIconComponentProps>) => (
+export const UploadBoxIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={UploadBoxSVG}
 		{...props}
 	/>
 );
-export const AddBoxIcon = (props: Partial<CustomIconComponentProps>) => (
+export const AddBoxIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={AddBoxSVG}
 		{...props}
 	/>
 );
-export const DashDotIcon = (props: Partial<CustomIconComponentProps>) => (
+export const DashDotIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={DashDotSVG}
 		{...props}
 	/>
 );
-export const CreateMultisigIcon = (props: Partial<CustomIconComponentProps>) => (
+export const CreateMultisigIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={CreateMultisigSVG}
 		{...props}
 	/>
 );
-export const LinkIcon = (props: Partial<CustomIconComponentProps>) => (
+export const LinkIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={LinkSVG}
 		{...props}
 	/>
 );
-export const NotifyMail = (props: Partial<CustomIconComponentProps>) => (
+export const NotifyMail: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={NotifyMailSVG}
 		{...props}
 	/>
 );
-export const RightArrowOutlined = (props: Partial<CustomIconComponentProps>) => (
+export const RightArrowOutlined: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={RightArrowOutlinedSVG}
 		{...props}
 	/>
 );
-export const CheckOutlined = (props: Partial<CustomIconComponentProps>) => (
+export const CheckOutlined: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={CheckOutlinedSVG}
 		{...props}
 	/>
 );
-export const Disc = (props: Partial<CustomIconComponentProps>) => (
+export const Disc: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={DiscSVG}
 		{...props}
 	/>
 );
 
-export const HistoryIcon = (props: Partial<CustomIconComponentProps>) => (
+export const HistoryIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={HistorySVG}
 		{...props}
 	/>
 );
 
-export const QueueIcon = (props: Partial<CustomIconComponentProps>) => (
+export const QueueIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={QueueSVG}
 		{...props}
 	/>
 );
 
-export const PolkadotWalletIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PolkadotWalletIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={PolkadotWalletSVG}
 		{...props}
 	/>
 );
 
-export const SubWalletIcon = (props: Partial<CustomIconComponentProps>) => (
+export const SubWalletIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={SubWalletSVG}
 		{...props}
 	/>
 );
 
-export const BellIcon = (props: Partial<CustomIconComponentProps>) => (
+export const BellIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={BellIconSVG}
 		{...props}
 	/>
 );
 
-export const MailIcon = (props: Partial<CustomIconComponentProps>) => (
+export const MailIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={MailIconSVG}
 		{...props}
 	/>
 );
 
-export const TelegramIcon = (props: Partial<CustomIconComponentProps>) => (
+export const TelegramIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={TelegramIconSVG}
 		{...props}
 	/>
 );
 
-export const DiscordIcon = (props: Partial<CustomIconComponentProps>) => (
+export const DiscordIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={DiscordIconSVG}
 		{...props}
 	/>
 );
 
-export const ElementIcon = (props: Partial<CustomIconComponentProps>) => (
+export const ElementIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={ElementIconSVG}
 		{...props}
 	/>
 );
 
-export const SlackIcon = (props: Partial<CustomIconComponentProps>) => (
+export const SlackIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={SlackIconSVG}
 		{...props}
 	/>
 );
 
-export const DocsIcon = (props: Partial<CustomIconComponentProps>) => (
+export const DocsIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={DocsSVG}
 		{...props}
 	/>
 );
 
-export const SharedIcon = (props: Partial<CustomIconComponentProps>) => (
+export const SharedIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={SharedIconSVG}
 		{...props}
 	/>
 );
 
-export const PasswordOutlinedIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PasswordOutlinedIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={PasswordOutlinedSVG}
 		{...props}
 	/>
 );
 
-export const PasswordFilledIcon = (props: Partial<CustomIconComponentProps>) => (
+export const PasswordFilledIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={PasswordFilledSVG}
 		{...props}
 	/>
 );
 
-export const ExchangeIcon = () => (
+export const ExchangeIcon: React.FC = () => (
 	<svg
 		width='13'
 		height='13'
@@ -691,14 +767,16 @@ export const ExchangeIcon = () => (
 	</svg>
 );
 
-export const XeroIcon = (props: Partial<CustomIconComponentProps>) => (
+export const XeroIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={XeroLogoSVG}
 		{...props}
 	/>
 );
 
-export const QuickbooksIcon = (props: Partial<CustomIconComponentProps>) => (
+export const QuickbooksIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
 	<Icon
 		component={QuickbooksLogoSVG}
 		{...props}

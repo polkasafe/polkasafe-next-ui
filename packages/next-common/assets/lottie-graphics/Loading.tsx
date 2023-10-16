@@ -12,7 +12,7 @@ interface Props {
 	noWaitMessage?: boolean;
 }
 
-function LoadingLottie({ message, width = 350, noWaitMessage = false }: Props) {
+const LoadingLottie: React.FC<Props> = ({ message, width = 350, noWaitMessage = false }: Props) => {
 	return (
 		<div className='relative flex w-full flex-col items-center justify-center'>
 			<Lottie
@@ -31,6 +31,6 @@ function LoadingLottie({ message, width = 350, noWaitMessage = false }: Props) {
 			)}
 		</div>
 	);
-}
+};
 
 export default LoadingLottie;

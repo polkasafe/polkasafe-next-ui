@@ -23,6 +23,7 @@ import {
 	TransactionIcon,
 	UserPlusIcon
 } from '@next-common/ui-components/CustomIcons';
+import AddMultisig from '../Multisig/AddMultisig';
 
 interface Props {
 	className?: string;
@@ -52,10 +53,10 @@ const AddMultisigModal = ({
 			open={openAddMultisig}
 			className={`${className} w-auto md:min-w-[500px] scale-90 origin-center`}
 		>
-			{/* <AddMultisig
+			<AddMultisig
 				onCancel={() => setOpenAddMultisig(false)}
 				isModalPopup
-			/> */}
+			/>
 		</Modal>
 	);
 };
@@ -64,9 +65,11 @@ const Menu: FC<Props> = ({ className }) => {
 	const { multisigAddresses, activeMultisig, multisigSettings, isProxy, setUserDetailsContextState } =
 		useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
-	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(localStorage.getItem('active_multisig') || '');
+	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(
+		(typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || ''
+	);
 	const pathname = usePathname();
-	const userAddress = localStorage.getItem('address');
+	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 
 	const [openAddMultisig, setOpenAddMultisig] = useState(false);
 
@@ -147,7 +150,8 @@ const Menu: FC<Props> = ({ className }) => {
 		const active = multisigAddresses.find(
 			(item) => item.address === selectedMultisigAddress || item.proxy === selectedMultisigAddress
 		);
-		localStorage.setItem('active_multisig', active?.proxy && isProxy ? active.proxy : selectedMultisigAddress);
+		if (typeof window !== 'undefined')
+			localStorage.setItem('active_multisig', active?.proxy && isProxy ? active.proxy : selectedMultisigAddress);
 		setUserDetailsContextState((prevState) => {
 			return {
 				...prevState,

@@ -9,7 +9,7 @@ import React, { useEffect, useState } from 'react';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 
-const AddressQr = ({ address }: { address: string }) => {
+const AddressQr: React.FC<{ address: string }> = ({ address }: { address: string }) => {
 	const { api, apiReady, network } = useGlobalApiContext();
 	const [genesisHash, setGenesisHash] = useState('');
 	useEffect(() => {

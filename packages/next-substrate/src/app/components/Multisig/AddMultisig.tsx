@@ -5,7 +5,7 @@
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import CreateMultisig from '@next-substrate/app/components/Multisig/CreateMultisig';
-import { CreateMultisigIcon, LinkIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
+import { CreateMultisigIcon, LinkIcon } from '@next-common/ui-components/CustomIcons';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import LinkMultisig from './LinkMultisig/LinkMultisig';
@@ -26,8 +26,8 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 		<div className={className}>
 			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Link Multisig</h3>}
-				open={openLinkMultisig}
-				onCancel={() => setOpenLinkMultisig(false)}
+				open={openCreateMultisig}
+				onCancel={() => setOpenCreateMultisig(false)}
 			>
 				<CreateMultisig
 					onCancel={() => {
@@ -38,8 +38,8 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 			</ModalComponent>
 			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Create Multisig</h3>}
-				open={openCreateMultisig}
-				onCancel={() => setOpenCreateMultisig(false)}
+				open={openLinkMultisig}
+				onCancel={() => setOpenLinkMultisig(false)}
 			>
 				<LinkMultisig
 					onCancel={() => {

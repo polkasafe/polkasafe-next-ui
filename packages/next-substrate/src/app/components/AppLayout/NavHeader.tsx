@@ -6,10 +6,7 @@ import { MenuOutlined } from '@ant-design/icons';
 import { Layout } from 'antd';
 import React, { FC } from 'react';
 import { usePathname } from 'next/navigation';
-// import AddressDropdown from '@next-substrate/app/components/AddressDropdown';
 import DonateBtn from '@next-common/components/Donate/DonateBtn';
-// import NetworksDropdown from '@next-substrate/app/components/NetworksDropdown';
-// import Notification from '@next-substrate/app/components/Notification';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DocsIcon } from '@next-common/ui-components/CustomIcons';
 import AddressDropdown from '@next-substrate/app/components/AddressDropdown';
@@ -27,8 +24,6 @@ interface Props {
 
 const NavHeader: FC<Props> = ({ sideDrawer, setSideDrawer, showSubmenu, onClick }) => {
 	const pathname = usePathname();
-	console.log('pathname', pathname);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { address } = useGlobalUserDetailsContext();
 	return (
 		<Header className='bg-bg-main z-10 flex flex-row items-center sticky top-0 left-0 p-0 h-[70px]'>

@@ -245,6 +245,7 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 							shared={addresses[address].shared}
 							addressToRemove={encodedAddress}
 							name={addresses[address]?.name}
+							onCancel={() => setOpenRemoveModal(false)}
 						/>
 					</ModalComponent>
 					{encodedAddress !== userAddress && !multisig?.signatories.includes(encodedAddress) && (

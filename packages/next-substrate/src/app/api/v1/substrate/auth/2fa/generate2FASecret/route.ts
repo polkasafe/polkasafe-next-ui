@@ -9,8 +9,8 @@ import { I2FASettings, IGenerate2FAResponse } from '@next-common/types';
 import { NextResponse } from 'next/server';
 import { responseMessages } from '@next-common/constants/response_messages';
 import { TOTP } from 'otpauth';
-import isValidRequest from '../../api-utils/isValidRequest';
-import generateRandomBase32 from '../../api-utils/generateRandomBase32';
+import isValidRequest from '../../../api-utils/isValidRequest';
+import generateRandomBase32 from '../../../api-utils/generateRandomBase32';
 
 // eslint-disable-next-line import/prefer-default-export, @typescript-eslint/no-unused-vars
 export async function POST(req: Request) {

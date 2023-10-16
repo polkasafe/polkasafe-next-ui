@@ -127,8 +127,8 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
@@ -201,6 +201,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 		}
 	};
 
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleSharedAddressBookUpdate = async () => {
 		if (!address || !name) return;
 
@@ -211,8 +212,8 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');

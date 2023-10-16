@@ -11,7 +11,7 @@ interface Props {
 	className?: string;
 }
 
-const WalletButton = ({ disabled, onClick, icon, className }: Props) => {
+const WalletButton: React.FC<Props> = ({ disabled, onClick, icon, className }: Props) => {
 	return (
 		<Button
 			className={`bg-bg-secondary h-10 w-10 p-2 ${className}`}

@@ -6,7 +6,7 @@ import { Divider } from 'antd';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AddAddrIcon from '@next-common/assets/icons/add-addr-icon.svg';
-// import AddAdress from '@next-substrate/app/components/AddressBook/AddAddress';
+import AddAdress from '@next-substrate/app/components/AddressBook/AddAddress';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
@@ -15,6 +15,7 @@ import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import Image from 'next/image';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 
 const AddressCard = ({ className }: { className?: string }) => {
 	const { network } = useGlobalApiContext();
@@ -22,6 +23,7 @@ const AddressCard = ({ className }: { className?: string }) => {
 	const { addressBook } = useGlobalUserDetailsContext();
 
 	const [addresses, setAddresses] = useState<string[]>([]);
+	const [openAddressModal, setOpenAddressModal] = useState<boolean>(false);
 
 	useEffect(() => {
 		const allAddresses: string[] = [];
@@ -40,6 +42,13 @@ const AddressCard = ({ className }: { className?: string }) => {
 
 	return (
 		<div>
+			<ModalComponent
+				open={openAddressModal}
+				onCancel={() => setOpenAddressModal(false)}
+				title='Add Address'
+			>
+				<AddAdress />
+			</ModalComponent>
 			<div className='flex justify-between flex-row w-full mb-2'>
 				<h2 className='text-base font-bold text-white'>Address Book</h2>
 				<div className='flex items-center justify-center text-primary cursor-pointer'>
@@ -70,6 +79,7 @@ const AddressCard = ({ className }: { className?: string }) => {
 					<PrimaryButton
 						secondary
 						className='w-[90%] flex items-center justify-center py-4 2xl:py-5'
+						onClick={() => setOpenAddressModal(true)}
 					>
 						<Image
 							className='group-hover:fill-white'

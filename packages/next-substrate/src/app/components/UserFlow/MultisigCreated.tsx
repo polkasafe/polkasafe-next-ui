@@ -8,7 +8,9 @@ import Link from 'next/link';
 import MultisigImg from '@next-common/assets/icons/multisig-created.svg';
 
 const MultisigCreated = () => {
-	const refresh = () => window.location.reload();
+	const refresh = () => {
+		if (typeof window !== 'undefined') window.location.reload();
+	};
 	return (
 		<div className='flex flex-col items-center justify-center'>
 			<Image

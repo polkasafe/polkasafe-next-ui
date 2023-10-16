@@ -81,7 +81,7 @@ const SendFundsForm = ({
 	defaultSelectedAddress,
 	setNewTxn,
 	transactionType = ETransactionType.SEND_TOKEN,
-	setTransactionType
+	setTransactionType // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
 	const { activeMultisig, multisigAddresses, addressBook, address, isProxy, loggedInWallet, transactionFields } =
 		useGlobalUserDetailsContext();
@@ -685,26 +685,32 @@ const SendFundsForm = ({
 										<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Call Data</label>
 										<div className='flex items-center gap-x-[10px]'>
 											<article className='w-[500px]'>
-												<div
-													className='text-sm cursor-pointer w-full font-normal flex items-center justify-between leading-[15px] outline-0 p-3 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white'
-													onClick={() => copyText(callData)}
-												>
-													{shortenAddress(callData, 10)}
-													<button className='text-primary'>
-														<CopyIcon />
-													</button>
-												</div>
+												{
+													// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+													<div
+														className='text-sm cursor-pointer w-full font-normal flex items-center justify-between leading-[15px] outline-0 p-3 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white'
+														onClick={() => copyText(callData)}
+													>
+														{shortenAddress(callData, 10)}
+														<button className='text-primary'>
+															<CopyIcon />
+														</button>
+													</div>
+												}
 											</article>
 										</div>
 									</>
 								)}
-								<p
-									onClick={() => setShowDecodedCallData((prev) => !prev)}
-									className='text-primary cursor-pointer font-medium text-sm leading-[15px] mt-3 mb-6 flex items-center gap-x-3'
-								>
-									<span>{showDecodedCallData ? 'Hide' : 'Advanced'} Details</span>
-									<ArrowRightIcon />
-								</p>
+								{
+									// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
+									<p
+										onClick={() => setShowDecodedCallData((prev) => !prev)}
+										className='text-primary cursor-pointer font-medium text-sm leading-[15px] mt-3 mb-6 flex items-center gap-x-3'
+									>
+										<span>{showDecodedCallData ? 'Hide' : 'Advanced'} Details</span>
+										<ArrowRightIcon />
+									</p>
+								}
 								{showDecodedCallData && (
 									<article className='w-[900px]'>
 										<Divider

@@ -52,8 +52,8 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 	const fetchQueuedTransactions = useCallback(async () => {
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature || !activeMultisig) {
 				console.log('ERROR');

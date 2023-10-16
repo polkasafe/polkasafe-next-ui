@@ -7,14 +7,12 @@ import polkaLogo from '@next-common/assets/polkassembly-logo.svg';
 import subid from '@next-common/assets/subid.svg';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { Apps, useGlobalDAppContext } from '@next-substrate/context/DAppContext';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 import { networks } from '@next-common/global/networkConstants';
 import { ArrowRightIcon } from '@next-common/ui-components/CustomIcons';
 import Image from 'next/image';
 
-const AppModal = ({ name, description }: { name: string; description: string }) => {
+const AppModal = ({ name, description, onCancel }: { name: string; description: string; onCancel: () => void }) => {
 	const { setIframeVisibility } = useGlobalDAppContext();
-	const { closeModal } = useModalContext();
 	const { network } = useGlobalApiContext();
 	const logo = name === 'Polkassembly' ? polkaLogo : name === 'Sub ID' ? subid : astarLogo;
 	return (
@@ -58,15 +56,15 @@ const AppModal = ({ name, description }: { name: string; description: string }) 
 				<button
 					className='mt-10 text-white bg-primary p-3 rounded-lg w-full flex items-center justify-center gap-x-1 cursor-pointer'
 					onClick={() => {
-						if (name === 'Polkassembly') {
+						if (name === 'Polkassembly' && typeof window !== 'undefined') {
 							window.open(`https://${network}.polkassembly.io/`, '_blank');
 							return;
 						}
-						if (name === 'Astar') {
+						if (name === 'Astar' && typeof window !== 'undefined') {
 							window.open('https://portal.astar.network/astar/dapp-staking/discover', '_blank');
 							return;
 						}
-						closeModal();
+						onCancel();
 						setIframeVisibility(
 							name === 'Polkassembly' ? Apps.POLKASSEMBLY : name === 'Sub ID' ? Apps.SUB_ID : Apps.ASTAR
 						);

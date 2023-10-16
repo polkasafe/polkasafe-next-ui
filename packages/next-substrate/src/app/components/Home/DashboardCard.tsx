@@ -82,8 +82,8 @@ const DashboardCard = ({
 
 	const handleGetAssets = useCallback(async () => {
 		try {
-			const address = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const address = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!address || !signature || !activeMultisig) return;
 

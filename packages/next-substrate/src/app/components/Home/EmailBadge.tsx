@@ -26,45 +26,45 @@ const EmailBadge = () => {
 	const handleAddEmail = async () => {
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
 				setLoading(false);
-			} else {
-				const addEmailRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateEmail`, {
-					body: JSON.stringify({
-						email: inputValue
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
+				return;
+			}
+			const addEmailRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateEmail`, {
+				body: JSON.stringify({
+					email: inputValue
+				}),
+				headers: firebaseFunctionsHeader(network),
+				method: 'POST'
+			});
+
+			const { data: addEmailData, error: addEmailError } = (await addEmailRes.json()) as {
+				data: string;
+				error: string;
+			};
+
+			if (addEmailError) {
+				queueNotification({
+					header: 'Error!',
+					message: addEmailError,
+					status: NotificationStatus.ERROR
 				});
+				setLoading(false);
+				return;
+			}
 
-				const { data: addEmailData, error: addEmailError } = (await addEmailRes.json()) as {
-					data: string;
-					error: string;
-				};
-
-				if (addEmailError) {
-					queueNotification({
-						header: 'Error!',
-						message: addEmailError,
-						status: NotificationStatus.ERROR
-					});
-					setLoading(false);
-					return;
-				}
-
-				if (addEmailData) {
-					queueNotification({
-						header: 'Success!',
-						message: 'Your Email has been added successfully!',
-						status: NotificationStatus.SUCCESS
-					});
-					setLoading(false);
-					setShowBadge(false);
-				}
+			if (addEmailData) {
+				queueNotification({
+					header: 'Success!',
+					message: 'Your Email has been added successfully!',
+					status: NotificationStatus.SUCCESS
+				});
+				setLoading(false);
+				setShowBadge(false);
 			}
 		} catch (error) {
 			console.log('ERROR', error);
@@ -88,7 +88,7 @@ const EmailBadge = () => {
 					value={inputValue}
 					className='placeholder-text_secondary text-white p-2 outline-none border-none min-w-[300px] mr-1'
 					placeholder='name@example.com'
-					onChange={handleChange}
+					onChange={(e) => handleChange(e)}
 				/>
 				<Button
 					loading={loading}
@@ -114,7 +114,7 @@ const EmailBadge = () => {
 					</div>
 					<div className='flex items-center justify-around mr-5'>
 						<Button
-							onClick={handleCancel}
+							onClick={() => handleCancel()}
 							className='bg-transparent border-none'
 						>
 							<div className='bg-highlight rounded-full w-5 h-5 flex items-center justify-center cursor-pointer'>

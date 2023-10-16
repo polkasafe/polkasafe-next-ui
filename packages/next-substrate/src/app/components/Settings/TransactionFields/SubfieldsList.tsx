@@ -127,8 +127,8 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 
 	const handleRequiredChange = async (key: string, requiredState: boolean) => {
 		try {
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');

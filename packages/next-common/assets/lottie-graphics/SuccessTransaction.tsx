@@ -12,7 +12,7 @@ interface Props {
 	waitMessage?: string;
 }
 
-function SuccessTransactionLottie({ message, width = 350, waitMessage }: Props) {
+const SuccessTransactionLottie: React.FC<Props> = ({ message, width = 350, waitMessage }: Props) => {
 	return (
 		<div className='flex w-full flex-col items-center justify-center'>
 			<Lottie
@@ -26,6 +26,6 @@ function SuccessTransactionLottie({ message, width = 350, waitMessage }: Props) 
 			<div className='text-text_secondary max-w-[452px]'>{waitMessage}</div>
 		</div>
 	);
-}
+};
 
 export default SuccessTransactionLottie;

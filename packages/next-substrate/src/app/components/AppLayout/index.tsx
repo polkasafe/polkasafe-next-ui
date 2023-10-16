@@ -33,6 +33,7 @@ export interface IRouteInfo {
 	title: string;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 function AppLayout({ className, children }: { className?: string; children: React.ReactNode }) {
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
@@ -46,11 +47,16 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	const IframeUrl = `https://sub.id/${getSubstrateAddress(activeMultisig)}`;
-	const isAppsPage = window.location.pathname.split('/').pop() === 'apps';
+	const isAppsPage = typeof window !== 'undefined' && window.location.pathname.split('/').pop() === 'apps';
 	const hideSlider = iframeState && isAppsPage;
 
 	const getSharedAddressBook = useCallback(async () => {
-		if (!localStorage.getItem('signature') || !localStorage.getItem('address') || !multisig) return;
+		if (
+			(typeof window !== 'undefined' && !localStorage.getItem('signature')) ||
+			!localStorage.getItem('address') ||
+			!multisig
+		)
+			return;
 
 		setMultisigChanged(true);
 		const getSharedAddressBookRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getSharedAddressBook`, {

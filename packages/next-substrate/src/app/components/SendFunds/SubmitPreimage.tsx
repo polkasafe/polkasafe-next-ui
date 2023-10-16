@@ -56,15 +56,18 @@ const SubmitPreimage = ({
 					<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Preimage Hash</label>
 					<div className='flex items-center gap-x-[10px]'>
 						<article className='w-[500px]'>
-							<div
-								className='text-sm cursor-pointer w-full font-normal flex items-center justify-between leading-[15px] outline-0 p-3 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white'
-								onClick={() => copyText(preimageHash)}
-							>
-								{shortenAddress(preimageHash, 10)}
-								<button className='text-primary'>
-									<CopyIcon />
-								</button>
-							</div>
+							{
+								// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+								<div
+									className='text-sm cursor-pointer w-full font-normal flex items-center justify-between leading-[15px] outline-0 p-3 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white'
+									onClick={() => copyText(preimageHash)}
+								>
+									{shortenAddress(preimageHash, 10)}
+									<button className='text-primary'>
+										<CopyIcon />
+									</button>
+								</div>
+							}
 						</article>
 					</div>
 				</section>

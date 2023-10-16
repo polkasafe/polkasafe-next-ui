@@ -25,62 +25,71 @@ interface IWalletButtons {
 	setNoAccounts?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-const WalletButtons = ({ setAccounts, setWallet, className, setNoAccounts, setNoExtenstion }: IWalletButtons) => {
+const WalletButtons: React.FC<IWalletButtons> = ({
+	setAccounts,
+	setWallet,
+	className,
+	setNoAccounts,
+	setNoExtenstion
+}: IWalletButtons) => {
 	const { api, apiReady, network } = useGlobalApiContext();
 	const { loggedInWallet } = useGlobalUserDetailsContext();
 
 	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.POLKADOT);
 
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const getAccounts = async (chosenWallet: Wallet): Promise<undefined> => {
-		const injectedWindow = window as Window & InjectedWindow;
+		if (typeof window !== 'undefined') {
+			const injectedWindow = window as Window & InjectedWindow;
 
-		const wallet = injectedWindow.injectedWeb3[chosenWallet];
+			const wallet = injectedWindow.injectedWeb3[chosenWallet];
 
-		if (!wallet) {
-			setNoExtenstion?.(true);
-			return;
-		}
+			if (!wallet) {
+				setNoExtenstion?.(true);
+				return;
+			}
 
-		let injected: Injected | undefined;
-		try {
-			injected = await new Promise((resolve, reject) => {
-				const timeoutId = setTimeout(() => {
-					reject(new Error('Wallet Timeout'));
-				}, 60000); // wait 60 sec
+			let injected: Injected | undefined;
+			try {
+				injected = await new Promise((resolve, reject) => {
+					const timeoutId = setTimeout(() => {
+						reject(new Error('Wallet Timeout'));
+					}, 60000); // wait 60 sec
 
-				if (wallet && wallet.enable) {
-					wallet
-						.enable(APP_NAME)
-						.then((value) => {
-							clearTimeout(timeoutId);
-							resolve(value);
-						})
-						.catch((error) => {
-							reject(error);
-						});
-				}
-			});
-		} catch (err) {
-			console.log(err?.message);
-		}
-		if (!injected) {
-			return;
-		}
+					if (wallet && wallet.enable) {
+						wallet
+							.enable(APP_NAME)
+							.then((value) => {
+								clearTimeout(timeoutId);
+								resolve(value);
+							})
+							.catch((error) => {
+								reject(error);
+							});
+					}
+				});
+			} catch (err) {
+				console.log(err?.message);
+			}
+			if (!injected) {
+				return;
+			}
 
-		const accounts = await injected.accounts.get();
-		if (accounts.length === 0) {
-			setNoAccounts?.(true);
-			return;
-		}
+			const accounts = await injected.accounts.get();
+			if (accounts.length === 0) {
+				setNoAccounts?.(true);
+				return;
+			}
 
-		setAccounts(
-			accounts.map((account) => ({
-				...account,
-				address: getEncodedAddress(account.address, network) || account.address
-			}))
-		);
-		if (accounts.length > 0 && api && apiReady) {
-			api.setSigner(injected.signer);
+			setAccounts(
+				accounts.map((account) => ({
+					...account,
+					address: getEncodedAddress(account.address, network) || account.address
+				}))
+			);
+			if (accounts.length > 0 && api && apiReady) {
+				api.setSigner(injected.signer);
+			}
 		}
 	};
 

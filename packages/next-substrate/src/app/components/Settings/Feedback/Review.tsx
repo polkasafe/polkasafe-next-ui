@@ -5,10 +5,16 @@ import { Form, Input } from 'antd';
 import React from 'react';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 
-const Review = ({ review, setReview }: { review: string; setReview: React.Dispatch<React.SetStateAction<string>> }) => {
-	const { toggleVisibility } = useModalContext();
+const Review = ({
+	review,
+	setReview,
+	onCancel
+}: {
+	review: string;
+	setReview: React.Dispatch<React.SetStateAction<string>>;
+	onCancel: () => void;
+}) => {
 	return (
 		<Form className='my-0'>
 			<div className='flex flex-col gap-y-3'>
@@ -34,9 +40,9 @@ const Review = ({ review, setReview }: { review: string; setReview: React.Dispat
 				</Form.Item>
 			</div>
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
-				<CancelBtn onClick={toggleVisibility} />
+				<CancelBtn onClick={onCancel} />
 				<ModalBtn
-					onClick={toggleVisibility}
+					onClick={onCancel}
 					title='Share'
 				/>
 			</div>

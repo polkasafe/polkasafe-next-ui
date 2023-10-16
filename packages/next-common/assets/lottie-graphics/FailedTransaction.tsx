@@ -13,7 +13,7 @@ interface Props {
 	className?: string;
 }
 
-function FailedTransactionLottie({ message, width = 350, waitMessage, className }: Props) {
+const FailedTransactionLottie: React.FC<Props> = ({ message, width = 350, waitMessage, className }: Props) => {
 	return (
 		<div className={`flex w-full flex-col items-center justify-center ${className}`}>
 			<Lottie
@@ -27,6 +27,6 @@ function FailedTransactionLottie({ message, width = 350, waitMessage, className 
 			<div className='text-text_secondary max-w-[452px] text-center'>{waitMessage}</div>
 		</div>
 	);
-}
+};
 
 export default FailedTransactionLottie;

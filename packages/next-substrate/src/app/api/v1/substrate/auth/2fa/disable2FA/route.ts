@@ -7,7 +7,7 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import firebaseAdmin, { firestoreDB } from '@next-substrate/utils/firebaseInit';
 import { NextResponse } from 'next/server';
 import { responseMessages } from '@next-common/constants/response_messages';
-import isValidRequest from '../../api-utils/isValidRequest';
+import isValidRequest from '../../../api-utils/isValidRequest';
 
 // eslint-disable-next-line import/prefer-default-export, @typescript-eslint/no-unused-vars
 export async function POST(req: Request) {

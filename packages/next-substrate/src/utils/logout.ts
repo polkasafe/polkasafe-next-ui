@@ -3,6 +3,8 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 export default function logout() {
-	localStorage.removeItem('address');
-	localStorage.removeItem('signature');
+	if (typeof window !== 'undefined') {
+		localStorage.removeItem('address');
+		localStorage.removeItem('signature');
+	}
 }

@@ -195,7 +195,9 @@ const Home = ({ className }: { className?: string }) => {
 						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 							<p className='text-white'>Your Proxy has been Created.</p>
 							<Button
-								onClick={() => window.location.reload()}
+								onClick={() => {
+									if (typeof window !== 'undefined') window.location.reload();
+								}}
 								size='small'
 								className='border-none outline-none text-waiting bg-transparent'
 							>

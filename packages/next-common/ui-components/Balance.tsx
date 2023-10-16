@@ -14,7 +14,7 @@ interface Props {
 	onChange?: (balance: string) => void;
 }
 
-const Balance = ({ address, className, onChange }: Props) => {
+const Balance: React.FC<Props> = ({ address, className, onChange }: Props) => {
 	const { api, apiReady, network } = useGlobalApiContext();
 
 	const [balance, setBalance] = useState<string>('0');

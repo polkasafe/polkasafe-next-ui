@@ -7,15 +7,13 @@ import DragDrop from '@next-substrate/app/components/AddressBook/DragDrop';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import AddBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
-const ImportAdress = () => {
-	const { toggleVisibility } = useModalContext();
+const ImportAdress = ({ onCancel }: { onCancel: () => void }) => {
 	const [addresses, setAddresses] = useState<IAddressBookItem[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 	const { addressBook, setUserDetailsContextState } = useGlobalUserDetailsContext();
@@ -30,51 +28,51 @@ const ImportAdress = () => {
 		roles?: string[]
 	) => {
 		try {
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
-			} else {
-				if (addressBook.some((item) => item.address === address)) {
-					return;
-				}
+				return;
+			}
+			if (addressBook.some((item) => item.address === address)) {
+				return;
+			}
 
-				const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
-					body: JSON.stringify({
-						address,
-						discord: discord || '',
-						email: email || '',
-						name,
-						roles: roles || [],
-						telegram: telegram || ''
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
+			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
+				body: JSON.stringify({
+					address,
+					discord: discord || '',
+					email: email || '',
+					name,
+					roles: roles || [],
+					telegram: telegram || ''
+				}),
+				headers: firebaseFunctionsHeader(network),
+				method: 'POST'
+			});
+
+			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
+				data: IAddressBookItem[];
+				error: string;
+			};
+
+			if (addAddressError) {
+				queueNotification({
+					header: 'Error!',
+					message: addAddressError,
+					status: NotificationStatus.ERROR
 				});
+				return;
+			}
 
-				const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-					data: IAddressBookItem[];
-					error: string;
-				};
-
-				if (addAddressError) {
-					queueNotification({
-						header: 'Error!',
-						message: addAddressError,
-						status: NotificationStatus.ERROR
-					});
-					return;
-				}
-
-				if (addAddressData) {
-					setUserDetailsContextState((prevState) => {
-						return {
-							...prevState,
-							addressBook: addAddressData
-						};
-					});
-				}
+			if (addAddressData) {
+				setUserDetailsContextState((prevState) => {
+					return {
+						...prevState,
+						addressBook: addAddressData
+					};
+				});
 			}
 		} catch (error) {
 			console.log('ERROR', error);
@@ -95,7 +93,7 @@ const ImportAdress = () => {
 				status: NotificationStatus.SUCCESS
 			});
 			setLoading(false);
-			toggleVisibility();
+			onCancel();
 		});
 	};
 
@@ -105,7 +103,7 @@ const ImportAdress = () => {
 				<DragDrop setAddresses={setAddresses} />
 			</div>
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
-				<CancelBtn onClick={toggleVisibility} />
+				<CancelBtn onClick={onCancel} />
 				<AddBtn
 					onClick={addImportedAddresses}
 					loading={loading}

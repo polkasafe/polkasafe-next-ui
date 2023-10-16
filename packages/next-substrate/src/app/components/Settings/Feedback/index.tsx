@@ -4,29 +4,29 @@
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 import Review from './Review';
 
 const emojis = ['😍', '🙂', '😐', '🙁', '😢'];
 
 const Feedback = () => {
 	const { network } = useGlobalApiContext();
-	const { openModal } = useModalContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
+	const [openReviewModal, setOpenReviewModal] = useState<boolean>(false);
 	const [review, setReview] = useState<string>('');
 	const [rating, setRating] = useState<number | null>(null);
 
 	const handleSubmitFeedback = async () => {
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
@@ -82,20 +82,23 @@ const Feedback = () => {
 
 	return (
 		<>
+			<ModalComponent
+				open={openReviewModal}
+				onCancel={() => setOpenReviewModal(false)}
+				title='Write a Review'
+			>
+				<Review
+					setReview={setReview}
+					review={review}
+					onCancel={() => setOpenReviewModal(false)}
+				/>
+			</ModalComponent>
 			<h2 className='font-semibold text-lg leading-[22px] text-white mb-4'>Feedback</h2>
 			<article className='bg-bg-main p-5 rounded-xl text-text_secondary text-sm font-normal leading-[15px]'>
 				<div className='flex items-center gap-x-5 justify-between text-sm font-normal leading-[15px]'>
 					<p className='text-white'>What do you think of PolkaSafe?</p>
 					<button
-						onClick={() =>
-							openModal(
-								'Write a review',
-								<Review
-									setReview={setReview}
-									review={review}
-								/>
-							)
-						}
+						onClick={() => setOpenReviewModal(true)}
 						className='text-primary font-medium'
 					>
 						Write a Review
@@ -104,6 +107,7 @@ const Feedback = () => {
 				<div className='my-[34.5px] flex items-center justify-center gap-x-5'>
 					{emojis.map((emoji, i) => {
 						return (
+							// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 							<span
 								onClick={() => setRating(5 - i)}
 								key={emoji}

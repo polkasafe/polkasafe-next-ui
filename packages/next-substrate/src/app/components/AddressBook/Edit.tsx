@@ -156,8 +156,8 @@ const EditAddress = ({
 	const handlePersonalAddressBookUpdate = async () => {
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
@@ -218,83 +218,83 @@ const EditAddress = ({
 	const handleSharedAddressBookUpdate = async () => {
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
 				setLoading(false);
-			} else {
-				const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateSharedAddressBook`, {
-					body: JSON.stringify({
+				return;
+			}
+			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateSharedAddressBook`, {
+				body: JSON.stringify({
+					address: addressToEdit,
+					discord,
+					email,
+					multisigAddress: multisig?.proxy ? multisig.proxy : activeMultisig,
+					name: newName,
+					nickName,
+					roles,
+					telegram
+				}),
+				headers: firebaseFunctionsHeader(network),
+				method: 'POST'
+			});
+
+			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
+				data: ISharedAddressBooks;
+				error: string;
+			};
+
+			if (addAddressError) {
+				queueNotification({
+					header: 'Error!',
+					message: addAddressError,
+					status: NotificationStatus.ERROR
+				});
+				setLoading(false);
+				return;
+			}
+
+			if (addAddressData) {
+				setActiveMultisigContextState((prevState) => {
+					return {
+						...prevState,
+						...addAddressData
+					};
+				});
+
+				const copyAddressBook = [...addressBook];
+				const updateIndex = copyAddressBook.findIndex(
+					(item) => getSubstrateAddress(item.address) === getSubstrateAddress(addressToEdit)
+				);
+				if (updateIndex > -1) {
+					copyAddressBook[updateIndex].nickName = nickName;
+				} else {
+					copyAddressBook.push({
 						address: addressToEdit,
 						discord,
 						email,
-						multisigAddress: multisig?.proxy ? multisig.proxy : activeMultisig,
 						name: newName,
 						nickName,
 						roles,
 						telegram
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
+					});
+				}
+				setUserDetailsContextState((prev) => {
+					return {
+						...prev,
+						addressBook: copyAddressBook
+					};
 				});
 
-				const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-					data: ISharedAddressBooks;
-					error: string;
-				};
-
-				if (addAddressError) {
-					queueNotification({
-						header: 'Error!',
-						message: addAddressError,
-						status: NotificationStatus.ERROR
-					});
-					setLoading(false);
-					return;
-				}
-
-				if (addAddressData) {
-					setActiveMultisigContextState((prevState) => {
-						return {
-							...prevState,
-							...addAddressData
-						};
-					});
-
-					const copyAddressBook = [...addressBook];
-					const updateIndex = copyAddressBook.findIndex(
-						(item) => getSubstrateAddress(item.address) === getSubstrateAddress(addressToEdit)
-					);
-					if (updateIndex > -1) {
-						copyAddressBook[updateIndex].nickName = nickName;
-					} else {
-						copyAddressBook.push({
-							address: addressToEdit,
-							discord,
-							email,
-							name: newName,
-							nickName,
-							roles,
-							telegram
-						});
-					}
-					setUserDetailsContextState((prev) => {
-						return {
-							...prev,
-							addressBook: copyAddressBook
-						};
-					});
-
-					queueNotification({
-						header: 'Success!',
-						message: 'Your address has been added successfully!',
-						status: NotificationStatus.SUCCESS
-					});
-					setLoading(false);
-					onCancel();
-				}
+				queueNotification({
+					header: 'Success!',
+					message: 'Your address has been added successfully!',
+					status: NotificationStatus.SUCCESS
+				});
+				setLoading(false);
+				onCancel();
 			}
 		} catch (error) {
 			console.log('ERROR', error);

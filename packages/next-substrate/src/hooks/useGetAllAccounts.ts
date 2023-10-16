@@ -34,7 +34,7 @@ const useGetAllAccounts = () => {
 	const [response, setResponse] = useState<Response>(initResponse);
 
 	const getWalletAccounts = async (chosenWallet: Wallet): Promise<InjectedAccount[] | undefined> => {
-		const injectedWindow = window as Window & InjectedWindow;
+		const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 		const wallet = isWeb3Injected ? injectedWindow.injectedWeb3[chosenWallet] : null;
 

@@ -6,7 +6,7 @@ import Link from 'next/link';
 
 const { Footer: AntdFooter } = Layout;
 
-function Footer() {
+const Footer: React.FC = () => {
 	return (
 		<AntdFooter className='flex text-white bg-bg-main flex-row items-center p-0 lg:h-[60px] shadow-top'>
 			<div className='hidden lg:block w-[180px]' />
@@ -41,6 +41,6 @@ function Footer() {
 			</section>
 		</AntdFooter>
 	);
-}
+};
 
 export default Footer;

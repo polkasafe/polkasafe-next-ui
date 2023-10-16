@@ -1,53 +1,36 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
-import styled from '@xstyled/styled-components';
-import { Divider, Modal } from 'antd';
+import { Divider } from 'antd';
 import React, { FC, useState } from 'react';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { IAsset } from '@next-common/types';
-import { OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import formatUSDWithUnits from '@next-substrate/utils/formatUSDWithUnits';
 
+import Image from 'next/image';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
 
 interface IAssetsProps {
 	assets: IAsset[];
-	className?: string;
 }
 
-const AssetsTable: FC<IAssetsProps> = ({ assets, className }) => {
+const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
-	const TransactionModal: FC = () => {
-		return (
-			<Modal
-				centered
-				footer={false}
-				closeIcon={
-					<button
-						className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center'
-						onClick={() => setOpenTransactionModal(false)}
-					>
-						<OutlineCloseIcon className='text-primary w-2 h-2' />
-					</button>
-				}
-				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
-				open={openTransactionModal}
-				className={`${className} w-auto md:min-w-[500px] scale-90`}
-			>
-				<SendFundsForm onCancel={() => setOpenTransactionModal(false)} />
-			</Modal>
-		);
-	};
-
 	return (
 		<div className='text-sm font-medium leading-[15px] scale-[80%] w-[125%] h-[125%] origin-top-left'>
-			<TransactionModal />
+			<ModalComponent
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
+				open={openTransactionModal}
+				onCancel={() => setOpenTransactionModal(false)}
+			>
+				<SendFundsForm onCancel={() => setOpenTransactionModal(false)} />
+			</ModalComponent>
 			<article className='grid grid-cols-4 gap-x-5 bg-bg-secondary text-text_secondary py-5 px-4 rounded-lg'>
 				<span className='col-span-1'>Asset</span>
 				<span className='col-span-1'>Balance</span>
@@ -64,7 +47,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, className }) => {
 							>
 								<div className='col-span-1 flex items-center'>
 									<div className='flex items-center justify-center overflow-hidden rounded-full w-4 h-4'>
-										<img
+										<Image
 											src={logoURI}
 											alt='profile img'
 										/>
@@ -113,11 +96,4 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, className }) => {
 	);
 };
 
-export default styled(AssetsTable)`
-	.ant-spin-nested-loading .ant-spin-blur {
-		opacity: 0 !important;
-	}
-	.ant-spin-nested-loading .ant-spin-blur::after {
-		opacity: 1 !important;
-	}
-`;
+export default AssetsTable;

@@ -9,7 +9,6 @@ import CancelBtn from '@next-substrate/app/components/Multisig/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
@@ -94,14 +93,15 @@ const SentInfo: FC<ISentInfoProps> = ({
 	handleCancelTransaction,
 	notifications,
 	customTx
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { api, apiReady, network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
 	const { address: userAddress, addressBook, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
-	const { openModal } = useModalContext();
 	const [openCancelModal, setOpenCancelModal] = useState<boolean>(false);
+	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
 	const activeMultisigObject = multisigAddresses?.find(
 		(item) => item.address === activeMultisig || item.proxy === activeMultisig
 	);
@@ -160,6 +160,18 @@ const SentInfo: FC<ISentInfoProps> = ({
 						/>
 					</div>
 				</div>
+			</ModalComponent>
+			<ModalComponent
+				onCancel={() => setOpenEditNoteModal(false)}
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Add Note</h3>}
+				open={openEditNoteModal}
+			>
+				<EditNote
+					note=''
+					callHash={callHash}
+					setUpdatedNote={setUpdatedNote}
+					onCancel={() => setOpenEditNoteModal(false)}
+				/>
 			</ModalComponent>
 			<article className='p-4 rounded-lg bg-bg-main flex-1'>
 				{isProxyApproval ||
@@ -371,36 +383,14 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<span className='text-white font-normal flex items-center flex-wrap gap-x-3'>
 								<p className='whitespace-pre'>{updatedNote}</p>
 								{depositor === userAddress && (
-									<button
-										onClick={() =>
-											openModal(
-												'Edit Note',
-												<EditNote
-													note={updatedNote}
-													callHash={callHash}
-													setUpdatedNote={setUpdatedNote}
-												/>
-											)
-										}
-									>
+									<button onClick={() => setOpenEditNoteModal(true)}>
 										<EditIcon className='text-primary cursor-pointer' />
 									</button>
 								)}
 							</span>
 						) : (
 							depositor === userAddress && (
-								<button
-									onClick={() =>
-										openModal(
-											'Add Note',
-											<EditNote
-												note=''
-												callHash={callHash}
-												setUpdatedNote={setUpdatedNote}
-											/>
-										)
-									}
-								>
+								<button onClick={() => setOpenEditNoteModal(true)}>
 									<EditIcon className='text-primary cursor-pointer' />
 								</button>
 							)

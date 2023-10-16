@@ -11,7 +11,6 @@ import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { CheckOutlined, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
-import styled from 'styled-components';
 
 import Loader from '../../UserFlow/Loader';
 
@@ -166,36 +165,4 @@ const NameAddress = ({ className, multisigAddress, setMultisigAddress, multisigN
 	);
 };
 
-export default styled(NameAddress)`
-	.ant-select input {
-		font-size: 14px !important;
-		font-style: normal !important;
-		line-height: 15px !important;
-		border: 0 !important;
-		outline: 0 !important;
-		background-color: #24272e !important;
-		border-radius: 8px !important;
-		color: white !important;
-		padding: 12px !important;
-		display: block !important;
-		height: auto !important;
-	}
-	.ant-select-selector {
-		border: none !important;
-		height: 40px !important;
-		box-shadow: none !important;
-	}
-
-	.ant-select {
-		height: 40px !important;
-	}
-	.ant-select-selection-search {
-		inset: 0 !important;
-	}
-	.ant-select-selection-placeholder {
-		color: #505050 !important;
-		z-index: 100;
-		display: flex !important;
-		align-items: center !important;
-	}
-`;
+export default NameAddress;

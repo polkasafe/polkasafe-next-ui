@@ -38,6 +38,7 @@ const RemoveOwner = ({
 	oldThreshold: number;
 	oldSignatoriesLength: number;
 	onCancel: () => void;
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const [newThreshold, setNewThreshold] = useState(
 		oldThreshold === oldSignatoriesLength ? oldThreshold - 1 : oldThreshold

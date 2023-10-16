@@ -50,6 +50,7 @@ const addRecipientHeading = () => {
 	}
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: string }) => {
 	const { multisigAddresses, activeMultisig, addressBook, address, setUserDetailsContextState, loggedInWallet } =
 		useGlobalUserDetailsContext();

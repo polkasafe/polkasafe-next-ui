@@ -16,7 +16,7 @@ import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { useGlobalApiContext } from './ApiContext';
 
 export const initialUserDetailsContext: UserDetailsContextType = {
-	activeMultisig: localStorage.getItem('active_multisig') || '',
+	activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
 	address: '',
 	addressBook: [],
 	createdAt: new Date(),
@@ -61,7 +61,10 @@ export const initialUserDetailsContext: UserDetailsContextType = {
 			}
 		}
 	},
-	notifiedTill: localStorage.getItem('notifiedTill') ? dayjs(localStorage.getItem('notifiedTill')).toDate() : null,
+	notifiedTill:
+		typeof window !== 'undefined' && localStorage.getItem('notifiedTill')
+			? dayjs(localStorage.getItem('notifiedTill')).toDate()
+			: null,
 	setUserDetailsContextState: (): void => {
 		throw new Error('setUserDetailsContextState function must be overridden');
 	},
@@ -315,7 +318,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	const [loading, setLoading] = useState(false);
 
 	const connectAddress = useCallback(async () => {
-		if (!localStorage.getItem('signature') || !localStorage.getItem('address')) return;
+		if (typeof window !== 'undefined' && (!localStorage.getItem('signature') || !localStorage.getItem('address')))
+			return;
 
 		setLoading(true);
 		const connectAddressRes = await nextApiClientFetch('api/v1/substrate/auth/connectAddress');
@@ -363,7 +367,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	}, [network]);
 
 	useEffect(() => {
-		if (localStorage.getItem('signature')) {
+		if (typeof window !== 'undefined' && localStorage.getItem('signature')) {
 			connectAddress();
 		} else {
 			logout();

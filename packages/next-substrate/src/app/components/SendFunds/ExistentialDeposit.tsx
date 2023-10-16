@@ -36,6 +36,7 @@ const ExistentialDeposit = ({
 	className?: string;
 	onCancel: () => void;
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { api, apiReady, network } = useGlobalApiContext();
 	const { activeMultisig, multisigAddresses, addressBook, loggedInWallet } = useGlobalUserDetailsContext();

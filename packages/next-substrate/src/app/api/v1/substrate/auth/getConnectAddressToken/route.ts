@@ -7,7 +7,7 @@ import { I2FAToken } from '@next-common/types';
 import { firestoreDB } from '@next-substrate/utils/firebaseInit';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import { v4 as uuidv4 } from 'uuid';
-import getLoginToken from '@next-substrate/app/api/v1/substrate/auth/api-utils/getLoginToken';
+import getLoginToken from '@next-substrate/app/api/v1/substrate/api-utils/getLoginToken';
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 

@@ -10,7 +10,7 @@ import { Currency, currencies } from '@next-common/global/currencyConstants';
 
 export default function getCurrency(): Currency {
 	const defaultCurrency = currencies.UNITED_STATES_DOLLAR;
-	let currency = localStorage.getItem('currency') || defaultCurrency;
+	let currency = (typeof window !== 'undefined' && localStorage.getItem('currency')) || defaultCurrency;
 
 	const possibleCurrencies = Object.values(currencies);
 

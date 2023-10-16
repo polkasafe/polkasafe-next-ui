@@ -4,7 +4,6 @@
 import { Button } from 'antd';
 import React, { useState } from 'react';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import { DeleteIcon, EditIcon } from '@next-common/ui-components/CustomIcons';
@@ -17,8 +16,7 @@ const Details = () => {
 	const { activeMultisig, multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
-
-	const { openModal } = useModalContext();
+	const [openRenameModal, setOpenRenameModal] = useState<boolean>(false);
 
 	return (
 		<div className='h-full flex flex-col'>
@@ -28,6 +26,20 @@ const Details = () => {
 				open={openRemoveModal}
 			>
 				<RemoveMultisigAddress onCancel={() => setOpenRemoveModal(false)} />
+			</ModalComponent>
+			<ModalComponent
+				onCancel={() => setOpenRenameModal(false)}
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Rename Multisig</h3>}
+				open={openRenameModal}
+			>
+				<RenameMultisig
+					name={
+						multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
+						multisigAddresses.find((item) => item.address === activeMultisig)?.name ||
+						DEFAULT_MULTISIG_NAME
+					}
+					onCancel={() => setOpenRenameModal(false)}
+				/>
 			</ModalComponent>
 			<h2 className='font-semibold text-lg leading-[22px] text-white mb-4'>Details</h2>
 			<article className=' flex flex-col flex-1 bg-bg-main p-5 rounded-xl text-text_secondary text-sm font-normal leading-[15px]'>
@@ -50,20 +62,7 @@ const Details = () => {
 								multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
 									?.name ||
 								DEFAULT_MULTISIG_NAME}
-							<button
-								onClick={() =>
-									openModal(
-										'Rename Multisig',
-										<RenameMultisig
-											name={
-												multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
-												multisigAddresses.find((item) => item.address === activeMultisig)?.name ||
-												DEFAULT_MULTISIG_NAME
-											}
-										/>
-									)
-								}
-							>
+							<button onClick={() => setOpenRenameModal(true)}>
 								<EditIcon className='text-primary cursor-pointer' />
 							</button>
 						</span>

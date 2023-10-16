@@ -7,10 +7,10 @@ import { responseMessages } from '@next-common/constants/response_messages';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { CHANNEL, IAddressBookItem, IUser, IUserNotificationPreferences, IUserResponse } from '@next-common/types';
 import { firestoreDB } from '@next-substrate/utils/firebaseInit';
-import isValidRequest from '@next-substrate/app/api/v1/substrate/auth/api-utils/isValidRequest';
+import isValidRequest from '@next-substrate/app/api/v1/substrate/api-utils/isValidRequest';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
-import getMultisigAddressesByAddress from '@next-substrate/app/api/v1/substrate/auth/api-utils/getMultisigAddressesByAddress';
+import getMultisigAddressesByAddress from '@next-substrate/app/api/v1/substrate/api-utils/getMultisigAddressesByAddress';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
 

@@ -27,38 +27,38 @@ export default async function addToAddressBook({
 	}
 
 	try {
-		const userAddress = localStorage.getItem('address');
-		const signature = localStorage.getItem('signature');
+		const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+		const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 		if (!userAddress || !signature) {
 			console.log('ERROR');
-		} else {
-			if (addressBook.some((item) => getSubstrateAddress(item.address) === getSubstrateAddress(address))) {
-				queueNotification({
-					header: 'Error!',
-					message: 'Address exists in Address book.',
-					status: NotificationStatus.ERROR
-				});
-				return undefined;
-			}
-
-			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
-				body: JSON.stringify({
-					address,
-					name
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
+			return undefined;
+		}
+		if (addressBook.some((item) => getSubstrateAddress(item.address) === getSubstrateAddress(address))) {
+			queueNotification({
+				header: 'Error!',
+				message: 'Address exists in Address book.',
+				status: NotificationStatus.ERROR
 			});
+			return undefined;
+		}
 
-			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-				data: IAddressBookItem[];
-				error: string;
-			};
+		const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
+			body: JSON.stringify({
+				address,
+				name
+			}),
+			headers: firebaseFunctionsHeader(network),
+			method: 'POST'
+		});
 
-			if (addAddressData && !addAddressError) {
-				return addAddressData;
-			}
+		const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
+			data: IAddressBookItem[];
+			error: string;
+		};
+
+		if (addAddressData && !addAddressError) {
+			return addAddressData;
 		}
 	} catch (error) {
 		console.log('ERROR', error);

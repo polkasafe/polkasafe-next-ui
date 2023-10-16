@@ -5,7 +5,7 @@
 
 import Home from '@next-substrate/app/components/Home';
 
-const HomePage = () => {
+const HomePage: React.FC = () => {
 	return <Home />;
 };
 

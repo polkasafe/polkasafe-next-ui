@@ -11,7 +11,7 @@ import { NextResponse } from 'next/server';
 import { responseMessages } from '@next-common/constants/response_messages';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IUser } from '@next-common/types';
-import isValidRequest from '../auth/api-utils/isValidRequest';
+import isValidRequest from '../api-utils/isValidRequest';
 
 // eslint-disable-next-line import/prefer-default-export
 export async function POST(req: Request) {

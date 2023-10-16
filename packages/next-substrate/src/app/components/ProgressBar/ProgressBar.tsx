@@ -6,8 +6,8 @@
 
 import NextNProgress from 'nextjs-progressbar';
 
-const ProgressBar = () => {
-	return <NextNProgress />;
+const ProgressBar: React.FC = () => {
+	return <NextNProgress color='#E5007A' />;
 };
 
 export default ProgressBar;

@@ -17,7 +17,7 @@ interface IAddressProps {
 	shortenAddressLength?: number;
 }
 
-const Address = ({
+const Address: React.FC<IAddressProps> = ({
 	address,
 	className,
 	displayInline,

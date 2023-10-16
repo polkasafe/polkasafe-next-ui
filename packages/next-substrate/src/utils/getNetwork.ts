@@ -10,7 +10,7 @@ import { Network, networks } from '@next-common/global/networkConstants';
 
 export default function getNetwork(): Network {
 	const defaultNetwork = process.env.REACT_APP_ENV === 'dev' ? 'westend' : 'polkadot';
-	let network = localStorage.getItem('network') || defaultNetwork;
+	let network = (typeof window !== 'undefined' && localStorage.getItem('network')) || defaultNetwork;
 
 	const possibleNetworks = Object.values(networks);
 

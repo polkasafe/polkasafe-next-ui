@@ -23,7 +23,12 @@ interface IAddressInput {
 	showMultisigAddresses?: boolean;
 }
 
-const AddressInput = ({ onChange, placeholder, defaultAddress, showMultisigAddresses = false }: IAddressInput) => {
+const AddressInput: React.FC<IAddressInput> = ({
+	onChange,
+	placeholder,
+	defaultAddress,
+	showMultisigAddresses = false
+}: IAddressInput) => {
 	const { network } = useGlobalApiContext();
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
 

@@ -75,7 +75,7 @@ const ConnectWallet = () => {
 				setTfaToken(token.tfa_token.token);
 				setLoading(false);
 			} else {
-				const injectedWindow = window as Window & InjectedWindow;
+				const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 				const wallet = injectedWindow.injectedWeb3[selectedWallet];
 
@@ -121,9 +121,11 @@ const ConnectWallet = () => {
 					setLoading(false);
 					setSigning(false);
 
-					localStorage.setItem('signature', signature);
-					localStorage.setItem('address', substrateAddress);
-					localStorage.setItem('logged_in_wallet', selectedWallet);
+					if (typeof window !== 'undefined') {
+						localStorage.setItem('signature', signature);
+						localStorage.setItem('address', substrateAddress);
+						localStorage.setItem('logged_in_wallet', selectedWallet);
+					}
 
 					setUserDetailsContextState((prevState) => {
 						return {
@@ -202,7 +204,7 @@ const ConnectWallet = () => {
 			}
 
 			if (!validate2FAError && token) {
-				const injectedWindow = window as Window & InjectedWindow;
+				const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 				const wallet = injectedWindow.injectedWeb3[selectedWallet];
 
@@ -238,9 +240,11 @@ const ConnectWallet = () => {
 					setLoading(false);
 					setSigning(false);
 
-					localStorage.setItem('signature', signature);
-					localStorage.setItem('address', substrateAddress);
-					localStorage.setItem('logged_in_wallet', selectedWallet);
+					if (typeof window !== 'undefined') {
+						localStorage.setItem('signature', signature);
+						localStorage.setItem('address', substrateAddress);
+						localStorage.setItem('logged_in_wallet', selectedWallet);
+					}
 
 					setUserDetailsContextState((prevState) => {
 						return {

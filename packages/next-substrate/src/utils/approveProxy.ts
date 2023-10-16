@@ -99,65 +99,65 @@ export default async function approveProxy({
 
 	const handleMultisigCreate = async (proxyAddress: string) => {
 		try {
-			const address = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const address = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!address || !signature || !proxyAddress) {
 				console.log('ERROR');
-			} else {
-				setLoadingMessages('Creating Your Proxy.');
-				const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig`, {
-					body: JSON.stringify({
-						signatories: multisig.signatories,
-						threshold: multisig.threshold,
-						multisigName: multisig.name,
-						proxyAddress,
-						addressBook: records
-					}),
-					headers: firebaseFunctionsHeader(network, address, signature),
-					method: 'POST'
+				return;
+			}
+			setLoadingMessages('Creating Your Proxy.');
+			const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig`, {
+				body: JSON.stringify({
+					signatories: multisig.signatories,
+					threshold: multisig.threshold,
+					multisigName: multisig.name,
+					proxyAddress,
+					addressBook: records
+				}),
+				headers: firebaseFunctionsHeader(network, address, signature),
+				method: 'POST'
+			});
+
+			const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
+				error: string;
+				data: IMultisigAddress;
+			};
+
+			if (multisigError) {
+				queueNotification({
+					header: 'Error!',
+					message: multisigError,
+					status: NotificationStatus.ERROR
 				});
+				return;
+			}
 
-				const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
-					error: string;
-					data: IMultisigAddress;
-				};
-
-				if (multisigError) {
-					queueNotification({
-						header: 'Error!',
-						message: multisigError,
-						status: NotificationStatus.ERROR
-					});
-					return;
-				}
-
-				if (multisigData) {
-					queueNotification({
-						header: 'Success!',
-						message: 'Your Proxy has been created Successfully!',
-						status: NotificationStatus.SUCCESS
-					});
-					setUserDetailsContextState((prevState) => {
-						const copyMultisigAddresses = [...prevState.multisigAddresses];
-						const index = copyMultisigAddresses.findIndex((item) => item.address === multisig.address);
-						copyMultisigAddresses[index] = multisigData;
-						return {
-							...prevState,
-							activeMultisig: multisigData.proxy || multisigData.address,
-							isProxy: true,
-							multisigAddresses: copyMultisigAddresses,
-							multisigSettings: {
-								...prevState.multisigSettings,
-								[`${multisig.address}_${multisig.network}`]: {
-									name: multisigData.name,
-									deleted: false
-								}
+			if (multisigData) {
+				queueNotification({
+					header: 'Success!',
+					message: 'Your Proxy has been created Successfully!',
+					status: NotificationStatus.SUCCESS
+				});
+				setUserDetailsContextState((prevState) => {
+					const copyMultisigAddresses = [...prevState.multisigAddresses];
+					const index = copyMultisigAddresses.findIndex((item) => item.address === multisig.address);
+					copyMultisigAddresses[index] = multisigData;
+					return {
+						...prevState,
+						activeMultisig: multisigData.proxy || multisigData.address,
+						isProxy: true,
+						multisigAddresses: copyMultisigAddresses,
+						multisigSettings: {
+							...prevState.multisigSettings,
+							[`${multisig.address}_${multisig.network}`]: {
+								name: multisigData.name,
+								deleted: false
 							}
-						};
-					});
-					router.push('/');
-				}
+						}
+					};
+				});
+				router.push('/');
 			}
 		} catch (error) {
 			console.log('ERROR', error);

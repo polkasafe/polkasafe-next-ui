@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Dropdown, Form } from 'antd';
 import { ItemType } from 'antd/es/menu/hooks/useItems';
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { currencies, currencyProperties } from '@next-common/global/currencyConstants';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
@@ -12,7 +12,7 @@ import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import ModalBtn from '../Multisig/ModalBtn';
 
-export const CurrencyFlag: FC<{ src: string; className?: string }> = ({ src, className }) => {
+export const CurrencyFlag = ({ src, className }: { src: string; className?: string }) => {
 	return (
 		<Image
 			className={`${className} block rounded-sm`}

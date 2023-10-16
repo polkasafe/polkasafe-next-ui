@@ -65,6 +65,7 @@ const DragDrop = ({ setAddresses }: { setAddresses: React.Dispatch<React.SetStat
 	};
 
 	return (
+		// eslint-disable-next-line react/jsx-props-no-spreading
 		<Dragger {...props}>
 			<p className='ant-upload-drag-icon'>
 				<UploadBoxIcon className='my-2' />

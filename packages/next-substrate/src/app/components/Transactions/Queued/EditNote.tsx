@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
@@ -16,10 +15,10 @@ interface Props {
 	note: string;
 	callHash: string;
 	setUpdatedNote: React.Dispatch<React.SetStateAction<string>>;
+	onCancel: () => void;
 }
 
-const EditNote = ({ note, callHash, setUpdatedNote }: Props) => {
-	const { toggleVisibility } = useModalContext();
+const EditNote = ({ note, callHash, setUpdatedNote, onCancel }: Props) => {
 	const { network } = useGlobalApiContext();
 
 	const { activeMultisig } = useGlobalUserDetailsContext();
@@ -31,8 +30,8 @@ const EditNote = ({ note, callHash, setUpdatedNote }: Props) => {
 		if (!newNote) return;
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
@@ -66,7 +65,7 @@ const EditNote = ({ note, callHash, setUpdatedNote }: Props) => {
 				setUpdatedNote(newNote);
 
 				setLoading(false);
-				toggleVisibility();
+				onCancel();
 			}
 		} catch (error) {
 			console.log('ERROR', error);
@@ -100,7 +99,7 @@ const EditNote = ({ note, callHash, setUpdatedNote }: Props) => {
 				</Form.Item>
 			</div>
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
-				<CancelBtn onClick={toggleVisibility} />
+				<CancelBtn onClick={onCancel} />
 				<ModalBtn
 					disabled={!newNote}
 					loading={loading}

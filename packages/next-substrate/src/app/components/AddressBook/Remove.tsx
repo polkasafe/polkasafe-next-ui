@@ -8,7 +8,6 @@ import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import { useModalContext } from '@next-substrate/context/ModalContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
@@ -19,74 +18,75 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 const RemoveAddress = ({
 	addressToRemove,
 	name,
-	shared
+	shared,
+	onCancel
 }: {
 	addressToRemove: string;
 	name: string;
 	shared?: boolean;
+	onCancel: () => void;
 }) => {
 	const { address, activeMultisig, addressBook, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
-	const { toggleVisibility } = useModalContext();
 	const [loading, setLoading] = useState<boolean>(false);
 	const { network } = useGlobalApiContext();
 
 	const handleRemoveFromPersonalAddressBook = async () => {
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
 				setLoading(false);
-			} else {
-				if (addressToRemove === address) {
-					setLoading(false);
-					return;
-				}
+				return;
+			}
+			if (addressToRemove === address) {
+				setLoading(false);
+				return;
+			}
 
-				const removeAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromAddressBook`, {
-					body: JSON.stringify({
-						address: addressToRemove,
-						name
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
+			const removeAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromAddressBook`, {
+				body: JSON.stringify({
+					address: addressToRemove,
+					name
+				}),
+				headers: firebaseFunctionsHeader(network),
+				method: 'POST'
+			});
+
+			const { data: removeAddressData, error: removeAddressError } = (await removeAddressRes.json()) as {
+				data: any;
+				error: string;
+			};
+
+			if (removeAddressError) {
+				queueNotification({
+					header: 'Error!',
+					message: removeAddressError,
+					status: NotificationStatus.ERROR
+				});
+				setLoading(false);
+				return;
+			}
+
+			if (removeAddressData) {
+				const filteredAddresses = [...addressBook].filter((item) => item.address !== addressToRemove);
+				setUserDetailsContextState((prev) => {
+					return {
+						...prev,
+						addressBook: filteredAddresses
+					};
 				});
 
-				const { data: removeAddressData, error: removeAddressError } = (await removeAddressRes.json()) as {
-					data: any;
-					error: string;
-				};
-
-				if (removeAddressError) {
-					queueNotification({
-						header: 'Error!',
-						message: removeAddressError,
-						status: NotificationStatus.ERROR
-					});
-					setLoading(false);
-					return;
-				}
-
-				if (removeAddressData) {
-					const filteredAddresses = [...addressBook].filter((item) => item.address !== addressToRemove);
-					setUserDetailsContextState((prev) => {
-						return {
-							...prev,
-							addressBook: filteredAddresses
-						};
-					});
-
-					queueNotification({
-						header: 'Success!',
-						message: 'Your address has been removed successfully!',
-						status: NotificationStatus.SUCCESS
-					});
-					setLoading(false);
-					toggleVisibility();
-				}
+				queueNotification({
+					header: 'Success!',
+					message: 'Your address has been removed successfully!',
+					status: NotificationStatus.SUCCESS
+				});
+				setLoading(false);
+				onCancel();
 			}
 		} catch (error) {
 			console.log('ERROR', error);
@@ -97,63 +97,63 @@ const RemoveAddress = ({
 	const handleRemoveFromSharedAddressBook = async () => {
 		try {
 			setLoading(true);
-			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 			if (!userAddress || !signature) {
 				console.log('ERROR');
 				setLoading(false);
-			} else {
-				if (addressToRemove === address) {
-					setLoading(false);
-					return;
-				}
+				return;
+			}
+			if (addressToRemove === address) {
+				setLoading(false);
+				return;
+			}
 
-				const removeAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromSharedAddressBook`, {
-					body: JSON.stringify({
-						address: addressToRemove,
-						multisigAddress: activeMultisig
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
+			const removeAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromSharedAddressBook`, {
+				body: JSON.stringify({
+					address: addressToRemove,
+					multisigAddress: activeMultisig
+				}),
+				headers: firebaseFunctionsHeader(network),
+				method: 'POST'
+			});
+
+			const { data: removeAddressData, error: removeAddressError } = (await removeAddressRes.json()) as {
+				data: ISharedAddressBooks;
+				error: string;
+			};
+
+			if (removeAddressError) {
+				queueNotification({
+					header: 'Error!',
+					message: removeAddressError,
+					status: NotificationStatus.ERROR
+				});
+				setLoading(false);
+				return;
+			}
+
+			if (removeAddressData) {
+				setActiveMultisigContextState(removeAddressData as any);
+
+				const filteredAddresses = [...addressBook].filter(
+					(item) => getSubstrateAddress(item.address) !== getSubstrateAddress(addressToRemove)
+				);
+				setUserDetailsContextState((prev) => {
+					return {
+						...prev,
+						addressBook: filteredAddresses
+					};
 				});
 
-				const { data: removeAddressData, error: removeAddressError } = (await removeAddressRes.json()) as {
-					data: ISharedAddressBooks;
-					error: string;
-				};
-
-				if (removeAddressError) {
-					queueNotification({
-						header: 'Error!',
-						message: removeAddressError,
-						status: NotificationStatus.ERROR
-					});
-					setLoading(false);
-					return;
-				}
-
-				if (removeAddressData) {
-					setActiveMultisigContextState(removeAddressData as any);
-
-					const filteredAddresses = [...addressBook].filter(
-						(item) => getSubstrateAddress(item.address) !== getSubstrateAddress(addressToRemove)
-					);
-					setUserDetailsContextState((prev) => {
-						return {
-							...prev,
-							addressBook: filteredAddresses
-						};
-					});
-
-					queueNotification({
-						header: 'Success!',
-						message: 'Your address has been removed successfully!',
-						status: NotificationStatus.SUCCESS
-					});
-					setLoading(false);
-					toggleVisibility();
-				}
+				queueNotification({
+					header: 'Success!',
+					message: 'Your address has been removed successfully!',
+					status: NotificationStatus.SUCCESS
+				});
+				setLoading(false);
+				onCancel();
 			}
 		} catch (error) {
 			console.log('ERROR', error);
@@ -179,7 +179,7 @@ const RemoveAddress = ({
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
 				<CancelBtn
 					loading={loading}
-					onClick={toggleVisibility}
+					onClick={onCancel}
 				/>
 				<RemoveBtn
 					loading={loading}

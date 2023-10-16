@@ -59,6 +59,7 @@ const AllApps = () => {
 						{currentApps.map((app) => (
 							<AppCard
 								key={app.name}
+								// eslint-disable-next-line react/jsx-props-no-spreading
 								{...app}
 							/>
 						))}

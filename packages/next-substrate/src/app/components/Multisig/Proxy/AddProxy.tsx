@@ -32,6 +32,7 @@ interface IMultisigProps {
 	setProxyInProcess?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, homepage, setProxyInProcess }) => {
 	const {
 		address: userAddress,

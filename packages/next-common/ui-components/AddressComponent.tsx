@@ -25,7 +25,13 @@ interface IAddressComponent {
 	onlyAddress?: boolean;
 }
 
-function AddressComponent({ address, name, withBadge = true, iconSize = 30, onlyAddress }: IAddressComponent) {
+const AddressComponent: React.FC<IAddressComponent> = ({
+	address,
+	name,
+	withBadge = true,
+	iconSize = 30,
+	onlyAddress
+}: IAddressComponent) => {
 	const { network } = useGlobalApiContext();
 	const { addressBook, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
 	const { records } = useActiveMultisigContext();
@@ -134,6 +140,6 @@ function AddressComponent({ address, name, withBadge = true, iconSize = 30, only
 			)}
 		</div>
 	);
-}
+};
 
 export default AddressComponent;

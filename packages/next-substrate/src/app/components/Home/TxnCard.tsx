@@ -36,8 +36,8 @@ const TxnCard = ({
 	newTxn: boolean;
 	setProxyInProcess: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-	const userAddress = localStorage.getItem('address');
-	const signature = localStorage.getItem('signature');
+	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+	const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 	const { activeMultisig, addressBook, multisigAddresses } = useGlobalUserDetailsContext();
 	const { api, apiReady, network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
@@ -147,7 +147,7 @@ const TxnCard = ({
 		};
 
 		getQueue();
-	}, [activeMultisig, multisig?.address, network, newTxn]);
+	}, [activeMultisig, multisig?.address, network, newTxn, signature, userAddress]);
 
 	useEffect(() => {
 		if (!userAddress || !signature || !activeMultisig) return;

@@ -38,7 +38,7 @@ const AddressDropdown = () => {
 		setUserDetailsContextState((prevState) => {
 			return {
 				...prevState,
-				activeMultisig: localStorage.getItem('active_multisig') || '',
+				activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
 				address: '',
 				addressBook: [],
 				loggedInWallet: Wallet.POLKADOT,

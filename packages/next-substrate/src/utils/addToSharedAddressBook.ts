@@ -37,43 +37,43 @@ export default async function addToSharedAddressBook({
 	}
 
 	try {
-		const userAddress = localStorage.getItem('address');
-		const signature = localStorage.getItem('signature');
+		const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+		const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
 		if (!userAddress || !signature) {
 			console.log('ERROR');
-		} else {
-			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateSharedAddressBook`, {
-				body: JSON.stringify({
-					address,
-					discord,
-					email,
-					multisigAddress,
-					name,
-					roles,
-					telegram
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
+			return;
+		}
+		const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateSharedAddressBook`, {
+			body: JSON.stringify({
+				address,
+				discord,
+				email,
+				multisigAddress,
+				name,
+				roles,
+				telegram
+			}),
+			headers: firebaseFunctionsHeader(network),
+			method: 'POST'
+		});
+
+		const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
+			data: ISharedAddressBooks;
+			error: string;
+		};
+
+		if (addAddressError) {
+			queueNotification({
+				header: 'Error!',
+				message: addAddressError,
+				status: NotificationStatus.ERROR
 			});
+			return;
+		}
 
-			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-				data: ISharedAddressBooks;
-				error: string;
-			};
-
-			if (addAddressError) {
-				queueNotification({
-					header: 'Error!',
-					message: addAddressError,
-					status: NotificationStatus.ERROR
-				});
-				return;
-			}
-
-			if (addAddressData) {
-				console.log(addAddressData);
-			}
+		if (addAddressData) {
+			console.log(addAddressData);
 		}
 	} catch (error) {
 		console.log('ERROR', error);

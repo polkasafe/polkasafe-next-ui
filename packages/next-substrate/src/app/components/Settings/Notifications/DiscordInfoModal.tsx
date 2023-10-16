@@ -49,18 +49,21 @@ const DiscordInfoModal = ({ getVerifyToken }: { getVerifyToken: (channel: CHANNE
 				<li className='list-inside leading-[35px] mb-5'>
 					Send this command to the chat with the bot:
 					<div className='flex items-center justify-between'>
-						<span
-							onClick={() =>
-								copyText(
-									`/add ${address} ${
-										notification_preferences?.channelPreferences?.[CHANNEL.DISCORD]?.verification_token || ''
-									}`
-								)
-							}
-							className='px-2 cursor-pointer mx-2 rounded-md bg-bg-secondary text-primary border border-solid border-text_secondary'
-						>
-							<CopyIcon /> /add {'<web3-address>'} {'<verification-token>'}
-						</span>
+						{
+							// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+							<span
+								onClick={() =>
+									copyText(
+										`/add ${address} ${
+											notification_preferences?.channelPreferences?.[CHANNEL.DISCORD]?.verification_token || ''
+										}`
+									)
+								}
+								className='px-2 cursor-pointer mx-2 rounded-md bg-bg-secondary text-primary border border-solid border-text_secondary'
+							>
+								<CopyIcon /> /add {'<web3-address>'} {'<verification-token>'}
+							</span>
+						}
 						<PrimaryButton
 							loading={loading}
 							onClick={handleGenerateToken}
@@ -72,16 +75,20 @@ const DiscordInfoModal = ({ getVerifyToken }: { getVerifyToken: (channel: CHANNE
 					{notification_preferences?.channelPreferences?.[`${CHANNEL.DISCORD}`]?.verification_token && (
 						<div className='flex items-center justify-between mt-3'>
 							<span>Verification Token: </span>
-							<span
-								onClick={() =>
-									copyText(
-										notification_preferences?.channelPreferences?.[`${CHANNEL.DISCORD}`]?.verification_token || ''
-									)
-								}
-								className='px-2 cursor-pointer mx-2 rounded-md bg-bg-secondary text-primary border border-solid border-text_secondary'
-							>
-								<CopyIcon /> {notification_preferences?.channelPreferences?.[`${CHANNEL.DISCORD}`]?.verification_token}
-							</span>
+							{
+								// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
+								<span
+									onClick={() =>
+										copyText(
+											notification_preferences?.channelPreferences?.[`${CHANNEL.DISCORD}`]?.verification_token || ''
+										)
+									}
+									className='px-2 cursor-pointer mx-2 rounded-md bg-bg-secondary text-primary border border-solid border-text_secondary'
+								>
+									<CopyIcon />{' '}
+									{notification_preferences?.channelPreferences?.[`${CHANNEL.DISCORD}`]?.verification_token}
+								</span>
+							}
 						</div>
 					)}
 				</li>
