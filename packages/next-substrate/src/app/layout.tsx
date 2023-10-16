@@ -26,16 +26,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
 	return (
 		<html lang='en'>
-			<Providers>
-				{
-					(
-						<>
-							<ProgressBar />
-							<AppLayout>{children}</AppLayout>
-						</>
-					) as ReactNode
-				}
-			</Providers>
+			<body>
+				<Providers>
+					{
+						(
+							<>
+								<ProgressBar />
+								<AppLayout>{children}</AppLayout>
+							</>
+						) as ReactNode
+					}
+				</Providers>
+			</body>
 		</html>
 	) as ReactNode;
 }

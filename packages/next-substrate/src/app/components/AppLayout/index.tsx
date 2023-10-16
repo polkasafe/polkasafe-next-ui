@@ -47,7 +47,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	const IframeUrl = `https://sub.id/${getSubstrateAddress(activeMultisig)}`;
-	const isAppsPage = typeof window !== 'undefined' && window.location.pathname.split('/').pop() === 'apps';
+	const isAppsPage = pathname.split('/').pop() === 'apps';
 	const hideSlider = iframeState && isAppsPage;
 
 	const getSharedAddressBook = useCallback(async () => {
