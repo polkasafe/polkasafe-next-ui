@@ -15,6 +15,7 @@
     "lint-fix": "yarn workspace @polkasafe-next/next lint --fix && yarn workspace next-common lint --fix"
   },
   "dependencies": {
+    "@svgr/webpack": "^8.1.0",
     "@types/node": "20.5.1",
     "@types/react": "18.2.20",
     "@types/react-dom": "18.2.7",
@@ -29,19 +30,19 @@
     "eslint-plugin-promise": "^6.1.1",
     "eslint-plugin-react": "^7.33.2",
     "eslint-plugin-simple-import-sort": "^10.0.0",
-    "typescript": "5.1.6",
     "react": "latest",
-    "react-dom": "latest"
+    "react-dom": "latest",
+    "typescript": "5.1.6"
   },
   "devDependencies": {
+    "@types/react": "^18.2.28",
+    "@types/react-dom": "^18.2.13",
     "eslint-config-airbnb": "^19.0.4",
     "eslint-config-airbnb-typescript": "^17.1.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "eslint-plugin-security": "^1.7.1",
     "eslint-plugin-sonarjs": "^0.21.0",
-    "@types/react": "^18.2.28",
-    "@types/react-dom": "^18.2.13",
     "husky": "^8.0.3",
     "lint-staged": "^14.0.1",
     "npm-run-all": "^4.1.5",
