@@ -1,34 +1,12 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# Polkasafe
 
-## Getting Started
+[Homepage](https://polkasafe.xyz).
 
-First, run the development server:
+## About
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-```
+PolkaSafe is a business tool built on top of Polkadot's multisig solution, designed to provide a seamless user experience and robust security features for managing assets on the Polkadot ecosystem. Inspired by some of the best multisig wallets available in the Ethereum ecosystem, we have created a product that offers a comprehensive set of tools and features to ensure the safe and efficient management of your assets on the Polkadot network.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+# Support and Contact Information
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Get in touch with our team for any inquiries or assistance.
+PolkaSafe is committed to providing the most user-friendly and secure multisig wallet experience for the Polkadot ecosystem. With our focus on excellent user experience, robust features, and seamless integrations, we aim to become the leading choice for multisig wallet management on Polkadot. If you have any questions, suggestions, or need support for additional networks, please reach out to us at hello@polkasafe.xyz
