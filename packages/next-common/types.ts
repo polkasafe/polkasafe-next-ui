@@ -120,7 +120,7 @@ export interface IAddressBookItem {
 	nickName?: string;
 }
 
-interface IMultisigSettings {
+export interface IMultisigSettings {
 	deleted: boolean;
 	name: string;
 }
