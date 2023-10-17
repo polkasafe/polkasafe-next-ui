@@ -3,8 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "workspaces": [
-    "packages/next-common/*",
-    "packages/next-substrate/*"
+    "packages/*"
   ],
   "scripts": {
     "next": "yarn --cwd packages/next-substrate dev",
