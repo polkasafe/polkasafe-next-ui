@@ -12,9 +12,8 @@
     "next:evm": "yarn --cwd packages/next-evm dev",
     "dev": "npm-run-all --parallel next:substrate",
     "prepare": "husky install",
-    "scan": "yarn workspace @polkasafe-next/scan scan",
-    "lint": "yarn workspace @polkasafe-next/next-substrate lint && yarn workspace next-common lint",
-    "lint-fix": "yarn workspace @polkasafe-next/next lint --fix && yarn workspace next-common lint --fix"
+    "lint": "yarn workspace next-substrate lint",
+    "lint-fix": "yarn workspace next-substrate lint --fix"
   },
   "dependencies": {
     "@svgr/webpack": "^8.1.0",
