@@ -6,12 +6,11 @@ import { Form } from 'antd';
 import React, { useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const DeleteField = ({
 	onCancel,
@@ -24,7 +23,6 @@ const DeleteField = ({
 }) => {
 	const { transactionFields, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const [loading, setLoading] = useState<boolean>(false);
-	const { network } = useGlobalApiContext();
 
 	const handleDeleteField = async () => {
 		try {
@@ -40,8 +38,9 @@ const DeleteField = ({
 				const newSubfields = { ...newTransactionFields[category].subfields };
 				delete newSubfields[subfield];
 
-				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields`, {
-					body: JSON.stringify({
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } = await nextApiClientFetch(
+					`${SUBSTRATE_API_URL}/updateTransactionFields`,
+					{
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -49,13 +48,8 @@ const DeleteField = ({
 								subfields: newSubfields
 							}
 						}
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
-					(await updateTransactionFieldsRes.json()) as { data: string; error: string };
+					}
+				);
 
 				if (updateTransactionFieldsError) {
 					queueNotification({

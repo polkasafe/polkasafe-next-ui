@@ -24,7 +24,6 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import copyText from '@next-substrate/utils/copyText';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
-import styled from 'styled-components';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import SendFundsForm from '../SendFunds/SendFundsForm';
@@ -394,11 +393,4 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 	);
 };
 
-export default styled(AddressTable)`
-	.ant-spin-nested-loading .ant-spin-blur {
-		opacity: 0 !important;
-	}
-	.ant-spin-nested-loading .ant-spin-blur::after {
-		opacity: 1 !important;
-	}
-`;
+export default AddressTable;

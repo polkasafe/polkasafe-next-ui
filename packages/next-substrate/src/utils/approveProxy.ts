@@ -6,8 +6,6 @@
 
 import { ApiPromise } from '@polkadot/api';
 import { formatBalance } from '@polkadot/util/format';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import {
@@ -19,12 +17,14 @@ import {
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import { calcWeight } from './calcWeight';
 import getEncodedAddress from './getEncodedAddress';
 import getMultisigInfo from './getMultisigInfo';
 import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
 import updateTransactionNote from './updateTransactionNote';
+import nextApiClientFetch from './nextApiClientFetch';
 
 interface Args {
 	api: ApiPromise;
@@ -107,22 +107,16 @@ export default async function approveProxy({
 				return;
 			}
 			setLoadingMessages('Creating Your Proxy.');
-			const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig`, {
-				body: JSON.stringify({
+			const { data: multisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
+				`${SUBSTRATE_API_URL}/createMultisig`,
+				{
 					signatories: multisig.signatories,
 					threshold: multisig.threshold,
 					multisigName: multisig.name,
 					proxyAddress,
 					addressBook: records
-				}),
-				headers: firebaseFunctionsHeader(network, address, signature),
-				method: 'POST'
-			});
-
-			const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
-				error: string;
-				data: IMultisigAddress;
-			};
+				}
+			);
 
 			if (multisigError) {
 				queueNotification({

@@ -4,15 +4,14 @@
 
 import { Button, Form, Modal } from 'antd';
 import React, { useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import useGetWalletAccounts from '@next-substrate/hooks/useGetWalletAccounts';
 import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 import { AddIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 interface INewUserModal {
 	open: boolean;
@@ -21,7 +20,6 @@ interface INewUserModal {
 
 const NewUserModal = ({ open, onCancel }: INewUserModal) => {
 	const [loading, setLoading] = useState(false);
-	const { network } = useGlobalApiContext();
 	const { setUserDetailsContextState, loggedInWallet } = useGlobalUserDetailsContext();
 	const { accounts } = useGetWalletAccounts(loggedInWallet);
 
@@ -33,19 +31,13 @@ const NewUserModal = ({ open, onCancel }: INewUserModal) => {
 			if (!userAddress || !signature) {
 				console.log('ERROR');
 			} else {
-				const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
-					body: JSON.stringify({
+				const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
+					`${SUBSTRATE_API_URL}/addToAddressBook`,
+					{
 						address,
 						name
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-					data: IAddressBookItem[];
-					error: string;
-				};
+					}
+				);
 
 				if (addAddressError) {
 					console.log(addAddressError);

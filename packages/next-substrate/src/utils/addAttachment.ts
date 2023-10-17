@@ -2,16 +2,14 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from './nextApiClientFetch';
 
 export default async function addAttachment({
-	network,
 	callHash,
 	subfield,
 	file
 }: {
-	network: string;
 	callHash: string;
 	subfield: string;
 	file: any;
@@ -21,11 +19,5 @@ export default async function addAttachment({
 	bodyContent.append('field_key', subfield);
 	bodyContent.append('file', file);
 
-	const addAttachmentRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addAttachment`, {
-		body: bodyContent,
-		headers: firebaseFunctionsHeader(network, '', '', 'multipart/form-data; boundary=-XXX---'),
-		method: 'POST'
-	});
-
-	return addAttachmentRes.json();
+	return nextApiClientFetch<any>(`${SUBSTRATE_API_URL}/addAttachment`, bodyContent);
 }

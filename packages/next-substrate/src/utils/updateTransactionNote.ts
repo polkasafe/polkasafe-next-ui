@@ -2,8 +2,8 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from './nextApiClientFetch';
 
 interface Args {
 	callHash: string;
@@ -18,15 +18,13 @@ export default async function updateTransactionNote({
 	note,
 	network
 }: Args): Promise<{ data?: any; error?: string }> {
-	const editNoteRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionNote `, {
-		body: JSON.stringify({
+	return nextApiClientFetch<any>(
+		`${SUBSTRATE_API_URL}/updateTransactionNote `,
+		{
 			callHash,
 			multisigAddress: multisigAddress || '',
 			note
-		}),
-		headers: firebaseFunctionsHeader(network),
-		method: 'POST'
-	});
-
-	return (await editNoteRes.json()) as { data?: any; error?: string };
+		},
+		{ network }
+	);
 }

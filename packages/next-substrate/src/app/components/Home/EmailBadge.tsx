@@ -5,11 +5,11 @@
 import { Button, Input } from 'antd';
 import React, { useState } from 'react';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NotificationStatus } from '@next-common/types';
 import { CheckOutlined, Disc, NotifyMail, CloseIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const EmailBadge = () => {
 	const { network } = useGlobalApiContext();
@@ -34,18 +34,13 @@ const EmailBadge = () => {
 				setLoading(false);
 				return;
 			}
-			const addEmailRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateEmail`, {
-				body: JSON.stringify({
+			const { data: addEmailData, error: addEmailError } = await nextApiClientFetch<string>(
+				`${SUBSTRATE_API_URL}/updateEmail`,
+				{
 					email: inputValue
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: addEmailData, error: addEmailError } = (await addEmailRes.json()) as {
-				data: string;
-				error: string;
-			};
+				},
+				{ network }
+			);
 
 			if (addEmailError) {
 				queueNotification({

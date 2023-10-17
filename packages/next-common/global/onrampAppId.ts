@@ -2,12 +2,6 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-'use client';
+const ONRAMP_APP_ID = 450314;
 
-import NextNProgress from 'nextjs-progressbar';
-
-const ProgressBar: React.FC = () => {
-	return <NextNProgress color='#E5007A' />;
-};
-
-export default ProgressBar;
+export default ONRAMP_APP_ID;

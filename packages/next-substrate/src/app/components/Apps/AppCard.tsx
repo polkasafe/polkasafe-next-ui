@@ -3,16 +3,14 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import React, { useState } from 'react';
 import astarLogo from '@next-common/assets/parachains-logos/astar-logo.png';
-import polkaLogo from '@next-common/assets/polkassembly-logo.svg';
-import subid from '@next-common/assets/subid.svg';
 
 import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { PolkassemblyIcon, SubIDIcon } from '@next-common/ui-components/CustomIcons';
 import AppModal from './AppModal';
 
 const AppCard = ({ name, description }: { name: string; description: string }) => {
 	const [openAppModal, setOpenAppModal] = useState<boolean>(false);
-	const logo = name === 'Polkassembly' ? polkaLogo : name === 'Sub ID' ? subid : astarLogo;
 	return (
 		<>
 			<ModalComponent
@@ -33,11 +31,16 @@ const AppCard = ({ name, description }: { name: string; description: string }) =
 					onClick={() => setOpenAppModal(true)}
 				>
 					<div className='flex flex-col gap-5'>
-						<Image
-							src={logo}
-							alt={name}
-							className='w-[50px] h-[50px]'
-						/>
+						{}
+						{name === 'Astar' ? (
+							<Image
+								src={astarLogo}
+								alt={name}
+								className='w-[50px] h-[50px]'
+							/>
+						) : (
+							<span className='text-[50px] flex'>{name === 'Polkassembly' ? <PolkassemblyIcon /> : <SubIDIcon />}</span>
+						)}
 						<div className='flex flex-col gap-[10px]'>
 							<div className='text-2xl text-white font-semibold'>{name}</div>
 							<div className='text-[#8B8B8B] font-medium text-base leading-tight font-archivo'>{description}</div>

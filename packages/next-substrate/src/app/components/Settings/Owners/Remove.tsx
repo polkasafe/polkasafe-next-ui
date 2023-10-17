@@ -15,8 +15,6 @@ import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
 import Loader from '@next-substrate/app/components/UserFlow/Loader';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
@@ -27,6 +25,8 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import removeOldMultiFromProxy from '@next-substrate/utils/removeOldMultiFromProxy';
 import setSigner from '@next-substrate/utils/setSigner';
 import Image from 'next/image';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const RemoveOwner = ({
 	addressToRemove,
@@ -68,21 +68,15 @@ const RemoveOwner = ({
 				console.log('ERROR');
 			} else {
 				setLoadingMessages('Creating Your Proxy.');
-				const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig`, {
-					body: JSON.stringify({
+				const { data: multisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
+					`${SUBSTRATE_API_URL}/createMultisig`,
+					{
 						disabled: true,
 						multisigName: multisig?.name,
 						signatories: newSignatories,
 						threshold
-					}),
-					headers: firebaseFunctionsHeader(network, address, signature),
-					method: 'POST'
-				});
-
-				const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
-					error: string;
-					data: IMultisigAddress;
-				};
+					}
+				);
 
 				if (multisigError) {
 					return;

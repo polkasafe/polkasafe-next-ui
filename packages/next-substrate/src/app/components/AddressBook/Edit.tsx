@@ -8,16 +8,15 @@ import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import AddBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { EMAIL_REGEX } from '@next-common/global/default';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IAddressBookItem, ISharedAddressBooks, NotificationStatus } from '@next-common/types';
 import { OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import styled from 'styled-components';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const EditAddressModal = ({
 	className,
@@ -102,7 +101,6 @@ const EditAddress = ({
 	const [roles, setRoles] = useState<string[]>(rolesToEdit || []);
 	const [discord, setDiscord] = useState<string>(discordToEdit || '');
 	const [telegram, setTelegram] = useState<string>(telegramToEdit || '');
-	const { network } = useGlobalApiContext();
 	const [openConfirmationModal, setOpenConfirmationModal] = useState<boolean>(false);
 	const [onlyNickNameChanged, setOnlyNickNameChanged] = useState<boolean>(false);
 	const [noChange, setNoChange] = useState<boolean>(true);
@@ -164,8 +162,9 @@ const EditAddress = ({
 				setLoading(false);
 				return;
 			}
-			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
-				body: JSON.stringify({
+			const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
+				`${SUBSTRATE_API_URL}/addToAddressBook`,
+				{
 					address: addressToEdit,
 					discord,
 					email,
@@ -173,15 +172,8 @@ const EditAddress = ({
 					nickName,
 					roles,
 					telegram
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-				data: IAddressBookItem[];
-				error: string;
-			};
+				}
+			);
 
 			if (addAddressError) {
 				queueNotification({
@@ -226,8 +218,9 @@ const EditAddress = ({
 				setLoading(false);
 				return;
 			}
-			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateSharedAddressBook`, {
-				body: JSON.stringify({
+			const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<ISharedAddressBooks>(
+				`${SUBSTRATE_API_URL}/updateSharedAddressBook`,
+				{
 					address: addressToEdit,
 					discord,
 					email,
@@ -236,15 +229,8 @@ const EditAddress = ({
 					nickName,
 					roles,
 					telegram
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-				data: ISharedAddressBooks;
-				error: string;
-			};
+				}
+			);
 
 			if (addAddressError) {
 				queueNotification({

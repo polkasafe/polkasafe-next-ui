@@ -32,6 +32,7 @@ const ModalComponent = ({ open, children, title, onCancel }: IModalProps) => {
 			title={<h3 className='mb-8 text-lg font-semibold text-white'>{title}</h3>}
 			open={open}
 			className='w-auto scale-90 md:min-w-[500px]'
+			destroyOnClose
 		>
 			{children}
 		</AntDModal>

@@ -7,13 +7,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import noNotification from '@next-common/assets/icons/no-notification.svg';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { INotification } from '@next-common/types';
 import { NotificationIcon } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
 
 import Image from 'next/image';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import NotificationCard from './NotificationCard';
 
 const Notification = () => {
@@ -32,12 +32,12 @@ const Notification = () => {
 		if (!address) return;
 
 		setLoading(true);
-		const getNotificationsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getNotifications`, {
-			headers: firebaseFunctionsHeader(network),
-			method: 'POST'
-		});
+		const { data, error } = await nextApiClientFetch<INotification[]>(
+			`${SUBSTRATE_API_URL}/getNotifications`,
+			{},
+			{ network }
+		);
 
-		const { data, error } = await getNotificationsRes.json();
 		if (error) {
 			console.log('Error in Fetching notifications: ', error);
 		}

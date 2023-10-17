@@ -9,16 +9,14 @@ import LoadingLottie from '~assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import AddBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { EMAIL_REGEX } from '@next-common/global/default';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IAddressBookItem, ISharedAddressBooks, NotificationStatus } from '@next-common/types';
 import { OutlineCloseIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
-import styled from 'styled-components';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 
 interface IMultisigProps {
 	className?: string;
@@ -75,7 +73,6 @@ const EditAddressModal = ({
 
 const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddress, className }) => {
 	const [messageApi, contextHolder] = message.useMessage();
-	const { network } = useGlobalApiContext();
 	const { addressBook, activeMultisig, multisigAddresses, setUserDetailsContextState } = useGlobalUserDetailsContext();
 
 	const [address, setAddress] = useState<string>(addAddress || '');
@@ -145,8 +142,9 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 				return;
 			}
 
-			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
-				body: JSON.stringify({
+			const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
+				`${SUBSTRATE_API_URL}/addToAddressBook`,
+				{
 					address,
 					discord,
 					email,
@@ -154,15 +152,8 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 					nickName,
 					roles,
 					telegram
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-				data: IAddressBookItem[];
-				error: string;
-			};
+				}
+			);
 
 			if (addAddressError) {
 				queueNotification({
@@ -230,8 +221,9 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 				return;
 			}
 
-			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateSharedAddressBook`, {
-				body: JSON.stringify({
+			const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<ISharedAddressBooks>(
+				`${SUBSTRATE_API_URL}/updateSharedAddressBook`,
+				{
 					address,
 					discord,
 					email,
@@ -240,15 +232,8 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 					nickName,
 					roles,
 					telegram
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-				data: ISharedAddressBooks;
-				error: string;
-			};
+				}
+			);
 
 			if (addAddressError && !addAddressData) {
 				queueNotification({
@@ -556,32 +541,4 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 	);
 };
 
-export default styled(AddAddress)`
-	.ant-select-selector {
-		border: none !important;
-		padding: 8px 10px;
-		box-shadow: none !important;
-		background-color: #24272e !important;
-	}
-
-	.ant-select {
-		height: 40px !important;
-	}
-	.ant-select-selection-search {
-		inset: 0 !important;
-	}
-	.ant-select-selection-placeholder {
-		color: #505050 !important;
-		z-index: 100;
-		display: flex !important;
-		align-items: center !important;
-	}
-
-	.ant-select-multiple .ant-select-selection-item {
-		border: none !important;
-		background: #1573fe !important;
-		border-radius: 5px !important;
-		color: white !important;
-		margin-inline-end: 10px !important;
-	}
-`;
+export default AddAddress;

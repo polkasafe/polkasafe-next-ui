@@ -3,20 +3,17 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Button } from 'antd';
 import React, { useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import Review from './Review';
 
 const emojis = ['😍', '🙂', '😐', '🙁', '😢'];
 
 const Feedback = () => {
-	const { network } = useGlobalApiContext();
-
 	const [loading, setLoading] = useState<boolean>(false);
 	const [openReviewModal, setOpenReviewModal] = useState<boolean>(false);
 	const [review, setReview] = useState<string>('');
@@ -41,19 +38,13 @@ const Feedback = () => {
 					setLoading(false);
 					return;
 				}
-				const addFeedbackRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addFeedback`, {
-					body: JSON.stringify({
+				const { data: feedbackData, error: feedbackError } = await nextApiClientFetch<any>(
+					`${SUBSTRATE_API_URL}/addFeedback`,
+					{
 						rating,
 						review
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: feedbackData, error: feedbackError } = (await addFeedbackRes.json()) as {
-					data: any;
-					error: string;
-				};
+					}
+				);
 
 				if (feedbackError) {
 					queueNotification({

@@ -173,8 +173,6 @@ export async function POST(req: Request) {
 		await multisigRef.set(newMultisig, { merge: true });
 
 		console.info('New multisig created with an address of ', encodedMultisigAddress);
-		NextResponse.json({ data: newMultisigWithEncodedSignatories, error: null }, { status: 200 });
-
 		if (oldProxyMultisigRef) {
 			await oldProxyMultisigRef.update({
 				proxy: '',
@@ -217,6 +215,7 @@ export async function POST(req: Request) {
 
 			await addressBookRef.set({ ...updatedAddressEntry }, { merge: true });
 		}
+		return NextResponse.json({ data: newMultisigWithEncodedSignatories, error: null }, { status: 200 });
 	} catch (err: unknown) {
 		console.error('Error in createMultisig :', { err, stack: (err as any).stack });
 		return NextResponse.json({ data: null, error: responseMessages.internal }, { status: 400 });

@@ -3,11 +3,11 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Button, Tooltip as AntDTooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { CircleCheckIcon, NotificationIcon } from '@next-common/ui-components/CustomIcons';
 import styled from 'styled-components';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { IUserNotificationPreferences } from '@next-common/types';
 
 type Props = {
 	address: string;
@@ -22,21 +22,18 @@ const Tooltip = styled(AntDTooltip)`
 `;
 
 export default function NotifyButton({ address, onClick, canNotificationSend }: Props) {
-	const { network } = useGlobalApiContext();
 	const [loading, setLoading] = useState<boolean>(true);
 	const [showNotificationIcon, setShowNotificationIcon] = useState<boolean>(canNotificationSend);
 	const [canSendNotification, setCanSendNotification] = useState<boolean>(false);
 
 	useEffect(() => {
 		const canSendReminder = async () => {
-			const notificationPreferences = await fetch(`${FIREBASE_FUNCTIONS_URL}/getNotificationPreferencesForAddress`, {
-				body: JSON.stringify({
+			const { data } = await nextApiClientFetch<IUserNotificationPreferences>(
+				`${SUBSTRATE_API_URL}/getNotificationPreferencesForAddress`,
+				{
 					address
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-			const { data } = await notificationPreferences.json();
+				}
+			);
 			if (data && data?.triggerPreferences?.approvalReminder?.enabled) {
 				setCanSendNotification(true);
 			}

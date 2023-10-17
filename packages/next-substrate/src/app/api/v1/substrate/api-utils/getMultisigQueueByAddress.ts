@@ -40,9 +40,9 @@ export default async function getMultisigQueueByAddress(
 
 		const queueItems: IQueueItem[] = [];
 
-		if (response.data && response.data.multisig?.length) {
+		if (response && response.multisig?.length) {
 			// eslint-disable-next-line no-restricted-syntax
-			for (const multisigQueueItem of response.data.multisig) {
+			for (const multisigQueueItem of response.multisig) {
 				// eslint-disable-next-line no-continue
 				if (multisigQueueItem.status !== 'Approval') continue;
 
@@ -63,14 +63,14 @@ export default async function getMultisigQueueByAddress(
 				const transaction: ITransaction = transactionDoc.data() as ITransaction;
 
 				const newQueueItem: IQueueItem = {
-					approvals: multisigData?.data?.process
+					approvals: multisigData?.process
 						?.filter((item: any) => item.status === 'Approval')
 						.map((item: any) => item.account_display.address),
 					callData: transactionDoc.exists && transaction?.callData ? transaction?.callData : '',
 					callHash: multisigQueueItem.call_hash,
 					created_at: dayjs(
 						// eslint-disable-next-line no-unsafe-optional-chaining
-						multisigData?.data?.process?.reduce((min: any, current: any) => {
+						multisigData?.process?.reduce((min: any, current: any) => {
 							if (current.timestamp && current.timestamp < min) return current.timestamp;
 							return min;
 						}, Number.MAX_SAFE_INTEGER) * 1000

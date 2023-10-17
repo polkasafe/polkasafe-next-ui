@@ -3,11 +3,11 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import BN from 'bn.js';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { ITransaction } from '@next-common/types';
 
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import formatBnBalance from './formatBnBalance';
+import nextApiClientFetch from './nextApiClientFetch';
 
 type Args = Omit<ITransaction, 'created_at' | 'amount_usd' | 'amount_token' | 'id' | 'token'> & {
 	amount: BN;
@@ -42,11 +42,5 @@ export default async function addNewTransaction({
 		transactionFields
 	};
 
-	const setTransactionResponse = await fetch(`${FIREBASE_FUNCTIONS_URL}/addTransaction`, {
-		body: JSON.stringify(newTransactionData),
-		headers: firebaseFunctionsHeader(network),
-		method: 'POST'
-	});
-
-	return setTransactionResponse.json();
+	return nextApiClientFetch<ITransaction>(`${SUBSTRATE_API_URL}/addTransaction`, newTransactionData);
 }

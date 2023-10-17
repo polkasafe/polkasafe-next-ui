@@ -30,6 +30,7 @@ export default async function _getAssetsForAddress(address: string, network: str
 		const { data: response } = await res.json();
 
 		const assets: IAsset[] = [];
+		console.log(response);
 
 		if (response.data) {
 			Object.keys(response.data).forEach((assetType) => {

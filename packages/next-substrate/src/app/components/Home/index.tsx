@@ -5,6 +5,7 @@
 
 'use client';
 
+import './style.css';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
 import dayjs from 'dayjs';
@@ -76,7 +77,7 @@ const Home = ({ className }: { className?: string }) => {
 			});
 
 			const responseJSON = await response.json();
-			if (responseJSON.data.count === 0) {
+			if (responseJSON.data?.count === 0) {
 				return;
 			}
 			const params = JSON.parse(responseJSON.data?.events[0]?.params);
@@ -169,7 +170,7 @@ const Home = ({ className }: { className?: string }) => {
 			).length > 0 ? (
 				<section>
 					{!['alephzero'].includes(network) && !hasProxy && !proxyNotInDb && isOnchain && !proxyInProcess ? (
-						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
+						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left border-2 border-solid border-waiting text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 							<p className='text-white'>Create a proxy to edit or backup your Multisig.</p>
 							<Button
 								onClick={() => setOpenProxyModal(true)}
@@ -181,7 +182,7 @@ const Home = ({ className }: { className?: string }) => {
 							</Button>
 						</section>
 					) : !isOnchain ? (
-						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
+						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left border-2 border-solid border-waiting text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 							<p className='text-white'>Please Add Existential Deposit to make Multisig Onchain.</p>
 							<Button
 								onClick={() => setOpenTransactionModal(true)}
@@ -205,7 +206,7 @@ const Home = ({ className }: { className?: string }) => {
 							</Button>
 						</section>
 					) : proxyInProcess && !hasProxy ? (
-						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
+						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 							<p className='text-white'>Your Proxy is Awaiting Approvals from other Signatories.</p>
 						</section>
 					) : null}

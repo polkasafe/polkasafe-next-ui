@@ -7,13 +7,12 @@ import React, { useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { ISharedAddressBooks, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 
 const RemoveAddress = ({
 	addressToRemove,
@@ -29,7 +28,6 @@ const RemoveAddress = ({
 	const { address, activeMultisig, addressBook, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
 	const [loading, setLoading] = useState<boolean>(false);
-	const { network } = useGlobalApiContext();
 
 	const handleRemoveFromPersonalAddressBook = async () => {
 		try {
@@ -47,19 +45,13 @@ const RemoveAddress = ({
 				return;
 			}
 
-			const removeAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromAddressBook`, {
-				body: JSON.stringify({
+			const { data: removeAddressData, error: removeAddressError } = await nextApiClientFetch<any>(
+				`${SUBSTRATE_API_URL}/removeFromAddressBook`,
+				{
 					address: addressToRemove,
 					name
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: removeAddressData, error: removeAddressError } = (await removeAddressRes.json()) as {
-				data: any;
-				error: string;
-			};
+				}
+			);
 
 			if (removeAddressError) {
 				queueNotification({
@@ -110,19 +102,13 @@ const RemoveAddress = ({
 				return;
 			}
 
-			const removeAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromSharedAddressBook`, {
-				body: JSON.stringify({
+			const { data: removeAddressData, error: removeAddressError } = await nextApiClientFetch<ISharedAddressBooks>(
+				`${SUBSTRATE_API_URL}/removeFromSharedAddressBook`,
+				{
 					address: addressToRemove,
 					multisigAddress: activeMultisig
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: removeAddressData, error: removeAddressError } = (await removeAddressRes.json()) as {
-				data: ISharedAddressBooks;
-				error: string;
-			};
+				}
+			);
 
 			if (removeAddressError) {
 				queueNotification({

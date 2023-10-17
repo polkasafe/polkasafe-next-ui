@@ -8,14 +8,13 @@ import React, { useState } from 'react';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { EFieldType, ITransactionCategorySubfields, NotificationStatus } from '@next-common/types';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import styled from 'styled-components';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 
 const AddSubfield = ({
 	className,
@@ -31,7 +30,7 @@ const AddSubfield = ({
 	const [subfields, setSubfields] = useState<{ name: string; subfieldType: EFieldType; required: boolean }[]>([
 		{ name: '', required: true, subfieldType: EFieldType.SINGLE_SELECT }
 	]);
-	const { network } = useGlobalApiContext();
+
 	const { setUserDetailsContextState, transactionFields } = useGlobalUserDetailsContext();
 
 	const fieldTypeOptions: ItemType[] = Object.values(EFieldType)
@@ -104,8 +103,8 @@ const AddSubfield = ({
 					});
 				}
 
-				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields`, {
-					body: JSON.stringify({
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					await nextApiClientFetch<string>(`${SUBSTRATE_API_URL}/updateTransactionFields`, {
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -116,13 +115,7 @@ const AddSubfield = ({
 								}
 							}
 						}
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
-					(await updateTransactionFieldsRes.json()) as { data: string; error: string };
+					});
 
 				if (updateTransactionFieldsError) {
 					queueNotification({

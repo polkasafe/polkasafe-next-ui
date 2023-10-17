@@ -46,7 +46,7 @@ export async function POST(req: Request) {
 				{ status: 400 }
 			);
 
-		NextResponse.json({ data: queueItemsArr, error: null }, { status: 200 });
+		return NextResponse.json({ data: queueItemsArr, error: null }, { status: 200 });
 
 		// TODO: make a copy to db after response is sent
 		// single batch will do because there'll never be more than 100 transactions

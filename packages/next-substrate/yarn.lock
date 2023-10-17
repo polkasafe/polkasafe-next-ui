@@ -2341,7 +2341,7 @@
   dependencies:
     undici-types "~5.25.1"
 
-"@types/nprogress@^0.2.0":
+"@types/nprogress@^0.2.1":
   version "0.2.1"
   resolved "https://registry.yarnpkg.com/@types/nprogress/-/nprogress-0.2.1.tgz#e853abbb58bd00873e047156ae86b58b6af6044c"
   integrity sha512-TYuyVnp+nOnimgdOydDIDYIxv2kSeuJZw4tF0p/KG7hpzcMF1WkHaREwM8O4blqfT1F7rq0nht6Ko2KVUfWzBA==
@@ -3934,6 +3934,18 @@ formdata-polyfill@^4.0.10:
   dependencies:
     fetch-blob "^3.1.2"
 
+formidable-serverless@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/formidable-serverless/-/formidable-serverless-1.1.1.tgz#2b668d6e92d5222794a48ed485bcf7cd47efebfb"
+  integrity sha512-IUVI2m7d46YnWRZ9RG+wvmLoX0tTrk9P6oFc53QVjM9k0XhqzeyjwDi05PLvpGNKbyLvB3gfsAc+Lk6efM3FGQ==
+  dependencies:
+    formidable "^1.2.2"
+
+formidable@^1.2.2:
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/formidable/-/formidable-1.2.6.tgz#d2a51d60162bbc9b4a055d8457a7c75315d1a168"
+  integrity sha512-KcpbcpuLNOwrEjnbpMC0gS+X8ciDoZE1kkqzat4a8vrprf+s9pKNQ/QIwWfbfs4ltgmFl3MD177SNTkve3BwGQ==
+
 fraction.js@^4.3.6:
   version "4.3.7"
   resolved "https://registry.yarnpkg.com/fraction.js/-/fraction.js-4.3.7.tgz#06ca0085157e42fda7f9e726e79fefc4068840f7"
@@ -5152,12 +5164,12 @@ next@latest:
     "@next/swc-win32-ia32-msvc" "13.5.4"
     "@next/swc-win32-x64-msvc" "13.5.4"
 
-nextjs-progressbar@^0.0.16:
-  version "0.0.16"
-  resolved "https://registry.yarnpkg.com/nextjs-progressbar/-/nextjs-progressbar-0.0.16.tgz#d2c1e54ffc2c6d52b64282c0d764a44241fbc36e"
-  integrity sha512-GV0fD38EMD3vSDCmkq+tObmoup6QA91a6a9MxGuhJZuRk/9TNsrHGnIQQQ/sggkMkXuT4fBgF6jRjFwScDT3zA==
+nextjs-toploader@^1.5.3:
+  version "1.5.3"
+  resolved "https://registry.yarnpkg.com/nextjs-toploader/-/nextjs-toploader-1.5.3.tgz#a841c858066006259d16a4258db8328e92ef66d6"
+  integrity sha512-kNqgpOxVeo7ihMZqNzxtsCNcO0lo1NNjxhCtnJ2qgTKxgppMGpuSVU4FTMaCOefamVop1mWk1Ij3C2pBP5NwPg==
   dependencies:
-    "@types/nprogress" "^0.2.0"
+    "@types/nprogress" "^0.2.1"
     nprogress "^0.2.0"
     prop-types "^15.8.1"
 

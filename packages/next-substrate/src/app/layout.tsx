@@ -6,8 +6,8 @@ import type { Metadata } from 'next';
 // import { Inter } from 'next/font/google';
 import AppLayout from '@next-substrate/app/components/AppLayout';
 import { ReactNode } from 'react';
+import NextTopLoader from 'nextjs-toploader';
 import Providers from './providers';
-import ProgressBar from './components/ProgressBar/ProgressBar';
 
 // const inter = Inter({ subsets: ['latin'] });
 
@@ -30,10 +30,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 				<Providers>
 					{
 						(
-							<>
-								<ProgressBar />
-								<AppLayout>{children}</AppLayout>
-							</>
+							<AppLayout>
+								<NextTopLoader />
+								{children}
+							</AppLayout>
 						) as ReactNode
 					}
 				</Providers>

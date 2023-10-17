@@ -15,8 +15,6 @@ import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisig
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, ISharedAddressBookRecord, NotificationStatus } from '@next-common/types';
 import { DashDotIcon } from '@next-common/ui-components/CustomIcons';
@@ -30,6 +28,8 @@ import setSigner from '@next-substrate/utils/setSigner';
 import transferFunds from '@next-substrate/utils/transferFunds';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import AddAddress from '../AddressBook/AddAddress';
 import DragDrop from './DragDrop';
 import Search from './Search';
@@ -165,21 +165,15 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 						roles: data?.roles
 					};
 				});
-				const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig`, {
-					body: JSON.stringify({
+				const { data: multisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
+					`${SUBSTRATE_API_URL}/createMultisig`,
+					{
 						addressBook: newRecords,
 						signatories,
 						threshold,
 						multisigName
-					}),
-					headers: firebaseFunctionsHeader(network, address, signature),
-					method: 'POST'
-				});
-
-				const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
-					error: string;
-					data: IMultisigAddress;
-				};
+					}
+				);
 
 				if (multisigError) {
 					queueNotification({

@@ -5,8 +5,17 @@ import React, { FC } from 'react';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { OutlineCheckIcon } from '@next-common/ui-components/CustomIcons';
 import Image from 'next/image';
+import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 
-export const ParachainIcon = ({ src, className, size = 20 }: { src: string; className?: string; size?: number }) => {
+export const ParachainIcon = ({
+	src,
+	className,
+	size = 20
+}: {
+	src: string | StaticImport;
+	className?: string;
+	size?: number;
+}) => {
 	return (
 		<Image
 			className={`${className} block rounded-full`}

@@ -241,10 +241,13 @@ export enum NotificationStatus {
 export interface ISharedAddressBookRecord {
 	name: string;
 	address: string;
+	created_at?: Date;
 	email?: string;
 	discord?: string;
 	telegram?: string;
 	roles?: string[];
+	updated_at?: Date;
+	updatedBy?: string;
 }
 
 export interface ISharedAddressBooks {
@@ -315,4 +318,21 @@ export interface IApiResponse<T> {
 	data: T | null;
 	error: string | null;
 	status?: number;
+}
+
+export interface IFeedback {
+	address: string;
+	rating: number;
+	review: string;
+}
+
+export interface IContactFormResponse {
+	name: string;
+	email: string;
+	message: string;
+}
+
+export enum EExportType {
+	QUICKBOOKS = 'quickbooks',
+	XERO = 'xero'
 }

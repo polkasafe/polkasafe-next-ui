@@ -16,12 +16,12 @@ import Image from 'next/image';
 import { IActiveMultisigContext, useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalDAppContext } from '@next-substrate/context/DAppContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { ISharedAddressBooks } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import Footer from './Footer';
 import Menu from './Menu';
 import NavHeader from './NavHeader';
@@ -59,18 +59,10 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 			return;
 
 		setMultisigChanged(true);
-		const getSharedAddressBookRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getSharedAddressBook`, {
-			body: JSON.stringify({
+		const { data: sharedAddressBookData, error: sharedAddressBookError } =
+			await nextApiClientFetch<ISharedAddressBooks>(`${SUBSTRATE_API_URL}/getSharedAddressBook`, {
 				multisigAddress: multisig?.proxy ? multisig.proxy : multisig?.address
-			}),
-			headers: firebaseFunctionsHeader(network),
-			method: 'POST'
-		});
-
-		const { data: sharedAddressBookData, error: sharedAddressBookError } = (await getSharedAddressBookRes.json()) as {
-			data: ISharedAddressBooks;
-			error: string;
-		};
+			});
 
 		if (!sharedAddressBookError && sharedAddressBookData) {
 			setActiveMultisigContextState(sharedAddressBookData as IActiveMultisigContext);

@@ -2,12 +2,12 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { ISharedAddressBooks, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import getSubstrateAddress from './getSubstrateAddress';
+import nextApiClientFetch from './nextApiClientFetch';
 
 interface IAddToSharedAddressBook {
 	address: string;
@@ -27,8 +27,7 @@ export default async function addToSharedAddressBook({
 	email,
 	discord,
 	telegram,
-	roles,
-	network
+	roles
 }: IAddToSharedAddressBook) {
 	if (!address || !name || !multisigAddress) return;
 
@@ -44,8 +43,9 @@ export default async function addToSharedAddressBook({
 			console.log('ERROR');
 			return;
 		}
-		const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateSharedAddressBook`, {
-			body: JSON.stringify({
+		const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<ISharedAddressBooks>(
+			`${SUBSTRATE_API_URL}/updateSharedAddressBook`,
+			{
 				address,
 				discord,
 				email,
@@ -53,15 +53,8 @@ export default async function addToSharedAddressBook({
 				name,
 				roles,
 				telegram
-			}),
-			headers: firebaseFunctionsHeader(network),
-			method: 'POST'
-		});
-
-		const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-			data: ISharedAddressBooks;
-			error: string;
-		};
+			}
+		);
 
 		if (addAddressError) {
 			queueNotification({

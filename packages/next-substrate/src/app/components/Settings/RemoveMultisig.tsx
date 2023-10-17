@@ -9,10 +9,10 @@ import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 	const { activeMultisig, multisigAddresses, multisigSettings, setUserDetailsContextState } =
@@ -34,18 +34,12 @@ const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 				return;
 			}
 
-			const removeSafeRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/deleteMultisig`, {
-				body: JSON.stringify({
+			const { data: removeSafeData, error: removeSafeError } = await nextApiClientFetch<string>(
+				`${SUBSTRATE_API_URL}/deleteMultisig`,
+				{
 					multisigAddress: multisig.address
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: removeSafeData, error: removeSafeError } = (await removeSafeRes.json()) as {
-				data: string;
-				error: string;
-			};
+				}
+			);
 
 			if (removeSafeError) {
 				queueNotification({

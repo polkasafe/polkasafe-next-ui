@@ -14,7 +14,6 @@ import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
-import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 
 const AddressCard = ({ className }: { className?: string }) => {
@@ -47,7 +46,7 @@ const AddressCard = ({ className }: { className?: string }) => {
 				onCancel={() => setOpenAddressModal(false)}
 				title='Add Address'
 			>
-				<AddAdress />
+				<AddAdress onCancel={() => setOpenAddressModal(false)} />
 			</ModalComponent>
 			<div className='flex justify-between flex-row w-full mb-2'>
 				<h2 className='text-base font-bold text-white'>Address Book</h2>
@@ -80,12 +79,8 @@ const AddressCard = ({ className }: { className?: string }) => {
 						secondary
 						className='w-[90%] flex items-center justify-center py-4 2xl:py-5'
 						onClick={() => setOpenAddressModal(true)}
+						icon={<AddAddrIcon />}
 					>
-						<Image
-							className='group-hover:fill-white'
-							src={AddAddrIcon}
-							alt='add'
-						/>
 						<p className='px-2 text-primary'>Add Address</p>
 					</PrimaryButton>
 				</div>

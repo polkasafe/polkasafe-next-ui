@@ -2,23 +2,21 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import getSubstrateAddress from './getSubstrateAddress';
+import nextApiClientFetch from './nextApiClientFetch';
 
 export default async function addToAddressBook({
 	address,
 	name,
-	addressBook,
-	network
+	addressBook
 }: {
 	address: string;
 	name?: string;
 	addressBook: IAddressBookItem[];
-	network: string;
 }): Promise<IAddressBookItem[] | undefined> {
 	if (!address) return undefined;
 
@@ -43,19 +41,13 @@ export default async function addToAddressBook({
 			return undefined;
 		}
 
-		const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
-			body: JSON.stringify({
+		const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
+			`${SUBSTRATE_API_URL}/addToAddressBook`,
+			{
 				address,
 				name
-			}),
-			headers: firebaseFunctionsHeader(network),
-			method: 'POST'
-		});
-
-		const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-			data: IAddressBookItem[];
-			error: string;
-		};
+			}
+		);
 
 		if (addAddressData && !addAddressError) {
 			return addAddressData;

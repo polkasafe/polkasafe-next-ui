@@ -32,11 +32,11 @@ export async function POST(req: Request) {
 				{ status: 400 }
 			);
 
-		NextResponse.json({ data: assetsArr, error: null }, { status: 200 });
-
 		// make a copy to db after response is sent
 		const assetsRef = firestoreDB.collection('assets').doc(addressToFetch);
 		assetsRef.set({ assets: assetsArr });
+
+		return NextResponse.json({ data: assetsArr, error: null }, { status: 200 });
 	} catch (err: unknown) {
 		console.error('Error in getTransactionsForMultisig :', { err, stack: (err as any).stack });
 		return NextResponse.json({ data: null, error: responseMessages.internal }, { status: 500 });

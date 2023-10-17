@@ -10,8 +10,6 @@ import ConnectWalletImg from '@next-common/assets/connect-wallet.svg';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { initialUserDetailsContext, useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import APP_NAME from '@next-common/global/appName';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IUser, NotificationStatus, Triggers, Wallet } from '@next-common/types';
 import AccountSelectionForm from '@next-common/ui-components/AccountSelectionForm';
 import { WalletIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
@@ -226,15 +224,11 @@ const ConnectWallet = () => {
 
 				setSigning(false);
 
-				const connectAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/connectAddress`, {
-					headers: firebaseFunctionsHeader(network, substrateAddress, signature),
-					method: 'POST'
-				});
-
-				const { data: userData, error: connectAddressErr } = (await connectAddressRes.json()) as {
-					data: IUser;
-					error: string;
-				};
+				const { data: userData, error: connectAddressErr } = await nextApiClientFetch<IUser>(
+					`${SUBSTRATE_API_AUTH_URL}/connectAddress`,
+					{},
+					{ address: substrateAddress, network, signature }
+				);
 
 				if (!connectAddressErr && userData) {
 					setLoading(false);

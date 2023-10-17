@@ -2,9 +2,9 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import { INotification } from '@next-common/types';
+import nextApiClientFetch from './nextApiClientFetch';
 
 export default async function sendNotificationToAddresses({
 	addresses,
@@ -21,9 +21,5 @@ export default async function sendNotificationToAddresses({
 		type
 	};
 
-	await fetch(`${FIREBASE_FUNCTIONS_URL}/sendNotification`, {
-		body: JSON.stringify(newNotificationData),
-		headers: firebaseFunctionsHeader(network),
-		method: 'POST'
-	});
+	await nextApiClientFetch(`${SUBSTRATE_API_URL}/sendNotification`, newNotificationData);
 }

@@ -7,10 +7,7 @@ import React, { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { CHANNEL, IUserNotificationTriggerPreferences, NotificationStatus, Triggers } from '@next-common/types';
 import {
 	BellIcon,
@@ -27,13 +24,14 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import DiscordInfoModal from './DiscordInfoModal';
 import SlackInfoModal from './SlackInfoModal';
 import TelegramInfoModal from './TelegramInfoModal';
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const Notifications = () => {
-	const { network } = useGlobalApiContext();
 	const pathname = usePathname();
 	const { notification_preferences, address, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const [notifyAfter, setNotifyAfter] = useState<number>(8);
@@ -181,19 +179,10 @@ const Notifications = () => {
 				};
 				setLoading(true);
 
-				const updateNotificationTriggerRes = await fetch(
-					`${FIREBASE_FUNCTIONS_URL}/updateNotificationTriggerPreferences`,
-					{
-						body: JSON.stringify({
-							triggerPreferences: newPreferences
-						}),
-						headers: firebaseFunctionsHeader(network),
-						method: 'POST'
-					}
-				);
-
 				const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
-					(await updateNotificationTriggerRes.json()) as { data: string; error: string };
+					await nextApiClientFetch<string>(`${SUBSTRATE_API_URL}/updateNotificationTriggerPreferences`, {
+						triggerPreferences: newPreferences
+					});
 
 				if (updateNotificationTriggerError) {
 					queueNotification({
@@ -258,19 +247,10 @@ const Notifications = () => {
 						[channel]: { ...notification_preferences.channelPreferences?.[channel], enabled }
 				  };
 
-			const updateNotificationTriggerRes = await fetch(
-				`${FIREBASE_FUNCTIONS_URL}/updateNotificationChannelPreferences`,
-				{
-					body: JSON.stringify({
-						channelPreferences: newChannelPreferences
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				}
-			);
-
 			const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
-				(await updateNotificationTriggerRes.json()) as { data: string; error: string };
+				await nextApiClientFetch<string>(`${SUBSTRATE_API_URL}/updateNotificationChannelPreferences`, {
+					channelPreferences: newChannelPreferences
+				});
 
 			if (updateNotificationTriggerError) {
 				queueNotification({
@@ -335,22 +315,16 @@ const Notifications = () => {
 			} else {
 				setVerificationLoading(true);
 
-				const verifyTokenRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/notify`, {
-					body: JSON.stringify({
+				const { data: verifyEmailUpdate, error: verifyTokenError } = await nextApiClientFetch<string>(
+					`${SUBSTRATE_API_URL}/notify`,
+					{
 						args: {
 							address,
 							email
 						},
 						trigger: 'verifyEmail'
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: verifyEmailUpdate, error: verifyTokenError } = (await verifyTokenRes.json()) as {
-					data: string;
-					error: string;
-				};
+					}
+				);
 
 				if (verifyTokenError) {
 					queueNotification({
@@ -408,18 +382,12 @@ const Notifications = () => {
 				console.log('ERROR');
 				return undefined;
 			}
-			const verifyTokenRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getChannelVerifyToken`, {
-				body: JSON.stringify({
+			const { data: verifyToken, error: verifyTokenError } = await nextApiClientFetch<string>(
+				`${SUBSTRATE_API_URL}/getChannelVerifyToken`,
+				{
 					channel
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: verifyToken, error: verifyTokenError } = (await verifyTokenRes.json()) as {
-				data: string;
-				error: string;
-			};
+				}
+			);
 
 			if (verifyTokenError) {
 				queueNotification({

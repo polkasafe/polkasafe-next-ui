@@ -6,17 +6,15 @@ import { ArrowRightOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import noTransactionsHistory from '~assets/icons/no-transaction.svg';
-import noTransactionsQueued from '~assets/icons/no-transactions-queued.svg';
+import NoTransactionsHistory from '~assets/icons/no-transaction.svg';
+import NoTransactionsQueued from '~assets/icons/no-transactions-queued.svg';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IQueueItem, ITransaction } from '@next-common/types';
-import { ArrowUpRightIcon, RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
+import { ArrowUpRightIcon, ArrowDownLeftIcon, RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
 import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
@@ -25,9 +23,8 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
-import Image from 'next/image';
-import BottomLeftArrow from '@next-common/assets/icons/bottom-left-arrow.svg';
-import TopRightArrow from '@next-common/assets/icons/top-right-arrow.svg';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 
 const TxnCard = ({
 	newTxn,
@@ -77,19 +74,15 @@ const TxnCard = ({
 
 			setHistoryLoading(true);
 			try {
-				const getMultisigHistoryTransactions = await fetch(`${FIREBASE_FUNCTIONS_URL}/getMultisigHistory`, {
-					body: JSON.stringify({
-						limit: 10,
-						multisigAddress: activeMultisig,
-						page: 1
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
 				const {
 					data: { transactions: multisigTransactions },
 					error: multisigError
-				} = (await getMultisigHistoryTransactions.json()) as { data: { transactions: ITransaction[] }; error: string };
+				} = await nextApiClientFetch<{ transactions: ITransaction[] }>(`${SUBSTRATE_API_URL}/getMultisigHistory`, {
+					limit: 10,
+					multisigAddress: activeMultisig,
+					page: 1
+				});
+
 				if (multisigError) {
 					setHistoryLoading(false);
 					console.log('Error in Fetching Transactions: ', multisigError);
@@ -114,21 +107,15 @@ const TxnCard = ({
 				if (!userAddress || !signature || !activeMultisig) {
 					setQueueLoading(false);
 				} else {
-					const getQueueTransactions = await fetch(`${FIREBASE_FUNCTIONS_URL}/getMultisigQueue`, {
-						body: JSON.stringify({
+					const { data: queueTransactions, error: queueTransactionsError } = await nextApiClientFetch<IQueueItem[]>(
+						`${SUBSTRATE_API_URL}/getMultisigQueue`,
+						{
 							limit: 10,
 							multisigAddress: multisig?.address,
 							network,
 							page: 1
-						}),
-						headers: firebaseFunctionsHeader(network),
-						method: 'POST'
-					});
-
-					const { data: queueTransactions, error: queueTransactionsError } = (await getQueueTransactions.json()) as {
-						data: IQueueItem[];
-						error: string;
-					};
+						}
+					);
 
 					if (queueTransactionsError) {
 						setQueueLoading(false);
@@ -136,6 +123,7 @@ const TxnCard = ({
 					}
 
 					if (queueTransactions) {
+						console.log(queueTransactions);
 						setQueuedTransactions(queueTransactions);
 						setQueueLoading(false);
 					}
@@ -345,11 +333,7 @@ const TxnCard = ({
 									})
 							) : (
 								<div className='flex flex-col gap-y-5 items-center justify-center'>
-									<Image
-										className='block w-[250px] h-[140px]'
-										src={noTransactionsQueued}
-										alt='Zero transaction icon'
-									/>
+									<NoTransactionsQueued />
 									<p className='font-normal text-sm leading-[15px] text-text_secondary'>No past transactions</p>
 								</div>
 							)
@@ -451,13 +435,10 @@ const TxnCard = ({
 												<div className='flex flex-1 items-center'>
 													<div
 														className={`${
-															sent ? 'bg-failure' : 'bg-success'
+															sent ? 'bg-failure text-failure' : 'bg-success text-success'
 														} bg-opacity-10 rounded-lg p-2 mr-3 h-[38px] w-[38px] flex items-center justify-center`}
 													>
-														<Image
-															src={sent ? TopRightArrow : BottomLeftArrow}
-															alt='send'
-														/>
+														{sent ? <ArrowUpRightIcon /> : <ArrowDownLeftIcon />}
 													</div>
 													<div className='text-md text-white truncate'>
 														{sent ? (
@@ -532,11 +513,7 @@ const TxnCard = ({
 									})
 							) : (
 								<div className='flex flex-col gap-y-5 items-center justify-center'>
-									<Image
-										className='block w-[250px] h-[140px]'
-										src={noTransactionsHistory}
-										alt='Zero transaction icon'
-									/>
+									<NoTransactionsHistory />
 									<p className='font-normal text-sm leading-[15px] text-text_secondary'>No past transactions</p>
 								</div>
 							)

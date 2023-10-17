@@ -8,8 +8,6 @@ import { usePathname } from 'next/navigation';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { chainProperties } from '@next-common/global/networkConstants';
 import usePagination from '@next-substrate/hooks/usePagination';
 import { ITransaction } from '@next-common/types';
@@ -17,6 +15,8 @@ import Loader from '@next-common/ui-components/Loader';
 import Pagination from '@next-common/ui-components/Pagination';
 import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import ExportTransactionsHistory, { EExportType } from './ExportTransactionsHistory';
 
 import NoTransactionsHistory from './NoTransactionsHistory';
@@ -80,39 +80,31 @@ const History: FC<IHistory> = ({
 				let data: any = [];
 				let docs: number = 0;
 
-				const getMultisigHistoryTransactions = await fetch(`${FIREBASE_FUNCTIONS_URL}/getMultisigHistory`, {
-					body: JSON.stringify({
-						limit: multisig.proxy ? 5 : 10,
-						multisigAddress: multisig?.address,
-						page: currentPage
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
 				const {
 					data: { transactions: multisigTransactions, count: multisigTransactionsCount },
 					error: multisigError
-				} = (await getMultisigHistoryTransactions.json()) as {
-					data: { transactions: ITransaction[]; count: number };
-					error: string;
-				};
+				} = await nextApiClientFetch<{ transactions: ITransaction[]; count: number }>(
+					`${SUBSTRATE_API_URL}/getMultisigHistory`,
+					{
+						limit: multisig.proxy ? 5 : 10,
+						multisigAddress: multisig?.address,
+						page: currentPage
+					}
+				);
+
 				if (multisig.proxy) {
-					const getProxyHistoryTransactions = await fetch(`${FIREBASE_FUNCTIONS_URL}/getMultisigHistory`, {
-						body: JSON.stringify({
-							limit: 10 - multisigTransactions.length,
-							multisigAddress: multisig.proxy,
-							page: currentPage
-						}),
-						headers: firebaseFunctionsHeader(network),
-						method: 'POST'
-					});
 					const {
 						data: { transactions: proxyTransactions, count: proxyTransactionsCount },
 						error: proxyError
-					} = (await getProxyHistoryTransactions.json()) as {
-						data: { transactions: ITransaction[]; count: number };
-						error: string;
-					};
+					} = await nextApiClientFetch<{ transactions: ITransaction[]; count: number }>(
+						`${SUBSTRATE_API_URL}/getMultisigHistory`,
+						{
+							limit: 10 - multisigTransactions.length,
+							multisigAddress: multisig.proxy,
+							page: currentPage
+						}
+					);
+
 					if (proxyTransactions && !proxyError) {
 						setLoading(false);
 						data = proxyTransactions;

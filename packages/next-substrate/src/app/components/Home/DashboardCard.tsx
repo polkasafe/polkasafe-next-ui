@@ -7,17 +7,15 @@ import Identicon from '@polkadot/react-identicon';
 import { Button, Dropdown, Skeleton, Tooltip, Spin } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import React, { useCallback, useEffect, useState } from 'react';
-import brainIcon from '@next-common/assets/icons/brain-icon.svg';
-import chainIcon from '@next-common/assets/icons/chain-icon.svg';
-import dotIcon from '@next-common/assets/icons/image 39.svg';
-import subscanIcon from '@next-common/assets/icons/subscan.svg';
-import polkadotIcon from '@next-common/assets/parachains-icons/polkadot.svg';
+import BrainIcon from '@next-common/assets/icons/brain-icon.svg';
+import ChainIcon from '@next-common/assets/icons/chain-icon.svg';
+import DotIcon from '@next-common/assets/icons/image 39.svg';
+import SubscanIcon from '@next-common/assets/icons/subscan.svg';
+import PolkadotIcon from '@next-common/assets/parachains-icons/polkadot.svg';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IAsset } from '@next-common/types';
 // import AddressQr from '@next-common/ui-components/AddressQr';
 import { CopyIcon, WalletIcon } from '@next-common/ui-components/CustomIcons';
@@ -25,10 +23,10 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import copyText from '@next-substrate/utils/copyText';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
-import styled from 'styled-components';
 
-import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import ExistentialDeposit from '../SendFunds/ExistentialDeposit';
 import FundMultisig from '../SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
@@ -87,16 +85,11 @@ const DashboardCard = ({
 
 			if (!address || !signature || !activeMultisig) return;
 
-			const getAssestsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getAssetsForAddress`, {
-				body: JSON.stringify({
-					address: activeMultisig,
-					network
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
+			const { data, error } = await nextApiClientFetch<IAsset[]>(`${SUBSTRATE_API_URL}/getAssetsForAddress`, {
+				address: activeMultisig,
+				network
 			});
 
-			const { data, error } = (await getAssestsRes.json()) as { data: IAsset[]; error: string };
 			if (currentMultisig) {
 				setsignatureLoader(false);
 			}
@@ -168,11 +161,7 @@ const DashboardCard = ({
 							href='https://polkadot.js.org/apps/#/accounts'
 							rel='noreferrer'
 						>
-							<Image
-								className='w-5'
-								src={polkadotIcon}
-								alt='icon'
-							/>
+							<PolkadotIcon />
 						</a>
 						<a
 							className='w-5'
@@ -180,11 +169,7 @@ const DashboardCard = ({
 							href={`https://explorer.polkascan.io/${network}/account/${activeMultisig}`}
 							rel='noreferrer'
 						>
-							<Image
-								className='w-5'
-								src={brainIcon}
-								alt='icon'
-							/>
+							<BrainIcon />
 						</a>
 						<a
 							className='w-5'
@@ -192,11 +177,7 @@ const DashboardCard = ({
 							href={`https://dotscanner.com/${network}/account/${activeMultisig}?utm_source=polkadotjs`}
 							rel='noreferrer'
 						>
-							<Image
-								className='w-5 cursor-pointer'
-								src={dotIcon}
-								alt='icon'
-							/>
+							<DotIcon />
 						</a>
 						<a
 							className='w-5'
@@ -204,11 +185,7 @@ const DashboardCard = ({
 							href={`https://${network}.polkaholic.io/account/${activeMultisig}?group=overview&chainfilters=all`}
 							rel='noreferrer'
 						>
-							<Image
-								className='w-5 cursor-pointer'
-								src={chainIcon}
-								alt='icon'
-							/>
+							<ChainIcon />
 						</a>
 						<a
 							className='w-5'
@@ -216,11 +193,7 @@ const DashboardCard = ({
 							href={`https://${network}.subscan.io/account/${activeMultisig}`}
 							rel='noreferrer'
 						>
-							<Image
-								className='w-5 cursor-pointer'
-								src={subscanIcon}
-								alt='icon'
-							/>
+							<SubscanIcon />
 						</a>
 					</div>
 				</div>
@@ -342,8 +315,9 @@ const DashboardCard = ({
 						secondary
 						onClick={() => setOpenFundMultisigModal(true)}
 						className='w-[45%] flex items-center justify-center py-4 2xl:py-5 '
+						icon={<WalletIcon fill='#1573FE' />}
 					>
-						<WalletIcon /> Fund Multisig
+						Fund Multisig
 					</PrimaryButton>
 				</div>
 			</div>
@@ -351,11 +325,4 @@ const DashboardCard = ({
 	);
 };
 
-export default styled(DashboardCard)`
-	.ant-spin-nested-loading .ant-spin-blur {
-		opacity: 0 !important;
-	}
-	.ant-spin-nested-loading .ant-spin-blur::after {
-		opacity: 1 !important;
-	}
-`;
+export default DashboardCard;

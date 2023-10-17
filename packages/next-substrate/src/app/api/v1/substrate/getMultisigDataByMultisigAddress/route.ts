@@ -72,14 +72,13 @@ export async function POST(req: Request) {
 			network: String(network).toLowerCase(),
 			threshold: Number(multisigMetaData.threshold) || 0
 		};
-
-		NextResponse.json({ data: newMultisig, error: null }, { status: 200 });
-
 		if (newMultisig.signatories.length > 1 && newMultisig.threshold) {
 			// make a copy to db
 			const newMultisigRef = firestoreDB.collection('multisigAddresses').doc(`${encodedMultisigAddress}_${network}`);
 			await newMultisigRef.set(newMultisig);
 		}
+
+		return NextResponse.json({ data: newMultisig, error: null }, { status: 200 });
 	} catch (err: unknown) {
 		console.error('Error in getMultisigByMultisigAddress :', { err, stack: (err as any).stack });
 		return NextResponse.json({ data: null, error: responseMessages.internal }, { status: 500 });

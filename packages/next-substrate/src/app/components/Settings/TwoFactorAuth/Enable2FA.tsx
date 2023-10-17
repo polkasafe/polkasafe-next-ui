@@ -5,8 +5,6 @@ import { Button, Form, Input, Modal, QRCode } from 'antd';
 import React, { useState } from 'react';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IGenerate2FAResponse, IUser, NotificationStatus } from '@next-common/types';
 import {
 	CopyIcon,
@@ -41,15 +39,11 @@ const Enable2FA = ({ className }: { className?: string }) => {
 		if (loading || !address || two_factor_auth?.enabled) return;
 
 		setQrCodeLoading(true);
-		const generate2FaRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/generate2FASecret`, {
-			headers: firebaseFunctionsHeader(network),
-			method: 'POST'
-		});
-
-		const { data: generate2FaData, error: generate2FaError } = (await generate2FaRes.json()) as {
-			data: IGenerate2FAResponse;
-			error: string;
-		};
+		const { data: generate2FaData, error: generate2FaError } = await nextApiClientFetch<IGenerate2FAResponse>(
+			`${SUBSTRATE_API_AUTH_URL}/2fa/generate2FASecret`,
+			{},
+			{ network }
+		);
 
 		console.log(generate2FaData);
 		if (generate2FaError || !generate2FaData || !generate2FaData.base32_secret || !generate2FaData.url) {

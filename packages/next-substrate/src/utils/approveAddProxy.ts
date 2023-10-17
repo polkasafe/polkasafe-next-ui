@@ -7,12 +7,11 @@
 import { ApiPromise } from '@polkadot/api';
 import { formatBalance } from '@polkadot/util/format';
 import dayjs from 'dayjs';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, UserDetailsContextType, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import { calcWeight } from './calcWeight';
 import getEncodedAddress from './getEncodedAddress';
 import getMultisigInfo from './getMultisigInfo';
@@ -22,6 +21,7 @@ import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
 import transferFunds from './transferFunds';
 import updateTransactionNote from './updateTransactionNote';
+import nextApiClientFetch from './nextApiClientFetch';
 
 interface Args {
 	api: ApiPromise;
@@ -122,19 +122,13 @@ export default async function approveAddProxy({
 				console.log('ERROR');
 				return;
 			}
-			const getNewMultisigData = await fetch(`${FIREBASE_FUNCTIONS_URL}/getMultisigDataByMultisigAddress`, {
-				body: JSON.stringify({
+			const { data: newMultisigData, error: multisigFetchError } = await nextApiClientFetch<IMultisigAddress>(
+				`${SUBSTRATE_API_URL}/getMultisigDataByMultisigAddress`,
+				{
 					multisigAddress: newMultisigAddress,
 					network
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: newMultisigData, error: multisigFetchError } = (await getNewMultisigData.json()) as {
-				data: IMultisigAddress;
-				error: string;
-			};
+				}
+			);
 
 			if (multisigFetchError || !newMultisigData) {
 				queueNotification({
@@ -149,21 +143,15 @@ export default async function approveAddProxy({
 				return;
 			}
 			setLoadingMessages('Creating Your Proxy.');
-			const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig`, {
-				body: JSON.stringify({
+			const { data: multisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
+				`${SUBSTRATE_API_URL}/createMultisig`,
+				{
 					proxyAddress,
 					multisigName: multisig?.name,
 					signatories: newMultisigData.signatories,
 					threshold: newMultisigData.threshold
-				}),
-				headers: firebaseFunctionsHeader(network, address, signature),
-				method: 'POST'
-			});
-
-			const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
-				error: string;
-				data: IMultisigAddress;
-			};
+				}
+			);
 
 			if (multisigError) {
 				return;

@@ -6,18 +6,16 @@ import React, { useState } from 'react';
 import DragDrop from '@next-substrate/app/components/AddressBook/DragDrop';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import AddBtn from '@next-substrate/app/components/Settings/ModalBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const ImportAdress = ({ onCancel }: { onCancel: () => void }) => {
 	const [addresses, setAddresses] = useState<IAddressBookItem[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 	const { addressBook, setUserDetailsContextState } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
 
 	const handleAddAddress = async (
 		address: string,
@@ -39,23 +37,17 @@ const ImportAdress = ({ onCancel }: { onCancel: () => void }) => {
 				return;
 			}
 
-			const addAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`, {
-				body: JSON.stringify({
+			const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
+				`${SUBSTRATE_API_URL}/addToAddressBook`,
+				{
 					address,
 					discord: discord || '',
 					email: email || '',
 					name,
 					roles: roles || [],
 					telegram: telegram || ''
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: addAddressData, error: addAddressError } = (await addAddressRes.json()) as {
-				data: IAddressBookItem[];
-				error: string;
-			};
+				}
+			);
 
 			if (addAddressError) {
 				queueNotification({

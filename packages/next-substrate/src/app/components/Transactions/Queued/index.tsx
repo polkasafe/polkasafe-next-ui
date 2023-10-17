@@ -7,13 +7,13 @@ import React, { FC, useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { IQueueItem } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import NoTransactionsQueued from './NoTransactionsQueued';
 import Transaction from './Transaction';
 
@@ -59,22 +59,15 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 				console.log('ERROR');
 				setLoading(false);
 			} else {
-				const getQueueTransactions = await fetch(`${FIREBASE_FUNCTIONS_URL}/getMultisigQueue`, {
-					body: JSON.stringify({
+				const { data: queueTransactions, error: queueTransactionsError } = await nextApiClientFetch<IQueueItem[]>(
+					`${SUBSTRATE_API_URL}/getMultisigQueue`,
+					{
 						limit: 10,
 						multisigAddress: multisig?.address,
 						network,
 						page: 1
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: queueTransactions, error: queueTransactionsError } = (await getQueueTransactions.json()) as {
-					data: IQueueItem[];
-					error: string;
-				};
-
+					}
+				);
 				if (queueTransactionsError) {
 					setLoading(false);
 					return;

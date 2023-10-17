@@ -10,8 +10,6 @@ import AddBtn from '@next-substrate/app/components/Multisig/ModalBtn';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import { IMultisigAddress, NotificationStatus } from '@next-common/types';
@@ -20,6 +18,8 @@ import _createMultisig from '@next-substrate/utils/_createMultisig';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import NameAddress from './NameAddress';
 import SelectNetwork from './SelectNetwork';
 import Owners from './Owners';
@@ -96,21 +96,15 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 					proxyAddress = getEncodedAddress(params[0].value, network);
 				}
 			}
-			const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig`, {
-				body: JSON.stringify({
+			const { data: createMultisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
+				`${SUBSTRATE_API_URL}/createMultisig`,
+				{
 					signatories,
 					threshold: multisigThreshold,
 					multisigName: multiName,
 					proxyAddress
-				}),
-				headers: firebaseFunctionsHeader(network, address, signature),
-				method: 'POST'
-			});
-
-			const { data: createMultisigData, error: multisigError } = (await createMultisigRes.json()) as {
-				error: string;
-				data: IMultisigAddress;
-			};
+				}
+			);
 
 			if (multisigError) {
 				queueNotification({
@@ -161,19 +155,13 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 				console.log('ERROR');
 				setLoading(false);
 			} else {
-				const getMultisigDataRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getMultisigDataByMultisigAddress`, {
-					body: JSON.stringify({
+				const { data: multisigDataRes, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
+					`${SUBSTRATE_API_URL}/getMultisigDataByMultisigAddress`,
+					{
 						multisigAddress,
 						network
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: multisigDataRes, error: multisigError } = (await getMultisigDataRes.json()) as {
-					data: IMultisigAddress;
-					error: string;
-				};
+					}
+				);
 
 				if (multisigError) {
 					queueNotification({

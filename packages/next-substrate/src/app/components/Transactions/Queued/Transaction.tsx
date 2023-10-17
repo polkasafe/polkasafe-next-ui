@@ -12,8 +12,6 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, IQueueItem, ITxNotification } from '@next-common/types';
 import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
@@ -26,6 +24,8 @@ import cancelProxy from '@next-substrate/utils/cancelProxy';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
 import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import setSigner from '@next-substrate/utils/setSigner';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -115,14 +115,10 @@ const Transaction: FC<ITransactionProps> = ({
 		(async () => {
 			if (decodedCallData || callData) return; // already stored
 
-			await fetch(`${FIREBASE_FUNCTIONS_URL}/setTransactionCallData`, {
-				body: JSON.stringify({
-					callData: callDataString,
-					callHash,
-					network
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
+			await nextApiClientFetch(`${SUBSTRATE_API_URL}/setTransactionCallData`, {
+				callData: callDataString,
+				callHash,
+				network
 			});
 		})();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
@@ -130,19 +126,13 @@ const Transaction: FC<ITransactionProps> = ({
 
 	useEffect(() => {
 		const fetchMultisigData = async (newMultisigAddress: string) => {
-			const getNewMultisigData = await fetch(`${FIREBASE_FUNCTIONS_URL}/getMultisigDataByMultisigAddress`, {
-				body: JSON.stringify({
+			const { data: newMultisigData, error: multisigFetchError } = await nextApiClientFetch<IMultisigAddress>(
+				`${SUBSTRATE_API_URL}/getMultisigDataByMultisigAddress`,
+				{
 					multisigAddress: newMultisigAddress,
 					network
-				}),
-				headers: firebaseFunctionsHeader(network),
-				method: 'POST'
-			});
-
-			const { data: newMultisigData, error: multisigFetchError } = (await getNewMultisigData.json()) as {
-				data: IMultisigAddress;
-				error: string;
-			};
+				}
+			);
 
 			if (multisigFetchError || !newMultisigData || !multisig) {
 				setGetMultisigDataLoading(false);

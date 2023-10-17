@@ -8,7 +8,6 @@ import { useState } from 'react';
 import addToAddressBook from '@next-substrate/utils/addToAddressBook';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { NotificationStatus } from '@next-common/types';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { DefaultOptionType } from 'antd/es/select';
@@ -26,7 +25,6 @@ const AddAddressModal = ({
 	setShowAddressModal: React.Dispatch<React.SetStateAction<boolean>>;
 	setAutoCompleteAddresses: React.Dispatch<React.SetStateAction<DefaultOptionType[]>>;
 }) => {
-	const { network } = useGlobalApiContext();
 	const { addressBook } = useGlobalUserDetailsContext();
 	const [addAddressName, setAddAddressName] = useState('');
 	const [addAddressLoading, setAddAddressLoading] = useState(false);
@@ -36,8 +34,7 @@ const AddAddressModal = ({
 		const newAddresses = await addToAddressBook({
 			address: defaultAddress,
 			addressBook,
-			name: addAddressName,
-			network
+			name: addAddressName
 		});
 		setAddAddressLoading(false);
 		if (newAddresses) {

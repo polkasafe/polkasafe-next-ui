@@ -54,7 +54,7 @@ const DonateInfo = () => {
 					target='_blank'
 					className='text-primary px-[10px] py-2 bg-highlight rounded-lg flex items-center border-none outline-none gap-x-[10.83px]'
 				>
-					<WalletIcon className='text-base' />
+					<WalletIcon fill='#1573FE' />
 					<span className='font-bold text-sm cursor-pointer'>Create Wallet</span>
 				</a>
 			</div>

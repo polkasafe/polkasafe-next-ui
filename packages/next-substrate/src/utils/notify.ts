@@ -2,10 +2,10 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import nextApiClientFetch from './nextApiClientFetch';
 
 export default async function notify({
 	network,
@@ -24,16 +24,14 @@ export default async function notify({
 			console.log('ERROR');
 			return { error: 'Invalid User' };
 		}
-		const notifyRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/notify`, {
-			body: JSON.stringify({
+		const { data: notifyData, error: notifyError } = await nextApiClientFetch<string>(
+			`${SUBSTRATE_API_URL}/notify`,
+			{
 				args,
 				trigger: triggerName
-			}),
-			headers: firebaseFunctionsHeader(network),
-			method: 'POST'
-		});
-
-		const { data: notifyData, error: notifyError } = (await notifyRes.json()) as { data: string; error: string };
+			},
+			{ network }
+		);
 
 		if (notifyData && !notifyError) {
 			queueNotification({

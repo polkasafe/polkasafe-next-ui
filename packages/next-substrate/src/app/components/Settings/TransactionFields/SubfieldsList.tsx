@@ -4,15 +4,14 @@
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { Button, Divider, Modal, Switch } from 'antd';
 import React, { useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { EFieldType, IDropdownOptions } from '@next-common/types';
 import { DeleteIcon, EditIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import styled from 'styled-components';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import AddSubfield from './AddSubfield';
 import DeleteField from './DeleteField';
 import EditField from './EditField';
@@ -121,7 +120,6 @@ const DeleteFieldModal = ({
 
 const SubfieldsList = ({ className, category }: { className?: string; category: string }) => {
 	const { transactionFields, setUserDetailsContextState } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
 	const [loading, setLoading] = useState<boolean>(false);
 	const [openAddSubfieldModal, setOpenAddSubfieldModal] = useState(false);
 
@@ -135,8 +133,9 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 			} else {
 				setLoading(true);
 
-				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields`, {
-					body: JSON.stringify({
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } = await nextApiClientFetch(
+					`${SUBSTRATE_API_URL}/updateTransactionFields`,
+					{
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -150,13 +149,8 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 								}
 							}
 						}
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
-					(await updateTransactionFieldsRes.json()) as { data: string; error: string };
+					}
+				);
 
 				if (updateTransactionFieldsError) {
 					console.log(updateTransactionFieldsError);

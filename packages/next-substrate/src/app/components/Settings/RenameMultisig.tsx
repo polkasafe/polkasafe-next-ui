@@ -7,10 +7,10 @@ import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void }) => {
 	const { network } = useGlobalApiContext();
@@ -31,19 +31,14 @@ const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void
 				console.log('ERROR');
 				setLoading(false);
 			} else {
-				const changeNameRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/renameMultisig`, {
-					body: JSON.stringify({
+				const { data: changeNameData, error: changeNameError } = await nextApiClientFetch<string>(
+					`${SUBSTRATE_API_URL}/renameMultisig`,
+					{
 						address: multisig?.address,
 						name: multisigName
-					}),
-					headers: firebaseFunctionsHeader(network),
-					method: 'POST'
-				});
-
-				const { data: changeNameData, error: changeNameError } = (await changeNameRes.json()) as {
-					data: any;
-					error: string;
-				};
+					},
+					{ network }
+				);
 
 				if (changeNameError) {
 					queueNotification({
