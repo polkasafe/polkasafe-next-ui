@@ -3,11 +3,9 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Divider } from 'antd';
 import React from 'react';
-import polkasafeLogo from '@next-common/assets/polkasafe-logo-white.svg';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import PolkasafeLogo from '@next-common/assets/polkasafe-logo-white.svg';
 import { ExternalLinkIcon, WalletIcon } from '@next-common/ui-components/CustomIcons';
 
-import Image from 'next/image';
 import QR from './QR';
 
 const DonateInfo = () => {
@@ -17,10 +15,7 @@ const DonateInfo = () => {
 				<article className='flex flex-col justify-between h-full'>
 					<p className='text-sm font-normal'>If you like the product, feel free to Donate us!</p>
 					<div className='flex items-center justify-center my-10'>
-						<Image
-							src={polkasafeLogo}
-							alt='polkadot logo'
-						/>
+						<PolkasafeLogo />
 					</div>
 					<div className='text-normal text-sm max-w-[367px] leading-4'>
 						Polkasafe is built for the ecosystem using grants from treasury & community.
@@ -33,7 +28,7 @@ const DonateInfo = () => {
 			<Divider className='bg-text_secondary my-8' />
 			<div className='flex items-center gap-x-5 gap-y-5 flex-col md:flex-row justify-between text-white'>
 				<p className='flex gap-x-2 flex-col xl:flex-row xl:items-center'>
-					<span className='text-sm font-normal leading-[15px]'>
+					<span className='text-sm font-normal mb-2'>
 						If you don&apos;t have a polkadot wallet, don&apos;t worry, you can create one for free at
 					</span>
 					<span className='text-primary'>
@@ -44,7 +39,7 @@ const DonateInfo = () => {
 							className='flex items-center'
 						>
 							Polkadot{'{.js}'}
-							<ExternalLinkIcon className='w-[11px] h-[11px] ml-[6.62px]' />
+							<ExternalLinkIcon className='text-lg ml-2' />
 						</a>
 					</span>
 				</p>

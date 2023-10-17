@@ -4,14 +4,13 @@
 
 import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
-import noNotification from '@next-common/assets/icons/no-notification.svg';
+import NoNotification from '@next-common/assets/icons/no-notification.svg';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { INotification } from '@next-common/types';
 import { NotificationIcon } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
 
-import Image from 'next/image';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import NotificationCard from './NotificationCard';
@@ -135,11 +134,7 @@ const Notification = () => {
 						) : (
 							<section className='flex flex-col items-center'>
 								<div className='mt-10'>
-									<Image
-										src={noNotification}
-										className='w-10 h-10'
-										alt='No notification icon'
-									/>
+									<NoNotification />
 								</div>
 								<p className='text-white text-base font-medium mt-10'>No new notifications</p>
 							</section>

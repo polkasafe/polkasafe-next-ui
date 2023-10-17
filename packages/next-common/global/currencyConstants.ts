@@ -3,15 +3,15 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 /* eslint-disable sort-keys */
 
-import aedLogo from '~assets/currency-flags/aed.svg';
-import audLogo from '~assets/currency-flags/aud.svg';
-import cadLogo from '~assets/currency-flags/cad.svg';
-import chfLogo from '~assets/currency-flags/chf.svg';
-import eurLogo from '~assets/currency-flags/eur.svg';
-import gbpLogo from '~assets/currency-flags/gbp.svg';
+import aedLogo from '~assets/currency-flags/aed.png';
+import audLogo from '~assets/currency-flags/aud.png';
+import cadLogo from '~assets/currency-flags/cad.png';
+import chfLogo from '~assets/currency-flags/chf.png';
+import eurLogo from '~assets/currency-flags/eur.png';
+import gbpLogo from '~assets/currency-flags/gbp.png';
 import inrLogo from '~assets/currency-flags/inr.png';
 import jpyLogo from '~assets/currency-flags/jpy.png';
-import usdLogo from '~assets/currency-flags/usd.svg';
+import usdLogo from '~assets/currency-flags/usd.png';
 
 export type Currency = (typeof currencies)[keyof typeof currencies];
 export type CurrencySymbol = (typeof currencySymbol)[keyof typeof currencySymbol];

@@ -31,7 +31,6 @@ const AppCard = ({ name, description }: { name: string; description: string }) =
 					onClick={() => setOpenAppModal(true)}
 				>
 					<div className='flex flex-col gap-5'>
-						{}
 						{name === 'Astar' ? (
 							<Image
 								src={astarLogo}

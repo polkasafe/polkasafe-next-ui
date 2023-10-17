@@ -363,6 +363,7 @@ const SendFundsForm = ({
 					transactionFields: transactionFieldsObject
 				});
 			}
+			console.log('created', queueItemData);
 			setTransactionData(queueItemData);
 			setLoading(false);
 			setSuccess(true);
@@ -381,7 +382,7 @@ const SendFundsForm = ({
 			amount={amount}
 			txnParams={transactionType !== ETransactionType.SEND_TOKEN ? txnParams : undefined}
 			txnHash={transactionData?.callHash}
-			created_at={transactionData?.created_at || new Date()}
+			created_at={new Date()}
 			sender={address}
 			recipients={
 				transactionType === ETransactionType.SEND_TOKEN ? recipientAndAmount.map((item) => item.recipient) : []

@@ -25,7 +25,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 	return (
 		<div className={className}>
 			<ModalComponent
-				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Link Multisig</h3>}
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Create Multisig</h3>}
 				open={openCreateMultisig}
 				onCancel={() => setOpenCreateMultisig(false)}
 			>
@@ -37,7 +37,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 				/>
 			</ModalComponent>
 			<ModalComponent
-				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Create Multisig</h3>}
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Link Multisig</h3>}
 				open={openLinkMultisig}
 				onCancel={() => setOpenLinkMultisig(false)}
 			>

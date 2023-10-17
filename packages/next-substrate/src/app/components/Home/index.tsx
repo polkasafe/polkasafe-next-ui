@@ -117,7 +117,7 @@ const Home = ({ className }: { className?: string }) => {
 	useEffect(() => {
 		if (!isOnchain && userAddress && activeMultisig) {
 			queueNotification({
-				className: 'bg-bg-secondary border-2 border-solid border-primary text-white',
+				className: 'scale-[100%] rounded-md bg-bg-secondary border-2 border-solid border-primary text-white',
 				closeIcon: (
 					<div className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center'>
 						<OutlineCloseIcon className='text-primary w-2 h-2' />

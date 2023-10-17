@@ -9,7 +9,13 @@ import React, { useEffect, useState } from 'react';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 
-const AddressQr: React.FC<{ address: string }> = ({ address }: { address: string }) => {
+const AddressQr: React.FC<{ address: string; size?: number }> = ({
+	address,
+	size = 150
+}: {
+	address: string;
+	size?: number;
+}) => {
 	const { api, apiReady, network } = useGlobalApiContext();
 	const [genesisHash, setGenesisHash] = useState('');
 	useEffect(() => {
@@ -25,7 +31,7 @@ const AddressQr: React.FC<{ address: string }> = ({ address }: { address: string
 	return (
 		<div className='flex flex-col items-center'>
 			<QrDisplayAddress
-				size={150}
+				size={size}
 				address={getEncodedAddress(address, network) || address}
 				genesisHash={genesisHash}
 			/>

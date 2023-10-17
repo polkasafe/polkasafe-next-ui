@@ -8,11 +8,10 @@ import { Drawer, Layout, Badge } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import polkasafeLogo from '~assets/icons/polkasafe.svg';
-import longIframe from '~assets/long-iframe.svg';
-import shortIframe from '~assets/short-iframe.svg';
+import PolkasafeLogo from '~assets/icons/polkasafe.svg';
+import LongIframe from '~assets/long-iframe.svg';
+import ShortIframe from '~assets/short-iframe.svg';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import Image from 'next/image';
 import { IActiveMultisigContext, useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalDAppContext } from '@next-substrate/context/DAppContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
@@ -60,9 +59,13 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 
 		setMultisigChanged(true);
 		const { data: sharedAddressBookData, error: sharedAddressBookError } =
-			await nextApiClientFetch<ISharedAddressBooks>(`${SUBSTRATE_API_URL}/getSharedAddressBook`, {
-				multisigAddress: multisig?.proxy ? multisig.proxy : multisig?.address
-			});
+			await nextApiClientFetch<ISharedAddressBooks>(
+				`${SUBSTRATE_API_URL}/getSharedAddressBook`,
+				{
+					multisigAddress: multisig?.proxy ? multisig.proxy : multisig?.address
+				},
+				{ network }
+			);
 
 		if (!sharedAddressBookError && sharedAddressBookData) {
 			setActiveMultisigContextState(sharedAddressBookData as IActiveMultisigContext);
@@ -118,22 +121,18 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 								count='Beta'
 								color='#1573FE'
 							>
-								<Image
-									src={polkasafeLogo}
-									alt='polkasafe logo'
-									className='h-[25px]'
-								/>
+								<div className=''>
+									<PolkasafeLogo />
+								</div>
 							</Badge>
 						</Link>
 					</section>
-					<Image
-						src={shortIframe}
-						alt=''
-						width='30'
-						height='30'
+					<div
 						className='hidden lg:block cursor-pointer absolute top-1/2 transform left-4 -translate-y-1/2 z-20'
 						onClick={() => setIframeState(false)}
-					/>
+					>
+						<ShortIframe />
+					</div>
 				</div>
 				<>
 					<Sider
@@ -176,14 +175,12 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 								className={`w-full h-[calc(100%)] ${loading ? 'hidden' : 'block'}`}
 							/>
 							{!hideSlider && (
-								<Image
-									src={longIframe}
-									alt=''
-									width='30'
-									height='30'
+								<div
 									className='hidden lg:block cursor-pointer absolute top-1/2 left-auto -ml-4 transform -translate-y-1/2 z-50'
 									onClick={() => setIframeState(true)}
-								/>
+								>
+									<LongIframe />
+								</div>
 							)}
 						</div>
 					) : (

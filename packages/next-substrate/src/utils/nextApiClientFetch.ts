@@ -21,8 +21,6 @@ async function nextApiClientFetch<T>(
 		method: method || 'POST'
 	});
 
-	console.log(response);
-
 	const resJSON = await response.json();
 
 	if (response.status === 200)

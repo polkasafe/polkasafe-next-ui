@@ -90,8 +90,8 @@ const EmailBadge = () => {
 					disabled={!inputValue}
 					className='flex items-center justify-center bg-primary text-white border-none ml-1 py-4'
 					onClick={handleAddEmail}
+					icon={<NotifyMail />}
 				>
-					<NotifyMail />
 					Notify me
 				</Button>
 			</div>

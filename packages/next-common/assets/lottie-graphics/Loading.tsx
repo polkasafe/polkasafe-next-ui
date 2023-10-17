@@ -23,11 +23,14 @@ const LoadingLottie: React.FC<Props> = ({ message, width = 350, noWaitMessage = 
 				}}
 				play
 			/>
-			<div className='absolute bottom-10 w-full text-center text-lg font-medium text-white'>
+			<div
+				style={{ bottom: '40px' }}
+				className='absolute w-full text-center text-lg font-medium text-white'
+			>
 				{message || 'Waiting to create your transaction'}
 			</div>
 			{!noWaitMessage && (
-				<div className='text-text_secondary'>This might take a few seconds. So, sit back and relax...</div>
+				<div className='text-text_secondary text-sm'>This might take a few seconds. So, sit back and relax...</div>
 			)}
 		</div>
 	);

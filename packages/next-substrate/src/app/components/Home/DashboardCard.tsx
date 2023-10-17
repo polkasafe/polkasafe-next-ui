@@ -18,7 +18,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { IAsset } from '@next-common/types';
 // import AddressQr from '@next-common/ui-components/AddressQr';
-import { CopyIcon, WalletIcon } from '@next-common/ui-components/CustomIcons';
+import { CopyIcon, QRIcon, WalletIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import copyText from '@next-substrate/utils/copyText';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
@@ -27,6 +27,7 @@ import shortenAddress from '@next-substrate/utils/shortenAddress';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import AddressQr from '@next-common/ui-components/AddressQr';
 import ExistentialDeposit from '../SendFunds/ExistentialDeposit';
 import FundMultisig from '../SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
@@ -250,9 +251,20 @@ const DashboardCard = ({
 								>
 									<CopyIcon className='text-primary' />
 								</button>
-								{/* <button onClick={() => openModal('Address QR', <AddressQr address={activeMultisig} />)}>
+								<Tooltip
+									placement='right'
+									className='cursor-pointer'
+									title={
+										<div className='p-2'>
+											<AddressQr
+												size={100}
+												address={activeMultisig}
+											/>
+										</div>
+									}
+								>
 									<QRIcon className='text-primary' />
-								</button> */}
+								</Tooltip>
 							</div>
 						</div>
 					</div>

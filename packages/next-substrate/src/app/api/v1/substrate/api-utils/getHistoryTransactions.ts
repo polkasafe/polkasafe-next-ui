@@ -80,10 +80,10 @@ export default async function getHistoryTransactions(
 					created_at: dayjs(transaction.block_timestamp * 1000).toDate(),
 					from: transaction.multi_account_display.address,
 					network,
-					note: txn.note || '',
+					note: txn?.note || '',
 					to: transaction.to,
 					token: transaction.asset_symbol,
-					transactionFields: txn.transactionFields || ({} as any)
+					transactionFields: txn?.transactionFields || ({} as any)
 				};
 				transactions.push(newTransaction);
 			}

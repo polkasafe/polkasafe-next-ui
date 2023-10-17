@@ -72,6 +72,20 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const createProxy = (multisigData: IMultisigAddress, create: boolean) => {
+		const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
+		multisigData.signatories.forEach((signatory) => {
+			const data = addressBook.find((a) => getSubstrateAddress(a.address) === getSubstrateAddress(signatory));
+			const substrateSignatory = getSubstrateAddress(signatory) || signatory;
+			newRecords[substrateSignatory] = {
+				address: signatory,
+				name: data?.name || DEFAULT_ADDRESS_NAME,
+				email: data?.email,
+				discord: data?.discord,
+				telegram: data?.telegram,
+				roles: data?.roles
+			};
+		});
+		onCancel?.();
 		setUserDetailsContextState((prevState) => {
 			return {
 				...prevState,
@@ -86,25 +100,11 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				}
 			};
 		});
-		const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
-		multisigData.signatories.forEach((signatory) => {
-			const data = addressBook.find((a) => getSubstrateAddress(a.address) === getSubstrateAddress(signatory));
-			const substrateSignatory = getSubstrateAddress(signatory) || signatory;
-			newRecords[substrateSignatory] = {
-				address: signatory,
-				name: data?.name || DEFAULT_ADDRESS_NAME,
-				email: data?.email,
-				discord: data?.discord,
-				telegram: data?.telegram,
-				roles: data?.roles
-			};
-		});
 		setActiveMultisigContextState((prev) => ({
 			...prev,
 			records: newRecords,
 			multisig: multisigData.address
 		}));
-		onCancel?.();
 		// if (create) {
 		// openModal('Create Proxy', <AddProxy onCancel={() => toggleVisibility()} />);
 		// }

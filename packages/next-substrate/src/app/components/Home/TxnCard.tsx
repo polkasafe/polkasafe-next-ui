@@ -123,7 +123,6 @@ const TxnCard = ({
 					}
 
 					if (queueTransactions) {
-						console.log(queueTransactions);
 						setQueuedTransactions(queueTransactions);
 						setQueueLoading(false);
 					}
