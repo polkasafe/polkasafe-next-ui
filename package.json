@@ -6,8 +6,11 @@
     "packages/*"
   ],
   "scripts": {
-    "next": "yarn --cwd packages/next-substrate dev",
-    "dev": "npm-run-all --parallel next",
+    "build:substrate": "yarn --cwd packages/next-substrate build",
+    "build:evm": "yarn --cwd packages/next-evm build",
+    "next:substrate": "yarn --cwd packages/next-substrate dev",
+    "next:evm": "yarn --cwd packages/next-evm dev",
+    "dev": "npm-run-all --parallel next:substrate",
     "prepare": "husky install",
     "scan": "yarn workspace @polkasafe-next/scan scan",
     "lint": "yarn workspace @polkasafe-next/next-substrate lint && yarn workspace next-common lint",
