@@ -3,6 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 /* eslint-disable react/jsx-props-no-spreading */
 
+import React from 'react';
 import Icon from '@ant-design/icons';
 import type { CustomIconComponentProps } from '@ant-design/icons/lib/components/Icon';
 import AddSVG from '@next-common/assets/icons/add.svg';
