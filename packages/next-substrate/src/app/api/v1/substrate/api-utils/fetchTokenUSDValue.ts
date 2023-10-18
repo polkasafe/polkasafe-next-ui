@@ -17,8 +17,8 @@ export default async function fetchTokenUSDValue(network: string): Promise<numbe
 
 	const { data: response } = await res.json();
 
-	if (response?.message === 'Success' && response?.data?.output) {
-		return Number(response?.data?.output);
+	if (response?.output) {
+		return Number(response?.output);
 	}
 	return null;
 }
