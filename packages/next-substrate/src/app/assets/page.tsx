@@ -40,7 +40,6 @@ const Assets = () => {
 			}
 
 			if (data) {
-				console.log(data);
 				setAssetsData(data);
 				setLoading(false);
 			}

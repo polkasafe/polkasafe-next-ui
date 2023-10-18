@@ -30,40 +30,37 @@ export default async function _getAssetsForAddress(address: string, network: str
 		const { data: response } = await res.json();
 
 		const assets: IAsset[] = [];
-		console.log(response);
 
-		if (response.data) {
-			Object.keys(response.data).forEach((assetType) => {
-				Promise.all(
-					response.data[assetType].map(async (asset) => {
-						const usdValue = await fetchTokenUSDValue(network);
+		if (response.native) {
+			await Promise.all(
+				response.native.map(async (asset) => {
+					const usdValue = await fetchTokenUSDValue(network);
 
-						const newAsset: IAsset = {
-							balance_token: formatBalance(asset.balance, asset.decimals, {
-								numberAfterComma: 3,
-								withThousandDelimitor: false
-							}),
-							balance_usd: usdValue
-								? `${
-										usdValue *
-										Number(
-											formatBalance(asset.balance, asset.decimals, {
-												numberAfterComma: 3,
-												withThousandDelimitor: false
-											})
-										)
-								  }`
-								: '',
-							logoURI: tokenProperties[asset.symbol as keyof typeof tokenProperties]?.logoURI || '',
-							name: tokenProperties[asset.symbol as keyof typeof tokenProperties]?.name || '',
-							symbol: asset.symbol
-							// TODO: cache token usd value
-						};
+					const newAsset: IAsset = {
+						balance_token: formatBalance(asset.balance, asset.decimals, {
+							numberAfterComma: 3,
+							withThousandDelimitor: false
+						}),
+						balance_usd: usdValue
+							? `${
+									usdValue *
+									Number(
+										formatBalance(asset.balance, asset.decimals, {
+											numberAfterComma: 3,
+											withThousandDelimitor: false
+										})
+									)
+							  }`
+							: '',
+						logoURI: tokenProperties[asset.symbol as keyof typeof tokenProperties]?.logoURI || '',
+						name: tokenProperties[asset.symbol as keyof typeof tokenProperties]?.name || '',
+						symbol: asset.symbol
+						// TODO: cache token usd value
+					};
 
-						assets.push(newAsset);
-					})
-				);
-			});
+					assets.push(newAsset);
+				})
+			);
 		}
 
 		returnValue.data = assets;

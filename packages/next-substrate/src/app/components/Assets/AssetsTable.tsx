@@ -50,6 +50,8 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 										<Image
 											src={logoURI}
 											alt='profile img'
+											width={20}
+											height={20}
 										/>
 									</div>
 									<span

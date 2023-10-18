@@ -24,7 +24,7 @@ const nextConfig = {
     },
     transpilePackages: ["next-common"],
     images: {
-      domains: ['parachains.info']
+      domains: ['parachains.info', 's2.coinmarketcap.com']
     },
     reactStrictMode: true,
     webpack(config) {
