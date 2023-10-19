@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import Identicon from '@polkadot/react-identicon';
-import { Badge, Modal } from 'antd';
+import { Badge } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -18,48 +18,15 @@ import {
 	ExchangeIcon,
 	HomeIcon,
 	NotificationIcon,
-	OutlineCloseIcon,
 	SettingsIcon,
 	TransactionIcon,
 	UserPlusIcon
 } from '@next-common/ui-components/CustomIcons';
-import AddMultisig from '../Multisig/AddMultisig';
+import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
 
 interface Props {
 	className?: string;
 }
-
-const AddMultisigModal = ({
-	className,
-	openAddMultisig,
-	setOpenAddMultisig
-}: {
-	className?: string;
-	openAddMultisig: boolean;
-	setOpenAddMultisig: React.Dispatch<React.SetStateAction<boolean>>;
-}) => {
-	return (
-		<Modal
-			centered
-			footer={false}
-			closeIcon={
-				<button
-					className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center'
-					onClick={() => setOpenAddMultisig(false)}
-				>
-					<OutlineCloseIcon className='text-primary w-2 h-2' />
-				</button>
-			}
-			open={openAddMultisig}
-			className={`${className} w-auto md:min-w-[500px] scale-90 origin-center`}
-		>
-			<AddMultisig
-				onCancel={() => setOpenAddMultisig(false)}
-				isModalPopup
-			/>
-		</Modal>
-	);
-};
 
 const Menu: FC<Props> = ({ className }) => {
 	const { multisigAddresses, activeMultisig, multisigSettings, isProxy, setUserDetailsContextState } =
@@ -71,7 +38,7 @@ const Menu: FC<Props> = ({ className }) => {
 	const pathname = usePathname();
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 
-	const [openAddMultisig, setOpenAddMultisig] = useState(false);
+	const { setOpenAddMultisigModal } = useAddMultisigContext();
 
 	const menuItems = [
 		{
@@ -163,11 +130,6 @@ const Menu: FC<Props> = ({ className }) => {
 
 	return (
 		<div className={`bg-bg-main flex flex-col h-full py-[25px] px-3 ${className}`}>
-			<AddMultisigModal
-				openAddMultisig={openAddMultisig}
-				setOpenAddMultisig={setOpenAddMultisig}
-				className={className}
-			/>
 			<div className='flex flex-col mb-3'>
 				<section className='flex mb-7 justify-center w-full'>
 					<Link
@@ -275,7 +237,7 @@ const Menu: FC<Props> = ({ className }) => {
 				<section className='mt-auto'>
 					<button
 						className='text-white bg-primary p-3 rounded-lg w-full flex items-center justify-center gap-x-2 cursor-pointer'
-						onClick={() => setOpenAddMultisig(true)}
+						onClick={() => setOpenAddMultisigModal(true)}
 					>
 						<UserPlusIcon className='text-sm' />
 						<span className='font-medium text-xs'>Add Multisig</span>

@@ -166,7 +166,7 @@ const Enable2FA = ({ className }: { className?: string }) => {
 										className='mx-auto'
 										errorLevel='H'
 										value={tFaSecret.url}
-										style={{ backgroundColor: '#fff' }}
+										bgColor='white'
 									/>
 								)}
 							</div>

@@ -29,6 +29,7 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import hasExistentialDeposit from '@next-substrate/utils/hasExistentialDeposit';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, sonarjs/cognitive-complexity
 const Home = ({ className }: { className?: string }) => {
@@ -42,9 +43,9 @@ const Home = ({ className }: { className?: string }) => {
 		activeMultisig
 	} = useGlobalUserDetailsContext();
 	const { network, api, apiReady } = useGlobalApiContext();
+	const { openProxyModal, setOpenProxyModal } = useAddMultisigContext();
 	const [newTxn, setNewTxn] = useState<boolean>(false);
 	const [openNewUserModal, setOpenNewUserModal] = useState(false);
-	const [openProxyModal, setOpenProxyModal] = useState(false);
 	const [hasProxy, setHasProxy] = useState<boolean>(true);
 	const [proxyNotInDb, setProxyNotInDb] = useState<boolean>(false);
 	const [proxyInProcess, setProxyInProcess] = useState<boolean>(false);

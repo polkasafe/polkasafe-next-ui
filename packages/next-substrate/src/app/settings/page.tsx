@@ -9,6 +9,7 @@ import ManageMultisig from '@next-substrate/app/components/Settings/ManageMultis
 import Notifications from '@next-substrate/app/components/Settings/Notifications';
 import TransactionFields from '@next-substrate/app/components/Settings/TransactionFields';
 import TwoFactorAuth from '@next-substrate/app/components/Settings/TwoFactorAuth';
+import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 enum ETab {
 	SIGNATORIES,
@@ -22,6 +23,7 @@ const Settings = () => {
 
 	return (
 		<div className='scale-[80%] h-[125%] w-[125%] origin-top-left'>
+			<AddMultisigModal />
 			<div className='flex items-center mb-5'>
 				<button
 					onClick={() => setTab(ETab.SIGNATORIES)}

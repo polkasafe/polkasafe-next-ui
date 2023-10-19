@@ -1,21 +1,18 @@
-.ant-select-selector {
-    border: none !important;
-    padding: 8px 10px;
-    box-shadow: none !important;
-    background-color: #24272E !important;
+.ant-select input {
+    font-size: 14px !important;
+    font-style: normal !important;
+    line-height: 15px !important;
+    border: 0 !important;
+    outline: 0 !important;
+    border-radius: 8px !important;
+    color: white !important;
+    padding-block: 12px !important;
+    display: block !important;
+    height: auto !important;
 }
 
-.ant-select {
-    height: 40px !important;
-}
-.ant-select-selection-search {
-    inset: 0 !important;
-}
-.ant-select-selection-placeholder{
-    color: #505050 !important;
-    z-index: 100;
-    display: flex !important;
-    align-items: center !important;
+.ant-select-selector {
+    background-color: #24272E !important;
 }
 
 .ant-select-multiple .ant-select-selection-item {

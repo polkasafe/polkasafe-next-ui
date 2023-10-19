@@ -24,7 +24,6 @@ import addNewMultiToProxy from '@next-substrate/utils/addNewMultiToProxy';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import removeOldMultiFromProxy from '@next-substrate/utils/removeOldMultiFromProxy';
 import setSigner from '@next-substrate/utils/setSigner';
-import Image from 'next/image';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
@@ -111,7 +110,7 @@ const RemoveOwner = ({
 		const newSignatories = (multisig && multisig.signatories.filter((item) => item !== addressToRemove)) || [];
 
 		const newMultisigAddress = _createMultisig(newSignatories, newThreshold, chainProperties[network].ss58Format);
-		if (multisigAddresses.some((item) => item.address === newMultisigAddress.multisigAddress)) {
+		if (multisigAddresses.some((item) => item.address === newMultisigAddress.multisigAddress && !item.disabled)) {
 			queueNotification({
 				header: 'Multisig Exists',
 				message: 'The new edited multisig already exists in your multisigs.',
@@ -183,18 +182,12 @@ const RemoveOwner = ({
 			<Form className='my-0'>
 				<div className='flex justify-center gap-x-4 items-center mb-6 w-full'>
 					<div className='flex flex-col text-white items-center justify-center'>
-						<Image
-							alt='icon'
-							src={AddMultisigSVG}
-						/>
+						<AddMultisigSVG />
 						<p className='text-text_secondary'>Add New Multisig</p>
 					</div>
 					<Loader className='bg-primary h-[2px] w-[80px]' />
 					<div className='flex flex-col text-white items-center justify-center'>
-						<Image
-							alt='icon'
-							src={RemoveMultisigSVG}
-						/>
+						<RemoveMultisigSVG />
 						<p className='text-text_secondary'>Remove Old Multisig</p>
 					</div>
 				</div>

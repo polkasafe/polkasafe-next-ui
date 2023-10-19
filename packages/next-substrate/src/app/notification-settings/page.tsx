@@ -33,6 +33,7 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import DiscordInfoModal from './DiscordInfoModal';
 import SlackInfoModal from './SlackInfoModal';
 import TelegramInfoModal from './TelegramInfoModal';
+import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const Notifications = () => {
@@ -435,6 +436,7 @@ const Notifications = () => {
 				pathname === '/notification-settings' && 'scale-[80%] h-[125%] w-[125%] origin-top-left'
 			}`}
 		>
+			<AddMultisigModal />
 			<ModalComponent
 				onCancel={() => setOpenTelegramModal(false)}
 				title={

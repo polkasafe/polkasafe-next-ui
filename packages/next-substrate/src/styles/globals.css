@@ -253,6 +253,11 @@ input {
   opacity: 1 !important;
 }
 
+.ant-spin-nested-loading >div>.ant-spin .ant-spin-dot {
+  top: 0;
+  left: 0;
+}
+
 .ant-select-dropdown .ant-select-item-option-selected:not(.ant-select-item-option-disabled) {
   background-color: #24272E !important;
 
@@ -268,13 +273,6 @@ input {
 .ant-select-dropdown .ant-select-item-option-state{
   display: flex !important;
   align-items: center !important;
-}
-
-.ant-spin-nested-loading .ant-spin-blur{
-  opacity: 0 !important;
-}
-.ant-spin-nested-loading .ant-spin-blur::after{
-  opacity: 1 !important;
 }
 
 .ant-table-wrapper .ant-table-thead >tr>th {
@@ -306,13 +304,6 @@ input {
   --antd-arrow-background-color: #24272E !important;
 }
 
-.ant-spin-nested-loading .ant-spin-blur {
-  opacity: 0 !important;
-}
-.ant-spin-nested-loading .ant-spin-blur::after {
-  opacity: 1 !important;
-}
-
 .ant-select input {
   font-size: 14px !important;
   font-style: normal !important;
@@ -321,7 +312,7 @@ input {
   outline: 0 !important;
   border-radius: 8px !important;
   color: white !important;
-  padding: 12px !important;
+  padding: 12px;
   display: block !important;
   height: auto !important;
 }
@@ -342,4 +333,12 @@ input {
   z-index: 100;
   display: flex !important;
   align-items: center !important;
+}
+
+.ant-select-multiple .ant-select-selection-item {
+  border: none !important;
+  background: #1573FE !important;
+  border-radius: 5px !important;
+  color: white !important;
+  margin-inline-end: 10px !important;
 }

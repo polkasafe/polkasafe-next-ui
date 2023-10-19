@@ -5,10 +5,12 @@
 'use client';
 
 import React from 'react';
+import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 const TermsAndCondition = () => {
 	return (
 		<div className='h-[70vh] bg-bg-main rounded-lg m-auto flex'>
+			<AddMultisigModal />
 			<div className='w-fit text-sm m-5 overflow-auto [&::-webkit-scrollbar]:hidden'>
 				<p className='text-white'>
 					<p>

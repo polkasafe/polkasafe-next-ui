@@ -30,6 +30,8 @@ import transferFunds from '@next-substrate/utils/transferFunds';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
+import { usePathname } from 'next/navigation';
 import AddAddress from '../AddressBook/AddAddress';
 import DragDrop from './DragDrop';
 import Search from './Search';
@@ -51,6 +53,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 	} = useGlobalUserDetailsContext();
 	const { network, api, apiReady } = useGlobalApiContext();
 	const { records, setActiveMultisigContextState } = useActiveMultisigContext();
+	const { setOpenProxyModal } = useAddMultisigContext();
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [uploadSignatoriesJson, setUploadSignatoriesJson] = useState(false);
@@ -66,11 +69,13 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 	const [addAddress, setAddAddress] = useState<string>('');
 	const [showAddressModal, setShowAddressModal] = useState<boolean>(false);
 	const [cancelCreateProxy, setCancelCreateProxy] = useState<boolean>(false);
+
+	const pathname = usePathname();
+
 	const [form] = Form.useForm();
 
 	const [createMultisigData, setCreateMultisigData] = useState<IMultisigAddress>({} as any);
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const createProxy = (multisigData: IMultisigAddress, create: boolean) => {
 		const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
 		multisigData.signatories.forEach((signatory) => {
@@ -85,6 +90,9 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				roles: data?.roles
 			};
 		});
+		if (create && pathname === '/') {
+			setOpenProxyModal(true);
+		}
 		onCancel?.();
 		setUserDetailsContextState((prevState) => {
 			return {
@@ -105,9 +113,6 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 			records: newRecords,
 			multisig: multisigData.address
 		}));
-		// if (create) {
-		// openModal('Create Proxy', <AddProxy onCancel={() => toggleVisibility()} />);
-		// }
 	};
 
 	const addExistentialDeposit = async (multisigData: IMultisigAddress) => {
@@ -128,7 +133,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				senderAddress: getSubstrateAddress(userAddress) || userAddress,
 				setLoadingMessages
 			});
-			if (['alephzero'].includes(network)) {
+			if (['alephzero'].includes(network) || pathname !== '/') {
 				createProxy(multisigData, false);
 			} else {
 				setSuccess(true);
@@ -221,9 +226,9 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				loading ? (
 					<LoadingLottie message={loadingMessages} />
 				) : success ? (
-					<div className='flex flex-col h-full'>
+					<div className='w-full'>
 						<SuccessTransactionLottie message='Multisig created successfully!' />
-						<div className='w-full flex justify-center my-3 flex-1 text-left'>
+						<div className='w-full flex justify-center my-3 text-left'>
 							<ProxyImpPoints />
 						</div>
 						<div className='flex items-center justify-center gap-x-5 mt-[40px]'>

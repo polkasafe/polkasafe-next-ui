@@ -177,6 +177,7 @@ const FundMultisig = ({
 									<div className='flex items-center'>
 										<AutoComplete
 											filterOption
+											className='[&>div>span>input]:px-[12px]'
 											onClick={addSenderHeading}
 											options={autocompleteAddresses}
 											id='sender'
@@ -197,14 +198,15 @@ const FundMultisig = ({
 							</div>
 						</div>
 					</section>
-
-					<BalanceInput
-						multipleCurrency
-						fromBalance={selectedAccountBalance}
-						className='mt-6'
-						placeholder='5'
-						onChange={(balance) => setAmount(balance)}
-					/>
+					<section className='mt-6'>
+						<label className='text-primary font-normal text-xs leading-[13px] block mb-2'>Amount</label>
+						<BalanceInput
+							multipleCurrency
+							fromBalance={selectedAccountBalance}
+							placeholder='5'
+							onChange={(balance) => setAmount(balance)}
+						/>
+					</section>
 
 					{/* <section className='mt-6'>
 						<label className='text-primary font-normal text-xs leading-[13px] block mb-3'>Existential Deposit</label>

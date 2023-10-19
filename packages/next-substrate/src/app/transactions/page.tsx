@@ -15,6 +15,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { ExportArrowIcon, ExternalLinkIcon, QuickbooksIcon, XeroIcon } from '@next-common/ui-components/CustomIcons';
 import Link from 'next/link';
 import { EExportType } from '@next-common/types';
+import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 enum ETab {
 	QUEUE,
@@ -58,6 +59,7 @@ const Transactions = () => {
 		<div className='bg-bg-main rounded-xl p-[20.5px] h-full relative'>
 			{address ? (
 				<>
+					<AddMultisigModal />
 					<div className='flex items-center mb-4 scale-90 w-[111%] origin-top-left'>
 						<Button
 							onClick={() => setTab(ETab.QUEUE)}
@@ -103,6 +105,7 @@ const Transactions = () => {
 						<Button
 							size='large'
 							onClick={() => setRefetch((prev) => !prev)}
+							disabled={loading}
 							icon={
 								<SyncOutlined
 									spin={loading}

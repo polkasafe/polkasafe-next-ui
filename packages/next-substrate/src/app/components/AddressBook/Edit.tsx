@@ -14,7 +14,6 @@ import { IAddressBookItem, ISharedAddressBooks, NotificationStatus } from '@next
 import { OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
-import styled from 'styled-components';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
@@ -494,32 +493,4 @@ const EditAddress = ({
 	);
 };
 
-export default styled(EditAddress)`
-	.ant-select-selector {
-		border: none !important;
-		padding: 8px 10px;
-		box-shadow: none !important;
-		background-color: #24272e !important;
-	}
-
-	.ant-select {
-		height: 40px !important;
-	}
-	.ant-select-selection-search {
-		inset: 0 !important;
-	}
-	.ant-select-selection-placeholder {
-		color: #505050 !important;
-		z-index: 100;
-		display: flex !important;
-		align-items: center !important;
-	}
-
-	.ant-select-multiple .ant-select-selection-item {
-		border: none !important;
-		background: #1573fe !important;
-		border-radius: 5px !important;
-		color: white !important;
-		margin-inline-end: 10px !important;
-	}
-`;
+export default EditAddress;

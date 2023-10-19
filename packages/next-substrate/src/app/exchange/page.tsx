@@ -22,6 +22,7 @@ import { CircleArrowDownIcon, ExternalLinkIcon } from '@next-common/ui-component
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import { ParachainIcon } from '../components/NetworksDropdown/NetworkCard';
+import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 enum EOnramp {
 	BUY = 1,
@@ -69,6 +70,7 @@ const Exchange = ({ className }: { className?: string }) => {
 		>
 			{userAddress ? (
 				<div className='h-full flex flex-col gap-y-5 bg-bg-secondary rounded-lg p-5'>
+					<AddMultisigModal />
 					<div className='w-full flex items-center gap-x-3'>
 						<span
 							onClick={() => setOnrampFlowType(EOnramp.BUY)}

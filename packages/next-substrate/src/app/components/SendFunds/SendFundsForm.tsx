@@ -4,6 +4,7 @@
 
 // import { WarningOutlined } from '@ant-design/icons';
 
+import './style.css';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { AutoComplete, Button, Divider, Dropdown, Form, Input, Skeleton, Spin, Switch } from 'antd';
@@ -590,6 +591,7 @@ const SendFundsForm = ({
 																	<AutoComplete
 																		autoFocus
 																		defaultOpen
+																		className='[&>div>span>input]:px-[12px]'
 																		filterOption={(inputValue, options) => {
 																			return inputValue && options?.value
 																				? getSubstrateAddress(String(options?.value) || '') ===

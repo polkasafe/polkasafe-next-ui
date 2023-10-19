@@ -44,13 +44,15 @@ const TransactionModal = ({ className, defaultAddress }: { className?: string; d
 	const { activeMultisig } = useGlobalUserDetailsContext();
 	return (
 		<>
-			<PrimaryButton
-				disabled={!activeMultisig}
-				className='bg-primary text-white w-fit'
-				onClick={() => setOpenTransactionModal(true)}
-			>
-				<p className='font-normal text-sm'>Send</p>
-			</PrimaryButton>
+			{activeMultisig && (
+				<PrimaryButton
+					disabled={!activeMultisig}
+					className='bg-primary text-white w-fit'
+					onClick={() => setOpenTransactionModal(true)}
+				>
+					<p className='font-normal text-sm'>Send</p>
+				</PrimaryButton>
+			)}
 			<Modal
 				centered
 				footer={false}

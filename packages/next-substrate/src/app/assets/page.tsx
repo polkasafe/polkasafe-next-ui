@@ -16,6 +16,7 @@ import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 const Assets = () => {
 	const [loading, setLoading] = useState<boolean>(false);
@@ -59,6 +60,7 @@ const Assets = () => {
 		<div className='h-[70vh] bg-bg-main rounded-lg'>
 			{address ? (
 				<div className='grid grid-cols-12 gap-4'>
+					<AddMultisigModal />
 					<div className='col-start-1 col-end-13'>
 						<div className='flex items-center justify-between'>
 							<div className='flex items-end gap-x-4'>

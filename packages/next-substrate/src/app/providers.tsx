@@ -13,6 +13,7 @@ import { CurrencyContextProvider } from '@next-substrate/context/CurrencyContext
 import { ApiContextProvider } from '@next-substrate/context/ApiContext';
 import { ReactNode } from 'react';
 import antdTheme from '@next-substrate/styles/antdTheme';
+import { AddMultisigProvider } from '@next-substrate/context/AddMultisigContext';
 
 export default function Providers({ children }: { children?: ReactNode }) {
 	return (
@@ -23,7 +24,9 @@ export default function Providers({ children }: { children?: ReactNode }) {
 						<CurrencyContextProvider>
 							<UserDetailsProvider>
 								<ActiveMultisigProvider>
-									<DAppContextProvider>{children}</DAppContextProvider>
+									<AddMultisigProvider>
+										<DAppContextProvider>{children}</DAppContextProvider>
+									</AddMultisigProvider>
 								</ActiveMultisigProvider>
 							</UserDetailsProvider>
 						</CurrencyContextProvider>

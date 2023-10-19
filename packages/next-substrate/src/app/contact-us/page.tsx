@@ -13,6 +13,7 @@ import { NotifyMail } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 const ContactUs = () => {
 	const { network } = useGlobalApiContext();
@@ -62,6 +63,7 @@ const ContactUs = () => {
 
 	return (
 		<div className='bg-bg-main rounded-lg m-auto p-5 h-screen'>
+			<AddMultisigModal />
 			<h1 className='font-bold text-xl text-white ml-[1rem]'>Get in Touch</h1>
 			<p className='text-sm text-text_secondary mt-1 mb-3 ml-[1rem]'>We are here for you! How can we help?</p>
 			<div className='flex items-center justify-between ml-[1rem]'>

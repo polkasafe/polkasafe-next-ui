@@ -18,9 +18,11 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { ISharedAddressBooks } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
+import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import dayjs from 'dayjs';
 import Footer from './Footer';
 import Menu from './Menu';
 import NavHeader from './NavHeader';
@@ -31,6 +33,8 @@ export interface IRouteInfo {
 	pathName: string;
 	title: string;
 }
+
+dayjs.extend(LocalizedFormat);
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 function AppLayout({ className, children }: { className?: string; children: React.ReactNode }) {

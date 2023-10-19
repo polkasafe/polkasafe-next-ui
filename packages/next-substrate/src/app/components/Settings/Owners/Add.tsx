@@ -24,7 +24,6 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import removeOldMultiFromProxy from '@next-substrate/utils/removeOldMultiFromProxy';
 import setSigner from '@next-substrate/utils/setSigner';
 import styled from 'styled-components';
-import Image from 'next/image';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 
@@ -218,18 +217,12 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 			<Form className={`my-0 w-[560px] ${className}`}>
 				<div className='flex justify-center gap-x-4 items-center mb-6 w-full'>
 					<div className='flex flex-col text-white items-center justify-center'>
-						<Image
-							alt='icon'
-							src={AddMultisigSVG}
-						/>
+						<AddMultisigSVG />
 						<p className='text-text_secondary'>Add New Multisig</p>
 					</div>
 					<Loader className='bg-primary h-[2px] w-[80px]' />
 					<div className='flex flex-col text-white items-center justify-center'>
-						<Image
-							alt='icon'
-							src={RemoveMultisigSVG}
-						/>
+						<RemoveMultisigSVG />
 						<p className='text-text_secondary'>Remove Old Multisig</p>
 					</div>
 				</div>

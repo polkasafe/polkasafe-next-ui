@@ -24,6 +24,7 @@ import {
 } from '@next-common/ui-components/CustomIcons';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 const AddressBook = ({ className }: { className?: string }) => {
 	const [searchTerm, setSearchTerm] = useState('');
@@ -104,6 +105,7 @@ const AddressBook = ({ className }: { className?: string }) => {
 
 	return (
 		<div className='scale-[80%] w-[125%] h-[125%] p-5 origin-top-left bg-bg-main rounded-lg'>
+			<AddMultisigModal />
 			<ModalComponent
 				onCancel={() => setOpenAddAddressModal(false)}
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Add Address</h3>}
