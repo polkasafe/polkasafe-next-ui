@@ -47,23 +47,25 @@ const ExportAdress = ({
 		const headers = ['Name,Address,Email,Discord,Telegram,Roles'];
 
 		// Convert users data to a csv
-		const usersCsv = Object.keys(records).reduce(
-			(acc, a) => {
-				const { name, address, email, discord, telegram, roles } = records[a];
-				acc.push(
-					[
-						name,
-						address,
-						email || '-',
-						discord || '-',
-						telegram || '-',
-						roles && roles.length ? roles.join(',') : '-'
-					].join(',')
-				);
-				return acc;
-			},
-			['']
-		);
+		const usersCsv =
+			records &&
+			Object.keys(records).reduce(
+				(acc, a) => {
+					const { name, address, email, discord, telegram, roles } = records[a];
+					acc.push(
+						[
+							name,
+							address,
+							email || '-',
+							discord || '-',
+							telegram || '-',
+							roles && roles.length ? roles.join(',') : '-'
+						].join(',')
+					);
+					return acc;
+				},
+				['']
+			);
 
 		downloadFile({
 			data: [...headers, ...usersCsv].join('\n'),

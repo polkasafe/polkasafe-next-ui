@@ -211,7 +211,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 				setLoading(false);
 				return;
 			}
-			if (Object.keys(records).includes(getSubstrateAddress(address) || address)) {
+			if (records && Object.keys(records || {}).includes(getSubstrateAddress(address) || address)) {
 				queueNotification({
 					header: 'Address Exists',
 					message: 'Please try editing the address.',

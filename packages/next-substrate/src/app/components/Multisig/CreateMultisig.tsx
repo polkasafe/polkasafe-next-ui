@@ -298,7 +298,8 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 											disabled={
 												!addAddress ||
 												!getSubstrateAddress(addAddress) ||
-												Object.keys(records).includes(getSubstrateAddress(addAddress) || addAddress) ||
+												(records &&
+													Object.keys(records || {}).includes(getSubstrateAddress(addAddress) || addAddress)) ||
 												addressBook.some((item) => item.address === getEncodedAddress(addAddress, network))
 											}
 											onClick={() => setShowAddressModal(true)}
