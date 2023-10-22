@@ -77,7 +77,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 				return;
 			}
 			let proxyAddress = null;
-			if (!['alephzero'].includes(network)) {
+			if (!['alephzero', 'ternoa'].includes(network)) {
 				const response = await fetch(`https://${network}.api.subscan.io/api/scan/events`, {
 					body: JSON.stringify({
 						row: 1,

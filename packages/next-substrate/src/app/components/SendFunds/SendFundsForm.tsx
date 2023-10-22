@@ -147,7 +147,7 @@ const SendFundsForm = ({
 				!(
 					(['alephzero', 'astar', 'assethub-polkadot', 'assethub-kusama'].includes(network) &&
 						item === ETransactionType.SUBMIT_PREIMAGE) ||
-					(!['polkadot', 'kusama'].includes(network) && item === ETransactionType.SUBMIT_PROPOSAL)
+					(!['polkadot', 'kusama', 'ternoa'].includes(network) && item === ETransactionType.SUBMIT_PROPOSAL)
 				)
 		)
 		.map((item) => ({

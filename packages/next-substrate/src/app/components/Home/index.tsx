@@ -64,7 +64,7 @@ const Home = ({ className }: { className?: string }) => {
 
 	useEffect(() => {
 		const fetchProxyData = async () => {
-			if (!multisig || ['alephzero'].includes(network)) return;
+			if (!multisig || ['alephzero', 'ternoa'].includes(network)) return;
 			const response = await fetch(`https://${network}.api.subscan.io/api/scan/events`, {
 				body: JSON.stringify({
 					row: 1,
@@ -170,7 +170,7 @@ const Home = ({ className }: { className?: string }) => {
 				(m) => m.network === network && !multisigSettings?.[`${m.address}_${m.network}`]?.deleted && !m.disabled
 			).length > 0 ? (
 				<section>
-					{!['alephzero'].includes(network) && !hasProxy && !proxyNotInDb && isOnchain && !proxyInProcess ? (
+					{!['alephzero', 'ternoa'].includes(network) && !hasProxy && !proxyNotInDb && isOnchain && !proxyInProcess ? (
 						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left border-2 border-solid border-waiting text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 							<p className='text-white'>Create a proxy to edit or backup your Multisig.</p>
 							<Button

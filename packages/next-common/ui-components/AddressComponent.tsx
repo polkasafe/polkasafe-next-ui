@@ -117,7 +117,9 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 						{name ||
 							addressObj?.nickName ||
 							addressObj?.name ||
-							multisigAddresses.find((item) => item.address === address || item.proxy === address)?.name ||
+							multisigAddresses.find(
+								(item) => (item.address === address || item.proxy === address) && item.network === network
+							)?.name ||
 							records?.[getSubstrateAddress(address) || address]?.name ||
 							DEFAULT_ADDRESS_NAME}
 					</div>

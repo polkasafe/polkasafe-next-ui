@@ -14,6 +14,7 @@ import polymeshLogo from '~assets/parachains-logos/polymesh-logo.png';
 import westendLogo from '~assets/parachains-logos/westend-logo.png';
 import { StaticImageData } from 'next/image';
 import rococoLogo from '~assets/parachains-logos/rococo-logo.jpeg';
+import ternoaLogo from '~assets/parachains-logos/ternoa-logo.jpeg';
 
 export type Network = (typeof networks)[keyof typeof networks];
 export type TokenSymbol = (typeof tokenSymbol)[keyof typeof tokenSymbol];
@@ -41,12 +42,14 @@ export const networks = {
 	ROCOCO: 'rococo',
 	STATEMINE: 'assethub-kusama',
 	STATEMINT: 'assethub-polkadot',
+	TERNOA: 'ternoa',
 	WESTEND: 'westend'
 };
 
 export const tokenSymbol = {
 	ASTR: 'ASTR',
 	AZERO: 'AZERO',
+	CAPS: 'CAPS',
 	DOT: 'DOT',
 	KSM: 'KSM',
 	ROC: 'ROC',
@@ -133,6 +136,16 @@ export const chainProperties: ChainPropType = {
 		ss58Format: 42,
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.AZERO
+	},
+	[networks.TERNOA]: {
+		blockTime: 1000,
+		chainId: 0,
+		existentialDeposit: '0.1500',
+		logo: ternoaLogo,
+		rpcEndpoint: 'wss://mainnet.ternoa.network',
+		ss58Format: 42,
+		tokenDecimals: 18,
+		tokenSymbol: tokenSymbol.CAPS
 	}
 };
 

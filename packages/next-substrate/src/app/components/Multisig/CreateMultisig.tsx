@@ -133,7 +133,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				senderAddress: getSubstrateAddress(userAddress) || userAddress,
 				setLoadingMessages
 			});
-			if (['alephzero'].includes(network) || pathname !== '/') {
+			if (['alephzero', 'ternoa'].includes(network) || pathname !== '/') {
 				createProxy(multisigData, false);
 			} else {
 				setSuccess(true);

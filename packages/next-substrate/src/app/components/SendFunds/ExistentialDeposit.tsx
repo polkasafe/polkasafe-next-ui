@@ -206,14 +206,16 @@ const ExistentialDeposit = ({
 						</div>
 					</section>
 
-					<BalanceInput
-						multipleCurrency
-						fromBalance={selectedAccountBalance}
-						defaultValue={String(chainProperties[network]?.existentialDeposit)}
-						className='mt-6'
-						placeholder={String(chainProperties[network]?.existentialDeposit)}
-						onChange={(balance) => setAmount(balance)}
-					/>
+					<section className='mt-6'>
+						<label className='text-primary font-normal text-xs leading-[13px] block mb-2'>Amount</label>
+						<BalanceInput
+							multipleCurrency
+							fromBalance={selectedAccountBalance}
+							defaultValue={String(chainProperties[network]?.existentialDeposit)}
+							placeholder={String(chainProperties[network]?.existentialDeposit)}
+							onChange={(balance) => setAmount(balance)}
+						/>
+					</section>
 
 					<section className='mt-6'>
 						<label className='text-primary font-normal text-xs leading-[13px] block mb-3'>Existential Deposit</label>
