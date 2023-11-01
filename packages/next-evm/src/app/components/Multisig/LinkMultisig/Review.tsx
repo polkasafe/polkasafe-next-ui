@@ -5,11 +5,11 @@
 import React from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
-import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { IMultisigAddress } from '@next-common/types';
 import { CheckOutlined, CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
+import AddressComponent from '@next-evm/ui-components/AddressComponent';
 
 // import Loader from '../../UserFlow/Loader';
 
@@ -107,29 +107,10 @@ const Review = ({ multisigData, signatories, multisigName }: Props) => {
 										className='flex items-center mx-5 mt-5'
 										key={i}
 									>
-										<MetaMaskAvatar
+										<AddressComponent
 											address={item.address}
-											size={30}
+											name={item.name}
 										/>
-										<div className='flex flex-col'>
-											<p className='text-sm'>{item.name || DEFAULT_ADDRESS_NAME}</p>
-											<div className='flex'>
-												<p className='text-sm text-text_secondary'>{shortenAddress(item.address)}</p>
-												<button
-													className='mx-1'
-													onClick={() => navigator.clipboard.writeText(item.address)}
-												>
-													<CopyIcon className='text-text_secondary cursor-pointer hover:text-primary' />
-												</button>
-												<a
-													href={`https://${network}.subscan.io/account/${item.address}`}
-													target='_blank'
-													rel='noreferrer'
-												>
-													<ExternalLinkIcon className='text-text_secondary' />
-												</a>
-											</div>
-										</div>
 									</div>
 								))}
 							</div>

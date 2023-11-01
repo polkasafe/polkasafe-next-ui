@@ -7,10 +7,10 @@ import { Spin, Tooltip } from 'antd';
 import { ethers } from 'ethers';
 import React, { useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
-import astarLogo from '@next-common/assets/astar-logo.png';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
+import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import AddressQr from '@next-common/ui-components/AddressQr';
-import { CopyIcon, QRIcon, WalletIcon } from '@next-common/ui-components/CustomIcons';
+import { CopyIcon, QRIcon, AssetsIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
@@ -19,6 +19,7 @@ import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FundMultisig from '@next-evm/app/components/SendFunds/FundMultisig';
 import SendFundsForm from '@next-evm/app/components/SendFunds/SendFundsForm';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 interface IDashboardCard {
 	className?: string;
@@ -36,6 +37,7 @@ const DashboardCard = ({
 	setOpenTransactionModal
 }: IDashboardCard) => {
 	const { activeMultisig, multisigAddresses, activeMultisigData } = useGlobalUserDetailsContext();
+	const { network } = useGlobalApiContext();
 
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
 	const currentMultisig = multisigAddresses?.find((item) => item.address === activeMultisig);
@@ -74,7 +76,7 @@ const DashboardCard = ({
 						<div className='w-5'>
 							<Image
 								className='w-5'
-								src={astarLogo}
+								src={chainProperties[network].logo}
 								alt='icon'
 							/>
 						</div>
@@ -141,7 +143,7 @@ const DashboardCard = ({
 						</div>
 					</div>
 					<div>
-						<div className='text-white'>ASTR</div>
+						<div className='text-white'>{chainProperties[network].tokenSymbol}</div>
 						<div className='font-bold text-lg text-primary'>
 							{!activeMultisigData?.safeBalance ? (
 								<Spin size='default' />
@@ -170,8 +172,9 @@ const DashboardCard = ({
 						secondary
 						onClick={() => setOpenFundMultisigModal(true)}
 						className='w-[45%] flex items-center justify-center py-4 2xl:py-5 '
+						icon={<AssetsIcon />}
 					>
-						<WalletIcon /> Fund Multisig
+						Fund Multisig
 					</PrimaryButton>
 				</div>
 			</div>

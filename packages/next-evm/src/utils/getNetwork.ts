@@ -11,8 +11,14 @@ import { NETWORK } from '@next-common/global/evm-network-constants';
 
 export default function getNetwork(): NETWORK {
 	const defaultNetwork = NETWORK.ASTAR;
+	const selectedNetwork = typeof window !== 'undefined' && localStorage.getItem('network');
+	const allNetwork = Object.values(NETWORK);
+	const url = typeof window !== 'undefined' && global.window.location.href;
 
-	const url = typeof window !== 'undefined' && window.location.href;
+	if (selectedNetwork && allNetwork.includes(selectedNetwork as NETWORK)) {
+		// console.log(selectedNetwork);
+		return selectedNetwork as NETWORK;
+	}
 
 	let network = (`${url}`.split('//')[1]?.split('.')[0] as NETWORK) || defaultNetwork;
 

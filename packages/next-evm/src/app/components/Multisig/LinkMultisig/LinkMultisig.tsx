@@ -6,16 +6,17 @@
 
 import { SafeInfoResponse } from '@safe-global/api-kit';
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import AddBtn from '@next-evm/app/components/Multisig/ModalBtn';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { IMultisigAddress, NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, ISharedAddressBookRecord, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import { EVM_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
+import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
+import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import NameAddress from './NameAddress';
 import SelectNetwork from './SelectNetwork';
 import Owners from './Owners';
@@ -32,9 +33,9 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 	const [nameAddress, setNameAddress] = useState(true);
 	const [viewOwners, setViewOwners] = useState(true);
 	const [viewReviews, setViewReviews] = useState(true);
-	const { address, addressBook, gnosisSafe } = useGlobalUserDetailsContext();
+	const { address, addressBook, gnosisSafe, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { setActiveMultisigContextState } = useActiveMultisigContext();
 	const { network } = useGlobalApiContext();
-	const router = useRouter();
 
 	const [multisigAddress, setMultisigAddress] = useState<string>('');
 
@@ -136,7 +137,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 		if (multisigData) {
 			try {
 				const { data: createMultisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
-					`${EVM_API_URL}/createMultisig`,
+					`${EVM_API_URL}/createMultisigEth`,
 					{
 						signatories: signatoriesArray.map((item) => item.address),
 						threshold,
@@ -146,13 +147,44 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 					{ network }
 				);
 
+				onCancel();
 				if (createMultisigData && !multisigError) {
 					queueNotification({
 						header: 'Success!',
 						message: 'Multisig Linked Successfully.',
 						status: NotificationStatus.SUCCESS
 					});
-					router.replace('/');
+					setUserDetailsContextState((prevState) => {
+						return {
+							...prevState,
+							activeMultisig: multisigData.address,
+							multisigAddresses: [...(prevState?.multisigAddresses || []), multisigData],
+							multisigSettings: {
+								...prevState.multisigSettings,
+								[`${multisigData.address}_${multisigData.network}`]: {
+									name: multisigData.name,
+									deleted: false
+								}
+							}
+						};
+					});
+					const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
+					multisigData.signatories.forEach((signatory) => {
+						const data = addressBook.find((a) => a.address === signatory);
+						newRecords[signatory] = {
+							address: signatory,
+							name: data?.name || DEFAULT_ADDRESS_NAME,
+							email: data?.email,
+							discord: data?.discord,
+							telegram: data?.telegram,
+							roles: data?.roles
+						};
+					});
+					setActiveMultisigContextState((prev) => ({
+						...prev,
+						records: newRecords,
+						multisig: multisigData.address
+					}));
 				}
 			} catch (err) {
 				console.log(err);

@@ -11,8 +11,6 @@ import { MetaMaskAvatar } from 'react-metamask-avatar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import PolkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
-import ModalComponent from '@next-common/ui-components/ModalComponent';
-import AddMultisig from '@next-evm/app/components/Multisig/AddMultisig';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import {
@@ -25,6 +23,7 @@ import {
 	TransactionIcon,
 	UserPlusIcon
 } from '@next-common/ui-components/CustomIcons';
+import { useAddMultisigContext } from '@next-evm/context/AddMultisigContext';
 
 interface Props {
 	className?: string;
@@ -43,7 +42,7 @@ const Menu: FC<Props> = ({ className }) => {
 		}
 	}, [activeMultisig]);
 
-	const [openAddMultisig, setOpenAddMultisig] = useState(false);
+	const { setOpenAddMultisigModal } = useAddMultisigContext();
 
 	const menuItems = [
 		{
@@ -90,16 +89,6 @@ const Menu: FC<Props> = ({ className }) => {
 
 	return (
 		<div className={classNames(className, 'bg-bg-main flex flex-col h-full py-[25px] px-3')}>
-			<ModalComponent
-				open={openAddMultisig}
-				onCancel={() => setOpenAddMultisig(false)}
-				title=''
-			>
-				<AddMultisig
-					onCancel={() => setOpenAddMultisig(false)}
-					isModalPopup
-				/>
-			</ModalComponent>
 			<div className='flex flex-col mb-3'>
 				<section className='flex mb-7 justify-center w-full'>
 					<Link
@@ -168,7 +157,7 @@ const Menu: FC<Props> = ({ className }) => {
 										key={multisig.address}
 									>
 										<button
-											className={`'w-full flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
+											className={`w-full flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
 												multisig.address === selectedMultisigAddress && 'bg-highlight text-primary'
 											}`}
 											onClick={() => {
@@ -197,7 +186,7 @@ const Menu: FC<Props> = ({ className }) => {
 				<section className='mt-auto'>
 					<button
 						className='text-white bg-primary p-3 rounded-lg w-full flex items-center justify-center gap-x-2 cursor-pointer'
-						onClick={() => setOpenAddMultisig(true)}
+						onClick={() => setOpenAddMultisigModal(true)}
 					>
 						<UserPlusIcon className='text-sm' />
 						<span className='font-medium text-xs'>Add Multisig</span>

@@ -254,7 +254,6 @@ input {
 }
 
 .ant-spin-nested-loading >div>.ant-spin .ant-spin-dot {
-  top: 0;
   left: 0;
 }
 

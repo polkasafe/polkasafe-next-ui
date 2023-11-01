@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 import React from 'react';
-import NoTransactionsQueuedSVG from 'src/assets/icons/no-transactions-queued.svg';
+import NoTransactionsQueuedSVG from '@next-common/assets/icons/no-transactions-queued.svg';
 
 const NoTransactionsQueued = () => {
 	return (

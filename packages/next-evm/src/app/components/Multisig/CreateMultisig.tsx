@@ -231,7 +231,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 											disabled={
 												!addAddress ||
 												!isValidWeb3Address(addAddress) ||
-												Object.keys(records).includes(addAddress) ||
+												(records && Object.keys(records).includes(addAddress)) ||
 												addressBook.some((item) => item.address === addAddress)
 											}
 											onClick={() => setShowAddressModal(true)}

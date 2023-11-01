@@ -6,9 +6,15 @@
 'use client';
 
 import Home from '@next-evm/app/components/Home';
+import AddMultisigModal from './components/Multisig/AddMultisigModal';
 
 const HomePage: React.FC = () => {
-	return <Home />;
+	return (
+		<>
+			<AddMultisigModal />
+			<Home />
+		</>
+	);
 };
 
 export default HomePage;

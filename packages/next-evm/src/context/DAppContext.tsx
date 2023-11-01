@@ -7,14 +7,20 @@ import '@polkadot/api-augment';
 import { ReactNode, createContext, useContext, useMemo, useState } from 'react';
 
 export interface DAppContextType {
-	iframeVisibility: boolean;
-	setIframeVisibility: React.Dispatch<React.SetStateAction<boolean>>;
+	iframeVisibility: Apps | null;
+	setIframeVisibility: React.Dispatch<React.SetStateAction<Apps | null>>;
+}
+
+export enum Apps {
+	POLKASSEMBLY = 'polkassembly',
+	SUB_ID = 'sub_id',
+	ASTAR = 'astar'
 }
 
 export const DAppContext: React.Context<DAppContextType> = createContext({} as DAppContextType);
 
 export function DAppContextProvider({ children }: { children: ReactNode }): ReactNode {
-	const [iframeVisibility, setIframeVisibility] = useState(false);
+	const [iframeVisibility, setIframeVisibility] = useState<Apps | null>(null);
 
 	const value = useMemo(() => ({ iframeVisibility, setIframeVisibility }), [iframeVisibility]);
 

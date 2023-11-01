@@ -5,11 +5,7 @@
 import { ethers } from 'ethers';
 
 const verifyEthSignature = async (address: string, signature: string, message: string): Promise<boolean> => {
-	console.log('inside');
-	// const messageBytes = ethers.toUtf8Bytes(message);
-	// console.log(messageBytes);
 	const recoveredAddress = ethers.verifyMessage(message, signature);
-	console.log(recoveredAddress);
 	return recoveredAddress.toLowerCase() === address.toLowerCase();
 };
 

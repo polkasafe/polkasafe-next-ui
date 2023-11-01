@@ -584,7 +584,6 @@ const SendFundsForm = ({ className, onCancel, defaultSelectedAddress, setNewTxn 
 				<ModalBtn
 					disabled={
 						recipientAndAmount.some((item) => item.recipient === '' || item.amount === '0' || !item.amount) ||
-						Number(amount) > Number(ethers.utils.formatEther(activeMultisigData?.safeBalance?.toString())) ||
 						Object.keys(transactionFields[category].subfields).some(
 							(key) =>
 								!transactionFieldsObject.subfields[key]?.value && transactionFields[category].subfields[key].required

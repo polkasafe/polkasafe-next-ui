@@ -14,6 +14,21 @@ const returnTxUrl = (network?: NETWORK): string => {
 	if (network === NETWORK.ASTAR) {
 		return 'https://transaction.safe.astar.network';
 	}
+	if (network === NETWORK.ETHERIUM) {
+		return 'https://safe-transaction-mainnet.safe.global';
+	}
+	if (network === NETWORK.ARBITRUM) {
+		return 'https://safe-transaction-arbitrum.safe.global';
+	}
+	if (network === NETWORK.OPTIMISM) {
+		return 'https://safe-transaction-optimism.safe.global';
+	}
+	if (network === NETWORK.GNOSIS) {
+		return 'https://safe-transaction-gnosis-chain.safe.global';
+	}
+	if (network === NETWORK.BNB) {
+		return 'https://safe-transaction-bsc.safe.global';
+	}
 	return '';
 };
 

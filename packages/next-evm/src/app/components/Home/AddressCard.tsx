@@ -9,7 +9,7 @@ import AddAddrIcon from '@next-common/assets/icons/add-addr-icon.svg';
 import AddAdress from '@next-evm/app/components/AddressBook/AddAddress';
 import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import AddressComponent from '@next-common/ui-components/AddressComponent';
+import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import ModalComponent from '@next-common/ui-components/ModalComponent';

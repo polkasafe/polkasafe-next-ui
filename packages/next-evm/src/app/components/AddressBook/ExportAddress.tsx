@@ -47,23 +47,25 @@ const ExportAdress = ({
 		const headers = ['Name,Address,Email,Discord,Telegram,Roles'];
 
 		// Convert users data to a csv
-		const usersCsv = Object.keys(records).reduce(
-			(acc, a) => {
-				const { name, address, email, discord, telegram, roles } = records[a];
-				acc.push(
-					[
-						name,
-						address,
-						email || '-',
-						discord || '-',
-						telegram || '-',
-						roles && roles.length ? roles.join(',') : '-'
-					].join(',')
-				);
-				return acc;
-			},
-			['']
-		);
+		const usersCsv =
+			records &&
+			Object.keys(records).reduce(
+				(acc, a) => {
+					const { name, address, email, discord, telegram, roles } = records[a];
+					acc.push(
+						[
+							name,
+							address,
+							email || '-',
+							discord || '-',
+							telegram || '-',
+							roles && roles.length ? roles.join(',') : '-'
+						].join(',')
+					);
+					return acc;
+				},
+				['']
+			);
 
 		downloadFile({
 			data: [...headers, ...usersCsv].join('\n'),
@@ -78,7 +80,7 @@ const ExportAdress = ({
 			<div className='flex items-left justify-left'>
 				<p className='mr-2 text-white'>You are about to export a JSON file with</p>
 				<div className='bg-highlight text-primary px-2 rounded-md'>
-					{Object.keys(records).length} address book entries
+					{records && Object.keys(records).length} address book entries
 				</div>
 			</div>
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>

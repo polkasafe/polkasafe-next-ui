@@ -181,7 +181,7 @@ const Notifications = () => {
 				setLoading(true);
 
 				const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
-					await nextApiClientFetch<string>(`${EVM_API_URL}/updateNotificationTriggerPreferences`, {
+					await nextApiClientFetch<string>(`${EVM_API_URL}/updateNotificationTriggerPreferencesEth`, {
 						triggerPreferences: newPreferences
 					});
 

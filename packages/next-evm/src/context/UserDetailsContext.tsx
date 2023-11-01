@@ -9,8 +9,9 @@ import { ethers } from 'ethers';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
+import { chainProperties, NETWORK } from '@next-common/global/evm-network-constants';
 import returnTxUrl from '@next-common/global/gnosisService';
-import { GnosisSafeService } from '@next-evm/services';
+import GnosisSafeService from '@next-evm/services/Gnosis';
 import { EFieldType, IUser, Triggers, UserDetailsContextTypeEVM, Wallet } from '@next-common/types';
 import InvalidNetwork from '@next-common/ui-components/InvalidNetwork';
 import { convertSafeMultisig } from '@next-evm/utils/convertSafeData/convertSafeMultisig';
@@ -25,9 +26,10 @@ const initialUserDetailsContext: UserDetailsContextTypeEVM = {
 	addressBook: [],
 	createdAt: new Date(),
 	gnosisSafe: {} as any,
-	loggedInWallet: Wallet.POLKADOT,
+	loggedInWallet: Wallet.METAMASK,
 	multisigAddresses: [],
 	multisigSettings: {},
+	isNetworkMismatch: false,
 	notification_preferences: {
 		channelPreferences: {},
 		triggerPreferences: {
@@ -340,15 +342,11 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 				return;
 			}
 			setLoading(true);
-			const connectAddressRes = await nextApiClientFetch(
+			const { data: userData, error: connectAddressErr } = await nextApiClientFetch<IUser>(
 				`${EVM_API_AUTH_URL}/connectAddressEth`,
 				{},
 				{ address, signature, network: passedNetwork }
 			);
-			const { data: userData, error: connectAddressErr } = connectAddressRes as {
-				data: IUser;
-				error: string;
-			};
 			if (!connectAddressErr && userData) {
 				setUserDetailsContextState((prevState) => {
 					return {
@@ -368,7 +366,9 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					};
 				});
 				if (!signer) {
-					await connect({ chainId: 592 });
+					await connect({
+						chainId: chainProperties?.[network].chainId || 592
+					});
 				}
 				if (signer) {
 					const txUrl = returnTxUrl(network);
@@ -465,7 +465,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 
 	// eslint-disable-next-line react-hooks/exhaustive-deps
 	const handleNetworkMisMatch = async () => {
-		await connect({ chainId: 592 });
+		await connect({ chainId: chainProperties?.[network].chainId || 592 });
 	};
 
 	useEffect(() => {
@@ -482,20 +482,32 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			loading,
 			...userDetailsContextState,
 			gnosisSafe,
+			isNetworkMismatch,
 			setActiveMultisigData,
 			setGnosisSafe,
 			setLoading,
 			setUserDetailsContextState,
 			updateCurrentMultisigData
 		}),
-		[activeMultisigData, connectAddress, gnosisSafe, loading, updateCurrentMultisigData, userDetailsContextState]
+		[
+			activeMultisigData,
+			connectAddress,
+			gnosisSafe,
+			isNetworkMismatch,
+			loading,
+			updateCurrentMultisigData,
+			userDetailsContextState
+		]
 	);
 
 	if (!gnosisSafe) return null;
 
 	return (
 		<UserDetailsContext.Provider value={value}>
-			{isNetworkMismatch && typeof window !== 'undefined' && localStorage.getItem('signature') ? (
+			{isNetworkMismatch &&
+			typeof window !== 'undefined' &&
+			localStorage.getItem('signature') &&
+			!Object.values(NETWORK).includes(network) ? (
 				<InvalidNetwork />
 			) : (
 				children

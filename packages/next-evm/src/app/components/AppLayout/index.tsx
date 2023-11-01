@@ -9,7 +9,7 @@ import React, { ReactNode, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import polkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
-import longIframe from '@next-common/assets/long-iframe.svg';
+import LongIframe from '@next-common/assets/long-iframe.svg';
 import shortIframe from '@next-common/assets/short-iframe.svg';
 import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
@@ -18,7 +18,6 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 import useHandleMetamask from '@next-evm/hooks/useHandleMetamask';
 import { ISharedAddressBooks } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
-import styled from 'styled-components';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 
 import Image from 'next/image';
@@ -39,7 +38,7 @@ export interface IRouteInfo {
 }
 
 const AppLayout = ({ className, children }: { className?: string; children: ReactNode }) => {
-	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
+	const { activeMultisig, multisigAddresses, isNetworkMismatch } = useGlobalUserDetailsContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
 	const { network } = useGlobalApiContext();
 	const { iframeVisibility, setIframeVisibility } = useGlobalDAppContext();
@@ -52,7 +51,7 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const metamaskError = useHandleMetamask();
 
-	// const IframeUrl= `https://sub.id/${getSubstrateAddress(activeMultisig)}`;
+	const IframeUrl = `https://sub.id/${activeMultisig}`;
 	const isAppsPage = pathname.split('/').pop() === 'apps';
 	const hideSlider = iframeState && isAppsPage;
 
@@ -96,16 +95,16 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [pathname]);
 
-	// const handleIframeLoad = () => {
-	// setLoading(false);
-	//  Not abel to grab the elements because of same frame origin
-	//  const iframe = document.getElementById('Dapp') as HTMLIFrameElement;
-	//  const iframeDocument = iframe?.contentDocument|| iframe?.contentWindow?.document;
-	//  const button = iframeDocument?.getElementsByClassName('DfTopBar--rightContent')[0];
-	//  const search = iframeDocument?.getElementsByClassName('DfSearch')[0];
-	//  search?.style?.display = 'none';
-	//  button.style.display ='none';
-	// };
+	const handleIframeLoad = () => {
+		setLoading(false);
+		// Not abel to grab the elements because of same frame origin
+		// const iframe = document.getElementById('Dapp') as HTMLIFrameElement;
+		// const iframeDocument = iframe?.contentDocument|| iframe?.contentWindow?.document;
+		// const button = iframeDocument?.getElementsByClassName('DfTopBar--rightContent')[0];
+		// const search = iframeDocument?.getElementsByClassName('DfSearch')[0];
+		// search?.style?.display = 'none';
+		// button.style.display ='none';
+	};
 
 	return (
 		<Layout className={className}>
@@ -114,7 +113,7 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 				sideDrawer={sideDrawer}
 				showSubmenu={iframeVisibility && isAppsPage}
 				onClick={() => {
-					setIframeVisibility(false);
+					setIframeVisibility(null);
 					setIframeState(false);
 					setLoading(true);
 				}}
@@ -185,20 +184,25 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 					{iframeVisibility && isAppsPage ? (
 						<div className='w-full rounded-lg'>
 							{!!loading && <Loader size='large' />}
+							<iframe
+								id='Dapp'
+								title='Dapp'
+								onLoad={handleIframeLoad}
+								src={IframeUrl}
+								className={`w-full h-[calc(100%)] ${loading ? 'hidden' : 'block'}`}
+							/>
 							{!hideSlider && (
-								<Image
-									src={longIframe}
-									alt=''
-									width='30'
-									height='30'
+								<div
 									className='hidden lg:block cursor-pointer absolute top-1/2 left-auto -ml-4 transform -translate-y-1/2 z-50'
 									onClick={() => setIframeState(true)}
-								/>
+								>
+									<LongIframe />
+								</div>
 							)}
 						</div>
 					) : (
 						<Content className='bg-bg-secondary p-[30px] max-w-[100%] lg:max-w-[calc(100%-180px)] rounded-lg'>
-							{multisigChanged ? <Loader size='large' /> : children}
+							{multisigChanged || isNetworkMismatch ? <Loader size='large' /> : children}
 						</Content>
 					)}
 				</Layout>
@@ -208,18 +212,4 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 	);
 };
 
-export default styled(AppLayout)`
-	background: transparent !important;
-	.min-h {
-		min-height: calc(100vh - 70px - 60px);
-	}
-	.ant-drawer-content-wrapper {
-		max-width: 240px;
-	}
-	.ant-drawer-mask {
-	}
-	.ant-drawer-body {
-		padding: 0;
-		margin: 0;
-	}
-`;
+export default AppLayout;

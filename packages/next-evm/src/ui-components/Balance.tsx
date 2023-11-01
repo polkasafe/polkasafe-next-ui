@@ -2,6 +2,8 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
+import { chainProperties } from '@next-common/global/evm-network-constants';
+import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useSigner } from '@thirdweb-dev/react';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
@@ -13,6 +15,7 @@ interface Props {
 
 const Balance = ({ address, className }: Props) => {
 	const signer = useSigner();
+	const { network } = useGlobalApiContext();
 
 	const [balance, setBalance] = useState<string>('0');
 
@@ -38,7 +41,9 @@ const Balance = ({ address, className }: Props) => {
 			className={`bg-highlight rounded-lg px-[10px] py-[6px] ml-auto font-normal text-xs leading-[13px] flex items-center justify-center ${className}`}
 		>
 			<span className='text-primary mr-2'>Balance: </span>
-			<span className='text-white'>{parseFloat(balance).toFixed(3)}</span>
+			<span className='text-white'>
+				{parseFloat(balance).toFixed(3)} {chainProperties[network].tokenSymbol}
+			</span>
 		</div>
 	);
 };

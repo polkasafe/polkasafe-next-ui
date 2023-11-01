@@ -96,6 +96,7 @@ const FundMultisig = ({
 			txnHash={txnHash}
 			onDone={() => {
 				setNewTxn?.((prev) => !prev);
+				onCancel();
 			}}
 		/>
 	) : failure ? (

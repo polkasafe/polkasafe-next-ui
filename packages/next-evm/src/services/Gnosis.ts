@@ -16,15 +16,15 @@ import {
 	// SafeTransactionDataPartial,
 	TransactionResult
 } from '@safe-global/safe-core-sdk-types';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 import createTokenTransferParams from '@next-evm/utils/createTokenTransaferParams';
+import getAllAssets from '@next-evm/utils/getAllAssets';
 
-// eslint-disable-next-line func-names
 (BigInt.prototype as any).toJSON = function () {
 	return this.toString();
 };
 
-// eslint-disable-next-line import/prefer-default-export
-export class GnosisSafeService {
+export default class GnosisSafeService {
 	ethAdapter: any;
 
 	safeFactory: any;
@@ -42,6 +42,7 @@ export class GnosisSafeService {
 		});
 	}
 
+	// eslint-disable-next-line consistent-return
 	createSafe = async (owners: [string], threshold: number): Promise<string | undefined> => {
 		try {
 			const safeAccountConfig: SafeAccountConfig = {
@@ -62,7 +63,6 @@ export class GnosisSafeService {
 			return await safe.getAddress();
 		} catch (err) {
 			console.log('error from createSafe', err);
-			return null;
 		}
 	};
 
@@ -250,6 +250,12 @@ export class GnosisSafeService {
 		return this.safeService.getPendingTransactions(multisigAddress);
 	};
 
+	// eslint-disable-next-line class-methods-use-this
+	getMultisigAllAssets = async (network: NETWORK, multisigAddress: string): Promise<any> => {
+		// eslint-disable-next-line @typescript-eslint/return-await
+		return await getAllAssets(network, multisigAddress);
+	};
+
 	getAllTx = async (multisigAddress: string, options: any = {}): Promise<AllTransactionsListResponse> => {
 		return this.safeService.getAllTransactions(multisigAddress, options);
 	};
@@ -299,6 +305,15 @@ export class GnosisSafeService {
 	getMultisigData = async (multisigAddress: string): Promise<SafeInfoResponse | null> => {
 		try {
 			return await this.safeService.getSafeInfo(multisigAddress);
+		} catch (err) {
+			console.log('error from getMultisigData', err);
+			return null;
+		}
+	};
+
+	getAllSafeByOwner = async (owner: string): Promise<OwnerResponse | null> => {
+		try {
+			return await this.safeService.getSafesByOwner(owner);
 		} catch (err) {
 			console.log('error from getMultisigData', err);
 			return null;

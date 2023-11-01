@@ -4,7 +4,7 @@
 // import { PlusCircleOutlined } from '@ant-design/icons';
 import { AutoComplete, Button, Form, Input, Spin, Tooltip } from 'antd';
 import React, { useState } from 'react';
-import AddMultisigSVG from '@next-evm/assets/add-multisig.svg';
+import AddMultisigSVG from '@next-common/assets/add-multisig.svg';
 import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedTransaction';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import RemoveMultisigSVG from '@next-common/assets/remove-multisig.svg';

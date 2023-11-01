@@ -18,17 +18,18 @@ export async function POST(req: Request) {
 	const headersList = headers();
 	const address = headersList.get('x-address');
 	const signature = headersList.get('x-signature');
+	const network = headersList.get('x-network');
 
 	if (!signature || !address) {
 		return NextResponse.json({ data: null, error: responseMessages.missing_headers }, { status: 400 });
 	}
-	const docId = address;
+	const docId = `${address}_${network}`;
 	const addressRef = firestoreDB.collection('addresses').doc(docId);
 	const doc = await addressRef.get();
 	let token = '';
+
 	if (doc.exists) {
 		const data = doc.data();
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		token = data?.token;
 	}
 	const isValid = await verifyEthSignature(address, signature, token);

@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { GnosisSafeService } from '@next-evm/services';
+import GnosisSafeService from '@next-evm/services/Gnosis';
 import { Dispatch, SetStateAction } from 'react';
 
 export enum CHANNEL {
@@ -117,12 +117,14 @@ export interface UserDetailsContextTypeEVM {
 	gnosisSafe: GnosisSafeService;
 	setGnosisSafe: any;
 	transactionFields: ITransactionFields;
+	isNetworkMismatch: boolean;
 }
 
 export enum Wallet {
 	POLKADOT = 'polkadot-js',
 	SUBWALLET = 'subwallet-js',
-	TALISMAN = 'talisman'
+	TALISMAN = 'talisman',
+	METAMASK = 'metamask'
 }
 
 export interface AccountMeta {
