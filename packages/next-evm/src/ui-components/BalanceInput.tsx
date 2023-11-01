@@ -6,7 +6,7 @@ import { Form, Input } from 'antd';
 import React from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 interface Props {
 	className?: string;

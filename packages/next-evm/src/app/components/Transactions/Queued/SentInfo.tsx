@@ -9,7 +9,7 @@ import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import RemoveBtn from '@next-evm/app/components/Settings/RemoveBtn';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,

@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import { ITransaction, NotificationStatus } from '@next-common/types';
 import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';

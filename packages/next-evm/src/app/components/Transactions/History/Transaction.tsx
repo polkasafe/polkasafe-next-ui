@@ -10,7 +10,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import { ITransaction } from '@next-common/types';
 import {
 	ArrowDownLeftIcon,

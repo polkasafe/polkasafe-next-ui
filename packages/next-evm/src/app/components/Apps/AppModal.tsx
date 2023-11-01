@@ -6,7 +6,7 @@ import React from 'react';
 import astarLogo from '@next-common/assets/parachains-logos/astar-logo.png';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { Apps, useGlobalDAppContext } from '@next-evm/context/DAppContext';
-import { networks } from '@next-common/global/networkConstants';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 import { ArrowRightIcon, PolkassemblyIcon, SubIDIcon } from '@next-common/ui-components/CustomIcons';
 import Image from 'next/image';
 
@@ -42,7 +42,7 @@ const AppModal = ({ name, description, onCancel }: { name: string; description: 
 								astar{' '}
 							</button>
 						) : (
-							Object.values(networks).map((net) => (
+							Object.values(NETWORK).map((net) => (
 								<button
 									key={net}
 									className='rounded-lg py-2 px-[10px] text-sm leading-[15px] text-white text-primary bg-highlight'

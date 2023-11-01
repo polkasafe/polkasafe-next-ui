@@ -7,7 +7,7 @@ import classNames from 'classnames';
 import React, { FC } from 'react';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { CircleCheckIcon, CirclePlusIcon, CircleWatchIcon, CopyIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
