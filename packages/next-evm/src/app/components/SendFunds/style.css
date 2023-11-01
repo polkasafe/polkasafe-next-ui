@@ -1,0 +1,15 @@
+.ant-select input {
+    background-color: #24272E !important;
+    padding: 12px;
+    display: block !important;
+    height: 100% !important;
+}
+.ant-select-selector {
+    border: none !important;
+    height: 50px !important; 
+    box-shadow: none !important;
+}
+
+.ant-select {
+    height: 50px !important;
+}

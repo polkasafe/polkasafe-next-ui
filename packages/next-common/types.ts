@@ -2,6 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
+import { GnosisSafeService } from '@next-evm/services';
 import { Dispatch, SetStateAction } from 'react';
 
 export enum CHANNEL {
@@ -91,6 +92,31 @@ export interface UserDetailsContextType {
 	transactionFields: ITransactionFields;
 	two_factor_auth?: I2FASettings;
 	tfa_token?: I2FAToken;
+}
+
+export interface UserDetailsContextTypeEVM {
+	loggedInWallet: any;
+	activeMultisig: string;
+	address: string;
+	createdAt: Date;
+	fetchUserData?: any;
+	fetchMultisigTransactionData?: any;
+	multisigAddresses: IMultisigAddress[];
+	multisigSettings: { [multisigAddress: string]: IMultisigSettings };
+	addressBook: IAddressBookItem[];
+	setUserDetailsContextState: Dispatch<SetStateAction<UserDetailsContextTypeEVM>>;
+	activeMultisigData?: any;
+	activeMultisigTxs?: any[];
+	setLoading?: any;
+	loading?: boolean;
+	setActiveMultisigData: any;
+	updateCurrentMultisigData: any;
+	login?: () => any;
+	notification_preferences?: any;
+	connectAddress?: any;
+	gnosisSafe: GnosisSafeService;
+	setGnosisSafe: any;
+	transactionFields: ITransactionFields;
 }
 
 export enum Wallet {

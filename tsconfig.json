@@ -30,6 +30,9 @@
       "@next-substrate/*": [
         "./next-substrate/src/*"
       ],
+      "@next-evm/*": [
+        "./next-evm/src/*"
+      ],
       "@next-common/*": [
         "./next-common/*"
       ],

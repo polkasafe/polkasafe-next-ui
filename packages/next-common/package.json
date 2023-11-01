@@ -20,6 +20,7 @@
     "@polkadot/react-qr": "^3.0.2",
     "@svgr/webpack": "^8.1.0",
     "antd": "^5.0.7",
+    "ethers": "6.7.1",
     "next": "13.4.19",
     "react": "18.2.0",
     "react-dom": "18.2.0",

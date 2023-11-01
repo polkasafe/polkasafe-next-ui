@@ -1,0 +1,20 @@
+// Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
+// This software may be modified and distributed under the terms
+// of the Apache-2.0 license. See the LICENSE file for details.
+
+import { NETWORK } from './evm-network-constants';
+
+const returnTxUrl = (network?: NETWORK): string => {
+	if (network === NETWORK.GOERLI) {
+		return 'https://safe-transaction-goerli.safe.global';
+	}
+	if (network === NETWORK.POLYGON) {
+		return 'https://safe-transaction-polygon.safe.global';
+	}
+	if (network === NETWORK.ASTAR) {
+		return 'https://transaction.safe.astar.network';
+	}
+	return '';
+};
+
+export default returnTxUrl;
