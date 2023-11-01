@@ -39,7 +39,7 @@ const chains: any = {
 export function ApiContextProvider({ children }: ApiContextProviderProps): React.ReactElement {
 	const searchParams = useSearchParams();
 	const queryNetwork = searchParams.get('network');
-	console.log(queryNetwork);
+	console.log('query', queryNetwork);
 	const [network, setNetwork] = useState<NETWORK>(getNetwork());
 
 	const value = useMemo(() => ({ network, setNetwork }), [network]);
