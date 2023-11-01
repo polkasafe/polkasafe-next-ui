@@ -47,7 +47,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const [loading, setLoading] = useState(false);
 	// const hash = location.hash.slice(1);
-	const isSentType = type === 'Sent' || type === 'MULTISIG_TRANSACTION';
+	const isSentType = type === 'Sent' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend';
 	const isFundType = type === 'ETHEREUM_TRANSACTION';
 
 	const [transactionDetails, setTransactionDetails] = useState<ITransaction>({} as any);
@@ -125,7 +125,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 						)}
 					>
 						<p className='col-span-3 flex items-center gap-x-3'>
-							{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' ? (
+							{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
 								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
 									<ArrowUpRightIcon />
 								</span>

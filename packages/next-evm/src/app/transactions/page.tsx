@@ -4,6 +4,7 @@
 
 'use client';
 
+import './style.css';
 import { SyncOutlined } from '@ant-design/icons';
 import { Button } from 'antd';
 import React, { useEffect, useState } from 'react';

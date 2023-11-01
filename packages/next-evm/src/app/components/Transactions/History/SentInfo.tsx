@@ -12,7 +12,6 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { CircleCheckIcon, CirclePlusIcon, CircleWatchIcon, CopyIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
-import styled from 'styled-components';
 import { ethers } from 'ethers';
 
 interface ISentInfoProps {
@@ -256,30 +255,4 @@ const SentInfo: FC<ISentInfoProps> = ({
 	);
 };
 
-export default styled(SentInfo)`
-	.ant-collapse > .ant-collapse-item > .ant-collapse-header {
-		padding: 4px 8px;
-	}
-	.ant-timeline-item-tail {
-		border-inline-width: 0.5px !important;
-	}
-	.ant-timeline-item-last {
-		padding: 0;
-	}
-	.ant-timeline-item:not(:first-child, :last-child) {
-		margin-top: 5px;
-		margin-bottom: 5px;
-	}
-	.ant-timeline-item-content {
-		display: flex;
-		min-height: 24px !important;
-		height: auto !important;
-		align-items: center;
-	}
-	.success .ant-timeline-item-tail {
-		border-inline-color: #06d6a0;
-	}
-	.warning .ant-timeline-item-tail {
-		border-inline-color: #ff9f1c;
-	}
-`;
+export default SentInfo;

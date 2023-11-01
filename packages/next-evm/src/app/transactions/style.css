@@ -1,0 +1,25 @@
+.ant-collapse > .ant-collapse-item > .ant-collapse-header {
+    padding: 4px 8px;
+}
+.ant-timeline-item-tail {
+    border-inline-width: 0.5px !important;
+}
+.ant-timeline-item-last {
+    padding: 0;
+}
+.ant-timeline-item:not(:first-child, :last-child) {
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+.ant-timeline-item-content {
+    display: flex;
+    min-height: 24px !important;
+    height: auto !important;
+    align-items: center;
+}
+.success .ant-timeline-item-tail {
+    border-inline-color: #06d6a0;
+}
+.warning .ant-timeline-item-tail {
+    border-inline-color: #ff9f1c;
+}

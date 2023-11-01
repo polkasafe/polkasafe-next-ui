@@ -3,10 +3,11 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { Button, Modal } from 'antd';
+import { Button } from 'antd';
 import React, { useState } from 'react';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 import AddCustomField from './AddCustomField';
 import SubfieldsList from './SubfieldsList';
 
@@ -17,7 +18,7 @@ const TransactionFields = () => {
 
 	return (
 		<div>
-			<Modal
+			<ModalComponent
 				onCancel={() => setOpenAddCustomFieldModal(false)}
 				title={
 					<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl capitalize'>Add Category</h3>
@@ -28,7 +29,7 @@ const TransactionFields = () => {
 					setCatgory={setCategory}
 					onCancel={() => setOpenAddCustomFieldModal(false)}
 				/>
-			</Modal>
+			</ModalComponent>
 			{!userAddress ? (
 				<section className='mb-4 text-sm border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 					<p className='text-white'>Looks like you are not Logged in. Please Log in to use our Features.</p>

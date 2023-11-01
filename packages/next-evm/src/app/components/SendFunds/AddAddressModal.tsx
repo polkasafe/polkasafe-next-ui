@@ -114,7 +114,10 @@ const AddAddressModal = ({
 					</Form.Item>
 				</div>
 				<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
-					<CancelBtn onClick={() => setShowAddressModal(false)} />
+					<CancelBtn
+						loading={addAddressLoading}
+						onClick={() => setShowAddressModal(false)}
+					/>
 					<ModalBtn
 						loading={addAddressLoading}
 						disabled={!addAddressName || !defaultAddress}

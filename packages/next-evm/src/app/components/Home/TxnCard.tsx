@@ -209,7 +209,7 @@ const TxnCard = () => {
 												<div className='flex flex-1 items-center'>
 													<div
 														className={`${
-															sent ? 'bg-failure' : 'bg-success'
+															sent ? 'bg-failure text-failure' : 'bg-success text-success'
 														} bg-opacity-10 rounded-lg p-2 mr-3 h-[38px] w-[38px] flex items-center justify-center`}
 													>
 														{sent ? <ArrowUpRightIcon /> : <ArrowDownLeftIcon />}

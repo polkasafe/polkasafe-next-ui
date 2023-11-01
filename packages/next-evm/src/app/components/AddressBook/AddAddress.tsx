@@ -16,7 +16,6 @@ import { IAddressBookItem, ISharedAddressBooks, NotificationStatus } from '@next
 import { OutlineCloseIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
-import styled from 'styled-components';
 import { EVM_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 
@@ -513,7 +512,10 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 				</div>
 			</Form>
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
-				<CancelBtn onClick={onCancel} />
+				<CancelBtn
+					loading={loading}
+					onClick={onCancel}
+				/>
 				<AddBtn
 					loading={loading}
 					disabled={!name || !address || !addressValid || (!!email && !emailValid)}
@@ -525,32 +527,4 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 	);
 };
 
-export default styled(AddAddress)`
-	.ant-select-selector {
-		border: none !important;
-		padding: 8px 10px;
-		box-shadow: none !important;
-		background-color: #24272e !important;
-	}
-
-	.ant-select {
-		height: 40px !important;
-	}
-	.ant-select-selection-search {
-		inset: 0 !important;
-	}
-	.ant-select-selection-placeholder {
-		color: #505050 !important;
-		z-index: 100;
-		display: flex !important;
-		align-items: center !important;
-	}
-
-	.ant-select-multiple .ant-select-selection-item {
-		border: none !important;
-		background: #1573fe !important;
-		border-radius: 5px !important;
-		color: white !important;
-		margin-inline-end: 10px !important;
-	}
-`;
+export default AddAddress;

@@ -580,6 +580,7 @@ const SendFundsForm = ({ className, onCancel, defaultSelectedAddress, setNewTxn 
 				<CancelBtn
 					className='w-[250px]'
 					onClick={onCancel}
+					loading={loading}
 				/>
 				<ModalBtn
 					disabled={

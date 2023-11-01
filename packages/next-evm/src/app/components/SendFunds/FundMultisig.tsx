@@ -194,14 +194,15 @@ const FundMultisig = ({
 
 					<section className='flex items-center gap-x-5 justify-center mt-10'>
 						<CancelBtn
-							className='w-[250px]'
+							className='w-[200px]'
 							onClick={onCancel}
+							loading={loading}
 						/>
 						<ModalBtn
 							disabled={amount === '0'}
 							loading={loading}
 							onClick={handleSubmit}
-							className='w-[250px]'
+							className='w-[200px]'
 							title='Make Transaction'
 						/>
 					</section>
