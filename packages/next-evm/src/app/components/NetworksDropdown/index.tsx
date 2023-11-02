@@ -81,17 +81,19 @@ const NetworksDropdown: FC<INetworksDropdownProps> = ({ className, isCardToken, 
 						isCardToken={isCardToken}
 					/>
 				) : (
-					Object.values(NETWORK).map((networkEntry) => {
-						return (
-							<NetworkCard
-								onClick={() => handleSetNetwork(networkEntry)}
-								selectedNetwork={network}
-								key={networkEntry}
-								network={networkEntry}
-								isCardToken={isCardToken}
-							/>
-						);
-					})
+					Object.values(NETWORK)
+						.filter((item) => item !== NETWORK.ASTAR)
+						.map((networkEntry) => {
+							return (
+								<NetworkCard
+									onClick={() => handleSetNetwork(networkEntry)}
+									selectedNetwork={network}
+									key={networkEntry}
+									network={networkEntry}
+									isCardToken={isCardToken}
+								/>
+							);
+						})
 				)}
 				{/* <NetworkCard
 					onClick={() => handleSetNetwork(NETWORK.ASTAR)}

@@ -61,7 +61,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
 								<span>Sent</span>
 								<span className='text-failure'>
-									{amount ? ethers.utils.formatEther(String(amount)) : `? ${chainProperties[network].tokenSymbol}`}{' '}
+									{amount
+										? `${ethers.utils.formatEther(String(amount))} ${chainProperties[network].tokenSymbol}`
+										: `? ${chainProperties[network].tokenSymbol}`}{' '}
 								</span>
 								<span>To:</span>
 							</p>
@@ -78,7 +80,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 											<span>Sent</span>
 											<span className='text-failure'>
 												{amount[i]
-													? ethers.utils.formatEther(String(amount[i]))
+													? `${ethers.utils.formatEther(String(amount[i]))} ${chainProperties[network].tokenSymbol}`
 													: `? ${chainProperties[network].tokenSymbol}`}{' '}
 											</span>
 											<span>To:</span>

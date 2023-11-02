@@ -34,7 +34,7 @@ export const convertSafeHistoryData = (data: any) => {
 			data?.confirmations?.map((user: any) => ({ address: user?.owner || '', signature: user?.signature || '' })) || [],
 		to: data.to,
 		txHash: data.safeTxHash || data.txHash,
-		type: data?.dataDecoded?.method || data.txType || 'Sent'
+		type: data.txType || data?.dataDecoded?.method || 'Sent'
 	};
 	return convertedData;
 };

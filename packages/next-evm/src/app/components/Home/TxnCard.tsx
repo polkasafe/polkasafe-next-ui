@@ -17,6 +17,7 @@ import { convertSafePendingData } from '@next-evm/utils/convertSafeData/convertS
 import formatBnBalance from '@next-evm/utils/formatBnBalance';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 const DEFAULT_TXN_CARD_LIMIT = 8;
 
@@ -126,7 +127,8 @@ const TxnCard = () => {
 																withThousandDelimitor: false
 															},
 															network
-														)}
+														)}{' '}
+														{chainProperties[network].tokenSymbol}
 													</h1>
 												</div>
 
@@ -248,11 +250,13 @@ const TxnCard = () => {
 															-
 															{ethers?.utils
 																?.formatEther(totalAmount.toString() || transaction.amount_token?.toString())
-																?.toString()}
+																?.toString()}{' '}
+															{chainProperties[network].tokenSymbol}
 														</h1>
 													) : (
 														<h1 className='text-md text-success'>
-															+{ethers?.utils?.formatEther(transaction.amount_token?.toString())?.toString()}
+															+{ethers?.utils?.formatEther(transaction.amount_token?.toString())?.toString()}{' '}
+															{chainProperties[network].tokenSymbol}
 														</h1>
 													)}
 												</div>
