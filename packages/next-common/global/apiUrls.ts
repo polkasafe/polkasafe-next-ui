@@ -4,3 +4,5 @@
 
 export const SUBSTRATE_API_URL = 'api/v1/substrate';
 export const SUBSTRATE_API_AUTH_URL = 'api/v1/substrate/auth';
+export const EVM_API_URL = 'api/v1/evm';
+export const EVM_API_AUTH_URL = 'api/v1/evm/auth';
