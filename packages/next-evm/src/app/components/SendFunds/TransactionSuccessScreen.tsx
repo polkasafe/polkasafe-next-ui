@@ -43,7 +43,9 @@ const TransactionSuccessScreen = ({
 			<div className='flex flex-col w-full gap-y-4 bg-bg-secondary p-4 rounded-lg my-1 text-text_secondary'>
 				<div className='flex justify-between items-center'>
 					<span>Amount:</span>
-					<span className='text-failure'>-{amount} {chainProperties[network].tokenSymbol}</span>
+					<span className='text-failure'>
+						-{amount} {chainProperties[network].tokenSymbol}
+					</span>
 				</div>
 				{txnHash && (
 					<div className='flex justify-between items-center'>

@@ -24,14 +24,15 @@ interface IReceivedInfoProps {
 }
 
 const ReceivedInfo: FC<IReceivedInfoProps> = ({ amount, to, date, from, callHash, note, loading, addedOwner }) => {
-
 	const { network } = useGlobalApiContext();
 
 	return (
 		<article className='p-4 rounded-lg bg-bg-main flex-1'>
 			<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
 				<span>Received</span>
-				<span className='text-success'>{ethers.utils.formatEther(amount)} {chainProperties[network].tokenSymbol}</span>
+				<span className='text-success'>
+					{ethers.utils.formatEther(amount)} {chainProperties[network].tokenSymbol}
+				</span>
 				<span>from:</span>
 			</p>
 			<div className='mt-3'>

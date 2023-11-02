@@ -127,7 +127,8 @@ const TxnCard = () => {
 																withThousandDelimitor: false
 															},
 															network
-														)} {chainProperties[network].tokenSymbol}
+														)}{' '}
+														{chainProperties[network].tokenSymbol}
 													</h1>
 												</div>
 
@@ -249,11 +250,13 @@ const TxnCard = () => {
 															-
 															{ethers?.utils
 																?.formatEther(totalAmount.toString() || transaction.amount_token?.toString())
-																?.toString()} {chainProperties[network].tokenSymbol}
+																?.toString()}{' '}
+															{chainProperties[network].tokenSymbol}
 														</h1>
 													) : (
 														<h1 className='text-md text-success'>
-															+{ethers?.utils?.formatEther(transaction.amount_token?.toString())?.toString()} {chainProperties[network].tokenSymbol}
+															+{ethers?.utils?.formatEther(transaction.amount_token?.toString())?.toString()}{' '}
+															{chainProperties[network].tokenSymbol}
 														</h1>
 													)}
 												</div>

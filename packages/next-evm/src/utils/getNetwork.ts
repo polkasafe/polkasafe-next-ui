@@ -11,10 +11,13 @@ import { NETWORK } from '@next-common/global/evm-network-constants';
 
 export default function getNetwork(): NETWORK {
 	const url = typeof window !== 'undefined' && global.window.location.href;
-	const subdomain = (`${url}`.split('//')[1]?.split('.')[0]);
+	const subdomain = `${url}`.split('//')[1]?.split('.')[0];
 	const defaultNetwork = subdomain === NETWORK.ASTAR ? NETWORK.ASTAR : NETWORK.POLYGON;
 	const selectedNetwork = typeof window !== 'undefined' && localStorage.getItem('network');
-	const allNetwork = subdomain === NETWORK.ASTAR ? Object.values(NETWORK).filter(item => item === NETWORK.ASTAR) : Object.values(NETWORK).filter(item => item !== NETWORK.ASTAR);
+	const allNetwork =
+		subdomain === NETWORK.ASTAR
+			? Object.values(NETWORK).filter((item) => item === NETWORK.ASTAR)
+			: Object.values(NETWORK).filter((item) => item !== NETWORK.ASTAR);
 
 	if (selectedNetwork && allNetwork.includes(selectedNetwork as NETWORK)) {
 		// console.log(selectedNetwork);

@@ -7,7 +7,6 @@ import '@polkadot/api-augment';
 import { Arbitrum, Astar, Binance, Ethereum, Gnosis, Goerli, Optimism, Polygon } from '@thirdweb-dev/chains';
 import { metamaskWallet, ThirdwebProvider, walletConnect } from '@thirdweb-dev/react';
 import React, { useContext, useMemo, useState } from 'react';
-import { useSearchParams } from 'next/navigation';
 import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NETWORK } from '@next-common/global/evm-network-constants';
 import getNetwork from '@next-evm/utils/getNetwork';
@@ -37,9 +36,6 @@ const chains: any = {
 };
 
 export function ApiContextProvider({ children }: ApiContextProviderProps): React.ReactElement {
-	const searchParams = useSearchParams();
-	const queryNetwork = searchParams.get('network');
-	console.log('query', queryNetwork);
 	const [network, setNetwork] = useState<NETWORK>(getNetwork());
 
 	const value = useMemo(() => ({ network, setNetwork }), [network]);
