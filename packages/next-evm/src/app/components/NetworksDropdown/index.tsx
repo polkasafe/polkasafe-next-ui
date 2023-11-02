@@ -81,7 +81,7 @@ const NetworksDropdown: FC<INetworksDropdownProps> = ({ className, isCardToken, 
 						isCardToken={isCardToken}
 					/>
 				) : (
-					Object.values(NETWORK).map((networkEntry) => {
+					Object.values(NETWORK).filter(item => item !== NETWORK.ASTAR).map((networkEntry) => {
 						return (
 							<NetworkCard
 								onClick={() => handleSetNetwork(networkEntry)}

@@ -8,6 +8,8 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { CopyIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
+import { chainProperties } from '@next-common/global/evm-network-constants';
+import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 
 interface IReceivedInfoProps {
 	amount: string;
@@ -22,11 +24,14 @@ interface IReceivedInfoProps {
 }
 
 const ReceivedInfo: FC<IReceivedInfoProps> = ({ amount, to, date, from, callHash, note, loading, addedOwner }) => {
+
+	const { network } = useGlobalApiContext();
+
 	return (
 		<article className='p-4 rounded-lg bg-bg-main flex-1'>
 			<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
 				<span>Received</span>
-				<span className='text-success'>{ethers.utils.formatEther(amount)}</span>
+				<span className='text-success'>{ethers.utils.formatEther(amount)} {chainProperties[network].tokenSymbol}</span>
 				<span>from:</span>
 			</p>
 			<div className='mt-3'>

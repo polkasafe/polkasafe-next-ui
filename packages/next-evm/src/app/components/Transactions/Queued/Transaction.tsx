@@ -208,7 +208,7 @@ const Transaction: FC<ITransactionProps> = ({
 										: txType === 'removeOwner'
 										? 'Removing Owner'
 										: txType === 'Sent' || txType === 'transfer'
-										? 'Sent'
+										? 'Send'
 										: 'Custom Transaction'}
 								</span>
 							</p>
