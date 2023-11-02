@@ -215,7 +215,7 @@ const EditAddress = ({
 				setLoading(false);
 			} else {
 				const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<ISharedAddressBooks>(
-					`${EVM_API_URL}/updateSharedAddressBook`,
+					`${EVM_API_URL}/updateSharedAddressBookEth`,
 					{
 						address: addressToEdit,
 						discord,

@@ -21,5 +21,5 @@ export default async function sendNotificationToAddresses({
 		type
 	};
 
-	await nextApiClientFetch(`${EVM_API_URL}/sendNotification`, newNotificationData);
+	await nextApiClientFetch(`${EVM_API_URL}/sendNotificationEth`, newNotificationData);
 }

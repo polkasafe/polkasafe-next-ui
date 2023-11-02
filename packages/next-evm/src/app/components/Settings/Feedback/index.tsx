@@ -43,7 +43,7 @@ const Feedback = () => {
 					return;
 				}
 				const { data: feedbackData, error: feedbackError } = await nextApiClientFetch<any>(
-					`${EVM_API_URL}/addFeedback`,
+					`${EVM_API_URL}/addFeedbackEth`,
 					{
 						rating,
 						review

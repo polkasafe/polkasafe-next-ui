@@ -19,6 +19,10 @@ interface INetworksDropdownProps {
 const NetworksDropdown: FC<INetworksDropdownProps> = ({ className, isCardToken, iconClassName, titleClassName }) => {
 	const { network, setNetwork } = useGlobalApiContext();
 
+	const url = typeof window !== 'undefined' && window.location.href;
+
+	const subdomain = `${url}`.split('//')[1]?.split('.')[0];
+
 	const [isVisible, toggleVisibility] = useState(false);
 	const isMouseEnter = useRef(false);
 
@@ -68,17 +72,27 @@ const NetworksDropdown: FC<INetworksDropdownProps> = ({ className, isCardToken, 
 					isMouseEnter.current = false;
 				}}
 			>
-				{Object.values(NETWORK).map((networkEntry) => {
-					return (
-						<NetworkCard
-							onClick={() => handleSetNetwork(networkEntry)}
-							selectedNetwork={network}
-							key={networkEntry}
-							network={networkEntry}
-							isCardToken={isCardToken}
-						/>
-					);
-				})}
+				{subdomain === NETWORK.ASTAR ? (
+					<NetworkCard
+						onClick={() => handleSetNetwork(NETWORK.ASTAR)}
+						selectedNetwork={network}
+						key={NETWORK.ASTAR}
+						network={NETWORK.ASTAR}
+						isCardToken={isCardToken}
+					/>
+				) : (
+					Object.values(NETWORK).map((networkEntry) => {
+						return (
+							<NetworkCard
+								onClick={() => handleSetNetwork(networkEntry)}
+								selectedNetwork={network}
+								key={networkEntry}
+								network={networkEntry}
+								isCardToken={isCardToken}
+							/>
+						);
+					})
+				)}
 				{/* <NetworkCard
 					onClick={() => handleSetNetwork(NETWORK.ASTAR)}
 					selectedNetwork={network}
