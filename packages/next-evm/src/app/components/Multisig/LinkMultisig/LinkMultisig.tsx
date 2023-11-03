@@ -229,7 +229,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 					<div className='flex items-center justify-center gap-x-5 mt-[40px]'>
 						<CancelBtn onClick={onCancel} />
 						<AddBtn
-							disabled={!multisigAddress}
+							disabled={!multisigAddress || !multisigName}
 							title='Continue'
 							loading={loading}
 							onClick={handleViewOwners}
@@ -241,12 +241,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 					{viewReviews ? (
 						<div>
 							<Owners
-								multisigThreshold={multisigData?.threshold}
-								threshold={threshold}
-								setThreshold={setThreshold}
-								setSignatoriesArray={setSignatoriesArray}
 								signatoriesArray={signatoriesArray}
-								signatories={signatoriesWithName}
 								setSignatoriesWithName={setSignatoriesWithName}
 							/>
 							<div className='flex items-center justify-center gap-x-5 mt-[40px]'>
