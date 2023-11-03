@@ -16,6 +16,8 @@ const useHandleMetamask = (): string => {
 	useEffect(() => {
 		setMetaMaskError('');
 
+		console.log('mat');
+
 		// Check for changes in Metamask (account and chain)
 		const ethereum = (window as any)?.ethereum;
 		if (!ethereum?.isMetaMask) {

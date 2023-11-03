@@ -12,7 +12,7 @@ interface IAddressProps {
 	className?: string;
 	disableAddress?: boolean;
 	disableIdenticon?: boolean;
-	disableExtensionName?: string;
+	disableExtensionName?: boolean;
 	displayInline?: boolean;
 	extensionName?: string;
 	identiconSize?: number;
@@ -31,7 +31,9 @@ const Address: FC<IAddressProps> = ({
 	shortenAddressLength
 }: IAddressProps) => {
 	return (
-		<div className={`flex items-center gap-x-3 w-full ${displayInline && 'inline-flex'} ${className}`}>
+		<div
+			className={`flex items-center gap-x-3 w-full text-text_secondary ${displayInline && 'inline-flex'} ${className}`}
+		>
 			{!disableIdenticon ? (
 				<MetaMaskAvatar
 					address={address}
@@ -41,7 +43,7 @@ const Address: FC<IAddressProps> = ({
 			<p className='flex flex-col gap-y-[6px] font-normal text-xs leading-[13px]'>
 				{!disableExtensionName ? <span className='text-white'>{extensionName}</span> : null}
 				{!disableAddress ? (
-					<span className='text-text_secondary'>{shortenAddress(address, shortenAddressLength)}</span>
+					<span>{shortenAddressLength === 0 ? address : shortenAddress(address, shortenAddressLength)}</span>
 				) : null}
 			</p>
 		</div>

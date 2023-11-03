@@ -18,6 +18,7 @@ import { convertSafeMultisig } from '@next-evm/utils/convertSafeData/convertSafe
 import { EVM_API_AUTH_URL } from '@next-common/global/apiUrls';
 
 import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
+import logout from '@next-evm/utils/logout';
 import { useGlobalApiContext } from './ApiContext';
 
 const initialUserDetailsContext: UserDetailsContextTypeEVM = {
@@ -380,7 +381,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					setGnosisSafe(gnosisService);
 				}
 			} else {
-				if (typeof window !== 'undefined') localStorage.clear();
+				logout();
 				setUserDetailsContextState(initialUserDetailsContext);
 				router.push('/');
 			}

@@ -27,7 +27,6 @@ const ConnectWallet = () => {
 			}
 			// Make a request to the API with the payload.
 			const { data: token } = await nextApiClientFetch<string>(`${EVM_API_AUTH_URL}/login`, { address }, { network });
-			console.log(token);
 			const signature = (await sdk?.wallet?.sign(token)) || '';
 			if (typeof window !== 'undefined') {
 				localStorage.setItem('signature', signature);
@@ -49,11 +48,11 @@ const ConnectWallet = () => {
 				Your first step towards creating a safe & secure MultiSig
 			</p>
 			{!address ? (
-				<ThirdConnectWallet />
+				<ThirdConnectWallet auth={{ loginOptional: false, onLogin: (token) => console.log(token) }} />
 			) : (
 				<Button
 					icon={<WalletIcon />}
-					onClick={async () => {
+					onClick={() => {
 						handleLogin();
 					}}
 					loading={loading}

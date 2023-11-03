@@ -7,9 +7,9 @@ import '@polkadot/api-augment';
 import { Arbitrum, Astar, Binance, Ethereum, Gnosis, Goerli, Optimism, Polygon } from '@thirdweb-dev/chains';
 import { metamaskWallet, ThirdwebProvider, walletConnect } from '@thirdweb-dev/react';
 import React, { useContext, useMemo, useState } from 'react';
-import FIREBASE_FUNCTIONS_URL from '@next-common/global/firebaseFunctionsUrl';
 import { NETWORK } from '@next-common/global/evm-network-constants';
 import getNetwork from '@next-evm/utils/getNetwork';
+import { EVM_API_AUTH_URL } from '@next-common/global/apiUrls';
 
 export interface ApiContextType {
 	network: NETWORK;
@@ -27,7 +27,7 @@ const chains: any = {
 	astar: Astar,
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	'bnb smart chain': Binance,
-	etherium: Ethereum,
+	ethereum: Ethereum,
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	'gnosis chain': Gnosis,
 	goerli: Goerli,
@@ -46,7 +46,8 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 				activeChain={chains?.[network || 'astar']}
 				clientId='b2c09dab179152e7936744fa00899dfa'
 				authConfig={{
-					domain: FIREBASE_FUNCTIONS_URL as string
+					authUrl: `${EVM_API_AUTH_URL}`,
+					domain: 'localhost:3000'
 				}}
 				supportedChains={Object.values(chains) as any}
 				supportedWallets={[metamaskWallet(), walletConnect()]}

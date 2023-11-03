@@ -4,7 +4,7 @@
 
 import { ChainNamespaceType, CHAIN_NAMESPACES } from '@web3auth/base';
 import astarLogo from '@next-common/assets/astar-logo.png';
-import ethereumLogo from '@next-common/assets/eth.png';
+import ethereumLogo from '@next-common/assets/eth-logo.png';
 import arbLogo from '@next-common/assets/parachains-logos/arbitrum-logo.png';
 import bnbLogo from '@next-common/assets/parachains-logos/bnb-logo.png';
 import gnosisChainLogo from '@next-common/assets/parachains-logos/gnosis-chain-logo.png';
@@ -28,15 +28,15 @@ export type ChainPropType = {
 };
 
 export enum NETWORK {
-	GOERLI = 'goerli',
+	ETHEREUM = 'ethereum',
 	POLYGON = 'polygon',
+	GNOSIS = 'gnosis chain',
+	BNB = 'bnb smart chain',
+	GOERLI = 'goerli',
 	ASTAR = 'astar',
 	// MOONBEAM = 'moonbeam'
-	ETHERIUM = 'etherium',
 	ARBITRUM = 'arbitrum',
-	OPTIMISM = 'optimism',
-	GNOSIS = 'gnosis chain',
-	BNB = 'bnb smart chain'
+	OPTIMISM = 'optimism'
 }
 export const tokenSymbol = {
 	ASTR: 'ASTR',
@@ -82,15 +82,15 @@ export const chainProperties: ChainPropType = {
 		tokenName: 'Astar',
 		tokenSymbol: tokenSymbol.ASTR
 	},
-	[NETWORK.ETHERIUM]: {
+	[NETWORK.ETHEREUM]: {
 		blockExplorer: 'https://etherscan.io/',
 		chainId: 1,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		decimals: 18,
-		displayName: 'Etherium',
+		displayName: 'Ethereum',
 		logo: ethereumLogo,
 		rpcEndpoint: 'https://eth.api.onfinality.io/public',
-		tokenName: 'Etherium',
+		tokenName: 'Ethereum',
 		tokenSymbol: tokenSymbol.ETH
 	},
 	[NETWORK.BNB]: {

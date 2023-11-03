@@ -49,7 +49,7 @@ const NetworkCard: FC<INetworkCardProps> = ({ isCardToken, onClick, selectedNetw
 					<ParachainIcon src={chainProperties[network].logo} />
 				</span>
 				<span className={`font-medium text-sm capitalize ${isSelected ? 'text-primary' : 'text-white'}`}>
-					{isCardToken ? chainProperties[network].tokenSymbol : network}
+					{isCardToken ? chainProperties[network].tokenSymbol : chainProperties[network].displayName}
 				</span>
 			</p>
 			{isSelected ? <OutlineCheckIcon className='text-primary' /> : null}

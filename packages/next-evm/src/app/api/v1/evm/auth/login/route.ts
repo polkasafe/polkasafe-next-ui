@@ -19,7 +19,7 @@ export async function POST(req: Request) {
 		if (!address) {
 			return NextResponse.json({ data: null, error: responseMessages.invalid_params }, { status: 401 });
 		}
-		const token = `${uuidv4()}`;
+		const token = `Polkasafe Login Token: ${uuidv4()}`;
 		const docId = `${address}_${network}`;
 		const addressRef = firestoreDB.collection('addresses').doc(docId);
 		await addressRef.set({ address, token }, { merge: true });
