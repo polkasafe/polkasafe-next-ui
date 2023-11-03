@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { Button, Form, Input, InputNumber } from 'antd';
+import { Form, Input } from 'antd';
 import React from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
@@ -18,58 +18,12 @@ interface ISignatory {
 }
 
 interface Props {
-	signatories: ISignatory[];
 	setSignatoriesWithName: React.Dispatch<React.SetStateAction<ISignatory[]>>;
 	signatoriesArray: ISignatory[];
-	setSignatoriesArray: React.Dispatch<React.SetStateAction<ISignatory[]>>;
-	threshold: number;
-	setThreshold: React.Dispatch<React.SetStateAction<number>>;
-	multisigThreshold?: number;
 }
 
-const Owners = ({
-	signatories,
-	multisigThreshold,
-	threshold,
-	setThreshold,
-	setSignatoriesWithName,
-	signatoriesArray,
-	setSignatoriesArray
-}: Props) => {
+const Owners = ({ setSignatoriesWithName, signatoriesArray }: Props) => {
 	const { network } = useGlobalApiContext();
-
-	const onSignatoryChange = (event: any, i: number) => {
-		setSignatoriesArray((prevState) => {
-			const copyArray = [...prevState];
-			const copyObject = { ...copyArray[i] };
-			copyObject.address = event.target.value;
-			copyArray[i] = copyObject;
-			return copyArray;
-		});
-	};
-	const onNameChange = (event: any, i: number) => {
-		setSignatoriesArray((prevState) => {
-			const copyArray = [...prevState];
-			const copyObject = { ...copyArray[i] };
-			copyObject.name = event.target.value;
-			copyArray[i] = copyObject;
-			return copyArray;
-		});
-	};
-
-	const onAddSignatory = () => {
-		setSignatoriesArray((prevState) => {
-			const copyOptionsArray = [...prevState];
-			copyOptionsArray.push({ address: '', name: '' });
-			return copyOptionsArray;
-		});
-	};
-
-	const onRemoveSignatory = (i: number) => {
-		const copyOptionsArray = [...signatoriesArray];
-		copyOptionsArray.splice(i, 1);
-		setSignatoriesArray(copyOptionsArray);
-	};
 
 	return (
 		<div>
@@ -101,139 +55,58 @@ const Owners = ({
 				</div>
 				<div className='px-4 overflow-auto w-full'>
 					<Form className='my-0 mt-5'>
-						{signatories.length && multisigThreshold ? (
-							<>
-								<p className='text-text_secondary mb-3'>
-									This safe on <span className='text-white capitalize'>{network}</span> has {signatories?.length}{' '}
-									owners. Optional: Provide a name for each owner.
-								</p>
-								{signatories?.map((item, i: number) => (
-									<div
-										className='flex flex-col gap-y-3 mb-5'
-										key={i}
-									>
-										<label
-											className='text-primary text-xs leading-[13px] font-normal'
-											htmlFor='name1'
-										>
-											Owner Name {i + 1}
-										</label>
-										<div className='flex items-center'>
-											<Input
-												placeholder='John Doe'
-												className='lg:w-[20vw] md:w-[25vw] text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white'
-												id='name'
-												value={item.name}
-												onChange={(e) => {
-													const copyArray = [...signatories];
-													const copyObject = { ...copyArray[i] };
-													copyObject.name = e.target.value;
-													copyArray[i] = copyObject;
-													setSignatoriesWithName(copyArray);
-												}}
-												defaultValue={item.name}
-											/>
-											<div className='flex ml-3'>
-												<MetaMaskAvatar
-													address={item.address}
-													size={20}
-												/>
-												<div className='text-white'>{shortenAddress(item.address)}</div>
-												<button onClick={() => copyText(item.address)}>
-													<CopyIcon className='mx-1 text-text_secondary hover:text-primary' />
-												</button>
-												<a
-													href={`https://${network}.subscan.io/account/${item.address}`}
-													target='_blank'
-													rel='noreferrer'
-												>
-													<ExternalLinkIcon className='text-text_secondary hover:text-primary' />
-												</a>
-											</div>
-										</div>
-									</div>
-								))}
-							</>
-						) : (
-							<>
-								<p className='text-text_secondary mb-3'>
-									We cannot find this Multisig, Please enter the Signatories and threshold of this Multisig.
-								</p>
-								{signatoriesArray.map((signatory, i) => (
-									<div
-										className='flex flex-col gap-y-3'
-										key={i}
-									>
-										<div className='flex items-center gap-x-4'>
-											<div className='flex-1 flex items-start gap-x-4'>
-												<Form.Item>
-													<label className='text-primary text-xs leading-[13px] font-normal'>Name {i + 1}</label>
-													<Input
-														placeholder={`Name ${i + 1}`}
-														disabled={i === 0}
-														className=' text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white'
-														value={signatory.name}
-														onChange={(e) => onNameChange(e, i)}
-													/>
-												</Form.Item>
-												<Form.Item
-													className='w-full'
-													name={`Address ${i + 1}`}
-													rules={[{ required: true }]}
-													help={signatory.address === '' && 'This Is Required.'}
-													validateStatus={!signatory.address ? 'error' : 'success'}
-												>
-													<label className='text-primary text-xs leading-[13px] font-normal'>Address {i + 1}</label>
-													<Input
-														id={`Address ${i + 1}`}
-														placeholder={`Address ${i + 1}`}
-														disabled={i === 0}
-														className=' text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white'
-														value={signatory.address}
-														onChange={(e) => onSignatoryChange(e, i)}
-													/>
-												</Form.Item>
-											</div>
-											{i > 1 && (
-												<Button
-													className='bg-bg-secondary rounded-lg text-white border-none outline-none '
-													onClick={() => onRemoveSignatory(i)}
-												>
-													-
-												</Button>
-											)}
-										</div>
-									</div>
-								))}
-								<div className='w-full flex justify-end'>
-									<Button
-										className='border-none text-white bg-primary'
-										onClick={() => onAddSignatory()}
-									>
-										+
-									</Button>
-								</div>
-								<Form.Item
-									className='flex flex-col gap-y-3'
-									name='threshold-1'
-									rules={[{ required: true }]}
-									help={
-										(threshold < 2 || threshold > signatoriesArray.length) &&
-										'Threshold Must Be Atleast 2 And Less Than Signatories.'
-									}
-									validateStatus={threshold < 2 || threshold > signatoriesArray.length ? 'error' : 'success'}
+						<>
+							<p className='text-text_secondary mb-3'>
+								This safe on <span className='text-white capitalize'>{network}</span> has {signatoriesArray?.length}{' '}
+								owners. Optional: Provide a name for each owner.
+							</p>
+							{signatoriesArray?.map((item, i: number) => (
+								<div
+									className='flex flex-col gap-y-3 mb-5'
+									key={i}
 								>
-									<label className='text-primary text-xs leading-[13px] font-normal'>Threshold</label>
-									<InputNumber
-										placeholder='0'
-										id='threshold-1'
-										className=' bg-bg-secondary placeholder:text-[#505050] text-white outline-none border-none w-full mt-2 py-2'
-										onChange={(value) => setThreshold(value!)}
-										value={threshold}
-									/>
-								</Form.Item>
-							</>
-						)}
+									<label
+										className='text-primary text-xs leading-[13px] font-normal'
+										htmlFor='name1'
+									>
+										Owner Name {i + 1}
+									</label>
+									<div className='flex items-center'>
+										<Input
+											placeholder='John Doe'
+											className='lg:w-[20vw] md:w-[25vw] text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white'
+											id='name'
+											value={item.name}
+											onChange={(e) => {
+												const copyArray = [...signatoriesArray];
+												const copyObject = { ...copyArray[i] };
+												copyObject.name = e.target.value;
+												copyArray[i] = copyObject;
+												setSignatoriesWithName(copyArray);
+											}}
+											defaultValue={item.name}
+										/>
+										<div className='flex ml-3 gap-x-1'>
+											<MetaMaskAvatar
+												address={item.address}
+												size={20}
+											/>
+											<div className='text-white'>{shortenAddress(item.address)}</div>
+											<button onClick={() => copyText(item.address)}>
+												<CopyIcon className='text-text_secondary hover:text-primary' />
+											</button>
+											<a
+												href={`https://${network}.subscan.io/account/${item.address}`}
+												target='_blank'
+												rel='noreferrer'
+											>
+												<ExternalLinkIcon className='text-text_secondary hover:text-primary' />
+											</a>
+										</div>
+									</div>
+								</div>
+							))}
+						</>
 					</Form>
 				</div>
 			</div>

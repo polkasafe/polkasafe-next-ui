@@ -5,7 +5,7 @@ import { Form, Input } from 'antd';
 import React, { useEffect, useState } from 'react';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { CheckOutlined } from '@next-common/ui-components/CustomIcons';
+import { CheckOutlined, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import AddressDropdown from '@next-evm/ui-components/AddressDropdown';
 
 // import Loader from '@next-evm/app/components/UserFlow/Loader';
@@ -75,6 +75,13 @@ const NameAddress = ({ className, multisigAddress, setMultisigAddress, multisigN
 							message='Fetching Your Multisigs'
 							width={250}
 						/>
+					) : allSafes.length === 0 ? (
+						<section className='mb-4 w-full text-waiting bg-waiting bg-opacity-10 p-3 rounded-lg font-normal text-xs leading-[16px] flex items-center gap-x-[11px] border border-waiting'>
+							<span>
+								<WarningCircleIcon className='text-base' />
+							</span>
+							<p>Looks like you don&aps;t have any Safe to link.</p>
+						</section>
 					) : (
 						<Form className='my-0 w-[560px] mt-10'>
 							<div className='flex flex-col gap-y-3'>
