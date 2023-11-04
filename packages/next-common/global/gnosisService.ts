@@ -14,7 +14,7 @@ const returnTxUrl = (network?: NETWORK): string => {
 	if (network === NETWORK.ASTAR) {
 		return 'https://transaction.safe.astar.network';
 	}
-	if (network === NETWORK.ETHERIUM) {
+	if (network === NETWORK.ETHEREUM) {
 		return 'https://safe-transaction-mainnet.safe.global';
 	}
 	if (network === NETWORK.ARBITRUM) {

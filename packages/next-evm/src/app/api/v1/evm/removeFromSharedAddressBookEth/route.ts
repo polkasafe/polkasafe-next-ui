@@ -67,7 +67,7 @@ export async function POST(req: Request) {
 			}
 		}
 
-		return NextResponse.json({ data: updatedAddressEntry, error: null }, { status: 400 });
+		return NextResponse.json({ data: updatedAddressEntry, error: null }, { status: 200 });
 	} catch (err: unknown) {
 		console.error('Error in removeFromSharedAddressBook :', { err, stack: (err as any).stack });
 		return NextResponse.json({ data: null, error: responseMessages.internal }, { status: 500 });

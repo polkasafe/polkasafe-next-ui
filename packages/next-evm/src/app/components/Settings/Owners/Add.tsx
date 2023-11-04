@@ -7,17 +7,16 @@ import React, { useState } from 'react';
 import AddMultisigSVG from '@next-common/assets/add-multisig.svg';
 import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedTransaction';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
-import RemoveMultisigSVG from '@next-common/assets/remove-multisig.svg';
 import AddProxySuccessScreen from '@next-evm/app/components/Multisig/AddProxySuccessScreen';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import AddBtn from '@next-evm/app/components/Settings/ModalBtn';
-import Loader from '@next-evm/app/components/UserFlow/Loader';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NotificationStatus } from '@next-common/types';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import addNewTransaction from '@next-evm/utils/addNewTransaction';
+import styled from 'styled-components';
 
 interface ISignatory {
 	name: string;
@@ -154,19 +153,14 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 				<div className='flex justify-center gap-x-4 items-center mb-6 w-full'>
 					<div className='flex flex-col text-white items-center justify-center'>
 						<AddMultisigSVG />
-						<p className='text-text_secondary'>Add New Multisig</p>
-					</div>
-					<Loader className='bg-primary h-[2px] w-[80px]' />
-					<div className='flex flex-col text-white items-center justify-center'>
-						<RemoveMultisigSVG />
-						<p className='text-text_secondary'>Remove Old Multisig</p>
+						<p className='text-text_secondary'>Add New Owners</p>
 					</div>
 				</div>
 				<section className='mb-4 w-full text-waiting bg-waiting bg-opacity-10 p-3 rounded-lg font-normal text-xs leading-[16px] flex items-center gap-x-[11px]'>
 					<span>
 						<WarningCircleIcon className='text-base' />
 					</span>
-					<p>Adding Signatories would require you to sign two transactions and approval from other signatories.</p>
+					<p>Adding Signatories would require the approvals of present signatories.</p>
 				</section>
 				<div className='max-h-[40vh] overflow-y-auto'>
 					{signatoriesArray.map((signatory, i) => (
@@ -180,7 +174,7 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 										<label className='text-primary text-xs leading-[13px] font-normal'>Name</label>
 										<Input
 											placeholder='Name'
-											className=' text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white'
+											className=' text-sm h-full font-normal m-0 leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white'
 											value={signatory.name}
 											onChange={(e) => onNameChange(e, i)}
 										/>
@@ -293,4 +287,36 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 	);
 };
 
-export default AddOwner;
+export default styled(AddOwner)`
+	.ant-select input {
+		font-size: 14px !important;
+		font-style: normal !important;
+		line-height: 15px !important;
+		border: 0 !important;
+		outline: 0 !important;
+		background-color: #24272e !important;
+		border-radius: 8px !important;
+		color: white !important;
+		padding: 12px !important;
+		display: block !important;
+		height: auto !important;
+	}
+	.ant-select-selector {
+		border: none !important;
+		height: 40px !important;
+		box-shadow: none !important;
+	}
+
+	.ant-select {
+		height: 40px !important;
+	}
+	.ant-select-selection-search {
+		inset: 0 !important;
+	}
+	.ant-select-selection-placeholder {
+		color: #505050 !important;
+		z-index: 100;
+		display: flex !important;
+		align-items: center !important;
+	}
+`;

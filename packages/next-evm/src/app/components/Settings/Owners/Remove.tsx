@@ -7,11 +7,9 @@ import { MetaMaskAvatar } from 'react-metamask-avatar';
 import AddMultisigSVG from '@next-common/assets/add-multisig.svg';
 import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedTransaction';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
-import RemoveMultisigSVG from '@next-common/assets/remove-multisig.svg';
 import AddProxySuccessScreen from '@next-evm/app/components/Multisig/AddProxySuccessScreen';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-evm/app/components/Settings/RemoveBtn';
-import Loader from '@next-evm/app/components/UserFlow/Loader';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NotificationStatus } from '@next-common/types';
@@ -112,19 +110,14 @@ const RemoveOwner = ({
 				<div className='flex justify-center gap-x-4 items-center mb-6 w-full'>
 					<div className='flex flex-col text-white items-center justify-center'>
 						<AddMultisigSVG />
-						<p className='text-text_secondary'>Add New Multisig</p>
-					</div>
-					<Loader className='bg-primary h-[2px] w-[80px]' />
-					<div className='flex flex-col text-white items-center justify-center'>
-						<RemoveMultisigSVG />
-						<p className='text-text_secondary'>Remove Old Multisig</p>
+						<p className='text-text_secondary'>Remove Owner</p>
 					</div>
 				</div>
 				<section className='mb-4 w-full text-waiting bg-waiting bg-opacity-10 p-3 rounded-lg font-normal text-xs leading-[16px] flex items-center gap-x-[11px]'>
 					<span>
 						<WarningCircleIcon className='text-base' />
 					</span>
-					<p>Removing a signatory would require you to sign two transactions and approval from other signatories.</p>
+					<p>Removing a signatory would require the approvals of present signatories.</p>
 				</section>
 				<div className='text-primary text-sm mb-2'>Remove Signatory*</div>
 				<div className='flex items-center p-3 mb-4 text-text_secondary border-dashed border-2 border-bg-secondary rounded-lg gap-x-5'>

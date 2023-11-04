@@ -106,12 +106,6 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 		}
 	};
 
-	const handleViewReviews = () => {
-		setNameAddress(false);
-		setViewOwners(false);
-		setViewReviews(false);
-	};
-
 	const checkMultisig = (signatories: ISignatory[]) => {
 		const signatoryAddresses = signatories.map((item) => item.address);
 
@@ -223,7 +217,6 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 					<NameAddress
 						multisigName={multisigName}
 						setMultisigName={setMultisigName}
-						multisigAddress={multisigAddress}
 						setMultisigAddress={setMultisigAddress}
 					/>
 					<div className='flex items-center justify-center gap-x-5 mt-[40px]'>
@@ -242,27 +235,20 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 						<div>
 							<Owners
 								signatoriesArray={signatoriesArray}
-								setSignatoriesWithName={setSignatoriesWithName}
+								setSignatoriesWithName={setSignatoriesArray}
 							/>
 							<div className='flex items-center justify-center gap-x-5 mt-[40px]'>
 								<CancelBtn onClick={onCancel} />
-								{signatoriesWithName.length && multisigData?.threshold ? (
-									<AddBtn
-										title='Continue'
-										onClick={handleViewReviews}
-									/>
-								) : (
-									<AddBtn
-										disabled={
-											signatoriesArray.length < 2 ||
-											threshold < 2 ||
-											threshold > signatoriesArray.length ||
-											signatoriesArray.some((item) => item.address === '')
-										}
-										title='Check Multisig'
-										onClick={() => checkMultisig(signatoriesArray)}
-									/>
-								)}
+
+								<AddBtn
+									disabled={
+										signatoriesArray.length < 2 ||
+										threshold > signatoriesArray.length ||
+										signatoriesArray.some((item) => item.address === '')
+									}
+									title='Continue'
+									onClick={() => checkMultisig(signatoriesArray)}
+								/>
 							</div>
 						</div>
 					) : (
