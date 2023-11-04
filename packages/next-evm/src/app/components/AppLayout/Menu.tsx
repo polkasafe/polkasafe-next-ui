@@ -66,6 +66,7 @@ const Menu: FC<Props> = ({ className }) => {
 			title: 'Address Book'
 		},
 		{
+			disabled: true,
 			icon: <AppsIcon />,
 			key: '/apps',
 			title: 'Apps'
@@ -119,13 +120,18 @@ const Menu: FC<Props> = ({ className }) => {
 									<Link
 										className={`flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
 											item.key === pathname && 'bg-highlight text-primary'
-										}`}
+										} ${item.disabled && 'pointer-events-none cursor-disabled text-text_secondary '} `}
 										href={item.key}
 									>
 										{item.icon}
 										{item.title}
 										{item.title === 'Notifications' && (
 											<div className='px-[6px] py-[1px] text-[10px] rounded-lg text-xs bg-primary text-white'>New</div>
+										)}
+										{item.title === 'Apps' && (
+											<div className='px-[6px] py-[1px] text-[9px] rounded-lg text-[11px] bg-[#6200E8] text-white'>
+												Coming Soon
+											</div>
 										)}
 									</Link>
 								</li>
