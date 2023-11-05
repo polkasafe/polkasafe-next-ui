@@ -8,8 +8,6 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 
 import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
-import { chainProperties } from 'next-common/global/evm-network-constants';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
 
@@ -19,7 +17,6 @@ interface IAssetsProps {
 
 const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
-	const { network } = useGlobalApiContext();
 
 	return (
 		<div className='text-sm font-medium leading-[15px] scale-[80%] w-[125%] h-[125%] origin-top-left'>
@@ -74,10 +71,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 								</p>
 								<PrimaryButton
 									onClick={() => setOpenTransactionModal(true)}
-									className={` text-white w-fit ${
-										chainProperties[network].tokenSymbol !== name ? 'bg-secondary' : 'bg-primary'
-									}`}
-									disabled={chainProperties[network].tokenSymbol !== name}
+									className='text-white w-fit bg-primary'
 								>
 									<p className='font-normal text-sm'>Send</p>
 								</PrimaryButton>

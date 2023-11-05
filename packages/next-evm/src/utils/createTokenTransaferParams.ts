@@ -13,7 +13,6 @@ const encodeERC20TransferData = (to: string, value: string): string => {
 };
 
 const createTokenTransferParams = (recipient: string[], value: string[]): MetaTransactionData[] => {
-	console.log(recipient);
 	return recipient.map((r, i) => ({
 		data: encodeERC20TransferData(r, value[i]),
 		to: r,

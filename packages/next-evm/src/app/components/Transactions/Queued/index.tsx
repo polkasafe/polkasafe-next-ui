@@ -84,6 +84,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 			setLoading(true);
 			try {
 				const safeData = await gnosisSafe.getPendingTx(activeMultisig);
+				console.log(safeData);
 				const convertedData = safeData.results.map((safe: any) => convertSafePendingData({ ...safe, network }));
 				setQueuedTransactions(convertedData);
 				if (convertedData?.length > 0)
@@ -125,6 +126,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 								onAfterApprove={handleAfterApprove}
 								onAfterExecute={handleAfterExecute}
 								txType={transaction.type}
+								recipientAddress={transaction.to}
 							/>
 						</section>
 					);
