@@ -77,6 +77,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 									className={` text-white w-fit ${
 										chainProperties[network].tokenSymbol !== name ? 'bg-secondary' : 'bg-primary'
 									}`}
+									disabled={chainProperties[network].tokenSymbol !== name}
 								>
 									<p className='font-normal text-sm'>Send</p>
 								</PrimaryButton>
