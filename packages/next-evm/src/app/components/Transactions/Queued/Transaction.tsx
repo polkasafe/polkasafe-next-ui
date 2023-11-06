@@ -31,6 +31,7 @@ interface ITransactionProps {
 	onAfterApprove?: any;
 	onAfterExecute?: any;
 	txType?: any;
+	recipientAddress?: string;
 }
 
 const Transaction: FC<ITransactionProps> = ({
@@ -42,7 +43,8 @@ const Transaction: FC<ITransactionProps> = ({
 	value,
 	onAfterApprove,
 	onAfterExecute,
-	txType
+	txType,
+	recipientAddress
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
@@ -261,6 +263,11 @@ const Transaction: FC<ITransactionProps> = ({
 								: ''
 						}
 						callHash={callHash}
+						recipientAddress={
+							decodedCallData.method === 'multiSend'
+								? decodedCallData?.parameters?.[0]?.valueDecoded?.map((item: any) => item.to)
+								: recipientAddress || ''
+						}
 						callDataString={callDataString}
 						callData={callData}
 						date={date}
