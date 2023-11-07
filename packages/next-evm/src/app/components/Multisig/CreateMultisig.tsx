@@ -52,31 +52,12 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 	const { gnosisSafe } = useGlobalUserDetailsContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
-	const [success] = useState<boolean>(false);
+	const [success, setSuccess] = useState<boolean>(false);
 	const [failure, setFailure] = useState<boolean>(false);
 	const [loadingMessages] = useState<string>('');
 	const [addAddress, setAddAddress] = useState<string>('');
 	const [showAddressModal, setShowAddressModal] = useState<boolean>(false);
 	const [form] = Form.useForm();
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const createProxy = (multisigData: IMultisigAddress, create: boolean) => {
-		setUserDetailsContextState((prevState: any) => {
-			return {
-				...prevState,
-				activeMultisig: multisigData.address,
-				multisigAddresses: [...(prevState?.multisigAddresses || []), multisigData],
-				multisigSettings: {
-					...prevState.multisigSettings,
-					[multisigData.address]: {
-						name: multisigData.name,
-						deleted: false
-					}
-				}
-			};
-		});
-		onCancel?.();
-	};
 
 	const handleMultisigCreate = async () => {
 		setLoading(true);
@@ -92,8 +73,8 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 
 			if (!safeAddress) {
 				queueNotification({
-					header: 'Error!',
-					message: 'Something went wrong',
+					header: 'Failed!',
+					message: 'Please Try Linking your Multisig',
 					status: NotificationStatus.ERROR
 				});
 				setLoading(false);
@@ -135,6 +116,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 					setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: safeAddress || prev.activeMultisig }));
 					return;
 				}
+				setSuccess(true);
 				queueNotification({
 					header: 'Success!',
 					message: `Your Multisig ${multisigName} has been created successfully!`,

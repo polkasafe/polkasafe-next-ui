@@ -11,13 +11,16 @@ export interface IQueuedTransactions {
 	safeAddress: string;
 	signatures: Array<{ address: string; signature: string }>;
 	to: string;
+	tokenSymbol?: string;
+	tokenLogo?: string;
+	tokenDecimals?: number;
 	txHash: string;
 	type: string;
 	dataDecoded: any;
 }
-export const convertSafePendingData = (data: any) => {
+export const convertSafePendingData = (data: any, txInfo?: any) => {
 	const convertedData: IQueuedTransactions = {
-		amount_token: data?.value || '0',
+		amount_token: txInfo?.transferInfo?.value || data?.value || '0',
 		created_at: data.submissionDate,
 		data: data.data,
 		dataDecoded: data?.dataDecoded || null,
@@ -26,7 +29,10 @@ export const convertSafePendingData = (data: any) => {
 		safeAddress: data.safe,
 		signatures:
 			data?.confirmations?.map((user: any) => ({ address: user?.owner || '', signature: user?.signature || '' })) || [],
-		to: data.to,
+		to: txInfo?.recipient?.value || data.to,
+		tokenDecimals: txInfo?.transferInfo?.decimals,
+		tokenLogo: txInfo?.transferInfo?.logoUri,
+		tokenSymbol: txInfo?.transferInfo?.tokenSymbol,
 		txHash: data.safeTxHash,
 		type: data?.dataDecoded?.method || 'Sent'
 	};

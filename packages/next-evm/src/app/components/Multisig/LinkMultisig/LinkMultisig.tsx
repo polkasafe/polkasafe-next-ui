@@ -136,7 +136,8 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 						signatories: signatoriesArray.map((item) => item.address),
 						threshold,
 						multisigName,
-						safeAddress: multisigInfo?.address
+						safeAddress: multisigInfo?.address,
+						addressBook
 					},
 					{ network }
 				);

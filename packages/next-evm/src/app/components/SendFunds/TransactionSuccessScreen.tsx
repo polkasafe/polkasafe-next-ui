@@ -9,8 +9,9 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { CopyIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
-import { chainProperties } from '@next-common/global/evm-network-constants';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
+// import { chainProperties } from '@next-common/global/evm-network-constants';
+// import { useGlobalApiContext } from '@next-evm/context/ApiContext';
+// import { ethers } from 'ethers';
 
 interface ITransactionSuccessScreen {
 	amount: string;
@@ -24,6 +25,7 @@ interface ITransactionSuccessScreen {
 }
 
 const TransactionSuccessScreen = ({
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	amount,
 	txnHash,
 	created_at,
@@ -33,7 +35,7 @@ const TransactionSuccessScreen = ({
 	successMessage,
 	waitMessage
 }: ITransactionSuccessScreen) => {
-	const { network } = useGlobalApiContext();
+	// const { network } = useGlobalApiContext();
 	return (
 		<div className='flex flex-col items-center'>
 			<SuccessTransactionLottie
@@ -41,12 +43,12 @@ const TransactionSuccessScreen = ({
 				waitMessage={waitMessage}
 			/>
 			<div className='flex flex-col w-full gap-y-4 bg-bg-secondary p-4 rounded-lg my-1 text-text_secondary'>
-				<div className='flex justify-between items-center'>
+				{/* <div className='flex justify-between items-center'>
 					<span>Amount:</span>
 					<span className='text-failure'>
-						-{amount} {chainProperties[network].tokenSymbol}
+						-{ethers.utils.formatEther(amount)} {chainProperties[network].tokenSymbol}
 					</span>
-				</div>
+				</div> */}
 				{txnHash && (
 					<div className='flex justify-between items-center'>
 						<span>Txn Hash:</span>

@@ -15,7 +15,7 @@ import ModalBtn from '@next-evm/app/components/Multisig/ModalBtn';
 import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { EFieldType, NotificationStatus } from '@next-common/types';
+import { EFieldType, IAsset, NotificationStatus } from '@next-common/types';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import Balance from '@next-evm/ui-components/Balance';
 import BalanceInput from '@next-evm/ui-components/BalanceInput';
@@ -32,6 +32,7 @@ import getOtherSignatories from '@next-evm/utils/getOtherSignatories';
 import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
 import notify from '@next-evm/utils/notify';
 
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -39,6 +40,7 @@ import AddAddressModal from './AddAddressModal';
 export interface IRecipientAndAmount {
 	recipient: string;
 	amount: string;
+	token: IAsset;
 }
 
 interface ISendFundsFormProps {
@@ -46,20 +48,31 @@ interface ISendFundsFormProps {
 	className?: string;
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
 	defaultSelectedAddress?: string;
+	defaultToken?: IAsset;
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const SendFundsForm = ({ className, onCancel, defaultSelectedAddress, setNewTxn }: ISendFundsFormProps) => {
+const SendFundsForm = ({
+	className,
+	onCancel,
+	defaultSelectedAddress,
+	setNewTxn,
+	defaultToken // eslint-disable-next-line sonarjs/cognitive-complexity
+}: ISendFundsFormProps) => {
 	const { activeMultisig, addressBook, address, gnosisSafe, multisigAddresses, transactionFields, activeMultisigData } =
 		useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const { records } = useActiveMultisigContext();
+	const { allAssets } = useMultisigAssetsContext();
 
 	const [note, setNote] = useState<string>('');
 	const [loading, setLoading] = useState(false);
 	const [amount, setAmount] = useState('0');
 	const [recipientAndAmount, setRecipientAndAmount] = useState<IRecipientAndAmount[]>([
-		{ amount: '0', recipient: defaultSelectedAddress ? defaultSelectedAddress || '' : address || '' }
+		{
+			amount: '0',
+			recipient: defaultSelectedAddress ? defaultSelectedAddress || '' : address || '',
+			token: defaultToken || allAssets[0] || ({} as IAsset)
+		}
 	]);
 	const [autocompleteAddresses, setAutoCompleteAddresses] = useState<DefaultOptionType[]>([]);
 	const [success, setSuccess] = useState(false);
@@ -101,10 +114,20 @@ const SendFundsForm = ({ className, onCancel, defaultSelectedAddress, setNewTxn 
 		});
 	};
 
+	const onTokenChange = (t: IAsset, i: number) => {
+		setRecipientAndAmount((prevState) => {
+			const copyArray = [...prevState];
+			const copyObject = { ...copyArray[i] };
+			copyObject.token = t;
+			copyArray[i] = copyObject;
+			return copyArray;
+		});
+	};
+
 	const onAddRecipient = () => {
 		setRecipientAndAmount((prevState) => {
 			const copyOptionsArray = [...prevState];
-			copyOptionsArray.push({ amount: '0', recipient: '' });
+			copyOptionsArray.push({ amount: '0', recipient: '', token: defaultToken || allAssets?.[0] });
 			return copyOptionsArray;
 		});
 	};
@@ -146,7 +169,17 @@ const SendFundsForm = ({ className, onCancel, defaultSelectedAddress, setNewTxn 
 	}, [category]);
 
 	useEffect(() => {
-		const total = recipientAndAmount.reduce((sum, item) => sum + Number(item.amount), 0);
+		const total = recipientAndAmount.reduce(
+			(sum, item) =>
+				sum +
+				Number(
+					ethers.utils.parseUnits(
+						Number.isNaN(Number(item.amount.trim())) ? '0' : item.amount.trim(),
+						item.token?.token_decimals || 'ether'
+					)
+				),
+			0
+		);
 		setAmount(total.toString());
 	}, [activeMultisigData, recipientAndAmount]);
 
@@ -180,12 +213,22 @@ const SendFundsForm = ({ className, onCancel, defaultSelectedAddress, setNewTxn 
 		setLoading(true);
 		try {
 			const recipients = recipientAndAmount.map((r) => r.recipient);
-			const amounts = recipientAndAmount.map((a) => ethers.utils.parseUnits(a.amount, 'ether').toString());
-			const safeTxHash = await gnosisSafe.createSafeTx(activeMultisig, recipients, amounts, address, note);
+			const amounts = recipientAndAmount.map((a) =>
+				ethers.utils.parseUnits(a.amount, a.token?.token_decimals || 'ether').toString()
+			);
+			const selectedTokens = recipientAndAmount.map((r) => r.token);
+			const safeTxHash = await gnosisSafe.createSafeTx(
+				activeMultisig,
+				recipients,
+				amounts,
+				address,
+				note,
+				selectedTokens
+			);
 
 			if (safeTxHash) {
 				addNewTransaction({
-					amount: ethers.utils.parseUnits(amount, 'ether').toString(),
+					amount,
 					callData: safeTxHash,
 					callHash: safeTxHash,
 					executed: false,
@@ -382,6 +425,8 @@ const SendFundsForm = ({ className, onCancel, defaultSelectedAddress, setNewTxn 
 										</div>
 										<div className='flex items-center gap-x-2 w-[45%]'>
 											<BalanceInput
+												token={recipientAndAmount[i].token}
+												onTokenChange={(t) => onTokenChange(t, i)}
 												label='Amount*'
 												onChange={(balance) => onAmountChange(balance, i)}
 											/>
@@ -584,7 +629,10 @@ const SendFundsForm = ({ className, onCancel, defaultSelectedAddress, setNewTxn 
 				/>
 				<ModalBtn
 					disabled={
-						recipientAndAmount.some((item) => item.recipient === '' || item.amount === '0' || !item.amount) ||
+						recipientAndAmount.some(
+							(item) =>
+								item.recipient === '' || item.amount === '0' || Number.isNaN(Number(item.amount)) || !item.amount
+						) ||
 						Object.keys(transactionFields[category].subfields).some(
 							(key) =>
 								!transactionFieldsObject.subfields[key]?.value && transactionFields[category].subfields[key].required

@@ -119,23 +119,25 @@ const NameAddress = ({ className, setMultisigAddress, multisigName, setMultisigN
 								</span>
 								<p>Looks like you don&apos;t have any Safe to link.</p>
 							</section>
-							<div className='bg-bg-secondary w-[500px] text-text_secondary rounded-lg p-3 flex flex-col gap-y-3 max-h-[250px] overflow-y-auto'>
-								{multisigs.map((a) => (
-									<div
-										key={a}
-										className='flex justify-between items-center pointer-events-none'
-									>
-										<Address
-											disableExtensionName
-											shortenAddressLength={0}
-											address={a}
-										/>
-										<span className='text-success flex gap-x-1'>
-											<CheckOutlined /> Linked
-										</span>
-									</div>
-								))}
-							</div>
+							{multisigs.length > 0 && (
+								<div className='bg-bg-secondary w-[500px] text-text_secondary rounded-lg p-3 flex flex-col gap-y-3 max-h-[250px] overflow-y-auto'>
+									{multisigs.map((a) => (
+										<div
+											key={a}
+											className='flex justify-between items-center pointer-events-none'
+										>
+											<Address
+												disableExtensionName
+												shortenAddressLength={0}
+												address={a}
+											/>
+											<span className='text-success flex gap-x-1'>
+												<CheckOutlined /> Linked
+											</span>
+										</div>
+									))}
+								</div>
+							)}
 						</div>
 					) : (
 						<Form className='my-0 w-[560px] mt-10'>

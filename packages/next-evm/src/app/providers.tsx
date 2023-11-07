@@ -12,6 +12,7 @@ import { ApiContextProvider } from '@next-evm/context/ApiContext';
 import { ReactNode } from 'react';
 import antdTheme from '@next-evm/styles/antdTheme';
 import { AddMultisigProvider } from '@next-evm/context/AddMultisigContext';
+import { MultisigAssetsProvider } from '@next-evm/context/MultisigAssetsContext';
 
 export default function Providers({ children }: { children?: ReactNode }) {
 	return (
@@ -22,7 +23,9 @@ export default function Providers({ children }: { children?: ReactNode }) {
 						<UserDetailsProvider>
 							<ActiveMultisigProvider>
 								<AddMultisigProvider>
-									<DAppContextProvider>{children}</DAppContextProvider>
+									<MultisigAssetsProvider>
+										<DAppContextProvider>{children}</DAppContextProvider>
+									</MultisigAssetsProvider>
 								</AddMultisigProvider>
 							</ActiveMultisigProvider>
 						</UserDetailsProvider>

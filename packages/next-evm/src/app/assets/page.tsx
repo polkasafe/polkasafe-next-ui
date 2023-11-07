@@ -4,45 +4,17 @@
 
 'use client';
 
-import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import AssetsTable from '@next-evm/app/components/Assets/AssetsTable';
 // import DropDown from 'src/components/Assets/DropDown';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { IAsset } from '@next-common/types';
 import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
-import Loader from '@next-common/ui-components/Loader';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 const Assets = () => {
-	const [loading, setLoading] = useState<boolean>(false);
-	const { address: userAddress, activeMultisig, gnosisSafe } = useGlobalUserDetailsContext();
-	const [assetsData, setAssetsData] = useState<IAsset[]>([]);
-	const { network } = useGlobalApiContext();
-
-	const handleGetAssets = useCallback(async () => {
-		try {
-			const tokenInfo = await gnosisSafe.getMultisigAllAssets(network, activeMultisig);
-			const assets = tokenInfo.map((token: any) => ({
-				balance_token: token.balance / 10 ** (token?.token?.decimals || chainProperties[network].decimals),
-				balance_usd: token.fiatBalance,
-				logoURI: token?.token?.logoUri || chainProperties[network].logo,
-				name: token?.token?.symbol || chainProperties[network].tokenSymbol
-			}));
-			setAssetsData(assets);
-			setLoading(false);
-		} catch (error) {
-			console.log('ERROR', error);
-			setLoading(false);
-		}
-	}, [activeMultisig, gnosisSafe, network]);
-	useEffect(() => {
-		handleGetAssets();
-	}, [handleGetAssets]);
-
-	if (loading) return <Loader size='large' />;
+	const { address: userAddress } = useGlobalUserDetailsContext();
+	const { allAssets } = useMultisigAssetsContext();
 
 	return (
 		<div className='h-[70vh] bg-bg-main rounded-lg'>
@@ -61,7 +33,7 @@ const Assets = () => {
 						</div>
 					</div>
 					<div className='col-start-1 col-end-13 mx-5'>
-						<AssetsTable assets={assetsData} />
+						<AssetsTable assets={allAssets} />
 					</div>
 				</div>
 			) : (

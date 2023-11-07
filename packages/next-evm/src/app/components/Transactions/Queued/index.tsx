@@ -7,9 +7,11 @@ import React, { FC, useEffect, useState } from 'react';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import Loader from '@next-common/ui-components/Loader';
-import { convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
+import { IQueuedTransactions, convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
+import { getTransactionQueue } from '@safe-global/safe-gateway-typescript-sdk';
 
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import NoTransactionsQueued from './NoTransactionsQueued';
 import Transaction from './Transaction';
 
@@ -24,15 +26,14 @@ interface IQueued {
 const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 	const { address, activeMultisig, setActiveMultisigData, activeMultisigData, gnosisSafe } =
 		useGlobalUserDetailsContext();
-	const [queuedTransactions, setQueuedTransactions] = useState<any[]>([]);
-	// const location = useLocation();
+	const [queuedTransactions, setQueuedTransactions] = useState<IQueuedTransactions[]>([]);
 	const { network } = useGlobalApiContext();
 
 	const handleAfterApprove = (callHash: string) => {
 		const payload = queuedTransactions.map((queue) => {
 			return queue.txHash === callHash ? { ...queue, signatures: [...(queue.signatures || []), { address }] } : queue;
 		});
-		setQueuedTransactions(payload);
+		setQueuedTransactions(payload as any);
 	};
 
 	const handleAfterExecute = (callHash: string) => {
@@ -83,9 +84,16 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 		(async () => {
 			setLoading(true);
 			try {
+				const txDetails = await getTransactionQueue(
+					chainProperties[network].chainId.toString(),
+					activeMultisig,
+					undefined
+				);
+				const filteredTxDetials = txDetails?.results.filter((item) => item.type === 'TRANSACTION').reverse();
 				const safeData = await gnosisSafe.getPendingTx(activeMultisig);
-				console.log(safeData);
-				const convertedData = safeData.results.map((safe: any) => convertSafePendingData({ ...safe, network }));
+				const convertedData = safeData.results.map((safe: any, i) =>
+					convertSafePendingData({ ...safe, network }, (filteredTxDetials[i] as any)?.transaction.txInfo)
+				);
 				setQueuedTransactions(convertedData);
 				if (convertedData?.length > 0)
 					updateDB(UpdateDB.Update_Pending_Transaction, { transactions: convertedData }, address, network);
@@ -127,6 +135,9 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 								onAfterExecute={handleAfterExecute}
 								txType={transaction.type}
 								recipientAddress={transaction.to}
+								tokenLogo={transaction.tokenLogo}
+								tokenSymbol={transaction.tokenSymbol}
+								tokenDecimals={transaction.tokenDecimals}
 							/>
 						</section>
 					);
