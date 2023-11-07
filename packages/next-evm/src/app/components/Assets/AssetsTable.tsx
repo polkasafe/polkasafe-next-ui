@@ -20,6 +20,7 @@ interface IAssetsProps {
 const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { network } = useGlobalApiContext();
+	const [selectedToken, setSeletedToken] = useState<IAsset>(assets[0]);
 
 	return (
 		<div className='text-sm font-medium leading-[15px] scale-[80%] w-[125%] h-[125%] origin-top-left'>
@@ -28,7 +29,10 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 				open={openTransactionModal}
 				onCancel={() => setOpenTransactionModal(false)}
 			>
-				<SendFundsForm onCancel={() => setOpenTransactionModal(false)} />
+				<SendFundsForm
+					defaultToken={selectedToken}
+					onCancel={() => setOpenTransactionModal(false)}
+				/>
 			</ModalComponent>
 			<article className='grid grid-cols-4 gap-x-5 bg-bg-secondary text-text_secondary py-5 px-4 rounded-lg'>
 				<span className='col-span-1'>Asset</span>
@@ -37,7 +41,8 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 				<span className='col-span-1'>Action</span>
 			</article>
 			{assets && assets.length > 0 ? (
-				assets.map(({ balance_token, balance_usd, logoURI, name, symbol }, index) => {
+				assets.map((asset, index) => {
+					const { balance_token, balance_usd, logoURI, name, symbol } = asset;
 					return (
 						<>
 							<article
@@ -73,11 +78,13 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 									{balance_usd || '-'}
 								</p>
 								<PrimaryButton
-									onClick={() => setOpenTransactionModal(true)}
+									onClick={() => {
+										setOpenTransactionModal(true);
+										setSeletedToken(asset);
+									}}
 									className={` text-white w-fit ${
 										chainProperties[network].tokenSymbol !== name ? 'bg-secondary' : 'bg-primary'
 									}`}
-									disabled={chainProperties[network].tokenSymbol !== name}
 								>
 									<p className='font-normal text-sm'>Send</p>
 								</PrimaryButton>

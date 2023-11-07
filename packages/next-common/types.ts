@@ -2,6 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
+// eslint-disable-next-line import/no-cycle
 import GnosisSafeService from '@next-evm/services/Gnosis';
 import { Dispatch, SetStateAction } from 'react';
 
@@ -205,6 +206,8 @@ export interface IAsset {
 	symbol: string;
 	balance_usd: string;
 	balance_token: string;
+	token_decimals?: number;
+	tokenAddress?: string | null;
 }
 
 export interface ITxNotification {

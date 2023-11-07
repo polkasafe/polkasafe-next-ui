@@ -17,8 +17,10 @@ import {
 	TransactionResult
 } from '@safe-global/safe-core-sdk-types';
 import { NETWORK } from '@next-common/global/evm-network-constants';
+// eslint-disable-next-line import/no-cycle
 import createTokenTransferParams from '@next-evm/utils/createTokenTransaferParams';
 import getAllAssets from '@next-evm/utils/getAllAssets';
+import { IAsset } from '@next-common/types';
 
 (BigInt.prototype as any).toJSON = function () {
 	return this.toString();
@@ -107,7 +109,8 @@ export default class GnosisSafeService {
 		to: string[],
 		value: string[],
 		senderAddress: string,
-		note?: string
+		note?: string,
+		tokens?: IAsset[]
 	): Promise<string | null> => {
 		try {
 			const safeSdk = await Safe.create({
@@ -117,7 +120,7 @@ export default class GnosisSafeService {
 			});
 			const signer = await this.ethAdapter.getSignerAddress();
 
-			const safeTransactionData: MetaTransactionData[] = createTokenTransferParams(to, value);
+			const safeTransactionData: MetaTransactionData[] = createTokenTransferParams(to, value, tokens);
 
 			if (note) console.log(note);
 

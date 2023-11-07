@@ -32,6 +32,9 @@ interface ITransactionProps {
 	onAfterExecute?: any;
 	txType?: any;
 	recipientAddress?: string;
+	tokenSymbol?: string;
+	tokenLogo?: string;
+	tokenDecimals?: number;
 }
 
 const Transaction: FC<ITransactionProps> = ({
@@ -44,7 +47,10 @@ const Transaction: FC<ITransactionProps> = ({
 	onAfterApprove,
 	onAfterExecute,
 	txType,
-	recipientAddress
+	recipientAddress,
+	tokenSymbol,
+	tokenLogo,
+	tokenDecimals
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
@@ -209,16 +215,22 @@ const Transaction: FC<ITransactionProps> = ({
 										? 'Adding New Owner'
 										: txType === 'removeOwner'
 										? 'Removing Owner'
-										: txType === 'Sent' || txType === 'transfer'
+										: txType === 'Sent' || txType === 'transfer' || txType === 'multiSend'
 										? 'Send'
 										: 'Custom Transaction'}
 								</span>
 							</p>
 							{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && (
 								<p className='col-span-2 flex items-center gap-x-[6px]'>
-									<ParachainIcon src={chainProperties[network].logo} />
+									<ParachainIcon src={tokenLogo || chainProperties[network].logo} />
 									<span className='font-normal text-xs leading-[13px] text-failure'>
-										{ethers.utils.formatEther(transactionDetails.amount_token || value).toString()} {token}
+										{ethers.utils
+											.formatUnits(
+												value || transactionDetails.amount_token,
+												tokenDecimals || chainProperties[network].decimals
+											)
+											.toString()}{' '}
+										{tokenSymbol || token}
 									</span>
 								</p>
 							)}
@@ -281,6 +293,8 @@ const Transaction: FC<ITransactionProps> = ({
 						txType={txType}
 						transactionFields={transactionDetails.transactionFields}
 						transactionDetailsLoading={transactionDetailsLoading}
+						tokenSymbol={tokenSymbol}
+						tokenDecimals={tokenDecimals}
 					/>
 				</div>
 			</Collapse.Panel>

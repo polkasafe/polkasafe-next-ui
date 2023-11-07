@@ -46,6 +46,8 @@ interface ISentInfoProps {
 	note: string;
 	txType?: string;
 	transactionDetailsLoading: boolean;
+	tokenSymbol?: string;
+	tokenDecimals?: number;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -66,7 +68,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 	handleCancelTransaction,
 	txType,
 	note,
-	transactionDetailsLoading
+	transactionDetailsLoading,
+	tokenSymbol,
+	tokenDecimals
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { network } = useGlobalApiContext();
@@ -131,7 +135,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
 								<span>Send</span>
 								<span className='text-failure'>
-									{amount ? ethers.utils.formatEther(String(amount)) : `? ${chainProperties[network].tokenSymbol}`}{' '}
+									{amount
+										? ethers.utils.formatUnits(String(amount), tokenDecimals || chainProperties[network].decimals)
+										: '?'}{' '}
+									{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 								</span>
 								<span>To:</span>
 							</p>
@@ -148,8 +155,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 											<span>Send</span>
 											<span className='text-failure'>
 												{amount[i]
-													? ethers.utils.formatEther(String(amount[i]))
-													: `? ${chainProperties[network].tokenSymbol}`}{' '}
+													? ethers.utils.formatUnits(
+															String(amount[i]),
+															tokenDecimals || chainProperties[network].decimals
+													  )
+													: '?'}{' '}
+												{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 											</span>
 											<span>To:</span>
 										</p>
