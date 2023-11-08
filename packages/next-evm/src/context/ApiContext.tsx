@@ -9,7 +9,7 @@ import { metamaskWallet, ThirdwebProvider, walletConnect } from '@thirdweb-dev/r
 import React, { useContext, useMemo, useState } from 'react';
 import { NETWORK } from '@next-common/global/evm-network-constants';
 import getNetwork from '@next-evm/utils/getNetwork';
-import { EVM_API_AUTH_URL } from '@next-common/global/apiUrls';
+// import { EVM_API_AUTH_URL } from '@next-common/global/apiUrls';
 
 export interface ApiContextType {
 	network: NETWORK;
@@ -44,11 +44,7 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 		<ApiContext.Provider value={value}>
 			<ThirdwebProvider
 				activeChain={chains?.[network || 'astar']}
-				clientId='b2c09dab179152e7936744fa00899dfa'
-				authConfig={{
-					authUrl: `${EVM_API_AUTH_URL}`,
-					domain: 'localhost:3000'
-				}}
+				clientId={process.env.THIRDWEB_CLIENT_ID}
 				supportedChains={Object.values(chains) as any}
 				supportedWallets={[metamaskWallet(), walletConnect()]}
 			>
