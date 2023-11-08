@@ -5,6 +5,6 @@
 const CURRENCY_API_KEY =
 	process.env.REACT_APP_ENV === 'dev'
 		? 'cur_live_fWyNcPwdq3W6Cc7Xx7lR8SkoT9diSRPJFfKofWAi'
-		: process.env.POLKASAFE_CURRENCY_API_KEY;
+		: 'cur_live_ZGW68myNKB7GoRvr86Ft6qYtDPMC1gkBolKl5DLw';
 
 export default CURRENCY_API_KEY;
