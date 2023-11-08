@@ -10,7 +10,7 @@ import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisig
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-import { IAllAddresses } from '@next-common/types';
+import { IAllAddresses, IMultisigAddress } from '@next-common/types';
 import {
 	AddIcon,
 	CopyIcon,
@@ -154,11 +154,48 @@ const EditAddressModal = ({
 	);
 };
 
+const RemoveAddressModal = ({
+	addresses,
+	address,
+	userAddress,
+	multisig
+}: {
+	addresses: IAllAddresses;
+	address: string;
+	userAddress: string;
+	multisig: IMultisigAddress;
+}) => {
+	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
+	return (
+		<>
+			{address !== userAddress && !multisig?.signatories.includes(address) && (
+				<button
+					onClick={() => setOpenRemoveModal(true)}
+					className='text-failure bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
+				>
+					<DeleteIcon />
+				</button>
+			)}
+			<ModalComponent
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Remove Address</h3>}
+				open={openRemoveModal}
+				onCancel={() => setOpenRemoveModal(false)}
+			>
+				<RemoveAddress
+					shared={addresses[address].shared}
+					addressToRemove={address}
+					name={addresses[address]?.name}
+					onCancel={() => setOpenRemoveModal(false)}
+				/>
+			</ModalComponent>
+		</>
+	);
+};
+
 const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 	const { network } = useGlobalApiContext();
 	const { address: userAddress, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
 	const { records } = useActiveMultisigContext();
-	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
 
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
@@ -237,26 +274,12 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 						rolesToEdit={addresses[address]?.roles}
 						telegramToEdit={addresses[address]?.telegram}
 					/>
-					<ModalComponent
-						title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Remove Address</h3>}
-						open={openRemoveModal}
-						onCancel={() => setOpenRemoveModal(false)}
-					>
-						<RemoveAddress
-							shared={addresses[address].shared}
-							addressToRemove={encodedAddress}
-							name={addresses[address]?.name}
-							onCancel={() => setOpenRemoveModal(false)}
-						/>
-					</ModalComponent>
-					{encodedAddress !== userAddress && !multisig?.signatories.includes(encodedAddress) && (
-						<button
-							onClick={() => setOpenRemoveModal(true)}
-							className='text-failure bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
-						>
-							<DeleteIcon />
-						</button>
-					)}
+					<RemoveAddressModal
+						addresses={addresses}
+						address={address}
+						userAddress={userAddress}
+						multisig={multisig}
+					/>
 					<TransactionModal
 						defaultAddress={encodedAddress}
 						className={className}
