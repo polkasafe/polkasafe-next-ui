@@ -6,8 +6,9 @@
 'use client';
 
 import './style.css';
+import { TransakConfig, Transak } from '@transak/transak-sdk';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { OnrampWebSDK } from '@onramp.money/onramp-web-sdk';
+// import { OnrampWebSDK } from '@onramp.money/onramp-web-sdk';
 import { Dropdown, Form, Input } from 'antd';
 import { ItemType } from 'antd/es/menu/hooks/useItems';
 import React, { useState } from 'react';
@@ -15,7 +16,7 @@ import Link from 'next/link';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { onrampTokenProperties, onrampTokens } from '@next-common/global/networkConstants';
-import ONRAMP_APP_ID from '@next-common/global/onrampAppId';
+// import ONRAMP_APP_ID from '@next-common/global/onrampAppId';
 import AddressInput from '@next-common/ui-components/AddressInput';
 import Balance from '@next-common/ui-components/Balance';
 import { CircleArrowDownIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
@@ -52,16 +53,30 @@ const Exchange = ({ className }: { className?: string }) => {
 
 	const onConfirm = () => {
 		if (!walletAddress || !coinAmount || Number.isNaN(coinAmount)) return;
-		const onramp = new OnrampWebSDK({
-			appId: ONRAMP_APP_ID,
-			coinAmount: Number(coinAmount),
-			coinCode: onrampTokenProperties[coinCode].tokenSymbol,
-			flowType: onrampFlowType,
-			paymentMethod: 1,
-			walletAddress: getEncodedAddress(walletAddress, network) || walletAddress
-		});
 
-		onramp.show();
+		const transakConfig: TransakConfig = {
+			apiKey: '969ffa75-9ce9-4b52-b856-78cf7d5b5b65',
+			environment: Transak.ENVIRONMENTS.STAGING,
+			defaultCryptoAmount: Number(coinAmount),
+			walletAddress: getEncodedAddress(walletAddress, network) || walletAddress,
+			defaultNetwork: network
+			// For the full list of customisation options check the link below
+		};
+
+		const transak = new Transak(transakConfig);
+
+		transak.init();
+
+		// const onramp = new OnrampWebSDK({
+		// appId: ONRAMP_APP_ID,
+		// coinAmount: Number(coinAmount),
+		// coinCode: onrampTokenProperties[coinCode].tokenSymbol,
+		// flowType: onrampFlowType,
+		// paymentMethod: 1,
+		// walletAddress: getEncodedAddress(walletAddress, network) || walletAddress
+		// });
+
+		// onramp.show();
 	};
 
 	return (
