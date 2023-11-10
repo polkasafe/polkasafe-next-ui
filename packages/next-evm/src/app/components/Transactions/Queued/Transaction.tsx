@@ -20,6 +20,8 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import { EVM_API_URL } from '@next-common/global/apiUrls';
 import updateMultisigTransactions from '@next-evm/utils/updateHistoryTransaction';
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import SentInfo from './SentInfo';
 
 interface ITransactionProps {
@@ -55,6 +57,7 @@ const Transaction: FC<ITransactionProps> = ({
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
+	const { allAssets } = useMultisigAssetsContext();
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [getMultiDataLoading] = useState(false);
@@ -71,12 +74,22 @@ const Transaction: FC<ITransactionProps> = ({
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const [callDataString] = useState<string>(callData || '');
 	const [transactionDetails, setTransactionDetails] = useState<ITransaction>({} as any);
+
+	const [txData, setTxData] = useState<TransactionData>({} as any);
+
+	const [tokenDetailsArray, setTokenDetailsArray] = useState<{ tokenSymbol: string; tokenDecimals: number }[]>([]);
+
 	const token = chainProperties[network].tokenSymbol;
 	// const hash = location.hash.slice(1);
 	const [transactionDetailsLoading, setTransactionDetailsLoading] = useState<boolean>(false);
 
 	const getTransactionDetailsFromDB = useCallback(async () => {
 		setTransactionDetailsLoading(true);
+
+		const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), callHash);
+
+		setTxData(txDetails.txData);
+
 		const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
 			`${EVM_API_URL}/getTransactionDetailsEth`,
 			{ callHash },
@@ -102,6 +115,28 @@ const Transaction: FC<ITransactionProps> = ({
 
 	useEffect(() => {
 		if (decodedCallData && decodedCallData?.method === 'multiSend') {
+			if (txData && txData.addressInfoIndex && Object.keys(txData.addressInfoIndex)?.length > 0) {
+				const tokenContractAddressArray: string[] = decodedCallData?.parameters?.[0]?.valueDecoded?.map(
+					(item: any) => item?.to
+				);
+
+				const realContractAddresses = Object.keys(txData.addressInfoIndex);
+				tokenContractAddressArray.forEach((item) => {
+					if (realContractAddresses.includes(item)) {
+						const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
+						setTokenDetailsArray((prev) => [
+							...prev,
+							{ tokenDecimals: assetDetails.token_decimals, tokenSymbol: assetDetails.name }
+						]);
+					} else {
+						setTokenDetailsArray((prev) => [
+							...prev,
+							{ tokenDecimals: chainProperties[network].decimals, tokenSymbol: chainProperties[network].tokenSymbol }
+						]);
+					}
+				});
+			}
+
 			const amountsArray = decodedCallData?.parameters?.[0]?.valueDecoded?.map(
 				(item: any) => item?.dataDecoded?.parameters?.[1]?.value
 			);
@@ -110,7 +145,7 @@ const Transaction: FC<ITransactionProps> = ({
 			}, 0);
 			setAmount(totalAmount);
 		}
-	}, [decodedCallData, network]);
+	}, [allAssets, decodedCallData, network, txData]);
 
 	const handleApproveTransaction = async () => {
 		setLoading(true);
@@ -314,6 +349,7 @@ const Transaction: FC<ITransactionProps> = ({
 						transactionDetailsLoading={transactionDetailsLoading}
 						tokenSymbol={tokenSymbol}
 						tokenDecimals={tokenDecimals}
+						multiSendTokens={tokenDetailsArray}
 					/>
 				</div>
 			</Collapse.Panel>

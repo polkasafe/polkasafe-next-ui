@@ -48,6 +48,7 @@ interface ISentInfoProps {
 	transactionDetailsLoading: boolean;
 	tokenSymbol?: string;
 	tokenDecimals?: number;
+	multiSendTokens?: { tokenSymbol: string; tokenDecimals: number }[];
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -70,7 +71,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 	note,
 	transactionDetailsLoading,
 	tokenSymbol,
-	tokenDecimals
+	tokenDecimals,
+	multiSendTokens
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { network } = useGlobalApiContext();
@@ -157,10 +159,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 												{amount[i]
 													? ethers.utils.formatUnits(
 															String(amount[i]),
-															tokenDecimals || chainProperties[network].decimals
+															multiSendTokens?.[i]?.tokenDecimals || tokenDecimals || chainProperties[network].decimals
 													  )
 													: '?'}{' '}
-												{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+												{multiSendTokens?.[i]?.tokenSymbol || tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 											</span>
 											<span>To:</span>
 										</p>
