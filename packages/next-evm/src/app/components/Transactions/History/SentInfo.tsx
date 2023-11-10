@@ -28,6 +28,8 @@ interface ISentInfoProps {
 	from: string;
 	txType?: string;
 	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	tokenSymbol?: string;
+	tokenDecimals?: number;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -42,7 +44,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 	loading,
 	txType,
 	addressAddOrRemove,
-	transactionFields
+	transactionFields,
+	tokenDecimals,
+	tokenSymbol
 }) => {
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
@@ -62,8 +66,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 								<span>Sent</span>
 								<span className='text-failure'>
 									{amount
-										? `${ethers.utils.formatEther(String(amount))} ${chainProperties[network].tokenSymbol}`
-										: `? ${chainProperties[network].tokenSymbol}`}{' '}
+										? ethers.utils.formatUnits(String(amount), tokenDecimals || chainProperties[network].decimals)
+										: '?'}{' '}
+									{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 								</span>
 								<span>To:</span>
 							</p>
@@ -80,8 +85,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 											<span>Sent</span>
 											<span className='text-failure'>
 												{amount[i]
-													? `${ethers.utils.formatEther(String(amount[i]))} ${chainProperties[network].tokenSymbol}`
-													: `? ${chainProperties[network].tokenSymbol}`}{' '}
+													? ethers.utils.formatUnits(
+															String(amount[i]),
+															tokenDecimals || chainProperties[network].decimals
+													  )
+													: '?'}{' '}
+												{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 											</span>
 											<span>To:</span>
 										</p>
@@ -93,11 +102,11 @@ const SentInfo: FC<ISentInfoProps> = ({
 								))}
 						</div>
 					))}
-				<div className='flex items-center gap-x-7 mb-3'>
-					<span className='text-text_secondary font-normal text-sm leading-[15px]'>From:</span>
+				<div className='flex items-center justify-between mt-3'>
+					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Executed By:</span>
 					<AddressComponent address={from} />
 				</div>
-				<div className='flex items-center gap-x-5'>
+				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
 					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
 						<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 10)}</span>
@@ -109,14 +118,14 @@ const SentInfo: FC<ISentInfoProps> = ({
 						</span>
 					</p>
 				</div>
-				<div className='flex items-center gap-x-5 mt-3'>
+				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Executed:</span>
 					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
 						<span className='text-white font-normal text-sm leading-[15px]'>{date}</span>
 					</p>
 				</div>
 				{addressAddOrRemove && (
-					<div className='flex items-center gap-x-5 mt-3'>
+					<div className='flex items-center justify-between mt-3'>
 						<span className='text-text_secondary font-normal text-sm leading-[15px]'>
 							{txType === 'addOwnerWithThreshold' ? 'Added Owner' : 'Removed Owner'}:
 						</span>
@@ -160,7 +169,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 								</>
 							)}
 						{note && (
-							<div className='flex items-center gap-x-5 mt-3'>
+							<div className='flex items-center justify-between mt-3'>
 								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Note:</span>
 								<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
 									<span className='text-white font-normal text-sm leading-[15px] whitespace-pre'>{note}</span>

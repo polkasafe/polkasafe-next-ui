@@ -1,6 +1,7 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
+/* eslint-disable @typescript-eslint/naming-convention */
 import { Collapse, Divider, Skeleton } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
@@ -63,6 +64,8 @@ const Transaction: FC<ITransactionProps> = ({
 
 	const [decodedCallData, setDecodedCallData] = useState<any>({});
 
+	const [amount, setAmount] = useState(value);
+
 	const router = useRouter();
 
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
@@ -72,7 +75,7 @@ const Transaction: FC<ITransactionProps> = ({
 	// const hash = location.hash.slice(1);
 	const [transactionDetailsLoading, setTransactionDetailsLoading] = useState<boolean>(false);
 
-	const getTransactionDetails = useCallback(async () => {
+	const getTransactionDetailsFromDB = useCallback(async () => {
 		setTransactionDetailsLoading(true);
 		const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
 			`${EVM_API_URL}/getTransactionDetailsEth`,
@@ -86,8 +89,8 @@ const Transaction: FC<ITransactionProps> = ({
 		setTransactionDetailsLoading(false);
 	}, [callHash, network]);
 	useEffect(() => {
-		getTransactionDetails();
-	}, [getTransactionDetails]);
+		getTransactionDetailsFromDB();
+	}, [getTransactionDetailsFromDB]);
 
 	useEffect(() => {
 		if (!callData) return;
@@ -96,6 +99,18 @@ const Transaction: FC<ITransactionProps> = ({
 			.then((res) => setDecodedCallData(res))
 			.catch((e) => console.log(e));
 	}, [callData, gnosisSafe]);
+
+	useEffect(() => {
+		if (decodedCallData && decodedCallData?.method === 'multiSend') {
+			const amountsArray = decodedCallData?.parameters?.[0]?.valueDecoded?.map(
+				(item: any) => item?.dataDecoded?.parameters?.[1]?.value
+			);
+			const totalAmount = amountsArray?.reduce((sum: number, a: string) => {
+				return sum + Number(a);
+			}, 0);
+			setAmount(totalAmount);
+		}
+	}, [decodedCallData, network]);
 
 	const handleApproveTransaction = async () => {
 		setLoading(true);
@@ -226,7 +241,7 @@ const Transaction: FC<ITransactionProps> = ({
 									<span className='font-normal text-xs leading-[13px] text-failure'>
 										{ethers.utils
 											.formatUnits(
-												value || transactionDetails.amount_token,
+												decodedCallData?.method === 'multiSend' ? amount : value || transactionDetails.amount_token,
 												tokenDecimals || chainProperties[network].decimals
 											)
 											.toString()}{' '}
@@ -264,7 +279,9 @@ const Transaction: FC<ITransactionProps> = ({
 					<SentInfo
 						amount={
 							decodedCallData.method === 'multiSend'
-								? decodedCallData?.parameters?.[0]?.valueDecoded?.map((item: any) => item.value)
+								? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
+										(item: any) => item?.dataDecoded?.parameters?.[1]?.value
+								  )
 								: value
 						}
 						addressAddOrRemove={
@@ -277,7 +294,9 @@ const Transaction: FC<ITransactionProps> = ({
 						callHash={callHash}
 						recipientAddress={
 							decodedCallData.method === 'multiSend'
-								? decodedCallData?.parameters?.[0]?.valueDecoded?.map((item: any) => item.to)
+								? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
+										(item: any) => item?.dataDecoded?.parameters?.[0]?.value
+								  )
 								: recipientAddress || ''
 						}
 						callDataString={callDataString}
