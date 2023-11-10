@@ -38,7 +38,10 @@ const Transaction: FC<IHistoryTransactions> = ({
 	type,
 	executor,
 	decodedData,
-	data: callData
+	data: callData,
+	tokenSymbol,
+	tokenLogo,
+	tokenDecimals
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { network } = useGlobalApiContext();
@@ -65,14 +68,16 @@ const Transaction: FC<IHistoryTransactions> = ({
 	}, [callData, gnosisSafe.safeService]);
 
 	useEffect(() => {
-		if (decodedCallData.method !== 'multiSend') return;
-
-		const total = decodedCallData?.parameters?.[0]?.valueDecoded?.reduce(
-			(t: number, item: any) => t + Number(item.value),
-			0
-		);
-		setTotalAmount(total);
-	}, [decodedCallData]);
+		if (decodedCallData && decodedCallData?.method === 'multiSend') {
+			const amountsArray = decodedCallData?.parameters?.[0]?.valueDecoded?.map(
+				(item: any) => item?.dataDecoded?.parameters?.[1]?.value
+			);
+			const total = amountsArray?.reduce((sum: number, a: string) => {
+				return sum + Number(a);
+			}, 0);
+			setTotalAmount(total);
+		}
+	}, [decodedCallData, network]);
 
 	const handleGetHistoryNote = async () => {
 		try {
@@ -148,13 +153,16 @@ const Transaction: FC<IHistoryTransactions> = ({
 						</p>
 						{isFundType || isSentType ? (
 							<p className='col-span-2 flex items-center gap-x-[6px]'>
-								<ParachainIcon src={chainProperties[network].logo} />
+								<ParachainIcon src={tokenLogo || chainProperties[network].logo} />
 								<span className={`font-normal text-xs leading-[13px] text-failure ${isFundType && 'text-success'}`}>
 									{isSentType ? '-' : '+'}{' '}
 									{ethers?.utils
-										?.formatEther(totalAmount ? totalAmount.toString() : amount_token?.toString())
+										?.formatUnits(
+											totalAmount ? totalAmount.toString() : amount_token?.toString(),
+											tokenDecimals || chainProperties[network].decimals
+										)
 										?.toString()}{' '}
-									{token}
+									{tokenSymbol || token}
 								</span>
 							</p>
 						) : (
@@ -181,19 +189,25 @@ const Transaction: FC<IHistoryTransactions> = ({
 							note={transactionDetails?.note || ''}
 							loading={loading}
 							to={to}
+							tokenSymbol={tokenSymbol}
+							tokenDecimals={tokenDecimals}
 						/>
 					) : (
 						<SentInfo
 							amount={
 								decodedCallData.method === 'multiSend'
-									? decodedCallData?.parameters?.[0]?.valueDecoded?.map((item: any) => item.value)
+									? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
+											(item: any) => item?.dataDecoded?.parameters?.[1]?.value
+									  )
 									: String(amount_token)
 							}
 							approvals={approvals}
 							date={dayjs(created_at).format('lll')}
 							recipientAddress={
 								decodedCallData.method === 'multiSend'
-									? decodedCallData?.parameters?.[0]?.valueDecoded?.map((item: any) => item.to)
+									? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
+											(item: any) => item?.dataDecoded?.parameters?.[0]?.value
+									  )
 									: to.toString() || ''
 							}
 							callHash={txHash || ''}
@@ -208,6 +222,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 									? decodedData.parameters?.[1]?.value
 									: ''
 							}
+							tokenSymbol={tokenSymbol}
+							tokenDecimals={tokenDecimals}
 						/>
 					)}
 				</div>
