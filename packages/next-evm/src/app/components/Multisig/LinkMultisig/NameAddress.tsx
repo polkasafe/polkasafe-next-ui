@@ -51,7 +51,7 @@ const NameAddress = ({ className, setMultisigAddress, multisigName, setMultisigN
 		};
 		getAllSafes();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [address, multisigAddresses, gnosisSafe, setMultisigAddress]);
+	}, [address, multisigAddresses, gnosisSafe]);
 
 	const dropdownItems: MenuProps['items'] = [
 		...allSafes.map((account, i) => ({
@@ -181,7 +181,10 @@ const NameAddress = ({ className, setMultisigAddress, multisigName, setMultisigN
 									className={`border border-primary rounded-xl px-3 py-[13px] bg-bg-secondary cursor-pointer ${className}`}
 									menu={{
 										items: dropdownItems,
-										onClick: (e) => setSelectedAddress(e.key)
+										onClick: (e) => {
+											setSelectedAddress(e.key);
+											setMultisigAddress(e.key);
+										}
 									}}
 								>
 									<div className='flex justify-between items-center '>
