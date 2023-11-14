@@ -8,6 +8,7 @@ import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { CheckOutlined, CircleArrowDownIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import Address from '@next-evm/ui-components/Address';
+import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 
 // import Loader from '@next-evm/app/components/UserFlow/Loader';
 
@@ -20,12 +21,18 @@ interface Props {
 
 const NameAddress = ({ className, setMultisigAddress, multisigName, setMultisigName }: Props) => {
 	const { address, gnosisSafe } = useGlobalUserDetailsContext();
-	const { multisigAddresses } = useGlobalUserDetailsContext();
+	const { network } = useGlobalApiContext();
+	const { multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
 
 	const [allSafes, setAllSafes] = useState<Array<{ address: string }>>([]);
 	const [selectedAddress, setSelectedAddress] = useState<string>('');
 	const [loading, setLoading] = useState<boolean>(false);
-	const multisigs = multisigAddresses.map((item) => item.address);
+	const multisigs = multisigAddresses
+		.filter(
+			(multisig) =>
+				multisig.network === network && !multisigSettings?.[`${multisig.address}`]?.deleted && !multisig.disabled
+		)
+		.map((item) => item.address);
 
 	useEffect(() => {
 		if (!gnosisSafe) {
