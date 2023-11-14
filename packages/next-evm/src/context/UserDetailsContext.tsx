@@ -333,6 +333,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	const [loading, setLoading] = useState(false);
 	const connect = useMetamask();
 
+	const prevActiveMultisig = typeof window !== 'undefined' && localStorage.getItem('active_multisig');
+
 	const connectAddress = useCallback(
 		// eslint-disable-next-line @typescript-eslint/no-shadow, sonarjs/cognitive-complexity
 		async (passedNetwork: string = network, address?: string, signature?: string) => {
@@ -353,9 +355,12 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					return {
 						...prevState,
 						activeMultisig:
-							(typeof window !== 'undefined' && localStorage.getItem('active_multisig')) ||
-							userData?.multisigAddresses?.filter((a: any) => a.network === network)?.[0]?.address ||
-							'',
+							prevActiveMultisig &&
+							userData?.multisigAddresses?.some(
+								(item) => item.address === prevActiveMultisig && item.network === network
+							)
+								? prevActiveMultisig
+								: userData?.multisigAddresses?.filter((a: any) => a.network === network)?.[0]?.address || '',
 						address: userData?.address,
 						addressBook: userData?.addressBook || [],
 						createdAt: userData?.created_at,

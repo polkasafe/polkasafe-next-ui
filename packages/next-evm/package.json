@@ -44,6 +44,7 @@
     "@web3auth/wallet-connect-v2-adapter": "^5.2.0",
     "antd": "5.11.0",
     "assert": "^2.0.0",
+    "axios": "^1.6.1",
     "browserify-zlib": "^0.2.0",
     "buffer": "^6.0.3",
     "crypto-browserify": "^3.12.0",
