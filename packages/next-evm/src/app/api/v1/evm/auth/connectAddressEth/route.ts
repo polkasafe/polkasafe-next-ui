@@ -11,7 +11,6 @@ import { NextResponse } from 'next/server';
 import { CHANNEL, IAddressBookItem, IUser, IUserNotificationPreferences, IUserResponse } from '@next-common/types';
 import { DEFAULT_USER_ADDRESS_NAME } from '@next-common/global/default';
 import verifyEthSignature from '@next-common/utils/verifyEthSignature';
-import getMultisigAddressesByAddress from '../../api-utils/getMultisigAddressesByAddress';
 
 // eslint-disable-next-line import/prefer-default-export, @typescript-eslint/no-unused-vars
 export async function POST(req: Request) {
@@ -48,8 +47,6 @@ export async function POST(req: Request) {
 			triggerPreferences: {}
 		};
 
-		const multisigAddresses = await getMultisigAddressesByAddress(address);
-
 		// check if address doc already exists
 		if (doc.exists) {
 			const data = doc.data();
@@ -64,7 +61,7 @@ export async function POST(req: Request) {
 					email: addressDoc.email,
 					created_at: addressDoc.created_at,
 					addressBook: addressDoc.addressBook,
-					multisigAddresses: multisigAddresses.map((item) => ({
+					multisigAddresses: addressDoc.multisigAddresses.map((item) => ({
 						...item,
 						signatories: item.signatories.map((signatory) => signatory)
 					})),
@@ -93,7 +90,7 @@ export async function POST(req: Request) {
 			created_at: new Date(),
 			email: null,
 			addressBook: [newAddress],
-			multisigAddresses,
+			multisigAddresses: [],
 			multisigSettings: {},
 			notification_preferences: DEFAULT_NOTIFICATION_PREFERENCES
 		};
