@@ -452,7 +452,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			return;
 		}
 		if (typeof window !== 'undefined' && localStorage.getItem('signature')) {
-			const signature = localStorage.getItem('signature');
+			const signature = localStorage.getItem('signature') || '';
 			connectAddress(network, address, signature);
 		} else {
 			if (typeof window !== 'undefined') localStorage.clear();

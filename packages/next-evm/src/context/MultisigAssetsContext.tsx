@@ -35,7 +35,6 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 	const handleGetAssets = useCallback(async () => {
 		try {
 			const tokenInfo = await gnosisSafe.getMultisigAllAssets(network, activeMultisig);
-			console.log(tokenInfo);
 			const assets: IAsset[] = tokenInfo.map((token: any) => ({
 				balance_token: token.balance / 10 ** (token?.token?.decimals || chainProperties[network].decimals),
 				balance_usd: token.fiatBalance,

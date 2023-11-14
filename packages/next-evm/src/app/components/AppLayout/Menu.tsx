@@ -24,6 +24,7 @@ import {
 	UserPlusIcon
 } from '@next-common/ui-components/CustomIcons';
 import { useAddMultisigContext } from '@next-evm/context/AddMultisigContext';
+import { IMultisigAddress } from '@next-common/types';
 
 interface Props {
 	className?: string;
@@ -43,6 +44,16 @@ const Menu: FC<Props> = ({ className }) => {
 	}, [activeMultisig]);
 
 	const { setOpenAddMultisigModal } = useAddMultisigContext();
+
+	const [filteredMultisigs, setFilteredMultisigs] = useState<IMultisigAddress[]>([]);
+
+	useEffect(() => {
+		const filtered = multisigAddresses.filter(
+			(multisig) =>
+				multisig.network === network && !multisigSettings?.[`${multisig.address}`]?.deleted && !multisig.disabled
+		);
+		setFilteredMultisigs(filtered);
+	}, [multisigAddresses, multisigSettings, network]);
 
 	const menuItems = [
 		{
@@ -143,48 +154,41 @@ const Menu: FC<Props> = ({ className }) => {
 			<h2 className='uppercase text-text_secondary ml-3 text-[10px] font-primary flex items-center justify-between'>
 				<span>Multisigs</span>
 				<span className='bg-highlight text-primary rounded-full flex items-center justify-center h-5 w-5 font-normal text-xs'>
-					{multisigAddresses ? multisigAddresses.length : '0'}
+					{filteredMultisigs ? filteredMultisigs.length : '0'}
 				</span>
 			</h2>
 			<section className='overflow-y-auto max-h-full [&::-webkit-scrollbar]:hidden flex-1 mb-3'>
-				{multisigAddresses && (
+				{filteredMultisigs && (
 					<ul className='flex flex-col gap-y-2 py-3 text-white list-none'>
-						{multisigAddresses
-							.filter(
-								(multisig) =>
-									multisig.network === network &&
-									!multisigSettings?.[`${multisig.address}_${multisig.network}`]?.deleted &&
-									!multisig.disabled
-							)
-							.map((multisig) => {
-								return (
-									<li
-										className='w-full'
-										key={multisig.address}
+						{filteredMultisigs.map((multisig) => {
+							return (
+								<li
+									className='w-full'
+									key={multisig.address}
+								>
+									<button
+										className={`w-full flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
+											multisig.address === selectedMultisigAddress && 'bg-highlight text-primary'
+										}`}
+										onClick={() => {
+											setUserDetailsContextState((prevState: any) => {
+												return {
+													...prevState,
+													activeMultisig: multisig.address
+												};
+											});
+											if (typeof window !== 'undefined') localStorage.setItem('active_multisig', multisig.address);
+										}}
 									>
-										<button
-											className={`w-full flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
-												multisig.address === selectedMultisigAddress && 'bg-highlight text-primary'
-											}`}
-											onClick={() => {
-												setUserDetailsContextState((prevState: any) => {
-													return {
-														...prevState,
-														activeMultisig: multisig.address
-													};
-												});
-												if (typeof window !== 'undefined') localStorage.setItem('active_multisig', multisig.address);
-											}}
-										>
-											<MetaMaskAvatar
-												address={multisig.address}
-												size={23}
-											/>
-											<span className='truncate'>{multisig.name}</span>
-										</button>
-									</li>
-								);
-							})}
+										<MetaMaskAvatar
+											address={multisig.address}
+											size={23}
+										/>
+										<span className='truncate'>{multisig.name}</span>
+									</button>
+								</li>
+							);
+						})}
 					</ul>
 				)}
 			</section>

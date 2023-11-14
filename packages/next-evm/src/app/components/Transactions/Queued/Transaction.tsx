@@ -75,7 +75,7 @@ const Transaction: FC<ITransactionProps> = ({
 	const [callDataString] = useState<string>(callData || '');
 	const [transactionDetails, setTransactionDetails] = useState<ITransaction>({} as any);
 
-	const [txData, setTxData] = useState<TransactionData>({} as any);
+	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
 
 	const [tokenDetailsArray, setTokenDetailsArray] = useState<{ tokenSymbol: string; tokenDecimals: number }[]>([]);
 
@@ -126,7 +126,10 @@ const Transaction: FC<ITransactionProps> = ({
 						const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
 						setTokenDetailsArray((prev) => [
 							...prev,
-							{ tokenDecimals: assetDetails.token_decimals, tokenSymbol: assetDetails.name }
+							{
+								tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
+								tokenSymbol: assetDetails?.name || chainProperties[network].tokenSymbol
+							}
 						]);
 					} else {
 						setTokenDetailsArray((prev) => [

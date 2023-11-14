@@ -99,7 +99,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 					setLoading(false);
 				} else {
 					setLoading(false);
-					setTransactionDetails(getTransactionData);
+					setTransactionDetails(getTransactionData || ({} as any));
 				}
 			}
 		} catch (error) {

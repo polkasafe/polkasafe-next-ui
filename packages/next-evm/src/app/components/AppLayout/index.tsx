@@ -111,7 +111,7 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 			<NavHeader
 				setSideDrawer={setSideDrawer}
 				sideDrawer={sideDrawer}
-				showSubmenu={iframeVisibility && isAppsPage}
+				showSubmenu={Boolean(iframeVisibility) && isAppsPage}
 				onClick={() => {
 					setIframeVisibility(null);
 					setIframeState(false);
@@ -156,7 +156,7 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 						trigger={null}
 						collapsible={false}
 						collapsed
-						className={`hidden overflow-y-hidden bg-bg-main sidebar lg:block top-0 bottom-0 left-0 h-screen fixed w-full max-w-[180px] absolute z-10 ${
+						className={`hidden overflow-y-hidden bg-bg-main sidebar lg:block top-0 bottom-0 left-0 h-screen fixed w-full max-w-[180px] z-10 ${
 							!hideSlider ? 'left-0' : 'left-[-300px]'
 						}`}
 					>

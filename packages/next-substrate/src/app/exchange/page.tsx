@@ -6,6 +6,7 @@
 'use client';
 
 import './style.css';
+// import { TransakConfig, Transak } from '@transak/transak-sdk';
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { OnrampWebSDK } from '@onramp.money/onramp-web-sdk';
 import { Dropdown, Form, Input } from 'antd';
@@ -52,6 +53,20 @@ const Exchange = ({ className }: { className?: string }) => {
 
 	const onConfirm = () => {
 		if (!walletAddress || !coinAmount || Number.isNaN(coinAmount)) return;
+
+		// const transakConfig: TransakConfig = {
+		// apiKey: '969ffa75-9ce9-4b52-b856-78cf7d5b5b65',
+		// environment: Transak.ENVIRONMENTS.STAGING,
+		// defaultCryptoAmount: Number(coinAmount),
+		// walletAddress: getEncodedAddress(walletAddress, network) || walletAddress,
+		// defaultNetwork: network
+		// // For the full list of customisation options check the link below
+		// };
+
+		// const transak = new Transak(transakConfig);
+
+		// transak.init();
+
 		const onramp = new OnrampWebSDK({
 			appId: ONRAMP_APP_ID,
 			coinAmount: Number(coinAmount),

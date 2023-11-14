@@ -53,8 +53,30 @@ export async function POST(req: Request) {
 
 	const multisigDoc = await multisigColl.doc(safeAddress).get();
 
-	if (multisigDoc.exists)
+	const addressRefData = doc.data();
+
+	if (multisigDoc.exists) {
+		if (addressRefData && !addressRefData?.multisigAddresses?.some((item: any) => item.address === safeAddress)) {
+			addressRef.update({
+				multisigAddresses: [...addressRefData.multisigAddresses, multisigDoc.data()],
+				[`multisigSettings.${safeAddress}`]: {
+					name: multisigName
+				}
+			});
+			return NextResponse.json({ data: multisigDoc.data(), error: null }, { status: 200 });
+		}
+		if (addressRefData?.multisigSettings?.[safeAddress]?.deleted) {
+			addressRef.update({
+				[`multisigSettings.${safeAddress}`]: {
+					deleted: false,
+					name: multisigName
+				}
+			});
+			return NextResponse.json({ data: multisigDoc.data(), error: null }, { status: 200 });
+		}
+
 		return NextResponse.json({ data: null, error: responseMessages.address_already_exists }, { status: 400 });
+	}
 	const multisigDocument = {
 		address: safeAddress,
 		created_at: new Date(),
