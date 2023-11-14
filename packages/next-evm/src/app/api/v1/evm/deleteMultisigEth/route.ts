@@ -36,7 +36,7 @@ export async function POST(req: Request) {
 
 	const { multisigAddress } = await req.json();
 	if (!multisigAddress)
-		return NextResponse.json({ data: null, error: responseMessages.missing_params }, { status: 200 });
+		return NextResponse.json({ data: null, error: responseMessages.missing_params }, { status: 400 });
 
 	try {
 		const newMultisigSettings: IMultisigSettings = {
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 		);
 
 		console.info('Deleted multisig ', multisigAddress, ' for user ', address);
-		return NextResponse.json({ data: responseMessages.success, error: null }, { status: 400 });
+		return NextResponse.json({ data: responseMessages.success, error: null }, { status: 200 });
 	} catch (err: unknown) {
 		console.error('Error in deleteMultisig :', { err, stack: (err as any).stack });
 		return NextResponse.json({ data: null, error: responseMessages.internal }, { status: 500 });
