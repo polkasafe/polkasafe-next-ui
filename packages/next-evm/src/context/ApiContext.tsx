@@ -4,7 +4,20 @@
 
 import '@polkadot/api-augment';
 
-import { Arbitrum, Astar, Binance, Ethereum, Gnosis, Goerli, Optimism, Polygon } from '@thirdweb-dev/chains';
+import {
+	Arbitrum,
+	Astar,
+	Binance,
+	Ethereum,
+	Gnosis,
+	Goerli,
+	Optimism,
+	Polygon,
+	EnergyWebChain,
+	Aurora,
+	Avalanche,
+	Rinkeby
+} from '@thirdweb-dev/chains';
 import { metamaskWallet, ThirdwebProvider, walletConnect } from '@thirdweb-dev/react';
 import React, { useContext, useMemo, useState } from 'react';
 import { NETWORK } from '@next-common/global/evm-network-constants';
@@ -23,16 +36,18 @@ export interface ApiContextProviderProps {
 }
 
 const chains: any = {
-	arbitrum: Arbitrum,
-	astar: Astar,
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	'bnb smart chain': Binance,
-	ethereum: Ethereum,
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	'gnosis chain': Gnosis,
-	goerli: Goerli,
-	optimism: Optimism,
-	polygon: Polygon
+	[NETWORK.GOERLI]: Goerli,
+	[NETWORK.POLYGON]: Polygon,
+	[NETWORK.ASTAR]: Astar,
+	[NETWORK.ETHEREUM]: Ethereum,
+	[NETWORK.BNB]: Binance,
+	[NETWORK.ARBITRUM]: Arbitrum,
+	[NETWORK.OPTIMISM]: Optimism,
+	[NETWORK.GNOSIS]: Gnosis,
+	[NETWORK.Energy_Web_Chain]: EnergyWebChain,
+	[NETWORK.AURORA]: Aurora,
+	[NETWORK.Avalanche]: Avalanche,
+	[NETWORK.RINKEBY]: Rinkeby
 };
 
 export function ApiContextProvider({ children }: ApiContextProviderProps): React.ReactElement {

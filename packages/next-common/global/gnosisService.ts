@@ -17,6 +17,9 @@ const returnTxUrl = (network?: NETWORK): string => {
 	if (network === NETWORK.ETHEREUM) {
 		return 'https://safe-transaction-mainnet.safe.global';
 	}
+	if (network === NETWORK.BNB) {
+		return 'https://safe-transaction-bsc.safe.global';
+	}
 	if (network === NETWORK.ARBITRUM) {
 		return 'https://safe-transaction-arbitrum.safe.global';
 	}
@@ -26,8 +29,22 @@ const returnTxUrl = (network?: NETWORK): string => {
 	if (network === NETWORK.GNOSIS) {
 		return 'https://safe-transaction-gnosis-chain.safe.global';
 	}
-	if (network === NETWORK.BNB) {
-		return 'https://safe-transaction-bsc.safe.global';
+	if (network === NETWORK.Energy_Web_Chain) {
+		return 'https://safe-transaction.ewc.gnosis.io';
+	}
+	if (network === NETWORK.AURORA) {
+		return 'https://safe-transaction.aurora.gnosis.io';
+	}
+
+	if (network === NETWORK.Avalanche) {
+		return 'https://safe-transaction.avalanche.gnosis.io';
+	}
+
+	if (network === NETWORK.RINKEBY) {
+		return 'https://safe-transaction.rinkeby.gnosis.io';
+	}
+	if (network === NETWORK.VOLTA) {
+		return 'https://safe-transaction.volta.gnosis.io';
 	}
 	return '';
 };

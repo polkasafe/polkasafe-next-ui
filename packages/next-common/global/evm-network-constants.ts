@@ -28,16 +28,22 @@ export type ChainPropType = {
 };
 
 export enum NETWORK {
-	ETHEREUM = 'ethereum',
-	POLYGON = 'polygon',
-	GNOSIS = 'gnosis chain',
-	BNB = 'bnb smart chain',
-	GOERLI = 'goerli',
-	ASTAR = 'astar',
 	// MOONBEAM = 'moonbeam'
+	GOERLI = 'goerli',
+	POLYGON = 'polygon',
+	ASTAR = 'astar',
+	ETHEREUM = 'ethereum',
+	BNB = 'bnb smart chain',
 	ARBITRUM = 'arbitrum',
-	OPTIMISM = 'optimism'
+	OPTIMISM = 'optimism',
+	GNOSIS = 'gnosis chain',
+	Energy_Web_Chain = 'energy web chain',
+	AURORA = 'aurora',
+	Avalanche = 'avalanche',
+	RINKEBY = 'rinkeby',
+	VOLTA = 'volta'
 }
+
 export const tokenSymbol = {
 	ASTR: 'ASTR',
 	BNB: 'BNB',
@@ -45,7 +51,13 @@ export const tokenSymbol = {
 	GLMR: 'GLMR',
 	MATIC: 'MATIC',
 	OP: 'OP',
-	xDAI: 'xDAI'
+	xDAI: 'xDAI',
+	EWT: 'EWT',
+	AETH: 'AETH',
+	AVAX: 'AVAX',
+	OETH: 'OETH',
+	GOR: 'GOR',
+	VT: 'VT'
 };
 
 export const chainProperties: ChainPropType = {
@@ -136,16 +148,60 @@ export const chainProperties: ChainPropType = {
 		rpcEndpoint: 'https://rpc.gnosischain.com/',
 		tokenName: 'Gnosis Chain',
 		tokenSymbol: tokenSymbol.xDAI
+	},
+	[NETWORK.Energy_Web_Chain]: {
+		blockExplorer: 'https://explorer.energyweb.org',
+		chainId: 246,
+		chainNamespace: CHAIN_NAMESPACES.OTHER,
+		decimals: 18,
+		displayName: 'Energy Web Chain',
+		logo: gnosisChainLogo,
+		rpcEndpoint: 'https://rpc.energyweb.org',
+		tokenName: 'Energy Web Token',
+		tokenSymbol: tokenSymbol.EWT
+	},
+	[NETWORK.AURORA]: {
+		blockExplorer: 'https://explorer.energyweb.org',
+		chainId: 1313161554,
+		chainNamespace: CHAIN_NAMESPACES.OTHER,
+		decimals: 18,
+		displayName: 'Aurora',
+		logo: gnosisChainLogo,
+		rpcEndpoint: 'https://explorer.mainnet.aurora.dev',
+		tokenName: 'Ether',
+		tokenSymbol: tokenSymbol.ETH
+	},
+	[NETWORK.Avalanche]: {
+		blockExplorer: 'https://snowtrace.io',
+		chainId: 43114,
+		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		decimals: 18,
+		displayName: 'Avalanche',
+		logo: gnosisChainLogo,
+		rpcEndpoint: 'https://api.avax.network/ext/bc/C/rpc',
+		tokenName: 'Avalanche',
+		tokenSymbol: tokenSymbol.AVAX
+	},
+	[NETWORK.RINKEBY]: {
+		blockExplorer: 'https://rinkeby.etherscan.io/',
+		chainId: 4,
+		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		decimals: 18,
+		displayName: 'Rinkeby',
+		logo: gnosisChainLogo,
+		rpcEndpoint: 'https://rinkeby.infura.io/v3/',
+		tokenName: 'Rinkeby',
+		tokenSymbol: tokenSymbol.ETH
+	},
+	[NETWORK.VOLTA]: {
+		blockExplorer: 'https://volta-explorer.energyweb.org/',
+		chainId: 73799,
+		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		decimals: 18,
+		displayName: 'Volta',
+		logo: gnosisChainLogo,
+		rpcEndpoint: 'https://volta-rpc.energyweb.org/',
+		tokenName: 'Volta',
+		tokenSymbol: tokenSymbol.VT
 	}
-	// [NETWORK.MOONBEAM]: {
-	// blockExplorer: 'https://moonbeam-explorer.netlify.app/?network=Moonbeam',
-	// chainId: '0x504',
-	// chainNamespace: CHAIN_NAMESPACES.OTHER,
-	// decimals: 18,
-	// displayName: 'Moonbeam',
-	// logo: moonbeamLogo,
-	// rpcEndpoint: 'wss://wss.api.moonbeam.network',
-	// tokenName: 'Moonbeam',
-	// tokenSymbol: tokenSymbol.GLMR
-	// }
 };
