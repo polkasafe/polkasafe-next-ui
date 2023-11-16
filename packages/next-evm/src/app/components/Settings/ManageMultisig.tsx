@@ -11,6 +11,7 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 const ManageMultisig = () => {
 	const { multisigAddresses, activeMultisig, address: userAddress } = useGlobalUserDetailsContext();
@@ -45,7 +46,7 @@ const ManageMultisig = () => {
 											<CopyIcon />
 										</button>
 										<a
-											href={`https://${network}.subscan.io/account/${multisig?.address}`}
+											href={`${chainProperties[network].blockExplorer}/address/${multisig?.address}`}
 											target='_blank'
 											rel='noreferrer'
 										>

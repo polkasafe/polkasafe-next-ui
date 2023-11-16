@@ -19,9 +19,7 @@ const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void
 	const [loading, setLoading] = useState<boolean>(false);
 	const { activeMultisig, setUserDetailsContextState, multisigAddresses } = useGlobalUserDetailsContext();
 
-	const multisig = multisigAddresses.find(
-		(item: any) => item.address === activeMultisig || item.proxy === activeMultisig
-	);
+	const multisig = multisigAddresses.find((item: any) => item.address === activeMultisig);
 
 	const handleMultisigNameChange = async () => {
 		try {

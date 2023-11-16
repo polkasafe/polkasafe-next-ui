@@ -360,7 +360,10 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 								(item) => item.address === prevActiveMultisig && item.network === network
 							)
 								? prevActiveMultisig
-								: userData?.multisigAddresses?.filter((a: any) => a.network === network)?.[0]?.address || '',
+								: userData?.multisigAddresses?.filter(
+										(a: any) =>
+											a.network === network && !userData?.multisigSettings?.[`${a.address}`]?.deleted && !a.disabled
+								  )?.[0]?.address || '',
 						address: userData?.address,
 						addressBook: userData?.addressBook || [],
 						createdAt: userData?.created_at,

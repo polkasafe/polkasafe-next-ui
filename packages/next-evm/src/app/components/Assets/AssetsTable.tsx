@@ -10,20 +10,23 @@ import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { chainProperties } from 'next-common/global/evm-network-constants';
+import { currencyProperties } from '@next-common/global/currencyConstants';
+import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
 
 interface IAssetsProps {
 	assets: IAsset[];
+	currency: string;
 }
-
-const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
+const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { network } = useGlobalApiContext();
 	const [selectedToken, setSeletedToken] = useState<IAsset>(assets[0]);
+	const { allCurrencyPrices } = useGlobalCurrencyContext();
 
 	return (
-		<div className='text-sm font-medium leading-[15px] scale-[80%] w-[125%] h-[125%] origin-top-left'>
+		<div className='text-sm font-medium leading-[15px]'>
 			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
 				open={openTransactionModal}
@@ -37,7 +40,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 			<article className='grid grid-cols-4 gap-x-5 bg-bg-secondary text-text_secondary py-5 px-4 rounded-lg'>
 				<span className='col-span-1'>Asset</span>
 				<span className='col-span-1'>Balance</span>
-				<span className='col-span-1'>USD Value</span>
+				<span className='col-span-1'>{currencyProperties[currency].symbol} Value</span>
 				<span className='col-span-1'>Action</span>
 			</article>
 			{assets && assets.length > 0 ? (
@@ -75,7 +78,12 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 									title={balance_usd}
 									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
-									{balance_usd || '-'}
+									{!Number.isNaN(balance_usd)
+										? (allCurrencyPrices[currencyProperties[currency].symbol]
+												? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+												: Number(balance_usd)
+										  ).toFixed(2)
+										: '-'}
 								</p>
 								<PrimaryButton
 									onClick={() => {

@@ -4,12 +4,18 @@
 import { Collapse, Divider, Spin, Timeline } from 'antd';
 import classNames from 'classnames';
 // import { ethers } from 'ethers';
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
-import { CircleCheckIcon, CirclePlusIcon, CircleWatchIcon, CopyIcon } from '@next-common/ui-components/CustomIcons';
+import {
+	ArrowRightIcon,
+	CircleCheckIcon,
+	CirclePlusIcon,
+	CircleWatchIcon,
+	CopyIcon
+} from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import { ethers } from 'ethers';
@@ -30,9 +36,11 @@ interface ISentInfoProps {
 	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
 	tokenSymbol?: string;
 	tokenDecimals?: number;
+	advancedDetails: any;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
+	advancedDetails,
 	approvals,
 	amount,
 	from,
@@ -48,6 +56,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 	tokenDecimals,
 	tokenSymbol
 }) => {
+	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const threshold =
@@ -178,6 +187,40 @@ const SentInfo: FC<ISentInfoProps> = ({
 						)}
 					</>
 				)}
+
+				<p
+					onClick={() => setShowDetails((prev) => !prev)}
+					className='text-primary cursor-pointer font-medium text-sm leading-[15px] mt-5 flex items-center gap-x-3'
+				>
+					<span>{showDetails ? 'Hide' : 'Advanced'} Details</span>
+					<ArrowRightIcon />
+				</p>
+				{showDetails &&
+					advancedDetails &&
+					typeof advancedDetails === 'object' &&
+					Object.keys(advancedDetails).map((adv) => (
+						<div
+							key={adv}
+							className='flex items-center gap-x-5 mt-3 justify-between'
+						>
+							<span className='text-text_secondary font-normal text-sm leading-[15px]'>{adv}:</span>
+							<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
+								<span className='text-white font-normal text-sm leading-[15px]'>
+									{String(advancedDetails[adv]).startsWith('0x')
+										? shortenAddress(advancedDetails[adv], 10)
+										: advancedDetails[adv]}
+								</span>
+								{String(advancedDetails[adv]).startsWith('0x') ? (
+									<span className='flex items-center gap-x-2 text-sm'>
+										<button onClick={() => copyText(callHash)}>
+											<CopyIcon className='hover:text-primary' />
+										</button>
+										{/* <ExternalLinkIcon /> */}
+									</span>
+								) : null}
+							</p>
+						</div>
+					))}
 			</article>
 			<article className='p-8 rounded-lg bg-bg-main max-w-[328px] w-full'>
 				<div className='h-full'>

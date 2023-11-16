@@ -36,7 +36,7 @@ const DashboardCard = ({
 	openTransactionModal,
 	setOpenTransactionModal
 }: IDashboardCard) => {
-	const { activeMultisig, multisigAddresses, activeMultisigData } = useGlobalUserDetailsContext();
+	const { activeMultisig, multisigAddresses, activeMultisigData, multisigSettings } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
@@ -99,7 +99,9 @@ const DashboardCard = ({
 							</div>
 						</div>
 						<div>
-							<div className='text-base font-bold text-white flex items-center gap-x-2'>{currentMultisig?.name}</div>
+							<div className='text-base font-bold text-white flex items-center gap-x-2'>
+								{multisigSettings[activeMultisig]?.name || currentMultisig?.name}
+							</div>
 							<div className='flex text-xs'>
 								<div
 									title={activeMultisig || ''}

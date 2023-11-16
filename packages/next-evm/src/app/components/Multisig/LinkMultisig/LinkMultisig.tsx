@@ -243,7 +243,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 
 								<AddBtn
 									disabled={
-										signatoriesArray.length < 2 ||
+										signatoriesArray.length < 1 ||
 										threshold > signatoriesArray.length ||
 										signatoriesArray.some((item) => item.address === '')
 									}

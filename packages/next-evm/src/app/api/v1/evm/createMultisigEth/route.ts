@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 	if (!signatories || !threshold || !multisigName || !safeAddress) {
 		return NextResponse.json({ data: null, error: responseMessages.missing_params }, { status: 400 });
 	}
-	if (!Array.isArray(signatories) || signatories.length < 2)
+	if (!Array.isArray(signatories) || signatories.length < 1)
 		return NextResponse.json({ data: null, error: responseMessages.invalid_params }, { status: 400 });
 
 	if (Number.isNaN(threshold) || Number(threshold) > signatories.length) {

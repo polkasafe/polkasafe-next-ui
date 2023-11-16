@@ -184,7 +184,7 @@ const Menu: FC<Props> = ({ className }) => {
 											address={multisig.address}
 											size={23}
 										/>
-										<span className='truncate'>{multisig.name}</span>
+										<span className='truncate'>{multisigSettings[multisig.address]?.name || multisig.name}</span>
 									</button>
 								</li>
 							);

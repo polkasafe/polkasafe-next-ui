@@ -24,6 +24,7 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 
 import { ethers } from 'ethers';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { StaticImageData } from 'next/image';
 import EditNote from './EditNote';
 
 interface ISentInfoProps {
@@ -48,7 +49,13 @@ interface ISentInfoProps {
 	transactionDetailsLoading: boolean;
 	tokenSymbol?: string;
 	tokenDecimals?: number;
-	multiSendTokens?: { tokenSymbol: string; tokenDecimals: number }[];
+	multiSendTokens?: {
+		tokenSymbol: string;
+		tokenDecimals: number;
+		tokenLogo: StaticImageData | string;
+		tokenAddress: string;
+	}[];
+	advancedDetails: any;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -72,7 +79,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 	transactionDetailsLoading,
 	tokenSymbol,
 	tokenDecimals,
-	multiSendTokens
+	multiSendTokens,
+	advancedDetails
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { network } = useGlobalApiContext();
@@ -196,6 +204,31 @@ const SentInfo: FC<ISentInfoProps> = ({
 						</p>
 					</div>
 				)}
+				<div className='flex items-center gap-x-5 mt-3 justify-between'>
+					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
+					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
+						<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 10)}</span>
+						<span className='flex items-center gap-x-2 text-sm'>
+							<button onClick={() => copyText(callHash)}>
+								<CopyIcon className='hover:text-primary' />
+							</button>
+							{/* <ExternalLinkIcon /> */}
+						</span>
+					</p>
+				</div>
+				{callData && (
+					<div className='flex items-center gap-x-5 mt-3 justify-between'>
+						<span className='text-text_secondary font-normal text-sm leading-[15px]'>Call Data:</span>
+						<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
+							<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callData, 10)}</span>
+							<span className='flex items-center gap-x-2 text-sm'>
+								<button onClick={() => copyText(callData)}>
+									<CopyIcon className='hover:text-primary' />
+								</button>
+							</span>
+						</p>
+					</div>
+				)}
 				{transactionDetailsLoading ? (
 					<Spin className='mt-3' />
 				) : (
@@ -253,75 +286,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 							)}
 					</>
 				)}
-				{showDetails && (
-					<>
-						{/* <div className='flex items-center gap-x-5 mt-3 justify-between'>
-							<span className='text-text_secondary font-normal text-sm leading-[15px]'>
-								Created By:
-							</span>
-							<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-								<span className='text-white font-normal text-sm leading-[15px]'>
-									<div className='mt-3 flex items-center gap-x-4'>
-										{recipientAddress && (
-											<MetaMaskAvatar address={recipientAddress} size={30} />
-										)}
-										<div className='flex flex-col gap-y-[6px]'>
-											<p className='font-medium text-sm leading-[15px] text-white'>
-												{recipientAddress
-													? addressBook?.find(
-														(item: any) => item.address === recipientAddress
-													)?.name || DEFAULT_ADDRESS_NAME
-													: '?'}
-											</p>
-											{recipientAddress && (
-												<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-													<span>{shortenAddress(recipientAddress)}</span>
-													<span className='flex items-center gap-x-2 text-sm'>
-														<button onClick={() => copyText(recipientAddress)}>
-															<CopyIcon className='hover:text-primary' />
-														</button>
-														<a
-															href={`https://${network}.subscan.io/account/${recipientAddress}`}
-															target='_blank'
-															rel='noreferrer'
-														>
-															<ExternalLinkIcon />
-														</a>
-													</span>
-												</p>
-											)}
-										</div>
-									</div>
-								</span>
-							</p>
-						</div> */}
-						<div className='flex items-center gap-x-5 mt-3 justify-between'>
-							<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
-							<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-								<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 10)}</span>
-								<span className='flex items-center gap-x-2 text-sm'>
-									<button onClick={() => copyText(callHash)}>
-										<CopyIcon className='hover:text-primary' />
-									</button>
-									{/* <ExternalLinkIcon /> */}
-								</span>
-							</p>
-						</div>
-						{callData && (
-							<div className='flex items-center gap-x-5 mt-3 justify-between'>
-								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Call Data:</span>
-								<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-									<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callData, 10)}</span>
-									<span className='flex items-center gap-x-2 text-sm'>
-										<button onClick={() => copyText(callData)}>
-											<CopyIcon className='hover:text-primary' />
-										</button>
-									</span>
-								</p>
-							</div>
-						)}
-					</>
-				)}
 				<p
 					onClick={() => setShowDetails((prev) => !prev)}
 					className='text-primary cursor-pointer font-medium text-sm leading-[15px] mt-5 flex items-center gap-x-3'
@@ -329,6 +293,32 @@ const SentInfo: FC<ISentInfoProps> = ({
 					<span>{showDetails ? 'Hide' : 'Advanced'} Details</span>
 					<ArrowRightIcon />
 				</p>
+				{showDetails &&
+					advancedDetails &&
+					typeof advancedDetails === 'object' &&
+					Object.keys(advancedDetails).map((adv) => (
+						<div
+							key={adv}
+							className='flex items-center gap-x-5 mt-3 justify-between'
+						>
+							<span className='text-text_secondary font-normal text-sm leading-[15px]'>{adv}:</span>
+							<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
+								<span className='text-white font-normal text-sm leading-[15px]'>
+									{String(advancedDetails[adv]).startsWith('0x')
+										? shortenAddress(advancedDetails[adv], 10)
+										: advancedDetails[adv]}
+								</span>
+								{String(advancedDetails[adv]).startsWith('0x') ? (
+									<span className='flex items-center gap-x-2 text-sm'>
+										<button onClick={() => copyText(callHash)}>
+											<CopyIcon className='hover:text-primary' />
+										</button>
+										{/* <ExternalLinkIcon /> */}
+									</span>
+								) : null}
+							</p>
+						</div>
+					))}
 			</article>
 			<article className='p-8 rounded-lg bg-bg-main max-w-[328px] w-full'>
 				<div>

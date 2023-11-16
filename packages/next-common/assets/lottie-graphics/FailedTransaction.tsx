@@ -24,7 +24,7 @@ const FailedTransactionLottie: React.FC<Props> = ({ message, width = 350, waitMe
 				play
 			/>
 			<div className='text-failure mb-1 text-lg font-medium'>{message}</div>
-			<div className='text-text_secondary max-w-[452px] text-center'>{waitMessage}</div>
+			<div className='text-text_secondary max-w-[452px]'>{waitMessage}</div>
 		</div>
 	);
 };

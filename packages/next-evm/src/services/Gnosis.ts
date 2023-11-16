@@ -154,6 +154,71 @@ export default class GnosisSafeService {
 		}
 	};
 
+	// createGelatoTx = async (
+	// multisigAddress: string,
+	// to: string[],
+	// value: string[],
+	// senderAddress: string,
+	// note?: string,
+	// tokens?: IAsset[]
+	// ): Promise<string | null> => {
+	// try {
+	// const safeSdk = await Safe.create({
+	// ethAdapter: this.ethAdapter,
+	// safeAddress: multisigAddress
+	// });
+
+	// const relayKit = new GelatoRelayPack();
+	// const signer = await this.ethAdapter.getSignerAddress();
+
+	// const safeTransactionData: MetaTransactionData[] = createTokenTransferParams(to, value, tokens);
+	// const safeTransaction = await relayKit.createRelayedTransaction({
+	// safe: safeSdk as any,
+	// transactions: safeTransactionData
+	// });
+	// console.log('after relay Transactino', safeTransaction);
+
+	// const signature = await safeSdk.signTransaction(safeTransaction as any);
+
+	// console.log('afer signature', signature);
+
+	// const response = await relayKit.executeRelayTransaction(signature as any, safeSdk as any);
+	// console.log('respone', response);
+
+	// console.log(`Relay Transaction Task ID: https://relay.gelato.digital/tasks/status/${response.taskId}`);
+
+	// if (note) console.log(note);
+
+	// // const safeTransaction = await safeSdk.createTransaction({
+	// // safeTransactionData
+	// // });
+	// const safeTxHash = await safeSdk.getTransactionHash(safeTransaction as any);
+	// // let signature = (await safeSdk.signTransaction(safeTransaction)) as any;
+
+	// // signature = Object.fromEntries(signature.signatures.entries());
+	// console.log(
+	// multisigAddress,
+	// safeTransaction.data,
+	// safeTxHash,
+	// senderAddress,
+	// Object.fromEntries(signature.signatures.entries())[signer.toLowerCase()].data
+	// );
+	// await this.safeService.proposeTransaction({
+	// safeAddress: multisigAddress,
+	// safeTransactionData: safeTransaction.data as any,
+	// safeTxHash,
+	// senderAddress,
+	// senderSignature: Object.fromEntries(signature.signatures.entries())[signer.toLowerCase()].data
+	// });
+
+	// return safeTxHash;
+	// } catch (err) {
+	// console.log(err);
+	// // console.log('error from createSafeTx', err);
+	// return null;
+	// }
+	// };
+
 	createAddOwner = async (
 		multisigAddress: string,
 		senderAddress: string,

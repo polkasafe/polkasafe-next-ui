@@ -9,9 +9,7 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 import Loader from '@next-common/ui-components/Loader';
 import { IQueuedTransactions, convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
-import { getTransactionQueue } from '@safe-global/safe-gateway-typescript-sdk';
 
-import { chainProperties } from '@next-common/global/evm-network-constants';
 import NoTransactionsQueued from './NoTransactionsQueued';
 import Transaction from './Transaction';
 
@@ -84,16 +82,8 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 		(async () => {
 			setLoading(true);
 			try {
-				const txDetails = await getTransactionQueue(
-					chainProperties[network].chainId.toString(),
-					activeMultisig,
-					undefined
-				);
-				const filteredTxDetials = txDetails?.results.filter((item) => item.type === 'TRANSACTION').reverse();
 				const safeData = await gnosisSafe.getPendingTx(activeMultisig);
-				const convertedData = safeData.results.map((safe: any, i) =>
-					convertSafePendingData({ ...safe, network }, (filteredTxDetials[i] as any)?.transaction.txInfo)
-				);
+				const convertedData = safeData.results.map((safe: any) => convertSafePendingData({ ...safe, network }));
 				setQueuedTransactions(convertedData);
 				if (convertedData?.length > 0)
 					updateDB(UpdateDB.Update_Pending_Transaction, { transactions: convertedData }, address, network);
@@ -135,9 +125,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 								onAfterExecute={handleAfterExecute}
 								txType={transaction.type}
 								recipientAddress={transaction.to}
-								tokenLogo={transaction.tokenLogo}
-								tokenSymbol={transaction.tokenSymbol}
-								tokenDecimals={transaction.tokenDecimals}
+								advancedDetails={transaction.advancedDetails}
 							/>
 						</section>
 					);

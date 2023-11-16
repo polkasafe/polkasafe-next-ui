@@ -9,6 +9,7 @@ import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { CheckOutlined, CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 // import Loader from '../../UserFlow/Loader';
 
@@ -96,7 +97,7 @@ const Owners = ({ setSignatoriesWithName, signatoriesArray }: Props) => {
 												<CopyIcon className='text-text_secondary hover:text-primary' />
 											</button>
 											<a
-												href={`https://${network}.subscan.io/account/${item.address}`}
+												href={`${chainProperties[network].blockExplorer}/address/${item.address}`}
 												target='_blank'
 												rel='noreferrer'
 											>

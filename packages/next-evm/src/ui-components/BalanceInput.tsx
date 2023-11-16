@@ -39,7 +39,10 @@ const BalanceInput = ({
 		key: item.name,
 		label: (
 			<span className='flex items-center gap-x-2 text-white'>
-				<ParachainIcon src={item.logoURI} />
+				<ParachainIcon
+					size={15}
+					src={item.logoURI}
+				/>
 				{item.name}
 			</span>
 		) as any
@@ -47,7 +50,7 @@ const BalanceInput = ({
 
 	const onTokenOptionChange = (e: any) => {
 		const selectedToken = allAssets?.find((item) => item.name === e.key);
-		onTokenChange(selectedToken);
+		if (selectedToken) onTokenChange?.(selectedToken);
 	};
 
 	return (
@@ -79,20 +82,20 @@ const BalanceInput = ({
 										onClick: onTokenOptionChange
 									}}
 								>
-									<div className='absolute right-0 flex cursor-pointer items-center justify-center pr-3 text-white'>
+									<div className='absolute right-0 flex cursor-pointer gap-x-1 items-center justify-center pr-3 text-white'>
 										<ParachainIcon
 											src={token?.logoURI}
-											className='mr-2'
+											size={15}
 										/>
 										<span>{token?.name}</span>
-										<CircleArrowDownIcon className='text-primary ml-1' />
+										<CircleArrowDownIcon className='text-primary' />
 									</div>
 								</Dropdown>
 							) : (
-								<div className='absolute right-0 text-white px-3 flex items-center justify-center'>
+								<div className='absolute right-0 text-white px-3 flex gap-x-1 items-center justify-center'>
 									<ParachainIcon
 										src={chainProperties[network].logo}
-										className='mr-2'
+										size={15}
 									/>
 									<span>{chainProperties[network].tokenSymbol}</span>
 								</div>

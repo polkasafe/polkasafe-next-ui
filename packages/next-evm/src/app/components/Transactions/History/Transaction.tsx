@@ -41,7 +41,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 	data: callData,
 	tokenSymbol,
 	tokenLogo,
-	tokenDecimals
+	tokenDecimals,
+	advancedDetails
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { network } = useGlobalApiContext();
@@ -224,6 +225,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							}
 							tokenSymbol={tokenSymbol}
 							tokenDecimals={tokenDecimals}
+							advancedDetails={advancedDetails}
 						/>
 					)}
 				</div>

@@ -61,7 +61,7 @@ export const chainProperties: ChainPropType = {
 		tokenSymbol: tokenSymbol.ETH
 	},
 	[NETWORK.POLYGON]: {
-		blockExplorer: 'https://polygonscan.com/',
+		blockExplorer: 'https://polygonscan.com',
 		chainId: 137,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		decimals: 18,
@@ -83,7 +83,7 @@ export const chainProperties: ChainPropType = {
 		tokenSymbol: tokenSymbol.ASTR
 	},
 	[NETWORK.ETHEREUM]: {
-		blockExplorer: 'https://etherscan.io/',
+		blockExplorer: 'https://etherscan.io',
 		chainId: 1,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		decimals: 18,
@@ -94,7 +94,7 @@ export const chainProperties: ChainPropType = {
 		tokenSymbol: tokenSymbol.ETH
 	},
 	[NETWORK.BNB]: {
-		blockExplorer: 'https://bscscan.com/',
+		blockExplorer: 'https://bscscan.com',
 		chainId: 56,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		decimals: 18,
@@ -105,7 +105,7 @@ export const chainProperties: ChainPropType = {
 		tokenSymbol: tokenSymbol.BNB
 	},
 	[NETWORK.ARBITRUM]: {
-		blockExplorer: 'https://arbiscan.io/',
+		blockExplorer: 'https://arbiscan.io',
 		chainId: 42161,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		decimals: 18,
@@ -116,7 +116,7 @@ export const chainProperties: ChainPropType = {
 		tokenSymbol: tokenSymbol.ETH
 	},
 	[NETWORK.OPTIMISM]: {
-		blockExplorer: 'https://optimistic.etherscan.io/',
+		blockExplorer: 'https://optimistic.etherscan.io',
 		chainId: 10,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		decimals: 18,
@@ -127,7 +127,7 @@ export const chainProperties: ChainPropType = {
 		tokenSymbol: tokenSymbol.OP
 	},
 	[NETWORK.GNOSIS]: {
-		blockExplorer: 'https://gnosisscan.io/',
+		blockExplorer: 'https://gnosisscan.io',
 		chainId: 100,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		decimals: 18,

@@ -10,6 +10,7 @@ import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIco
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import ModalBtn from './ModalBtn';
 
 interface IAddProxySuccessScreen {
@@ -48,7 +49,7 @@ const AddProxySuccessScreen = ({
 								<CopyIcon className='text-primary' />
 							</button>
 							<a
-								href={`https://${network}.subscan.io/extrinsic/${txnHash}}`}
+								href={`${chainProperties[network].blockExplorer}/tx/${txnHash}}`}
 								target='_blank'
 								rel='noreferrer'
 							>
