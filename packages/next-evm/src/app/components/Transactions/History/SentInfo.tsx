@@ -19,6 +19,7 @@ import {
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import { ethers } from 'ethers';
+import { StaticImageData } from 'next/image';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -37,6 +38,12 @@ interface ISentInfoProps {
 	tokenSymbol?: string;
 	tokenDecimals?: number;
 	advancedDetails: any;
+	multiSendTokens?: {
+		tokenSymbol: string;
+		tokenDecimals: number;
+		tokenLogo: StaticImageData | string;
+		tokenAddress: string;
+	}[];
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -54,7 +61,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 	addressAddOrRemove,
 	transactionFields,
 	tokenDecimals,
-	tokenSymbol
+	tokenSymbol,
+	multiSendTokens
 }) => {
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
@@ -86,7 +94,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							</div>
 						</>
 					) : (
-						<div className='flex flex-col gap-y-1'>
+						<div className='flex flex-col gap-y-1 max-h-[200px] overflow-y-auto'>
 							{Array.isArray(recipientAddress) &&
 								recipientAddress.map((item, i) => (
 									<>
@@ -96,10 +104,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 												{amount[i]
 													? ethers.utils.formatUnits(
 															String(amount[i]),
-															tokenDecimals || chainProperties[network].decimals
+															multiSendTokens?.[i]?.tokenDecimals || tokenDecimals || chainProperties[network].decimals
 													  )
 													: '?'}{' '}
-												{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+												{multiSendTokens?.[i]?.tokenSymbol || tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 											</span>
 											<span>To:</span>
 										</p>
@@ -111,6 +119,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 								))}
 						</div>
 					))}
+				<Divider className='bg-text_secondary my-5' />
 				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Executed By:</span>
 					<AddressComponent address={from} />
@@ -224,7 +233,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 			</article>
 			<article className='p-8 rounded-lg bg-bg-main max-w-[328px] w-full'>
 				<div className='h-full'>
-					<Timeline className='h-full flex flex-col'>
+					<Timeline className='flex flex-col'>
 						<Timeline.Item
 							dot={
 								<span className='bg-success bg-opacity-10 flex items-center justify-center p-1 rounded-md h-6 w-6'>

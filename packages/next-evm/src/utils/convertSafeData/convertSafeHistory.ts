@@ -18,12 +18,10 @@ export interface IHistoryTransactions {
 	type: string;
 	executor: string;
 	from: string;
-	tokenSymbol?: string;
-	tokenLogo?: string;
-	tokenDecimals?: number;
 	advancedDetails?: any;
+	receivedTransfers?: any[];
 }
-export const convertSafeHistoryData = (data: any, txInfo?: any) => {
+export const convertSafeHistoryData = (data: any) => {
 	const advancedDetails = {
 		operation: data?.operation,
 		nonce: data?.nonce,
@@ -35,7 +33,7 @@ export const convertSafeHistoryData = (data: any, txInfo?: any) => {
 	};
 	const convertedData: IHistoryTransactions = {
 		advancedDetails,
-		amount_token: txInfo?.transferInfo?.value || data?.value || data?.transfers?.[0]?.value || '0',
+		amount_token: data?.value || data?.transfers?.[0]?.value || '0',
 		approvals: data?.confirmations?.map((user: any) => user?.owner || '') || [],
 		created_at: data?.executionDate || new Date(),
 		data: data.data,
@@ -47,12 +45,10 @@ export const convertSafeHistoryData = (data: any, txInfo?: any) => {
 		safeAddress: data.safe,
 		signatures:
 			data?.confirmations?.map((user: any) => ({ address: user?.owner || '', signature: user?.signature || '' })) || [],
-		to: txInfo?.recipient?.value || data.to,
-		tokenDecimals: txInfo?.transferInfo?.decimals,
-		tokenLogo: txInfo?.transferInfo?.logoUri,
-		tokenSymbol: txInfo?.transferInfo?.tokenSymbol,
+		to: data.to,
 		txHash: data.safeTxHash || data.txHash,
-		type: data.txType || data?.dataDecoded?.method || 'Sent'
+		type: data.txType || data?.dataDecoded?.method || 'Sent',
+		receivedTransfers: data?.transfers || []
 	};
 	return convertedData;
 };

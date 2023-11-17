@@ -11,9 +11,6 @@ import Loader from '@next-common/ui-components/Loader';
 import Pagination from '@next-common/ui-components/Pagination';
 import { convertSafeHistoryData } from '@next-evm/utils/convertSafeData/convertSafeHistory';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
-import { getTransactionHistory } from '@safe-global/safe-gateway-typescript-sdk';
-
-import { chainProperties } from '@next-common/global/evm-network-constants';
 import NoTransactionsHistory from './NoTransactionsHistory';
 import Transaction from './Transaction';
 
@@ -45,20 +42,12 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 		(async () => {
 			setLoading(true);
 			try {
-				const txDetails = await getTransactionHistory(
-					chainProperties[network].chainId.toString(),
-					activeMultisig,
-					undefined
-				);
-				const filteredTxDetials = txDetails?.results.filter((item) => item.type === 'TRANSACTION');
 				const safeData = await gnosisSafe.getAllTx(activeMultisig, {
 					executed: true,
 					trusted: true
 				});
 				console.log(safeData);
-				const convertedData = safeData.results.map((safe: any, i) =>
-					convertSafeHistoryData({ ...safe, network }, (filteredTxDetials[i] as any)?.transaction.txInfo)
-				);
+				const convertedData = safeData.results.map((safe: any) => convertSafeHistoryData({ ...safe, network }));
 				setTransactions(convertedData);
 				updateDB(UpdateDB.Update_History_Transaction, { transactions: convertedData }, address, network);
 			} catch (error) {

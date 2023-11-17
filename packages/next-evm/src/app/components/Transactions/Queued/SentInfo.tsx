@@ -157,7 +157,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							</div>
 						</>
 					) : (
-						<div className='flex flex-col gap-y-1'>
+						<div className='flex flex-col gap-y-1 max-h-[200px] overflow-y-auto'>
 							{Array.isArray(recipientAddress) &&
 								recipientAddress.map((item, i) => (
 									<>

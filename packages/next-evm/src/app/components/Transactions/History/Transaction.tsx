@@ -6,7 +6,7 @@ import { Collapse, Divider } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import { ethers } from 'ethers';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
@@ -23,6 +23,9 @@ import { IHistoryTransactions } from '@next-evm/utils/convertSafeData/convertSaf
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { StaticImageData } from 'next/image';
 import SentInfo from './SentInfo';
 import ReceivedInfo from './ReceivedInfo';
 
@@ -33,20 +36,18 @@ const Transaction: FC<IHistoryTransactions> = ({
 	amount_token,
 	created_at,
 	to,
-	from,
 	txHash,
 	type,
 	executor,
 	decodedData,
 	data: callData,
-	tokenSymbol,
-	tokenLogo,
-	tokenDecimals,
-	advancedDetails
+	advancedDetails,
+	receivedTransfers
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { network } = useGlobalApiContext();
 	const { gnosisSafe } = useGlobalUserDetailsContext();
+	const { allAssets } = useMultisigAssetsContext();
 	const token = chainProperties[network].tokenSymbol;
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -60,6 +61,14 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 	const [decodedCallData, setDecodedCallData] = useState<any>({});
 
+	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
+	const [txInfo, setTxInfo] = useState<any>({} as any);
+
+	const [tokenDetailsArray, setTokenDetailsArray] = useState<
+		{ tokenSymbol: string; tokenDecimals: number; tokenLogo: StaticImageData | string; tokenAddress: string }[]
+	>([]);
+	const [isMultiTokenTx, setIsMultiTokenTx] = useState<boolean>(false);
+
 	useEffect(() => {
 		if (!callData) return;
 		gnosisSafe.safeService
@@ -68,17 +77,99 @@ const Transaction: FC<IHistoryTransactions> = ({
 			.catch((e) => console.log(e));
 	}, [callData, gnosisSafe.safeService]);
 
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
-		if (decodedCallData && decodedCallData?.method === 'multiSend') {
-			const amountsArray = decodedCallData?.parameters?.[0]?.valueDecoded?.map(
-				(item: any) => item?.dataDecoded?.parameters?.[1]?.value
+		if (
+			decodedCallData &&
+			decodedCallData?.method === 'multiSend' &&
+			txData &&
+			txData.addressInfoIndex &&
+			Object.keys(txData.addressInfoIndex)?.length > 0 &&
+			isSentType
+		) {
+			const tokenContractAddressArray: string[] = decodedCallData?.parameters?.[0]?.valueDecoded?.map(
+				(item: any) => item?.to
 			);
-			const total = amountsArray?.reduce((sum: number, a: string) => {
-				return sum + Number(a);
-			}, 0);
-			setTotalAmount(total);
+
+			const realContractAddresses = Object.keys(txData.addressInfoIndex);
+			const tokenDetails = [];
+			tokenContractAddressArray.forEach((item) => {
+				if (realContractAddresses.includes(item)) {
+					const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
+					tokenDetails.push({
+						tokenAddress: assetDetails?.tokenAddress || '',
+						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
+						tokenLogo: assetDetails?.logoURI || chainProperties[network].logo,
+						tokenSymbol: assetDetails?.name || chainProperties[network].tokenSymbol
+					});
+				} else {
+					tokenDetails.push({
+						tokenAddress: '',
+						tokenDecimals: chainProperties[network].decimals,
+						tokenLogo: chainProperties[network].logo,
+						tokenSymbol: chainProperties[network].tokenSymbol
+					});
+				}
+			});
+			setTokenDetailsArray(tokenDetails);
+		} else if (receivedTransfers.length > 0 && isFundType) {
+			const tokenDetails = [];
+			receivedTransfers.forEach((item) => {
+				if (item?.tokenInfo) {
+					tokenDetails.push({
+						tokenAddress: item?.tokenInfo?.address || '',
+						tokenDecimals: item?.tokenInfo?.decimals || chainProperties[network].decimals,
+						tokenLogo: item?.tokenInfo?.logoUri || chainProperties[network].logo,
+						tokenSymbol: item?.tokenInfo?.symbol || chainProperties[network].tokenSymbol
+					});
+				} else {
+					tokenDetails.push({
+						tokenAddress: '',
+						tokenDecimals: chainProperties[network].decimals,
+						tokenLogo: chainProperties[network].logo,
+						tokenSymbol: chainProperties[network].tokenSymbol
+					});
+				}
+			});
+			setTokenDetailsArray(tokenDetails);
+		} else {
+			setTokenDetailsArray([
+				{
+					tokenAddress: '',
+					tokenDecimals: chainProperties[network].decimals,
+					tokenLogo: chainProperties[network].logo,
+					tokenSymbol: chainProperties[network].tokenSymbol
+				}
+			]);
 		}
-	}, [decodedCallData, network]);
+
+		const amountsArray =
+			isSentType && decodedCallData && decodedCallData?.method === 'multiSend'
+				? decodedCallData?.parameters?.[0]?.valueDecoded?.map((item: any) => item?.dataDecoded?.parameters?.[1]?.value)
+				: receivedTransfers.map((item) => item.value);
+		const total = amountsArray?.reduce((sum: number, a: string) => {
+			return sum + Number(a);
+		}, 0);
+		setTotalAmount(total);
+	}, [allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, txData]);
+
+	useEffect(() => {
+		if (tokenDetailsArray.length > 1) {
+			const tokenSymbols = tokenDetailsArray.map((item) => item.tokenSymbol);
+			const uniqueTokens = [...new Set(tokenSymbols)];
+			if (uniqueTokens.length > 1) setIsMultiTokenTx(true);
+		}
+	}, [tokenDetailsArray]);
+
+	const getTxDetails = useCallback(async () => {
+		const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), txHash);
+
+		setTxData(txDetails.txData);
+		setTxInfo(txDetails.txInfo);
+	}, [txHash, network]);
+	useEffect(() => {
+		getTxDetails();
+	}, [getTxDetails]);
 
 	const handleGetHistoryNote = async () => {
 		try {
@@ -152,20 +243,68 @@ const Transaction: FC<IHistoryTransactions> = ({
 									: type}
 							</span>
 						</p>
-						{isFundType || isSentType ? (
-							<p className='col-span-2 flex items-center gap-x-[6px]'>
-								<ParachainIcon src={tokenLogo || chainProperties[network].logo} />
-								<span className={`font-normal text-xs leading-[13px] text-failure ${isFundType && 'text-success'}`}>
-									{isSentType ? '-' : '+'}{' '}
-									{ethers?.utils
-										?.formatUnits(
-											totalAmount ? totalAmount.toString() : amount_token?.toString(),
-											tokenDecimals || chainProperties[network].decimals
-										)
-										?.toString()}{' '}
-									{tokenSymbol || token}
-								</span>
-							</p>
+						{isSentType ? (
+							isMultiTokenTx ? (
+								<div className='flex gap-x-2 col-span-2'>
+									{tokenDetailsArray.map((item) => (
+										<ParachainIcon
+											tooltip={item.tokenSymbol}
+											src={item.tokenLogo}
+										/>
+									))}
+								</div>
+							) : (
+								<p className='col-span-2 flex items-center gap-x-[6px]'>
+									<ParachainIcon
+										src={
+											decodedCallData?.method === 'multiSend'
+												? tokenDetailsArray[0]?.tokenLogo
+												: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
+										}
+									/>
+									<span className='font-normal text-xs leading-[13px] text-failure'>
+										{'-'}{' '}
+										{ethers?.utils
+											?.formatUnits(
+												decodedCallData?.method === 'multiSend'
+													? totalAmount?.toString()
+													: txInfo?.transferInfo?.value || amount_token?.toString(),
+												decodedCallData?.method === 'multiSend'
+													? tokenDetailsArray[0]?.tokenDecimals
+													: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
+											)
+											?.toString()}{' '}
+										{decodedCallData?.method === 'multiSend'
+											? tokenDetailsArray[0]?.tokenSymbol
+											: txInfo?.transferInfo?.tokenSymbol || token}
+									</span>
+								</p>
+							)
+						) : isFundType ? (
+							isMultiTokenTx ? (
+								<div className='flex gap-x-2 col-span-2'>
+									{tokenDetailsArray.map((item) => (
+										<ParachainIcon
+											tooltip={item.tokenSymbol}
+											src={item.tokenLogo}
+										/>
+									))}
+								</div>
+							) : (
+								<p className='col-span-2 flex items-center gap-x-[6px]'>
+									<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
+									<span className='font-normal text-xs leading-[13px] text-success'>
+										{'+'}{' '}
+										{ethers?.utils
+											?.formatUnits(
+												totalAmount?.toString() || amount_token?.toString(),
+												tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
+											)
+											?.toString()}{' '}
+										{tokenDetailsArray[0]?.tokenSymbol || token}
+									</span>
+								</p>
+							)
 						) : (
 							<p className='col-span-2'>-</p>
 						)}
@@ -183,15 +322,12 @@ const Transaction: FC<IHistoryTransactions> = ({
 					<Divider className='bg-text_secondary my-5' />
 					{isFundType ? (
 						<ReceivedInfo
-							amount={String(amount_token)}
+							transfers={receivedTransfers}
 							date={dayjs(created_at).format('lll')}
-							from={from}
 							callHash={txHash || ''}
 							note={transactionDetails?.note || ''}
 							loading={loading}
-							to={to}
-							tokenSymbol={tokenSymbol}
-							tokenDecimals={tokenDecimals}
+							tokenDetialsArray={tokenDetailsArray}
 						/>
 					) : (
 						<SentInfo
@@ -200,7 +336,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 									? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
 											(item: any) => item?.dataDecoded?.parameters?.[1]?.value
 									  )
-									: String(amount_token)
+									: txInfo?.transferInfo?.value || String(amount_token)
 							}
 							approvals={approvals}
 							date={dayjs(created_at).format('lll')}
@@ -209,7 +345,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 									? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
 											(item: any) => item?.dataDecoded?.parameters?.[0]?.value
 									  )
-									: to.toString() || ''
+									: txInfo?.recipient?.value || to.toString() || ''
 							}
 							callHash={txHash || ''}
 							note={transactionDetails?.note || ''}
@@ -223,8 +359,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 									? decodedData.parameters?.[1]?.value
 									: ''
 							}
-							tokenSymbol={tokenSymbol}
-							tokenDecimals={tokenDecimals}
+							multiSendTokens={tokenDetailsArray}
+							tokenSymbol={txInfo?.transferInfo?.tokenSymbol}
+							tokenDecimals={txInfo?.transferInfo?.decimals}
 							advancedDetails={advancedDetails}
 						/>
 					)}
