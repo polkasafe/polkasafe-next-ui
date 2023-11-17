@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { Dropdown, Form, Input } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
@@ -35,6 +35,26 @@ const BalanceInput = ({
 
 	const { allAssets } = useMultisigAssetsContext();
 
+	const [isValidInput, setIsValidInput] = useState(true);
+	const [insufficientBalance, setInsufficientBalance] = useState(false);
+
+	const onBalanceChange = (value: number | string | null): void => {
+		const amount = Number(value);
+
+		if (!amount || Number.isNaN(amount)) {
+			setIsValidInput(false);
+			return;
+		}
+		setIsValidInput(true);
+		console.log(amount, token);
+
+		if (amount > Number(token.balance_token)) {
+			setInsufficientBalance(true);
+			return;
+		}
+		setInsufficientBalance(false);
+	};
+
 	const tokenOptions: ItemType[] = allAssets?.map((item) => ({
 		key: item.name,
 		label: (
@@ -62,13 +82,20 @@ const BalanceInput = ({
 						className='border-0 outline-0 my-0 p-0'
 						name='balance'
 						rules={[{ required: true }]}
+						validateStatus={!isValidInput || insufficientBalance ? 'error' : 'success'}
+						help={
+							!isValidInput
+								? 'Please input a valid value'
+								: insufficientBalance && 'Insufficient Balance in Sender Account.'
+						}
 					>
 						<div className='flex items-center h-[50px]'>
 							<Input
 								id='balance'
-								onChange={(e) =>
-									onChange(Number.isNaN(e.target.value) || !e.target.value.trim() ? '0' : e.target.value.trim())
-								}
+								onChange={(e) => {
+									onBalanceChange(Number.isNaN(e.target.value) || !e.target.value.trim() ? '0' : e.target.value.trim());
+									onChange(Number.isNaN(e.target.value) || !e.target.value.trim() ? '0' : e.target.value.trim());
+								}}
 								placeholder={`${placeholder} ${token?.name || chainProperties[network].tokenSymbol}`}
 								defaultValue={defaultValue}
 								className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white pr-24'

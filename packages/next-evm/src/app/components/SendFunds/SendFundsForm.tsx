@@ -631,7 +631,12 @@ const SendFundsForm = ({
 					disabled={
 						recipientAndAmount.some(
 							(item) =>
-								item.recipient === '' || item.amount === '0' || Number.isNaN(Number(item.amount)) || !item.amount
+								item.recipient === '' ||
+								item.amount === '0' ||
+								Number.isNaN(Number(item.amount)) ||
+								!item.amount ||
+								Number(item.amount) === 0 ||
+								Number(item.amount) > Number(item.token.balance_token)
 						) ||
 						Object.keys(transactionFields[category].subfields).some(
 							(key) =>
