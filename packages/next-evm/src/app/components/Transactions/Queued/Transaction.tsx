@@ -25,7 +25,7 @@ import { TransactionData, getTransactionDetails } from '@safe-global/safe-gatewa
 import { StaticImageData } from 'next/image';
 import SentInfo from './SentInfo';
 
-interface ITransactionProps {
+export interface ITransactionProps {
 	date: Date;
 	approvals: string[];
 	threshold: number;
@@ -84,7 +84,9 @@ const Transaction: FC<ITransactionProps> = ({
 	// const hash = location.hash.slice(1);
 	const [transactionDetailsLoading, setTransactionDetailsLoading] = useState<boolean>(false);
 
-	const getTransactionDetailsFromDB = useCallback(async () => {
+	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
+
+	const getTxDetails = useCallback(async () => {
 		setTransactionDetailsLoading(true);
 
 		const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), callHash);
@@ -104,8 +106,8 @@ const Transaction: FC<ITransactionProps> = ({
 		setTransactionDetailsLoading(false);
 	}, [callHash, network]);
 	useEffect(() => {
-		getTransactionDetailsFromDB();
-	}, [getTransactionDetailsFromDB]);
+		getTxDetails();
+	}, [getTxDetails]);
 
 	useEffect(() => {
 		if (!callData) return;
@@ -254,7 +256,7 @@ const Transaction: FC<ITransactionProps> = ({
 		<Collapse
 			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'
 			bordered={false}
-			// defaultActiveKey={[`${hash}`]}
+			defaultActiveKey={[`${urlHash}`]}
 		>
 			<Collapse.Panel
 				showArrow={false}

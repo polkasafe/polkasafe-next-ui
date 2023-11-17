@@ -69,6 +69,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 	>([]);
 	const [isMultiTokenTx, setIsMultiTokenTx] = useState<boolean>(false);
 
+	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
+
 	useEffect(() => {
 		if (!callData) return;
 		gnosisSafe.safeService
@@ -204,7 +206,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 		<Collapse
 			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'
 			bordered={false}
-			// defaultActiveKey={[`${hash}`]}
+			defaultActiveKey={[`${urlHash}`]}
 		>
 			<Collapse.Panel
 				showArrow={false}

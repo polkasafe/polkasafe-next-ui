@@ -27,13 +27,13 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 	const { network } = useGlobalApiContext();
 	const { address } = useGlobalUserDetailsContext();
 
-	// useEffect(() => {
-	// const hash = location.hash.slice(1);
-	// const elem = document.getElementById(hash);
-	// if (elem) {
-	// elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-	// }
-	// }, [location.hash, transactions]);
+	useEffect(() => {
+		const hash = typeof window !== 'undefined' && window.location.hash.slice(1);
+		const elem = document.getElementById(hash);
+		if (elem) {
+			elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}, []);
 
 	useEffect(() => {
 		if (!gnosisSafe) {

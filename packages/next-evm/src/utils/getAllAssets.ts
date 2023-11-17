@@ -8,7 +8,7 @@ import { NETWORK } from '@next-common/global/evm-network-constants';
 // of the Apache-2.0 license. See the LICENSE file for details.
 const getAllAssets = async (network: NETWORK, address: string) => {
 	return (
-		await fetch(`${returnTxUrl(network)}/api/v1/safes/${address}/balances/usd/?trusted=false&exclude_spam=false`)
+		await fetch(`${returnTxUrl(network)}/api/v1/safes/${address}/balances/usd/?trusted=true&exclude_spam=true`)
 	).json();
 };
 

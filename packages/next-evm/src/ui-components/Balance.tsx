@@ -42,7 +42,10 @@ const Balance = ({ address, className }: Props) => {
 		>
 			<span className='text-primary mr-2'>Balance: </span>
 			<span className='text-white'>
-				{parseFloat(balance).toFixed(3)} {chainProperties[network].tokenSymbol}
+				{parseFloat(balance)
+					.toFixed(2)
+					.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+				{chainProperties[network].tokenSymbol}
 			</span>
 		</div>
 	);

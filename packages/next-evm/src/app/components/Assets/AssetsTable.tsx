@@ -6,7 +6,6 @@ import React, { FC, useState } from 'react';
 import { IAsset } from '@next-common/types';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 
-import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { chainProperties } from 'next-common/global/evm-network-constants';
@@ -14,6 +13,7 @@ import { currencyProperties } from '@next-common/global/currencyConstants';
 import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
+import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IAssetsProps {
 	assets: IAsset[];
@@ -53,14 +53,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 								key={index}
 							>
 								<div className='col-span-1 flex items-center'>
-									<div className='flex items-center justify-center overflow-hidden rounded-full w-4 h-4'>
-										<Image
-											src={logoURI}
-											alt='profile img'
-											width={20}
-											height={20}
-										/>
-									</div>
+									<ParachainIcon src={logoURI} />
 									<span
 										title={name}
 										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
@@ -72,7 +65,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 									title={balance_token}
 									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
-									{balance_token} {symbol}
+									{!Number.isNaN(balance_token) && String(balance_token).replace(/\d(?=(\d{3})+\.)/g, '$&,')} {symbol}
 								</p>
 								<p
 									title={balance_usd}
@@ -82,7 +75,9 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 										? (allCurrencyPrices[currencyProperties[currency].symbol]
 												? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
 												: Number(balance_usd)
-										  ).toFixed(2)
+										  )
+												.toFixed(2)
+												.replace(/\d(?=(\d{3})+\.)/g, '$&,')
 										: '-'}
 								</p>
 								<PrimaryButton
