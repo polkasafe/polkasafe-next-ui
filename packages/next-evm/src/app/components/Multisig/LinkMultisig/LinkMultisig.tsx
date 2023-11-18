@@ -153,7 +153,10 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 						return {
 							...prevState,
 							activeMultisig: multisigData.address,
-							multisigAddresses: [...(prevState?.multisigAddresses || []), multisigData],
+							multisigAddresses:
+								prevState.multisigSettings && Object.keys(prevState.multisigSettings).includes(multisigData.address)
+									? [...(prevState?.multisigAddresses || [])]
+									: [...(prevState?.multisigAddresses || []), multisigData],
 							multisigSettings: {
 								...prevState.multisigSettings,
 								[`${multisigData.address}`]: {
