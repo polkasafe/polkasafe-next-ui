@@ -60,10 +60,15 @@ const BalanceInput = ({
 		label: (
 			<span className='flex items-center gap-x-2 text-white'>
 				<ParachainIcon
-					size={15}
+					size={20}
 					src={item.logoURI}
 				/>
-				{item.name}
+				<div className='flex flex-col gap-y-[2px]'>
+					<span className='text-xs'>{item.symbol}</span>
+					<span className='text-[10px]'>
+						{item.balance_token} {item.name}
+					</span>
+				</div>
 			</span>
 		) as any
 	}));
