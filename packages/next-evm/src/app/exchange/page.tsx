@@ -13,10 +13,12 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { CircleArrowDownIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
+import transakLogo from '@next-common/assets/icons/transak-logo.png';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
+import Image from 'next/image';
 import { ParachainIcon } from '../components/NetworksDropdown/NetworkCard';
 import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
@@ -25,6 +27,7 @@ enum EOnramp {
 	SELL = 'SELL'
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const Exchange = ({ className }: { className?: string }) => {
 	const { address: userAddress, activeMultisig } = useGlobalUserDetailsContext();
 	const { allAssets } = useMultisigAssetsContext();
@@ -61,10 +64,11 @@ const Exchange = ({ className }: { className?: string }) => {
 		const transakConfig: TransakConfig = {
 			apiKey: process.env.NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY,
 			environment: Transak.ENVIRONMENTS.PRODUCTION,
-			defaultNetwork: network,
+			network,
 			defaultCryptoAmount: Number(coinAmount),
 			cryptoAmount: Number(coinAmount),
-			cryptoCurrencyCode: coinCode,
+			defaultCryptoCurrency: coinCode,
+			cryptoCurrencyCode: onrampFlowType === EOnramp.SELL && coinCode,
 			walletAddress: activeMultisig,
 			productsAvailed: onrampFlowType
 		};
@@ -79,110 +83,127 @@ const Exchange = ({ className }: { className?: string }) => {
 			className={`scale-[80%] w-[125%] h-[125%] p-5 origin-top-left bg-bg-main rounded-lg flex justify-center ${className}`}
 		>
 			{userAddress ? (
-				<Form className='h-full flex flex-col gap-y-5 bg-bg-secondary rounded-lg p-5'>
-					<AddMultisigModal />
-					<div className='w-full flex items-center gap-x-3'>
-						<span
-							onClick={() => setOnrampFlowType(EOnramp.BUY)}
-							className={`p-[10px] bg-opacity-10 text-xl text-white flex items-center justify-center flex-col gap-y-3 ${
-								onrampFlowType === EOnramp.BUY ? 'bg-success text-success' : 'bg-text_secondary'
-							} cursor-pointer rounded-lg leading-none w-[180px] h-[120px]`}
-						>
-							<PlusCircleOutlined />
-							Buy
-						</span>
-						<span
-							onClick={() => setOnrampFlowType(EOnramp.SELL)}
-							className={`p-[10px] bg-opacity-10 text-xl text-white flex items-center justify-center flex-col gap-y-3 ${
-								onrampFlowType === EOnramp.SELL ? 'bg-success text-success' : 'bg-text_secondary'
-							} cursor-pointer rounded-lg leading-none w-[180px] h-[120px]`}
-						>
-							<MinusCircleOutlined />
-							Sell
-						</span>
-					</div>
-					<div>
-						<div className='flex items-center justify-between mb-[5px]'>
-							<label className='text-primary font-normal text-xs leading-[13px] block'>Wallet Address*</label>
+				<div className='flex flex-col gap-y-2'>
+					<Form className='h-full flex flex-col gap-y-5 bg-bg-secondary rounded-lg p-5'>
+						<AddMultisigModal />
+						<div className='w-full flex items-center gap-x-3'>
+							<span
+								onClick={() => setOnrampFlowType(EOnramp.BUY)}
+								className={`p-[10px] bg-opacity-10 text-xl text-white flex items-center justify-center flex-col gap-y-3 ${
+									onrampFlowType === EOnramp.BUY ? 'bg-success text-success' : 'bg-text_secondary'
+								} cursor-pointer rounded-lg leading-none w-[180px] h-[120px]`}
+							>
+								<PlusCircleOutlined />
+								Buy
+							</span>
+							<span
+								onClick={() => setOnrampFlowType(EOnramp.SELL)}
+								className={`p-[10px] bg-opacity-10 text-xl text-white flex items-center justify-center flex-col gap-y-3 ${
+									onrampFlowType === EOnramp.SELL ? 'bg-success text-success' : 'bg-text_secondary'
+								} cursor-pointer rounded-lg leading-none w-[180px] h-[120px]`}
+							>
+								<MinusCircleOutlined />
+								Sell
+							</span>
 						</div>
-						<article className='w-full p-[10px] border border-solid border-primary rounded-lg flex items-center justify-between'>
-							<AddressComponent
-								withBadge={false}
-								address={activeMultisig}
-							/>
-						</article>
-					</div>
-					<div className='flex-1'>
-						<div className='flex justify-between items-center mb-[5px]'>
-							<label className='text-primary font-normal text-xs leading-[13px] block'>Token Amount*</label>
-							<div className='bg-highlight text-primary rounded-lg px-[10px] py-[6px] ml-auto font-normal text-xs leading-[13px] flex items-center justify-center'>
-								Balance:{' '}
-								{Number(maxAmount)
-									.toFixed(3)
-									.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
-								{coinCode}
+						<div>
+							<div className='flex items-center justify-between mb-[5px]'>
+								<label className='text-primary font-normal text-xs leading-[13px] block'>Wallet Address*</label>
 							</div>
-						</div>
-						<Form.Item
-							className='border-0 outline-0 my-0 p-0'
-							name='coin-amount'
-							rules={[{ required: true }]}
-							validateStatus={
-								!coinAmount || Number.isNaN(Number(coinAmount)) || Number(coinAmount) > Number(maxAmount)
-									? 'error'
-									: 'success'
-							}
-							help={
-								coinAmount && Number.isNaN(Number(coinAmount))
-									? 'Please enter a valid Amount'
-									: Number(coinAmount) > Number(maxAmount) && 'InSufficient Balance in Multisig'
-							}
-						>
-							<div className='flex items-center h-[50px]'>
-								<Input
-									id='coin-amount'
-									onChange={(e) => setCoinAmount(e.target.value)}
-									placeholder='10'
-									value={coinAmount}
-									className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-main rounded-lg text-white pr-20'
+							<article className='w-full p-[10px] border border-solid border-primary rounded-lg flex items-center justify-between'>
+								<AddressComponent
+									withBadge={false}
+									address={activeMultisig}
 								/>
-								<button
-									onClick={() => setCoinAmount(maxAmount)}
-									className='text-primary bg-transparent outline-none border-none absolute right-[120px]'
-								>
-									MAX
-								</button>
-								<Dropdown
-									trigger={['click']}
-									className={className}
-									menu={{
-										items: currencyOptions,
-										onClick: (e) => setCoinCode(e.key)
-									}}
-								>
-									<div className='absolute cursor-pointer right-0 text-white pr-3 flex items-center gap-x-1 justify-center'>
-										<ParachainIcon src={allAssets?.find((item) => item.name === coinCode)?.logoURI || ''} />
-										<span>{coinCode}</span>
-										<CircleArrowDownIcon className='text-primary ml-1' />
-									</div>
-								</Dropdown>
+							</article>
+						</div>
+						<div className='flex-1'>
+							<div className='flex justify-between items-center mb-[5px]'>
+								<label className='text-primary font-normal text-xs leading-[13px] block'>Token Amount*</label>
+								<div className='bg-highlight text-primary rounded-lg px-[10px] py-[6px] ml-auto font-normal text-xs leading-[13px] flex items-center justify-center'>
+									Balance:{' '}
+									{Number(maxAmount)
+										.toFixed(3)
+										.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+									{coinCode}
+								</div>
 							</div>
-						</Form.Item>
-					</div>
-					<PrimaryButton
-						disabled={
-							!activeMultisig ||
-							!coinAmount ||
-							Number.isNaN(Number(coinAmount)) ||
-							Number(coinAmount) === 0 ||
-							Number(coinAmount) > Number(maxAmount)
-						}
-						className='flex justify-center'
-						onClick={onConfirm}
-					>
-						Confirm
-					</PrimaryButton>
-				</Form>
+							<Form.Item
+								className='border-0 outline-0 my-0 p-0'
+								name='coin-amount'
+								rules={[{ required: true }]}
+								validateStatus={
+									!coinAmount ||
+									Number.isNaN(Number(coinAmount)) ||
+									(onrampFlowType === EOnramp.SELL && Number(coinAmount) > Number(maxAmount))
+										? 'error'
+										: 'success'
+								}
+								help={
+									coinAmount && Number.isNaN(Number(coinAmount))
+										? 'Please enter a valid Amount'
+										: onrampFlowType === EOnramp.SELL &&
+										  Number(coinAmount) > Number(maxAmount) &&
+										  'InSufficient Balance in Multisig'
+								}
+							>
+								<div className='flex items-center h-[50px]'>
+									<Input
+										id='coin-amount'
+										onChange={(e) => setCoinAmount(e.target.value)}
+										placeholder='10'
+										value={coinAmount}
+										className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-main rounded-lg text-white pr-20'
+									/>
+									{onrampFlowType === EOnramp.SELL && (
+										<button
+											onClick={() => setCoinAmount(maxAmount)}
+											className='text-primary bg-transparent outline-none border-none absolute right-[120px]'
+										>
+											MAX
+										</button>
+									)}
+									<Dropdown
+										trigger={['click']}
+										className={className}
+										menu={{
+											items: currencyOptions,
+											onClick: (e) => setCoinCode(e.key)
+										}}
+									>
+										<div className='absolute cursor-pointer right-0 text-white pr-3 flex items-center gap-x-1 justify-center'>
+											<ParachainIcon src={allAssets?.find((item) => item.name === coinCode)?.logoURI || ''} />
+											<span>{coinCode}</span>
+											<CircleArrowDownIcon className='text-primary ml-1' />
+										</div>
+									</Dropdown>
+								</div>
+							</Form.Item>
+						</div>
+						<PrimaryButton
+							disabled={
+								!activeMultisig ||
+								!coinAmount ||
+								Number.isNaN(Number(coinAmount)) ||
+								Number(coinAmount) === 0 ||
+								(onrampFlowType === EOnramp.SELL && Number(coinAmount) > Number(maxAmount))
+							}
+							className='flex justify-center'
+							onClick={onConfirm}
+						>
+							Confirm
+						</PrimaryButton>
+					</Form>
+					<span className='text-lg text-white py-1 flex gap-x-1 justify-end w-full'>
+						Powered by{' '}
+						<Image
+							height={20}
+							width={100}
+							src={transakLogo}
+							alt='powered by transak'
+						/>
+					</span>
+				</div>
 			) : (
 				<div className='h-full w-full flex items-center justify-center text-primary font-bold text-lg'>
 					<Link href='/'>
