@@ -194,7 +194,7 @@ const Exchange = ({ className }: { className?: string }) => {
 							Confirm
 						</PrimaryButton>
 					</Form>
-					<span className='text-lg text-white py-1 flex gap-x-1 justify-end w-full'>
+					<span className='text-lg text-text_secondary py-1 flex gap-x-1 justify-center w-full'>
 						Powered by{' '}
 						<Image
 							height={20}
