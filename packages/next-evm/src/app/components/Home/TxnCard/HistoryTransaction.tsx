@@ -15,6 +15,7 @@ import { ethers } from 'ethers';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from 'antd';
+import formatBalance from '@next-evm/utils/formatBalance';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 interface IHistoryTransactions {
@@ -211,8 +212,8 @@ const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amoun
 								/>
 								<span className='font-normal text-xs leading-[13px] text-failure'>
 									{'-'}{' '}
-									{ethers?.utils
-										?.formatUnits(
+									{formatBalance(
+										ethers?.utils?.formatUnits(
 											decodedCallData?.method === 'multiSend'
 												? amount?.toString()
 												: txInfo?.transferInfo?.value || amount_token?.toString() || 0,
@@ -220,7 +221,7 @@ const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amoun
 												? tokenDetailsArray[0]?.tokenDecimals
 												: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
 										)
-										?.toString()}{' '}
+									)}{' '}
 									{decodedCallData?.method === 'multiSend'
 										? tokenDetailsArray[0]?.tokenSymbol
 										: txInfo?.transferInfo?.tokenSymbol || chainProperties[network].tokenSymbol}
@@ -242,12 +243,12 @@ const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amoun
 								<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
 								<span className='font-normal text-xs leading-[13px] text-success'>
 									{'+'}{' '}
-									{ethers?.utils
-										?.formatUnits(
+									{formatBalance(
+										ethers?.utils?.formatUnits(
 											amount?.toString() || 0,
 											tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
 										)
-										?.toString()}{' '}
+									)}{' '}
 									{tokenDetailsArray[0]?.tokenSymbol || chainProperties[network].tokenSymbol}
 								</span>
 							</p>

@@ -15,6 +15,7 @@ import { ethers } from 'ethers';
 import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from 'antd';
+import formatBalance from '@next-evm/utils/formatBalance';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 interface ITransactionProps {
@@ -169,14 +170,14 @@ const QueueTransaction = ({ callHash, callData }: ITransactionProps) => {
 								}
 							/>
 							<span className='font-normal text-xs leading-[13px] text-failure'>
-								{ethers.utils
-									.formatUnits(
+								{formatBalance(
+									ethers.utils.formatUnits(
 										decodedCallData?.method === 'multiSend' ? amount : txInfo?.transferInfo?.value || 0,
 										decodedCallData?.method === 'multiSend'
 											? tokenDetailsArray[0]?.tokenDecimals
 											: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
 									)
-									.toString()}{' '}
+								)}{' '}
 								{decodedCallData?.method === 'multiSend'
 									? tokenDetailsArray[0]?.tokenSymbol
 									: txInfo?.transferInfo?.tokenSymbol || chainProperties[network].tokenSymbol}

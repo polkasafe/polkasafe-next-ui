@@ -11,6 +11,7 @@ import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { IAsset } from '@next-common/types';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import formatBalance from '@next-evm/utils/formatBalance';
 
 interface Props {
 	className?: string;
@@ -84,13 +85,11 @@ const BalanceInput = ({
 		<section className={`${className}`}>
 			<div className='flex justify-between items-center mb-[5px]'>
 				<label className='text-primary font-normal text-xs leading-[13px] block'>{label}</label>
-				<span className='text-xs font-normal leading-[13px] text-white'>
-					<span className='text-primary'>MAX: </span>{' '}
-					{Number(token?.balance_token)
-						.toFixed(2)
-						.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
-					{token?.name}
-				</span>
+				{token && (
+					<span className='text-xs font-normal leading-[13px] text-white'>
+						<span className='text-primary'>MAX: </span> {formatBalance(token?.balance_token)} {token?.name}
+					</span>
+				)}
 			</div>
 			<div className='flex items-center gap-x-[10px]'>
 				<article className='w-full'>
