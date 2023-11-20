@@ -40,6 +40,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 				balance_usd: token.fiatBalance,
 				logoURI: token?.token?.logoUri || chainProperties[network].logo,
 				name: token?.token?.symbol || chainProperties[network].tokenSymbol,
+				symbol: token?.token?.name || chainProperties[network].tokenSymbol,
 				tokenAddress: token?.tokenAddress,
 				token_decimals: token?.token?.decimals || chainProperties[network].decimals
 			}));

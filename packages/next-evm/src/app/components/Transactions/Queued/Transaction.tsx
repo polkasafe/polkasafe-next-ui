@@ -22,9 +22,10 @@ import { EVM_API_URL } from '@next-common/global/apiUrls';
 import updateMultisigTransactions from '@next-evm/utils/updateHistoryTransaction';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
+import { StaticImageData } from 'next/image';
 import SentInfo from './SentInfo';
 
-interface ITransactionProps {
+export interface ITransactionProps {
 	date: Date;
 	approvals: string[];
 	threshold: number;
@@ -35,12 +36,11 @@ interface ITransactionProps {
 	onAfterExecute?: any;
 	txType?: any;
 	recipientAddress?: string;
-	tokenSymbol?: string;
-	tokenLogo?: string;
-	tokenDecimals?: number;
+	advancedDetails: any;
 }
 
 const Transaction: FC<ITransactionProps> = ({
+	advancedDetails,
 	approvals,
 	callData,
 	callHash,
@@ -50,10 +50,7 @@ const Transaction: FC<ITransactionProps> = ({
 	onAfterApprove,
 	onAfterExecute,
 	txType,
-	recipientAddress,
-	tokenSymbol,
-	tokenLogo,
-	tokenDecimals
+	recipientAddress
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
@@ -76,19 +73,26 @@ const Transaction: FC<ITransactionProps> = ({
 	const [transactionDetails, setTransactionDetails] = useState<ITransaction>({} as any);
 
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
+	const [txInfo, setTxInfo] = useState<any>({} as any);
 
-	const [tokenDetailsArray, setTokenDetailsArray] = useState<{ tokenSymbol: string; tokenDecimals: number }[]>([]);
+	const [tokenDetailsArray, setTokenDetailsArray] = useState<
+		{ tokenSymbol: string; tokenDecimals: number; tokenLogo: StaticImageData | string; tokenAddress: string }[]
+	>([]);
+	const [isMultiTokenTx, setIsMultiTokenTx] = useState<boolean>(false);
 
 	const token = chainProperties[network].tokenSymbol;
 	// const hash = location.hash.slice(1);
 	const [transactionDetailsLoading, setTransactionDetailsLoading] = useState<boolean>(false);
 
-	const getTransactionDetailsFromDB = useCallback(async () => {
+	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
+
+	const getTxDetails = useCallback(async () => {
 		setTransactionDetailsLoading(true);
 
 		const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), callHash);
 
 		setTxData(txDetails.txData);
+		setTxInfo(txDetails.txInfo);
 
 		const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
 			`${EVM_API_URL}/getTransactionDetailsEth`,
@@ -102,8 +106,8 @@ const Transaction: FC<ITransactionProps> = ({
 		setTransactionDetailsLoading(false);
 	}, [callHash, network]);
 	useEffect(() => {
-		getTransactionDetailsFromDB();
-	}, [getTransactionDetailsFromDB]);
+		getTxDetails();
+	}, [getTxDetails]);
 
 	useEffect(() => {
 		if (!callData) return;
@@ -121,23 +125,35 @@ const Transaction: FC<ITransactionProps> = ({
 				);
 
 				const realContractAddresses = Object.keys(txData.addressInfoIndex);
+				const tokenDetails = [];
 				tokenContractAddressArray.forEach((item) => {
 					if (realContractAddresses.includes(item)) {
 						const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
-						setTokenDetailsArray((prev) => [
-							...prev,
-							{
-								tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
-								tokenSymbol: assetDetails?.name || chainProperties[network].tokenSymbol
-							}
-						]);
+						tokenDetails.push({
+							tokenAddress: assetDetails?.tokenAddress || '',
+							tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
+							tokenLogo: assetDetails?.logoURI || chainProperties[network].logo,
+							tokenSymbol: assetDetails?.name || chainProperties[network].tokenSymbol
+						});
 					} else {
-						setTokenDetailsArray((prev) => [
-							...prev,
-							{ tokenDecimals: chainProperties[network].decimals, tokenSymbol: chainProperties[network].tokenSymbol }
-						]);
+						tokenDetails.push({
+							tokenAddress: '',
+							tokenDecimals: chainProperties[network].decimals,
+							tokenLogo: chainProperties[network].logo,
+							tokenSymbol: chainProperties[network].tokenSymbol
+						});
 					}
 				});
+				setTokenDetailsArray(tokenDetails);
+			} else {
+				setTokenDetailsArray([
+					{
+						tokenAddress: '',
+						tokenDecimals: chainProperties[network].decimals,
+						tokenLogo: chainProperties[network].logo,
+						tokenSymbol: chainProperties[network].tokenSymbol
+					}
+				]);
 			}
 
 			const amountsArray = decodedCallData?.parameters?.[0]?.valueDecoded?.map(
@@ -149,6 +165,14 @@ const Transaction: FC<ITransactionProps> = ({
 			setAmount(totalAmount);
 		}
 	}, [allAssets, decodedCallData, network, txData]);
+
+	useEffect(() => {
+		if (tokenDetailsArray.length > 1) {
+			const tokenSymbols = tokenDetailsArray.map((item) => item.tokenSymbol);
+			const uniqueTokens = [...new Set(tokenSymbols)];
+			if (uniqueTokens.length > 1) setIsMultiTokenTx(true);
+		}
+	}, [tokenDetailsArray]);
 
 	const handleApproveTransaction = async () => {
 		setLoading(true);
@@ -232,7 +256,7 @@ const Transaction: FC<ITransactionProps> = ({
 		<Collapse
 			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'
 			bordered={false}
-			// defaultActiveKey={[`${hash}`]}
+			defaultActiveKey={[`${urlHash}`]}
 		>
 			<Collapse.Panel
 				showArrow={false}
@@ -273,20 +297,42 @@ const Transaction: FC<ITransactionProps> = ({
 										: 'Custom Transaction'}
 								</span>
 							</p>
-							{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && (
-								<p className='col-span-2 flex items-center gap-x-[6px]'>
-									<ParachainIcon src={tokenLogo || chainProperties[network].logo} />
-									<span className='font-normal text-xs leading-[13px] text-failure'>
-										{ethers.utils
-											.formatUnits(
-												decodedCallData?.method === 'multiSend' ? amount : value || transactionDetails.amount_token,
-												tokenDecimals || chainProperties[network].decimals
-											)
-											.toString()}{' '}
-										{tokenSymbol || token}
-									</span>
-								</p>
-							)}
+							{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') &&
+								(isMultiTokenTx ? (
+									<div className='flex gap-x-2 col-span-2'>
+										{tokenDetailsArray.map((item) => (
+											<ParachainIcon
+												tooltip={item.tokenSymbol}
+												src={item.tokenLogo}
+											/>
+										))}
+									</div>
+								) : (
+									<p className='col-span-2 flex items-center gap-x-[6px]'>
+										<ParachainIcon
+											src={
+												decodedCallData?.method === 'multiSend'
+													? tokenDetailsArray[0]?.tokenLogo
+													: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
+											}
+										/>
+										<span className='font-normal text-xs leading-[13px] text-failure'>
+											{ethers.utils
+												.formatUnits(
+													decodedCallData?.method === 'multiSend'
+														? amount
+														: txInfo?.transferInfo?.value || value || transactionDetails.amount_token,
+													decodedCallData?.method === 'multiSend'
+														? tokenDetailsArray[0]?.tokenDecimals
+														: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
+												)
+												.toString()}{' '}
+											{decodedCallData?.method === 'multiSend'
+												? tokenDetailsArray[0]?.tokenSymbol
+												: txInfo?.transferInfo?.tokenSymbol || token}
+										</span>
+									</p>
+								))}
 							<p className='col-span-2'>{dayjs(date).format('lll')}</p>
 							<p
 								className={`${
@@ -320,7 +366,7 @@ const Transaction: FC<ITransactionProps> = ({
 								? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
 										(item: any) => item?.dataDecoded?.parameters?.[1]?.value
 								  )
-								: value
+								: txInfo?.transferInfo?.value || value
 						}
 						addressAddOrRemove={
 							txType === 'addOwnerWithThreshold'
@@ -335,7 +381,7 @@ const Transaction: FC<ITransactionProps> = ({
 								? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
 										(item: any) => item?.dataDecoded?.parameters?.[0]?.value
 								  )
-								: recipientAddress || ''
+								: txInfo?.recipient?.value || recipientAddress || ''
 						}
 						callDataString={callDataString}
 						callData={callData}
@@ -350,9 +396,10 @@ const Transaction: FC<ITransactionProps> = ({
 						txType={txType}
 						transactionFields={transactionDetails.transactionFields}
 						transactionDetailsLoading={transactionDetailsLoading}
-						tokenSymbol={tokenSymbol}
-						tokenDecimals={tokenDecimals}
+						tokenSymbol={txInfo?.transferInfo?.tokenSymbol}
+						tokenDecimals={txInfo?.transferInfo?.decimals}
 						multiSendTokens={tokenDetailsArray}
+						advancedDetails={advancedDetails}
 					/>
 				</div>
 			</Collapse.Panel>

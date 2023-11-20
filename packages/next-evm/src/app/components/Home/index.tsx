@@ -20,7 +20,8 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 import Spinner from '@next-common/ui-components/Loader';
 
 const Home = () => {
-	const { address, multisigAddresses, loading, createdAt, addressBook } = useGlobalUserDetailsContext();
+	const { address, multisigAddresses, loading, createdAt, addressBook, multisigSettings } =
+		useGlobalUserDetailsContext();
 	const metaMaskAddress = useAddress();
 
 	const [transactionLoading] = useState(false);
@@ -43,7 +44,9 @@ const Home = () => {
 			/>
 			{loading ? (
 				<Spinner size='large' />
-			) : multisigAddresses.filter((a: any) => a.network === network).length > 0 ? (
+			) : multisigAddresses.filter(
+					(a: any) => a.network === network && !multisigSettings?.[`${a.address}`]?.deleted && !a.disabled
+			  ).length > 0 ? (
 				<section>
 					<div className='mb-0 grid grid-cols-16 gap-4 grid-row-2 lg:grid-row-1 h-auto'>
 						<div className='col-start-1 col-end-13 lg:col-end-8'>

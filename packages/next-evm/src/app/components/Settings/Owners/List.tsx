@@ -20,6 +20,7 @@ import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import styled from 'styled-components';
 
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import RemoveOwner from './Remove';
 
 const RemoveSignatoryModal = ({
@@ -173,7 +174,7 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 								<CopyIcon />
 							</button>
 							<a
-								href={`https://${network}.subscan.io/account/${userAddress}`}
+								href={`${chainProperties[network].blockExplorer}/address/${userAddress}`}
 								target='_blank'
 								rel='noreferrer'
 							>
@@ -226,7 +227,7 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 											<CopyIcon />
 										</button>
 										<a
-											href={`https://${network}.subscan.io/account/${encodedAddress}`}
+											href={`${chainProperties[network].blockExplorer}/address/${encodedAddress}`}
 											target='_blank'
 											rel='noreferrer'
 										>

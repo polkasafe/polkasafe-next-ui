@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { Dropdown, Form, Input } from 'antd';
-import React from 'react';
+import React, { useState } from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
@@ -35,19 +35,50 @@ const BalanceInput = ({
 
 	const { allAssets } = useMultisigAssetsContext();
 
+	const [isValidInput, setIsValidInput] = useState(true);
+	const [insufficientBalance, setInsufficientBalance] = useState(false);
+
+	const onBalanceChange = (value: number | string | null): void => {
+		const amount = Number(value);
+
+		if (!amount || Number.isNaN(amount)) {
+			setIsValidInput(false);
+			return;
+		}
+		setIsValidInput(true);
+		console.log(amount, token);
+
+		if (amount > Number(token.balance_token)) {
+			setInsufficientBalance(true);
+			return;
+		}
+		setInsufficientBalance(false);
+	};
+
 	const tokenOptions: ItemType[] = allAssets?.map((item) => ({
 		key: item.name,
 		label: (
 			<span className='flex items-center gap-x-2 text-white'>
-				<ParachainIcon src={item.logoURI} />
-				{item.name}
+				<ParachainIcon
+					size={20}
+					src={item.logoURI}
+				/>
+				<div className='flex flex-col gap-y-[2px]'>
+					<span className='text-xs'>{item.symbol}</span>
+					<span className='text-[10px]'>
+						{Number(item.balance_token)
+							.toFixed(2)
+							.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+						{item.name}
+					</span>
+				</div>
 			</span>
 		) as any
 	}));
 
 	const onTokenOptionChange = (e: any) => {
 		const selectedToken = allAssets?.find((item) => item.name === e.key);
-		onTokenChange(selectedToken);
+		if (selectedToken) onTokenChange?.(selectedToken);
 	};
 
 	return (
@@ -59,13 +90,20 @@ const BalanceInput = ({
 						className='border-0 outline-0 my-0 p-0'
 						name='balance'
 						rules={[{ required: true }]}
+						validateStatus={!isValidInput || insufficientBalance ? 'error' : 'success'}
+						help={
+							!isValidInput
+								? 'Please input a valid value'
+								: insufficientBalance && 'Insufficient Balance in Sender Account.'
+						}
 					>
 						<div className='flex items-center h-[50px]'>
 							<Input
 								id='balance'
-								onChange={(e) =>
-									onChange(Number.isNaN(e.target.value) || !e.target.value.trim() ? '0' : e.target.value.trim())
-								}
+								onChange={(e) => {
+									onBalanceChange(Number.isNaN(e.target.value) || !e.target.value.trim() ? '0' : e.target.value.trim());
+									onChange(Number.isNaN(e.target.value) || !e.target.value.trim() ? '0' : e.target.value.trim());
+								}}
 								placeholder={`${placeholder} ${token?.name || chainProperties[network].tokenSymbol}`}
 								defaultValue={defaultValue}
 								className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white pr-24'
@@ -79,20 +117,20 @@ const BalanceInput = ({
 										onClick: onTokenOptionChange
 									}}
 								>
-									<div className='absolute right-0 flex cursor-pointer items-center justify-center pr-3 text-white'>
+									<div className='absolute right-0 flex cursor-pointer gap-x-1 items-center justify-center pr-3 text-white'>
 										<ParachainIcon
 											src={token?.logoURI}
-											className='mr-2'
+											size={15}
 										/>
 										<span>{token?.name}</span>
-										<CircleArrowDownIcon className='text-primary ml-1' />
+										<CircleArrowDownIcon className='text-primary' />
 									</div>
 								</Dropdown>
 							) : (
-								<div className='absolute right-0 text-white px-3 flex items-center justify-center'>
+								<div className='absolute right-0 text-white px-3 flex gap-x-1 items-center justify-center'>
 									<ParachainIcon
 										src={chainProperties[network].logo}
-										className='mr-2'
+										size={15}
 									/>
 									<span>{chainProperties[network].tokenSymbol}</span>
 								</div>

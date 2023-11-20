@@ -12,6 +12,7 @@ import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 
 import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 interface IAddressComponent {
 	address: string;
@@ -69,7 +70,7 @@ const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, only
 							<CopyIcon className='hover:text-primary' />
 						</button>
 						<a
-							href={`https://${network}.subscan.io/account/${address}`}
+							href={`${chainProperties[network].blockExplorer}/address/${address}`}
 							target='_blank'
 							rel='noreferrer'
 						>
@@ -94,7 +95,7 @@ const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, only
 								<CopyIcon className='hover:text-primary' />
 							</button>
 							<a
-								href={`https://${network}.subscan.io/account/${address}`}
+								href={`${chainProperties[network].blockExplorer}/address/${address}`}
 								target='_blank'
 								rel='noreferrer'
 							>

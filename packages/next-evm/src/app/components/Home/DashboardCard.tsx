@@ -15,11 +15,11 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 
-import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FundMultisig from '@next-evm/app/components/SendFunds/FundMultisig';
 import SendFundsForm from '@next-evm/app/components/SendFunds/SendFundsForm';
 import { chainProperties } from '@next-common/global/evm-network-constants';
+import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IDashboardCard {
 	className?: string;
@@ -36,7 +36,7 @@ const DashboardCard = ({
 	openTransactionModal,
 	setOpenTransactionModal
 }: IDashboardCard) => {
-	const { activeMultisig, multisigAddresses, activeMultisigData } = useGlobalUserDetailsContext();
+	const { activeMultisig, multisigAddresses, activeMultisigData, multisigSettings } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
@@ -72,15 +72,14 @@ const DashboardCard = ({
 				className={`${className} relative bg-bg-main flex flex-col justify-between rounded-lg p-5 shadow-lg h-[17rem] scale-90 w-[111%] origin-top-left`}
 			>
 				<div className='absolute right-5 top-5'>
-					<div className='flex gap-x-4 items-center'>
-						<div className='w-5'>
-							<Image
-								className='w-5'
-								src={chainProperties[network].logo}
-								alt='icon'
-							/>
-						</div>
-					</div>
+					<a
+						href={`${chainProperties[network].blockExplorer}/address/${activeMultisig}`}
+						target='_blank'
+						className='flex gap-x-4 items-center'
+						rel='noreferrer'
+					>
+						<ParachainIcon src={chainProperties[network].logo} />
+					</a>
 				</div>
 				<div className='w-full'>
 					<div className='flex gap-x-3 items-center'>
@@ -99,7 +98,9 @@ const DashboardCard = ({
 							</div>
 						</div>
 						<div>
-							<div className='text-base font-bold text-white flex items-center gap-x-2'>{currentMultisig?.name}</div>
+							<div className='text-base font-bold text-white flex items-center gap-x-2'>
+								{multisigSettings[activeMultisig]?.name || currentMultisig?.name}
+							</div>
 							<div className='flex text-xs'>
 								<div
 									title={activeMultisig || ''}
@@ -148,7 +149,12 @@ const DashboardCard = ({
 							{!activeMultisigData?.safeBalance ? (
 								<Spin size='default' />
 							) : (
-								ethers.utils.formatEther(activeMultisigData.safeBalance.toString()).split('').slice(0, 5).join('')
+								ethers.utils
+									.formatEther(activeMultisigData.safeBalance.toString())
+									.split('')
+									.slice(0, 5)
+									.join('')
+									.replace(/\d(?=(\d{3})+\.)/g, '$&,')
 							)}
 						</div>
 					</div>

@@ -6,24 +6,27 @@ import React, { FC, useState } from 'react';
 import { IAsset } from '@next-common/types';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 
-import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { chainProperties } from 'next-common/global/evm-network-constants';
+import { currencyProperties } from '@next-common/global/currencyConstants';
+import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
+import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IAssetsProps {
 	assets: IAsset[];
+	currency: string;
 }
-
-const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
+const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { network } = useGlobalApiContext();
 	const [selectedToken, setSeletedToken] = useState<IAsset>(assets[0]);
+	const { allCurrencyPrices } = useGlobalCurrencyContext();
 
 	return (
-		<div className='text-sm font-medium leading-[15px] scale-[80%] w-[125%] h-[125%] origin-top-left'>
+		<div className='text-sm font-medium leading-[15px]'>
 			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
 				open={openTransactionModal}
@@ -37,7 +40,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 			<article className='grid grid-cols-4 gap-x-5 bg-bg-secondary text-text_secondary py-5 px-4 rounded-lg'>
 				<span className='col-span-1'>Asset</span>
 				<span className='col-span-1'>Balance</span>
-				<span className='col-span-1'>USD Value</span>
+				<span className='col-span-1'>{currencyProperties[currency].symbol} Value</span>
 				<span className='col-span-1'>Action</span>
 			</article>
 			{assets && assets.length > 0 ? (
@@ -50,32 +53,36 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 								key={index}
 							>
 								<div className='col-span-1 flex items-center'>
-									<div className='flex items-center justify-center overflow-hidden rounded-full w-4 h-4'>
-										<Image
-											src={logoURI}
-											alt='profile img'
-											width={20}
-											height={20}
-										/>
-									</div>
+									<ParachainIcon src={logoURI} />
 									<span
-										title={name}
+										title={symbol}
 										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
 									>
-										{name}
+										{symbol}
 									</span>
 								</div>
 								<p
 									title={balance_token}
-									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
+									className='sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
-									{balance_token} {symbol}
+									{!Number.isNaN(balance_token) &&
+										Number(balance_token)
+											.toFixed(2)
+											.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+									{name}
 								</p>
 								<p
 									title={balance_usd}
 									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
-									{balance_usd || '-'}
+									{!Number.isNaN(balance_usd)
+										? (allCurrencyPrices[currencyProperties[currency].symbol]
+												? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+												: Number(balance_usd)
+										  )
+												.toFixed(2)
+												.replace(/\d(?=(\d{3})+\.)/g, '$&,')
+										: '-'}
 								</p>
 								<PrimaryButton
 									onClick={() => {

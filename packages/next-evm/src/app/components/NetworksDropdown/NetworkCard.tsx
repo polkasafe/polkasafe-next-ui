@@ -1,29 +1,39 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import { OutlineCheckIcon } from '@next-common/ui-components/CustomIcons';
 import Image from 'next/image';
 import { StaticImport } from 'next/dist/shared/lib/get-img-props';
+import { Tooltip } from 'antd';
+import fallbackLogo from '@next-common/assets/fallback-token-logo.png';
 
 export const ParachainIcon = ({
 	src,
 	className,
-	size = 20
+	size = 20,
+	tooltip
 }: {
 	src: string | StaticImport;
 	className?: string;
 	size?: number;
+	tooltip?: string;
 }) => {
+	const [err, setErr] = useState<boolean>(false);
 	return (
-		<Image
-			className={`${className} block rounded-full`}
-			height={size}
-			width={size}
-			src={src}
-			alt='Chain logo'
-		/>
+		<Tooltip title={tooltip}>
+			<div className='flex items-center justify-center p-[2px] bg-white rounded-md'>
+				<Image
+					className={`${className} block rounded-full`}
+					height={size}
+					width={size}
+					src={err || src === undefined ? fallbackLogo : src}
+					onError={() => setErr(true)}
+					alt='Chain logo'
+				/>
+			</div>
+		</Tooltip>
 	);
 };
 
@@ -45,9 +55,7 @@ const NetworkCard: FC<INetworkCardProps> = ({ isCardToken, onClick, selectedNetw
 			}`}
 		>
 			<p className='flex items-center gap-x-[6px]'>
-				<span className='h-4 w-4'>
-					<ParachainIcon src={chainProperties[network].logo} />
-				</span>
+				<ParachainIcon src={chainProperties[network].logo} />
 				<span className={`font-medium text-sm capitalize ${isSelected ? 'text-primary' : 'text-white'}`}>
 					{isCardToken ? chainProperties[network].tokenSymbol : chainProperties[network].displayName}
 				</span>
