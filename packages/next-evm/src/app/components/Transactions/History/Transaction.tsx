@@ -26,6 +26,7 @@ import { EVM_API_URL } from '@next-common/global/apiUrls';
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { StaticImageData } from 'next/image';
+import formatBalance from '@next-evm/utils/formatBalance';
 import SentInfo from './SentInfo';
 import ReceivedInfo from './ReceivedInfo';
 
@@ -266,8 +267,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 									/>
 									<span className='font-normal text-xs leading-[13px] text-failure'>
 										{'-'}{' '}
-										{ethers?.utils
-											?.formatUnits(
+										{formatBalance(
+											ethers?.utils?.formatUnits(
 												decodedCallData?.method === 'multiSend'
 													? totalAmount?.toString()
 													: txInfo?.transferInfo?.value || amount_token?.toString(),
@@ -275,7 +276,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 													? tokenDetailsArray[0]?.tokenDecimals
 													: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
 											)
-											?.toString()}{' '}
+										)}{' '}
 										{decodedCallData?.method === 'multiSend'
 											? tokenDetailsArray[0]?.tokenSymbol
 											: txInfo?.transferInfo?.tokenSymbol || token}

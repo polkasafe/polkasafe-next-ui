@@ -11,6 +11,7 @@ import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { IAsset } from '@next-common/types';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import formatBalance from '@next-evm/utils/formatBalance';
 
 interface Props {
 	className?: string;
@@ -46,7 +47,6 @@ const BalanceInput = ({
 			return;
 		}
 		setIsValidInput(true);
-		console.log(amount, token);
 
 		if (amount > Number(token.balance_token)) {
 			setInsufficientBalance(true);
@@ -83,7 +83,14 @@ const BalanceInput = ({
 
 	return (
 		<section className={`${className}`}>
-			<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>{label}</label>
+			<div className='flex justify-between items-center mb-[5px]'>
+				<label className='text-primary font-normal text-xs leading-[13px] block'>{label}</label>
+				{token && (
+					<span className='text-xs font-normal leading-[13px] text-white'>
+						<span className='text-primary'>MAX: </span> {formatBalance(token?.balance_token)} {token?.name}
+					</span>
+				)}
+			</div>
 			<div className='flex items-center gap-x-[10px]'>
 				<article className='w-full'>
 					<Form.Item

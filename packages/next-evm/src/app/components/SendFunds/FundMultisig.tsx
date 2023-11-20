@@ -163,6 +163,7 @@ const FundMultisig = ({
 					<BalanceInput
 						className='mt-6'
 						placeholder='5'
+						label='Amount*'
 						onChange={(balance) => setAmount(balance)}
 					/>
 

@@ -23,6 +23,7 @@ import updateMultisigTransactions from '@next-evm/utils/updateHistoryTransaction
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import { StaticImageData } from 'next/image';
+import formatBalance from '@next-evm/utils/formatBalance';
 import SentInfo from './SentInfo';
 
 export interface ITransactionProps {
@@ -317,8 +318,8 @@ const Transaction: FC<ITransactionProps> = ({
 											}
 										/>
 										<span className='font-normal text-xs leading-[13px] text-failure'>
-											{ethers.utils
-												.formatUnits(
+											{formatBalance(
+												ethers.utils.formatUnits(
 													decodedCallData?.method === 'multiSend'
 														? amount
 														: txInfo?.transferInfo?.value || value || transactionDetails.amount_token,
@@ -326,7 +327,7 @@ const Transaction: FC<ITransactionProps> = ({
 														? tokenDetailsArray[0]?.tokenDecimals
 														: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
 												)
-												.toString()}{' '}
+											)}{' '}
 											{decodedCallData?.method === 'multiSend'
 												? tokenDetailsArray[0]?.tokenSymbol
 												: txInfo?.transferInfo?.tokenSymbol || token}
