@@ -89,6 +89,13 @@ export async function POST(req: Request) {
 	};
 	await multisigColl.doc(safeAddress).set(multisigDocument);
 
+	await addressRef.update({
+		multisigAddresses: [...addressRefData.multisigAddresses, multisigDocument],
+		[`multisigSettings.${safeAddress}`]: {
+			name: multisigName
+		}
+	});
+
 	if (addressBook) {
 		const addressBookRef = firestoreDB.collection('addressBooks').doc(`${safeAddress}_${network}`);
 		const records: { [address: string]: ISharedAddressBookRecord } = {} as any;

@@ -19,6 +19,7 @@ import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContex
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import Image from 'next/image';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 import { ParachainIcon } from '../components/NetworksDropdown/NetworkCard';
 import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
@@ -64,7 +65,7 @@ const Exchange = ({ className }: { className?: string }) => {
 		const transakConfig: TransakConfig = {
 			apiKey: process.env.NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY,
 			environment: Transak.ENVIRONMENTS.PRODUCTION,
-			network,
+			network: network === NETWORK.BNB ? 'BSC' : network,
 			defaultCryptoAmount: Number(coinAmount),
 			cryptoAmount: Number(coinAmount),
 			defaultCryptoCurrency: coinCode,

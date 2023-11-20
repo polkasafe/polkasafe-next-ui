@@ -66,7 +66,10 @@ const BalanceInput = ({
 				<div className='flex flex-col gap-y-[2px]'>
 					<span className='text-xs'>{item.symbol}</span>
 					<span className='text-[10px]'>
-						{item.balance_token} {item.name}
+						{Number(item.balance_token)
+							.toFixed(2)
+							.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+						{item.name}
 					</span>
 				</div>
 			</span>
