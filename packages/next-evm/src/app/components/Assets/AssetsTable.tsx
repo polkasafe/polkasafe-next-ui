@@ -55,17 +55,21 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 								<div className='col-span-1 flex items-center'>
 									<ParachainIcon src={logoURI} />
 									<span
-										title={name}
+										title={symbol}
 										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
 									>
-										{name}
+										{symbol}
 									</span>
 								</div>
 								<p
 									title={balance_token}
-									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
+									className='sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
-									{!Number.isNaN(balance_token) && String(balance_token).replace(/\d(?=(\d{3})+\.)/g, '$&,')} {symbol}
+									{!Number.isNaN(balance_token) &&
+										Number(balance_token)
+											.toFixed(2)
+											.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+									{name}
 								</p>
 								<p
 									title={balance_usd}
