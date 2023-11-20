@@ -46,7 +46,6 @@ const BalanceInput = ({
 			return;
 		}
 		setIsValidInput(true);
-		console.log(amount, token);
 
 		if (amount > Number(token.balance_token)) {
 			setInsufficientBalance(true);
@@ -83,7 +82,16 @@ const BalanceInput = ({
 
 	return (
 		<section className={`${className}`}>
-			<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>{label}</label>
+			<div className='flex justify-between items-center mb-[5px]'>
+				<label className='text-primary font-normal text-xs leading-[13px] block'>{label}</label>
+				<span className='text-xs font-normal leading-[13px] text-white'>
+					<span className='text-primary'>MAX: </span>{' '}
+					{Number(token?.balance_token)
+						.toFixed(2)
+						.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+					{token?.name}
+				</span>
+			</div>
 			<div className='flex items-center gap-x-[10px]'>
 				<article className='w-full'>
 					<Form.Item
