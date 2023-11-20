@@ -17,7 +17,6 @@ import {
 	OutlineCloseIcon
 } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
-import shortenAddress from '@next-evm/utils/shortenAddress';
 import styled from 'styled-components';
 
 import { chainProperties } from '@next-common/global/evm-network-constants';
@@ -217,7 +216,7 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 										title={encodedAddress || address}
 										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
 									>
-										{shortenAddress(encodedAddress || address, 10)}
+										{encodedAddress}
 									</span>
 									<div className='ml-[14px] text-text_secondary text-base flex items-center gap-x-[6px]'>
 										<button
@@ -238,15 +237,15 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 								<div className='col-span-1 flex items-center gap-x-[10px]'>
 									<EditAddressModal
 										className={className}
-										nickNameToEdit={userAddressObject?.nickName}
-										addressToEdit={userAddressObject?.address || ''}
-										nameToEdit={userAddressObject?.name}
-										emailToEdit={userAddressObject?.email}
-										discordToEdit={userAddressObject?.discord}
-										telegramToEdit={userAddressObject?.telegram}
-										rolesToEdit={userAddressObject?.roles}
+										nickNameToEdit={addressObject?.nickName}
+										addressToEdit={address || ''}
+										nameToEdit={addressObject?.name}
+										emailToEdit={addressObject?.email}
+										discordToEdit={addressObject?.discord}
+										telegramToEdit={addressObject?.telegram}
+										rolesToEdit={addressObject?.roles}
 									/>
-									{signatories.length > 2 && !disabled && (
+									{signatories.length > 1 && !disabled && (
 										<RemoveSignatoryModal
 											threshold={multisig?.threshold || 2}
 											className={className}
