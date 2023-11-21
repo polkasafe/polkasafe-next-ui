@@ -24,6 +24,7 @@ import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContex
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import { StaticImageData } from 'next/image';
 import formatBalance from '@next-evm/utils/formatBalance';
+import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import SentInfo from './SentInfo';
 
 export interface ITransactionProps {
@@ -277,7 +278,7 @@ const Transaction: FC<ITransactionProps> = ({
 								'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
 							)}
 						>
-							<p className='col-span-3 flex items-center gap-x-3'>
+							<p className='col-span-5 flex items-center gap-x-3'>
 								<span
 									className={`flex items-center justify-center w-9 h-9 ${
 										txType === 'addOwnerWithThreshold' || txType === 'removeOwner'
@@ -289,51 +290,62 @@ const Transaction: FC<ITransactionProps> = ({
 								</span>
 
 								<span>
-									{txType === 'addOwnerWithThreshold'
-										? 'Adding New Owner'
-										: txType === 'removeOwner'
-										? 'Removing Owner'
-										: txType === 'Sent' || txType === 'transfer' || txType === 'multiSend'
-										? 'Send'
-										: 'Custom Transaction'}
+									{txType === 'addOwnerWithThreshold' ? (
+										'Adding New Owner'
+									) : txType === 'removeOwner' ? (
+										'Removing Owner'
+									) : txType === 'Sent' || txType === 'transfer' || txType === 'multiSend' ? (
+										isMultiTokenTx ? (
+											<div className='flex gap-x-2'>
+												Send Multiple Tokens
+												{tokenDetailsArray.map((item) => (
+													<ParachainIcon
+														tooltip={item.tokenSymbol}
+														src={item.tokenLogo}
+													/>
+												))}
+											</div>
+										) : (
+											<p className='flex items-center gap-x-2'>
+												Send
+												<ParachainIcon
+													src={
+														decodedCallData?.method === 'multiSend'
+															? tokenDetailsArray[0]?.tokenLogo
+															: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
+													}
+												/>
+												<span className='font-normal text-xs leading-[13px] text-failure'>
+													{formatBalance(
+														ethers.utils.formatUnits(
+															decodedCallData?.method === 'multiSend'
+																? amount
+																: txInfo?.transferInfo?.value || value || transactionDetails.amount_token,
+															decodedCallData?.method === 'multiSend'
+																? tokenDetailsArray[0]?.tokenDecimals
+																: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
+														)
+													)}{' '}
+													{decodedCallData?.method === 'multiSend'
+														? tokenDetailsArray[0]?.tokenSymbol
+														: txInfo?.transferInfo?.tokenSymbol || token}
+												</span>
+												To{' '}
+												{decodedCallData.method === 'multiSend' ? (
+													'Multiple Addresses'
+												) : (
+													<AddressComponent
+														onlyAddress
+														address={txInfo?.recipient?.value || recipientAddress || ''}
+													/>
+												)}
+											</p>
+										)
+									) : (
+										'Custom Transaction'
+									)}
 								</span>
 							</p>
-							{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') &&
-								(isMultiTokenTx ? (
-									<div className='flex gap-x-2 col-span-2'>
-										{tokenDetailsArray.map((item) => (
-											<ParachainIcon
-												tooltip={item.tokenSymbol}
-												src={item.tokenLogo}
-											/>
-										))}
-									</div>
-								) : (
-									<p className='col-span-2 flex items-center gap-x-[6px]'>
-										<ParachainIcon
-											src={
-												decodedCallData?.method === 'multiSend'
-													? tokenDetailsArray[0]?.tokenLogo
-													: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
-											}
-										/>
-										<span className='font-normal text-xs leading-[13px] text-failure'>
-											{formatBalance(
-												ethers.utils.formatUnits(
-													decodedCallData?.method === 'multiSend'
-														? amount
-														: txInfo?.transferInfo?.value || value || transactionDetails.amount_token,
-													decodedCallData?.method === 'multiSend'
-														? tokenDetailsArray[0]?.tokenDecimals
-														: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
-												)
-											)}{' '}
-											{decodedCallData?.method === 'multiSend'
-												? tokenDetailsArray[0]?.tokenSymbol
-												: txInfo?.transferInfo?.tokenSymbol || token}
-										</span>
-									</p>
-								))}
 							<p className='col-span-2'>{dayjs(date).format('lll')}</p>
 							<p
 								className={`${
@@ -341,7 +353,12 @@ const Transaction: FC<ITransactionProps> = ({
 								} flex items-center justify-end gap-x-4`}
 							>
 								<span className='text-waiting'>
-									{!approvals.includes(address) && 'Awaiting your Confirmation'} ({approvals.length}/{threshold})
+									{!approvals.includes(address)
+										? 'Needs Your Confirmation'
+										: approvals.length === threshold
+										? 'Awaiting Execution'
+										: 'Awaiting Confirmations'}{' '}
+									({approvals.length}/{threshold})
 								</span>
 								<span className='text-white text-sm'>
 									{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}

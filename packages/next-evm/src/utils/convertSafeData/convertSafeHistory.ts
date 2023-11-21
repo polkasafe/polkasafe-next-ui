@@ -36,18 +36,18 @@ export const convertSafeHistoryData = (data: any) => {
 		amount_token: data?.value || data?.transfers?.[0]?.value || '0',
 		approvals: data?.confirmations?.map((user: any) => user?.owner || '') || [],
 		created_at: data?.executionDate || new Date(),
-		data: data.data,
+		data: data?.data,
 		decodedData: data?.dataDecoded,
-		executed: data.isExecuted,
+		executed: data?.isExecuted,
 		executor: data?.executor || data?.from,
 		from: data?.from || '',
-		network: data.network,
-		safeAddress: data.safe,
+		network: data?.network,
+		safeAddress: data?.safe,
 		signatures:
 			data?.confirmations?.map((user: any) => ({ address: user?.owner || '', signature: user?.signature || '' })) || [],
-		to: data.to,
-		txHash: data.safeTxHash || data.txHash,
-		type: data.txType || data?.dataDecoded?.method || 'Sent',
+		to: data?.to,
+		txHash: data?.safeTxHash || data?.txHash,
+		type: data?.txType || data?.dataDecoded?.method || 'Sent',
 		receivedTransfers: data?.transfers || []
 	};
 	return convertedData;
