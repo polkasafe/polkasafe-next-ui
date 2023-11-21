@@ -30,16 +30,16 @@ export const convertSafePendingData = (data: any) => {
 	const convertedData: IQueuedTransactions = {
 		advancedDetails,
 		amount_token: data?.value || '0',
-		created_at: data.submissionDate,
-		data: data.data,
+		created_at: data?.submissionDate,
+		data: data?.data,
 		dataDecoded: data?.dataDecoded || null,
-		executed: data.isExecuted,
-		network: data.network,
-		safeAddress: data.safe,
+		executed: data?.isExecuted,
+		network: data?.network,
+		safeAddress: data?.safe,
 		signatures:
 			data?.confirmations?.map((user: any) => ({ address: user?.owner || '', signature: user?.signature || '' })) || [],
-		to: data.to,
-		txHash: data.safeTxHash,
+		to: data?.to,
+		txHash: data?.safeTxHash,
 		type: data?.dataDecoded?.method || 'Sent'
 	};
 	return convertedData;

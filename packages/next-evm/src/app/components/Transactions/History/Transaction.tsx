@@ -27,6 +27,7 @@ import { TransactionData, getTransactionDetails } from '@safe-global/safe-gatewa
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { StaticImageData } from 'next/image';
 import formatBalance from '@next-evm/utils/formatBalance';
+import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import SentInfo from './SentInfo';
 import ReceivedInfo from './ReceivedInfo';
 
@@ -224,7 +225,11 @@ const Transaction: FC<IHistoryTransactions> = ({
 							'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
 						)}
 					>
-						<p className='col-span-3 flex items-center gap-x-3'>
+						<p
+							className={`${
+								(isFundType || isSentType) && !isMultiTokenTx ? 'col-span-5' : 'col-span-3'
+							} flex items-center gap-x-3`}
+						>
 							{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
 								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
 									<ArrowUpRightIcon />
@@ -234,20 +239,85 @@ const Transaction: FC<IHistoryTransactions> = ({
 									<ArrowDownLeftIcon />
 								</span>
 							)}
-							<span>
-								{type === 'ETHEREUM_TRANSACTION'
-									? 'Fund'
-									: type === 'Sent' || type === 'MULTISIG_TRANSACTION'
-									? 'Sent'
-									: type === 'removeOwner'
-									? 'Removed Owner'
-									: type === 'addOwnerWithThreshold'
-									? 'Added Owner'
-									: type}
+							<span className='w-full'>
+								{isFundType ? (
+									isMultiTokenTx ? (
+										'Received Multiple Tokens'
+									) : (
+										<p className='flex items-center grid grid-cols-8'>
+											<span className='col-span-1'>Received</span>
+											<div className='flex items-center col-span-7 gap-x-2'>
+												<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
+												<span className='font-normal text-xs leading-[13px] text-success'>
+													{formatBalance(
+														ethers?.utils?.formatUnits(
+															totalAmount?.toString() || amount_token?.toString(),
+															tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
+														)
+													)}{' '}
+													{tokenDetailsArray[0]?.tokenSymbol || token}
+												</span>
+												from{' '}
+												<AddressComponent
+													onlyAddress
+													address={receivedTransfers?.[0]?.from}
+												/>
+											</div>
+										</p>
+									)
+								) : isSentType ? (
+									isMultiTokenTx ? (
+										'Sent Multiple Tokens'
+									) : (
+										<p className='grid grid-cols-8 flex items-center'>
+											<span className='col-span-1'>Sent</span>
+											<div className='flex items-center col-span-7 gap-x-2'>
+												<ParachainIcon
+													src={
+														decodedCallData?.method === 'multiSend'
+															? tokenDetailsArray[0]?.tokenLogo
+															: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
+													}
+												/>
+												<span className='font-normal text-xs leading-[13px] text-failure'>
+													{'-'}{' '}
+													{formatBalance(
+														ethers?.utils?.formatUnits(
+															decodedCallData?.method === 'multiSend'
+																? totalAmount?.toString()
+																: txInfo?.transferInfo?.value || amount_token?.toString(),
+															decodedCallData?.method === 'multiSend'
+																? tokenDetailsArray[0]?.tokenDecimals
+																: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
+														)
+													)}{' '}
+													{decodedCallData?.method === 'multiSend'
+														? tokenDetailsArray[0]?.tokenSymbol
+														: txInfo?.transferInfo?.tokenSymbol || token}
+												</span>
+												To{' '}
+												{decodedCallData?.method === 'multiSend' ? (
+													'Multiple Addresses'
+												) : (
+													<AddressComponent
+														onlyAddress
+														address={txInfo?.recipient?.value || to.toString() || ''}
+													/>
+												)}
+											</div>
+										</p>
+									)
+								) : type === 'removeOwner' ? (
+									'Removed Owner'
+								) : type === 'addOwnerWithThreshold' ? (
+									'Added Owner'
+								) : (
+									type
+								)}
 							</span>
 						</p>
 						{isSentType ? (
-							isMultiTokenTx ? (
+							isMultiTokenTx && (
 								<div className='flex gap-x-2 col-span-2'>
 									{tokenDetailsArray.map((item) => (
 										<ParachainIcon
@@ -256,35 +326,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 										/>
 									))}
 								</div>
-							) : (
-								<p className='col-span-2 flex items-center gap-x-[6px]'>
-									<ParachainIcon
-										src={
-											decodedCallData?.method === 'multiSend'
-												? tokenDetailsArray[0]?.tokenLogo
-												: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
-										}
-									/>
-									<span className='font-normal text-xs leading-[13px] text-failure'>
-										{'-'}{' '}
-										{formatBalance(
-											ethers?.utils?.formatUnits(
-												decodedCallData?.method === 'multiSend'
-													? totalAmount?.toString()
-													: txInfo?.transferInfo?.value || amount_token?.toString(),
-												decodedCallData?.method === 'multiSend'
-													? tokenDetailsArray[0]?.tokenDecimals
-													: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
-											)
-										)}{' '}
-										{decodedCallData?.method === 'multiSend'
-											? tokenDetailsArray[0]?.tokenSymbol
-											: txInfo?.transferInfo?.tokenSymbol || token}
-									</span>
-								</p>
 							)
 						) : isFundType ? (
-							isMultiTokenTx ? (
+							isMultiTokenTx && (
 								<div className='flex gap-x-2 col-span-2'>
 									{tokenDetailsArray.map((item) => (
 										<ParachainIcon
@@ -293,20 +337,6 @@ const Transaction: FC<IHistoryTransactions> = ({
 										/>
 									))}
 								</div>
-							) : (
-								<p className='col-span-2 flex items-center gap-x-[6px]'>
-									<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
-									<span className='font-normal text-xs leading-[13px] text-success'>
-										{'+'}{' '}
-										{ethers?.utils
-											?.formatUnits(
-												totalAmount?.toString() || amount_token?.toString(),
-												tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
-											)
-											?.toString()}{' '}
-										{tokenDetailsArray[0]?.tokenSymbol || token}
-									</span>
-								</p>
 							)
 						) : (
 							<p className='col-span-2'>-</p>

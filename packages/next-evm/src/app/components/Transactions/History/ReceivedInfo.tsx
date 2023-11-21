@@ -46,7 +46,7 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 					transfers.map((item, i) => (
 						<>
 							<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
-								<span>Sent</span>
+								<span>Received</span>
 								<span className='text-failure'>
 									{item.value
 										? ethers.utils.formatUnits(

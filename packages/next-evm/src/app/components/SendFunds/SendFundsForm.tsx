@@ -392,7 +392,6 @@ const SendFundsForm = ({
 													) : (
 														<AutoComplete
 															autoFocus
-															defaultOpen
 															filterOption={(inputValue, options) => {
 																return inputValue && options?.value ? String(options?.value) === inputValue : true;
 															}}

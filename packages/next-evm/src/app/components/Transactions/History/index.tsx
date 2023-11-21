@@ -46,7 +46,6 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 					executed: true,
 					trusted: true
 				});
-				console.log(safeData);
 				const convertedData = safeData.results.map((safe: any) => convertSafeHistoryData({ ...safe, network }));
 				setTransactions(convertedData);
 				updateDB(UpdateDB.Update_History_Transaction, { transactions: convertedData }, address, network);
