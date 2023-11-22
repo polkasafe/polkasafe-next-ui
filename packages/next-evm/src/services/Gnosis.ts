@@ -21,6 +21,7 @@ import { NETWORK } from '@next-common/global/evm-network-constants';
 import createTokenTransferParams from '@next-evm/utils/createTokenTransaferParams';
 import getAllAssets from '@next-evm/utils/getAllAssets';
 import { IAsset } from '@next-common/types';
+import { _getMultiSendCallOnlyPayload, getSimulation } from '@next-evm/utils/simulation';
 
 (BigInt.prototype as any).toJSON = function () {
 	return this.toString();
@@ -150,6 +151,36 @@ export default class GnosisSafeService {
 		} catch (err) {
 			console.log(err);
 			// console.log('error from createSafeTx', err);
+			return null;
+		}
+	};
+
+	getTxSimulationData = async (
+		multisigAddress: string,
+		to: string[],
+		value: string[],
+		senderAddress: string,
+		tokens?: IAsset[],
+		chainId?: number
+	): Promise<any | null> => {
+		try {
+			const safeTransactionData: MetaTransactionData[] = createTokenTransferParams(to, value, tokens, true);
+			const safe = await this.getSafeInfoByAddress(multisigAddress);
+
+			const payload = await this.getSimulationPayload({
+				chainId,
+				executionOwner: senderAddress,
+				// gasLimit: 29534691,
+				gasLimit: 8000000,
+				safe,
+				transactions: safeTransactionData
+			});
+			const data = await getSimulation(payload);
+
+			console.log('simulate data', data);
+			return data;
+		} catch (error) {
+			console.log('error in simulate transaction', error);
 			return null;
 		}
 	};
@@ -377,5 +408,25 @@ export default class GnosisSafeService {
 			console.log('error from getMultisigData', err);
 			return null;
 		}
+	};
+
+	getSimulationPayload = async (params: any): Promise<any> => {
+		const { gasLimit } = params;
+
+		const payload =
+			params?.transactions?.length === 1
+				? { input: params?.transactions?.[0].data, to: params?.transactions?.[0].to }
+				: await _getMultiSendCallOnlyPayload(params, this.ethAdapter);
+
+		return {
+			...payload,
+			from: params.executionOwner,
+			gas: gasLimit,
+			// With gas price 0 account don't need token for gas
+			gas_price: '0',
+			network_id: params.chainId || 137,
+			save: true,
+			save_if_fails: true
+		};
 	};
 }

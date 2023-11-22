@@ -20,6 +20,7 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import Balance from '@next-evm/ui-components/Balance';
 import BalanceInput from '@next-evm/ui-components/BalanceInput';
 import {
+	CheckOutlined,
 	CircleArrowDownIcon,
 	DeleteIcon,
 	LineIcon,
@@ -33,6 +34,7 @@ import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
 import notify from '@next-evm/utils/notify';
 
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -94,6 +96,11 @@ const SendFundsForm = ({
 		category: string;
 		subfields: { [subfield: string]: { name: string; value: string } };
 	}>({ category: 'none', subfields: {} });
+
+	const [simulationLoading, setSimulationLoading] = useState<boolean>(false);
+
+	const [isSimulationSuccess, setIsSimulationSuccess] = useState<boolean>(false);
+	const [isSimulationFailed, setIsSimulationFailed] = useState<boolean>(false);
 
 	const onRecipientChange = (value: string, i: number) => {
 		setRecipientAndAmount((prevState) => {
@@ -208,6 +215,29 @@ const SendFundsForm = ({
 			}
 		});
 	}, [recipientAndAmount]);
+
+	const handleSimulate = async () => {
+		const recipients = recipientAndAmount.map((r) => r.recipient);
+		const amounts = recipientAndAmount.map((a) =>
+			ethers.utils.parseUnits(a.amount, a.token?.token_decimals || 'ether').toString()
+		);
+		const selectedTokens = recipientAndAmount.map((r) => r.token);
+		setSimulationLoading(true);
+		const simulationData = await gnosisSafe.getTxSimulationData(
+			activeMultisig,
+			recipients,
+			amounts,
+			address,
+			selectedTokens,
+			chainProperties[network].chainId
+		);
+		if (simulationData && simulationData?.simulation?.status) {
+			setIsSimulationSuccess(true);
+		} else if (simulationData && !simulationData?.simulation?.status) {
+			setIsSimulationFailed(true);
+		}
+		setSimulationLoading(false);
+	};
 
 	const handleSubmit = async () => {
 		setLoading(true);
@@ -470,6 +500,39 @@ const SendFundsForm = ({
 						</div>
 					</div>
 				</section>
+
+				{!recipientAndAmount.some(
+					(item) =>
+						item.recipient === '' ||
+						item.amount === '0' ||
+						Number.isNaN(Number(item.amount)) ||
+						!item.amount ||
+						Number(item.amount) === 0 ||
+						Number(item.amount) > Number(item.token.balance_token)
+				) && (
+					<section className='mt-[15px] w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
+						<span className='text-sm text-white'>Run a Simulation</span>
+						{isSimulationSuccess ? (
+							<span className='flex items-center gap-x-1 text-success'>
+								<CheckOutlined /> Success
+							</span>
+						) : isSimulationFailed ? (
+							<span className='flex items-center gap-x-1 text-failure'>
+								<OutlineCloseIcon /> Failed
+							</span>
+						) : (
+							<Button
+								onClick={handleSimulate}
+								title='Simulate'
+								loading={simulationLoading}
+								className='border-2 border-primary bg-highlight text-primary'
+								size='small'
+							>
+								Simulate
+							</Button>
+						)}
+					</section>
+				)}
 
 				<section className='mt-[15px] w-[500px]'>
 					<label className='text-primary font-normal text-xs block mb-[5px]'>Category*</label>
