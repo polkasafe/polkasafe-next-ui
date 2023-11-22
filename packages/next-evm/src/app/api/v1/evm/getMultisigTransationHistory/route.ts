@@ -20,7 +20,7 @@ export async function GET(req: Request) {
 		return NextResponse.json({ data: null, error: responseMessages.missing_headers }, { status: 400 });
 	}
 	const chainId = chainProperties[network]?.chainId;
-	if (chainId) {
+	if (!chainId) {
 		return NextResponse.json({ data: null, error: responseMessages.invalid_network }, { status: 400 });
 	}
 
