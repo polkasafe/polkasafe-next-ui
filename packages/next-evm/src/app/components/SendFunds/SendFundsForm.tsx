@@ -3,6 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import './style.css';
+import TenderlyIcon from '@next-common/assets/icons/tenderly-icon.png';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { AutoComplete, Button, Divider, Dropdown, Form, Input, Spin } from 'antd';
 import { DefaultOptionType } from 'antd/es/select';
@@ -35,6 +36,7 @@ import notify from '@next-evm/utils/notify';
 
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
+import Image from 'next/image';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -214,6 +216,8 @@ const SendFundsForm = ({
 				});
 			}
 		});
+		setIsSimulationFailed(false);
+		setIsSimulationSuccess(false);
 	}, [recipientAndAmount]);
 
 	const handleSimulate = async () => {
@@ -488,15 +492,6 @@ const SendFundsForm = ({
 									The beneficiary will have access to the transferred fees when the transaction is included in a block.
 								</p>
 							</article>
-							<article className='w-[412px] flex items-center'>
-								<span className='-mr-1.5 z-0'>
-									<LineIcon className='text-5xl' />
-								</span>
-								<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] -mb-5'>
-									If the recipient account is new, the balance needs to be more than the existential deposit. Likewise
-									if the sending account balance drops below the same value, the account will be removed from the state.
-								</p>
-							</article>
 						</div>
 					</div>
 				</section>
@@ -511,7 +506,17 @@ const SendFundsForm = ({
 						Number(item.amount) > Number(item.token.balance_token)
 				) && (
 					<section className='mt-[15px] w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
-						<span className='text-sm text-white'>Run a Simulation</span>
+						<div className='flex flex-col gap-y-1'>
+							<span className='text-sm text-white'>Run a Simulation</span>
+							<span className='text-xs text-text_secondary flex items-center gap-x-1'>
+								Powered by{' '}
+								<Image
+									src={TenderlyIcon}
+									alt='tenderly'
+									width={65}
+								/>
+							</span>
+						</div>
 						{isSimulationSuccess ? (
 							<span className='flex items-center gap-x-1 text-success'>
 								<CheckOutlined /> Success

@@ -19,25 +19,38 @@ const encodeERC20TransferData = (to: string, value: any): string => {
 const createTokenTransferParams = (
 	recipient: string[],
 	value: string[],
-	tokens?: IAsset[],
-	onlySimulate?: boolean
-): MetaTransactionData[] => {
-	return recipient.map((r, i) => {
-		if (tokens && tokens.length !== 0 && tokens?.[i]?.tokenAddress) {
+	tokens?: IAsset[]
+): MetaTransactionData | MetaTransactionData[] => {
+	if (recipient.length > 1) {
+		return recipient.map((r, i) => {
+			if (tokens && tokens.length !== 0 && tokens?.[i]?.tokenAddress) {
+				return {
+					data: encodeERC20TransferData(r, value[i] as any),
+					operation: OperationType.Call,
+					to: tokens[i].tokenAddress,
+					value: '0'
+				};
+			}
 			return {
-				data: encodeERC20TransferData(r, value[i] as any),
+				data: '0x',
 				operation: OperationType.Call,
-				to: tokens[i].tokenAddress,
-				value: '0'
+				to: r,
+				value: value[i]
 			};
-		}
+		}) as MetaTransactionData[];
+	}
+	if (tokens && tokens.length !== 0 && tokens?.[0]?.tokenAddress) {
 		return {
-			data: encodeERC20TransferData(r, value[i] as any),
-			operation: OperationType.Call,
-			to: r,
-			value: onlySimulate ? '0' : value[i]
-		};
-	});
+			data: encodeERC20TransferData(recipient[0], value[0] as any),
+			to: tokens[0].tokenAddress,
+			value: '0'
+		} as MetaTransactionData;
+	}
+	return {
+		data: '0x',
+		to: recipient[0],
+		value: value[0]
+	} as MetaTransactionData;
 };
 
 export default createTokenTransferParams;

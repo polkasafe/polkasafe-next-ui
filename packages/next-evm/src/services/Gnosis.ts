@@ -21,7 +21,13 @@ import { NETWORK } from '@next-common/global/evm-network-constants';
 import createTokenTransferParams from '@next-evm/utils/createTokenTransaferParams';
 import getAllAssets from '@next-evm/utils/getAllAssets';
 import { IAsset } from '@next-common/types';
-import { _getMultiSendCallOnlyPayload, getSimulation } from '@next-evm/utils/simulation';
+import {
+	_getMultiSendCallOnlyPayload,
+	_getSingleTransactionPayload,
+	_getStateOverride,
+	getSimulation,
+	getStateOverwrites
+} from '@next-evm/utils/simulation';
 
 (BigInt.prototype as any).toJSON = function () {
 	return this.toString();
@@ -121,7 +127,11 @@ export default class GnosisSafeService {
 			});
 			const signer = await this.ethAdapter.getSignerAddress();
 
-			const safeTransactionData: MetaTransactionData[] = createTokenTransferParams(to, value, tokens);
+			const safeTransactionData: MetaTransactionData | MetaTransactionData[] = createTokenTransferParams(
+				to,
+				value,
+				tokens
+			);
 
 			if (note) console.log(note);
 
@@ -164,16 +174,29 @@ export default class GnosisSafeService {
 		chainId?: number
 	): Promise<any | null> => {
 		try {
-			const safeTransactionData: MetaTransactionData[] = createTokenTransferParams(to, value, tokens, true);
-			const safe = await this.getSafeInfoByAddress(multisigAddress);
+			const safeSdk = await Safe.create({
+				ethAdapter: this.ethAdapter,
+				isL1SafeMasterCopy: true,
+				safeAddress: multisigAddress
+			});
+			const safeTransactionData: MetaTransactionData | MetaTransactionData[] = createTokenTransferParams(
+				to,
+				value,
+				tokens
+			);
+			const safeTransaction = await safeSdk.createTransaction({
+				onlyCalls: Array.isArray(safeTransactionData),
+				safeTransactionData
+			});
 
+			const safe = await this.getSafeInfoByAddress(multisigAddress);
 			const payload = await this.getSimulationPayload({
 				chainId,
 				executionOwner: senderAddress,
-				// gasLimit: 29534691,
 				gasLimit: 8000000,
 				safe,
-				transactions: safeTransactionData
+				safeAddress: multisigAddress,
+				transactions: safeTransaction
 			});
 			const data = await getSimulation(payload);
 
@@ -413,11 +436,12 @@ export default class GnosisSafeService {
 	getSimulationPayload = async (params: any): Promise<any> => {
 		const { gasLimit } = params;
 
-		const payload =
-			params?.transactions?.length === 1
-				? { input: params?.transactions?.[0].data, to: params?.transactions?.[0].to }
-				: await _getMultiSendCallOnlyPayload(params, this.ethAdapter);
+		const payload = !Array.isArray(params.transaction)
+			? await _getSingleTransactionPayload(params, this.ethAdapter)
+			: await _getMultiSendCallOnlyPayload(params, this.ethAdapter);
 
+		const stateOverwrites = getStateOverwrites(params);
+		const stateOverwritesLength = Object.keys(stateOverwrites).length;
 		return {
 			...payload,
 			from: params.executionOwner,
@@ -426,7 +450,11 @@ export default class GnosisSafeService {
 			gas_price: '0',
 			network_id: params.chainId || 137,
 			save: true,
-			save_if_fails: true
+			save_if_fails: true,
+			state_objects:
+				stateOverwritesLength > 0
+					? _getStateOverride(params.safeAddress, undefined, undefined, stateOverwrites)
+					: undefined
 		};
 	};
 }
