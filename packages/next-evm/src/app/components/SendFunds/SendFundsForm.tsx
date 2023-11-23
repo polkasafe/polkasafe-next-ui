@@ -220,6 +220,7 @@ const SendFundsForm = ({
 				});
 			}
 		});
+		setSimulationId('');
 		setIsSimulationFailed(false);
 		setIsSimulationSuccess(false);
 	}, [recipientAndAmount]);
