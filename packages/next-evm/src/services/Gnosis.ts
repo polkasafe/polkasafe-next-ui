@@ -21,6 +21,13 @@ import { NETWORK } from '@next-common/global/evm-network-constants';
 import createTokenTransferParams from '@next-evm/utils/createTokenTransaferParams';
 import getAllAssets from '@next-evm/utils/getAllAssets';
 import { IAsset } from '@next-common/types';
+import {
+	_getMultiSendCallOnlyPayload,
+	_getSingleTransactionPayload,
+	_getStateOverride,
+	getSimulation,
+	getStateOverwrites
+} from '@next-evm/utils/simulation';
 
 (BigInt.prototype as any).toJSON = function () {
 	return this.toString();
@@ -120,7 +127,11 @@ export default class GnosisSafeService {
 			});
 			const signer = await this.ethAdapter.getSignerAddress();
 
-			const safeTransactionData: MetaTransactionData[] = createTokenTransferParams(to, value, tokens);
+			const safeTransactionData: MetaTransactionData | MetaTransactionData[] = createTokenTransferParams(
+				to,
+				value,
+				tokens
+			);
 
 			if (note) console.log(note);
 
@@ -150,6 +161,49 @@ export default class GnosisSafeService {
 		} catch (err) {
 			console.log(err);
 			// console.log('error from createSafeTx', err);
+			return null;
+		}
+	};
+
+	getTxSimulationData = async (
+		multisigAddress: string,
+		to: string[],
+		value: string[],
+		senderAddress: string,
+		tokens?: IAsset[],
+		chainId?: number
+	): Promise<any | null> => {
+		try {
+			const safeSdk = await Safe.create({
+				ethAdapter: this.ethAdapter,
+				isL1SafeMasterCopy: true,
+				safeAddress: multisigAddress
+			});
+			const safeTransactionData: MetaTransactionData | MetaTransactionData[] = createTokenTransferParams(
+				to,
+				value,
+				tokens
+			);
+			const safeTransaction = await safeSdk.createTransaction({
+				onlyCalls: Array.isArray(safeTransactionData),
+				safeTransactionData
+			});
+
+			const safe = await this.getSafeInfoByAddress(multisigAddress);
+			const payload = await this.getSimulationPayload({
+				chainId,
+				executionOwner: senderAddress,
+				gasLimit: 8000000,
+				safe,
+				safeAddress: multisigAddress,
+				transactions: safeTransaction
+			});
+			const data = await getSimulation(payload);
+
+			console.log('simulate data', data);
+			return data;
+		} catch (error) {
+			console.log('error in simulate transaction', error);
 			return null;
 		}
 	};
@@ -377,5 +431,30 @@ export default class GnosisSafeService {
 			console.log('error from getMultisigData', err);
 			return null;
 		}
+	};
+
+	getSimulationPayload = async (params: any): Promise<any> => {
+		const { gasLimit } = params;
+
+		const payload = !Array.isArray(params.transaction)
+			? await _getSingleTransactionPayload(params, this.ethAdapter)
+			: await _getMultiSendCallOnlyPayload(params, this.ethAdapter);
+
+		const stateOverwrites = getStateOverwrites(params);
+		const stateOverwritesLength = Object.keys(stateOverwrites).length;
+		return {
+			...payload,
+			from: params.executionOwner,
+			gas: gasLimit,
+			// With gas price 0 account don't need token for gas
+			gas_price: '0',
+			network_id: params.chainId || 137,
+			save: true,
+			save_if_fails: true,
+			state_objects:
+				stateOverwritesLength > 0
+					? _getStateOverride(params.safeAddress, undefined, undefined, stateOverwrites)
+					: undefined
+		};
 	};
 }

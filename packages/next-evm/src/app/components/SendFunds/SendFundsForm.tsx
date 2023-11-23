@@ -3,6 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import './style.css';
+import TenderlyIcon from '@next-common/assets/icons/tenderly-icon.png';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { AutoComplete, Button, Divider, Dropdown, Form, Input, Spin } from 'antd';
 import { DefaultOptionType } from 'antd/es/select';
@@ -20,8 +21,10 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import Balance from '@next-evm/ui-components/Balance';
 import BalanceInput from '@next-evm/ui-components/BalanceInput';
 import {
+	CheckOutlined,
 	CircleArrowDownIcon,
 	DeleteIcon,
+	ExternalLinkIcon,
 	LineIcon,
 	OutlineCloseIcon,
 	SquareDownArrowIcon
@@ -33,6 +36,9 @@ import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
 import notify from '@next-evm/utils/notify';
 
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { chainProperties } from '@next-common/global/evm-network-constants';
+import Image from 'next/image';
+import { getSimulationLink } from '@next-evm/utils/simulation';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -94,6 +100,13 @@ const SendFundsForm = ({
 		category: string;
 		subfields: { [subfield: string]: { name: string; value: string } };
 	}>({ category: 'none', subfields: {} });
+
+	const [simulationLoading, setSimulationLoading] = useState<boolean>(false);
+
+	const [isSimulationSuccess, setIsSimulationSuccess] = useState<boolean>(false);
+	const [isSimulationFailed, setIsSimulationFailed] = useState<boolean>(false);
+
+	const [simulationId, setSimulationId] = useState<string>('');
 
 	const onRecipientChange = (value: string, i: number) => {
 		setRecipientAndAmount((prevState) => {
@@ -207,7 +220,35 @@ const SendFundsForm = ({
 				});
 			}
 		});
+		setSimulationId('');
+		setIsSimulationFailed(false);
+		setIsSimulationSuccess(false);
 	}, [recipientAndAmount]);
+
+	const handleSimulate = async () => {
+		const recipients = recipientAndAmount.map((r) => r.recipient);
+		const amounts = recipientAndAmount.map((a) =>
+			ethers.utils.parseUnits(a.amount, a.token?.token_decimals || 'ether').toString()
+		);
+		const selectedTokens = recipientAndAmount.map((r) => r.token);
+		setSimulationLoading(true);
+		const simulationData = await gnosisSafe.getTxSimulationData(
+			activeMultisig,
+			recipients,
+			amounts,
+			address,
+			selectedTokens,
+			chainProperties[network].chainId
+		);
+		if (simulationData && simulationData?.simulation?.status) {
+			setIsSimulationSuccess(true);
+			setSimulationId(simulationData?.simulation?.id);
+		} else if (simulationData && !simulationData?.simulation?.status) {
+			setIsSimulationFailed(true);
+			setSimulationId(simulationData?.simulation?.id);
+		}
+		setSimulationLoading(false);
+	};
 
 	const handleSubmit = async () => {
 		setLoading(true);
@@ -458,18 +499,77 @@ const SendFundsForm = ({
 									The beneficiary will have access to the transferred fees when the transaction is included in a block.
 								</p>
 							</article>
-							<article className='w-[412px] flex items-center'>
-								<span className='-mr-1.5 z-0'>
-									<LineIcon className='text-5xl' />
-								</span>
-								<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] -mb-5'>
-									If the recipient account is new, the balance needs to be more than the existential deposit. Likewise
-									if the sending account balance drops below the same value, the account will be removed from the state.
-								</p>
-							</article>
 						</div>
 					</div>
 				</section>
+
+				{!recipientAndAmount.some(
+					(item) =>
+						item.recipient === '' ||
+						item.amount === '0' ||
+						Number.isNaN(Number(item.amount)) ||
+						!item.amount ||
+						Number(item.amount) === 0 ||
+						Number(item.amount) > Number(item.token.balance_token)
+				) && (
+					<section className='mt-[15px] flex items-center gap-x-[10px]'>
+						<article className='w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
+							<div className='flex flex-col gap-y-1'>
+								<span className='text-sm text-white'>Run a Simulation</span>
+								<span className='text-xs text-text_secondary flex items-center gap-x-1'>
+									Powered by{' '}
+									<Image
+										src={TenderlyIcon}
+										alt='tenderly'
+										width={65}
+									/>
+								</span>
+							</div>
+							{isSimulationSuccess ? (
+								<span className='flex items-center gap-x-1 text-success'>
+									<CheckOutlined /> Success
+								</span>
+							) : isSimulationFailed ? (
+								<span className='flex items-center gap-x-1 text-failure'>
+									<OutlineCloseIcon /> Failed
+								</span>
+							) : (
+								<Button
+									onClick={handleSimulate}
+									title='Simulate'
+									loading={simulationLoading}
+									className='border-2 border-primary bg-highlight text-primary'
+									size='small'
+								>
+									Simulate
+								</Button>
+							)}
+						</article>
+						{simulationId && (
+							<article className='flex-1 flex items-center'>
+								<span className='-mr-1.5 z-0'>
+									<LineIcon className='text-5xl' />
+								</span>
+								<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] flex-1'>
+									<h2 className='text-base font-semibold mb-1 text-white'>
+										Simulation {isSimulationSuccess ? 'Successful' : 'Failed'}
+									</h2>
+									<div className='flex gap-x-1'>
+										You can check the full report{' '}
+										<a
+											className='text-primary font-semibold flex items-center gap-x-1'
+											target='_blank'
+											href={getSimulationLink(simulationId)}
+											rel='noreferrer'
+										>
+											on Tenderly <ExternalLinkIcon />
+										</a>
+									</div>
+								</p>
+							</article>
+						)}
+					</section>
+				)}
 
 				<section className='mt-[15px] w-[500px]'>
 					<label className='text-primary font-normal text-xs block mb-[5px]'>Category*</label>
