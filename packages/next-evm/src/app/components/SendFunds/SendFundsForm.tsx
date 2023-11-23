@@ -24,6 +24,7 @@ import {
 	CheckOutlined,
 	CircleArrowDownIcon,
 	DeleteIcon,
+	ExternalLinkIcon,
 	LineIcon,
 	OutlineCloseIcon,
 	SquareDownArrowIcon
@@ -37,6 +38,7 @@ import notify from '@next-evm/utils/notify';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import Image from 'next/image';
+import { getSimulationLink } from '@next-evm/utils/simulation';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -103,6 +105,8 @@ const SendFundsForm = ({
 
 	const [isSimulationSuccess, setIsSimulationSuccess] = useState<boolean>(false);
 	const [isSimulationFailed, setIsSimulationFailed] = useState<boolean>(false);
+
+	const [simulationId, setSimulationId] = useState<string>('');
 
 	const onRecipientChange = (value: string, i: number) => {
 		setRecipientAndAmount((prevState) => {
@@ -237,8 +241,10 @@ const SendFundsForm = ({
 		);
 		if (simulationData && simulationData?.simulation?.status) {
 			setIsSimulationSuccess(true);
+			setSimulationId(simulationData?.simulation?.id);
 		} else if (simulationData && !simulationData?.simulation?.status) {
 			setIsSimulationFailed(true);
+			setSimulationId(simulationData?.simulation?.id);
 		}
 		setSimulationLoading(false);
 	};
@@ -505,36 +511,61 @@ const SendFundsForm = ({
 						Number(item.amount) === 0 ||
 						Number(item.amount) > Number(item.token.balance_token)
 				) && (
-					<section className='mt-[15px] w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
-						<div className='flex flex-col gap-y-1'>
-							<span className='text-sm text-white'>Run a Simulation</span>
-							<span className='text-xs text-text_secondary flex items-center gap-x-1'>
-								Powered by{' '}
-								<Image
-									src={TenderlyIcon}
-									alt='tenderly'
-									width={65}
-								/>
-							</span>
-						</div>
-						{isSimulationSuccess ? (
-							<span className='flex items-center gap-x-1 text-success'>
-								<CheckOutlined /> Success
-							</span>
-						) : isSimulationFailed ? (
-							<span className='flex items-center gap-x-1 text-failure'>
-								<OutlineCloseIcon /> Failed
-							</span>
-						) : (
-							<Button
-								onClick={handleSimulate}
-								title='Simulate'
-								loading={simulationLoading}
-								className='border-2 border-primary bg-highlight text-primary'
-								size='small'
-							>
-								Simulate
-							</Button>
+					<section className='mt-[15px] flex items-center gap-x-[10px]'>
+						<article className='w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
+							<div className='flex flex-col gap-y-1'>
+								<span className='text-sm text-white'>Run a Simulation</span>
+								<span className='text-xs text-text_secondary flex items-center gap-x-1'>
+									Powered by{' '}
+									<Image
+										src={TenderlyIcon}
+										alt='tenderly'
+										width={65}
+									/>
+								</span>
+							</div>
+							{isSimulationSuccess ? (
+								<span className='flex items-center gap-x-1 text-success'>
+									<CheckOutlined /> Success
+								</span>
+							) : isSimulationFailed ? (
+								<span className='flex items-center gap-x-1 text-failure'>
+									<OutlineCloseIcon /> Failed
+								</span>
+							) : (
+								<Button
+									onClick={handleSimulate}
+									title='Simulate'
+									loading={simulationLoading}
+									className='border-2 border-primary bg-highlight text-primary'
+									size='small'
+								>
+									Simulate
+								</Button>
+							)}
+						</article>
+						{simulationId && (
+							<article className='flex-1 flex items-center'>
+								<span className='-mr-1.5 z-0'>
+									<LineIcon className='text-5xl' />
+								</span>
+								<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] flex-1'>
+									<h2 className='text-base font-semibold mb-1 text-white'>
+										Simulation {isSimulationSuccess ? 'Successful' : 'Failed'}
+									</h2>
+									<div className='flex gap-x-1'>
+										You can check the full report{' '}
+										<a
+											className='text-primary font-semibold flex items-center gap-x-1'
+											target='_blank'
+											href={getSimulationLink(simulationId)}
+											rel='noreferrer'
+										>
+											on Tenderly <ExternalLinkIcon />
+										</a>
+									</div>
+								</p>
+							</article>
 						)}
 					</section>
 				)}
