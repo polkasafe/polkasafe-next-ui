@@ -225,11 +225,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
 						)}
 					>
-						<p
-							className={`${
-								(isFundType || isSentType) && !isMultiTokenTx ? 'col-span-5' : 'col-span-3'
-							} flex items-center gap-x-3`}
-						>
+						<p className={`${isFundType || isSentType ? 'col-span-5' : 'col-span-3'} flex items-center gap-x-3`}>
 							{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
 								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
 									<ArrowUpRightIcon />
@@ -242,7 +238,15 @@ const Transaction: FC<IHistoryTransactions> = ({
 							<span className='w-full'>
 								{isFundType ? (
 									isMultiTokenTx ? (
-										'Received Multiple Tokens'
+										<div className='flex gap-x-2 items-center'>
+											Received Multiple Tokens
+											{tokenDetailsArray.map((item) => (
+												<ParachainIcon
+													tooltip={item.tokenSymbol}
+													src={item.tokenLogo}
+												/>
+											))}
+										</div>
 									) : (
 										<p className='flex items-center grid grid-cols-8'>
 											<span className='col-span-1'>Received</span>
@@ -251,7 +255,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 												<span className='font-normal text-xs leading-[13px] text-success'>
 													{formatBalance(
 														ethers?.utils?.formatUnits(
-															totalAmount?.toString() || amount_token?.toString(),
+															BigInt(totalAmount)?.toString() || amount_token?.toString(),
 															tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
 														)
 													)}{' '}
@@ -260,6 +264,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 												from{' '}
 												<AddressComponent
 													onlyAddress
+													iconSize={25}
+													withBadge={false}
 													address={receivedTransfers?.[0]?.from}
 												/>
 											</div>
@@ -267,7 +273,15 @@ const Transaction: FC<IHistoryTransactions> = ({
 									)
 								) : isSentType ? (
 									isMultiTokenTx ? (
-										'Sent Multiple Tokens'
+										<div className='flex gap-x-2 items-center'>
+											Sent Multiple Tokens
+											{tokenDetailsArray.map((item) => (
+												<ParachainIcon
+													tooltip={item.tokenSymbol}
+													src={item.tokenLogo}
+												/>
+											))}
+										</div>
 									) : (
 										<p className='grid grid-cols-8 flex items-center'>
 											<span className='col-span-1'>Sent</span>
@@ -284,7 +298,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 													{formatBalance(
 														ethers?.utils?.formatUnits(
 															decodedCallData?.method === 'multiSend'
-																? totalAmount?.toString()
+																? BigInt(totalAmount)?.toString()
 																: txInfo?.transferInfo?.value || amount_token?.toString(),
 															decodedCallData?.method === 'multiSend'
 																? tokenDetailsArray[0]?.tokenDecimals
@@ -300,7 +314,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 													'Multiple Addresses'
 												) : (
 													<AddressComponent
+														iconSize={25}
 														onlyAddress
+														withBadge={false}
 														address={txInfo?.recipient?.value || to.toString() || ''}
 													/>
 												)}
@@ -316,31 +332,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								)}
 							</span>
 						</p>
-						{isSentType ? (
-							isMultiTokenTx && (
-								<div className='flex gap-x-2 col-span-2'>
-									{tokenDetailsArray.map((item) => (
-										<ParachainIcon
-											tooltip={item.tokenSymbol}
-											src={item.tokenLogo}
-										/>
-									))}
-								</div>
-							)
-						) : isFundType ? (
-							isMultiTokenTx && (
-								<div className='flex gap-x-2 col-span-2'>
-									{tokenDetailsArray.map((item) => (
-										<ParachainIcon
-											tooltip={item.tokenSymbol}
-											src={item.tokenLogo}
-										/>
-									))}
-								</div>
-							)
-						) : (
-							<p className='col-span-2'>-</p>
-						)}
+						{!isSentType && !isFundType && <p className='col-span-2'>-</p>}
 						{created_at && <p className='col-span-2'>{new Date(created_at).toLocaleString()}</p>}
 						<p className='col-span-2 flex items-center justify-end gap-x-4'>
 							<span className='text-success'>Success</span>

@@ -64,7 +64,13 @@ const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, only
 			)}
 			{onlyAddress ? (
 				<div className='flex items-center gap-x-3 font-normal text-sm text-text_secondary'>
-					<span className='text-white'>{shortenAddress(address || '', 10)}</span>
+					<span className='text-white'>
+						{addressObj?.nickName ||
+							addressObj?.name ||
+							multisigAddresses.find((item) => item.address === address)?.name ||
+							records?.[address]?.name ||
+							shortenAddress(address || '', 10)}
+					</span>
 					<span className='flex items-center gap-x-2'>
 						<button onClick={() => copyText(address)}>
 							<CopyIcon className='hover:text-primary' />
@@ -84,7 +90,7 @@ const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, only
 						{name ||
 							addressObj?.nickName ||
 							addressObj?.name ||
-							multisigAddresses.find((item) => item.address === address || item.proxy === address)?.name ||
+							multisigAddresses.find((item) => item.address === address)?.name ||
 							records?.[address]?.name ||
 							DEFAULT_ADDRESS_NAME}
 					</div>

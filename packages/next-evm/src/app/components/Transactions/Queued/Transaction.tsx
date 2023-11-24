@@ -319,7 +319,7 @@ const Transaction: FC<ITransactionProps> = ({
 													{formatBalance(
 														ethers.utils.formatUnits(
 															decodedCallData?.method === 'multiSend'
-																? amount
+																? BigInt(amount).toString()
 																: txInfo?.transferInfo?.value || value || transactionDetails.amount_token,
 															decodedCallData?.method === 'multiSend'
 																? tokenDetailsArray[0]?.tokenDecimals
@@ -336,6 +336,8 @@ const Transaction: FC<ITransactionProps> = ({
 												) : (
 													<AddressComponent
 														onlyAddress
+														iconSize={25}
+														withBadge={false}
 														address={txInfo?.recipient?.value || recipientAddress || ''}
 													/>
 												)}
