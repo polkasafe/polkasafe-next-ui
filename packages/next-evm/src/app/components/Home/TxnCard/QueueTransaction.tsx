@@ -172,7 +172,9 @@ const QueueTransaction = ({ callHash, callData }: ITransactionProps) => {
 							<span className='font-normal text-xs leading-[13px] text-failure'>
 								{formatBalance(
 									ethers.utils.formatUnits(
-										decodedCallData?.method === 'multiSend' ? amount : txInfo?.transferInfo?.value || 0,
+										decodedCallData?.method === 'multiSend'
+											? BigInt(amount).toString()
+											: txInfo?.transferInfo?.value || 0,
 										decodedCallData?.method === 'multiSend'
 											? tokenDetailsArray[0]?.tokenDecimals
 											: txInfo?.transferInfo?.decimals || chainProperties[network].decimals

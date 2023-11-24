@@ -245,7 +245,7 @@ const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amoun
 									{'+'}{' '}
 									{formatBalance(
 										ethers?.utils?.formatUnits(
-											amount?.toString() || 0,
+											BigInt(amount)?.toString() || 0,
 											tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
 										)
 									)}{' '}

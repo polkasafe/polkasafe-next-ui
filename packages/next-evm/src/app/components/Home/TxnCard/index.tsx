@@ -11,8 +11,9 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
 import { convertSafeHistoryData, IHistoryTransactions } from '@next-evm/utils/convertSafeData/convertSafeHistory';
-import { convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
+import { IQueuedTransactions, convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
+import dayjs from 'dayjs';
 import QueueTransaction from './QueueTransaction';
 import HistoryTransaction from './HistoryTransaction';
 
@@ -20,7 +21,7 @@ const DEFAULT_TXN_CARD_LIMIT = 8;
 
 const TxnCard = () => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
-	const [queuedTransactions, setQueuedTransactions] = useState<any>([]);
+	const [queuedTransactions, setQueuedTransactions] = useState<IQueuedTransactions[]>([]);
 	const [completedTransactions, setCompletedTransactions] = useState<IHistoryTransactions[]>([]);
 	const { network } = useGlobalApiContext();
 	const [loading, setLoading] = useState<boolean>(false);
@@ -95,6 +96,7 @@ const TxnCard = () => {
 							queuedTransactions.length > 0 ? (
 								<div className='flex flex-col flex-1 overflow-y-auto'>
 									{queuedTransactions
+										.sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1))
 										.filter((_: any, i: number) => i < 10)
 										.map((transaction: any) => {
 											return (
@@ -139,6 +141,7 @@ const TxnCard = () => {
 							completedTransactions.length > 0 ? (
 								<div className='flex flex-col flex-1 overflow-y-auto'>
 									{completedTransactions
+										.sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1))
 										.filter((_: any, i: number) => i < 10)
 										// eslint-disable-next-line sonarjs/cognitive-complexity
 										.map((transaction) => {
