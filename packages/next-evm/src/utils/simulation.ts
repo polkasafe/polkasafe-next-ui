@@ -73,7 +73,7 @@ export const getSimulation = async (tx: any): Promise<any> => {
 	};
 
 	const data = await fetch(
-		'https://api.tenderly.co/api/v1/account/aadarsh012/project/polkasafe/simulate',
+		'https://api.tenderly.co/api/v1/account/aadarsh012/project/polka/simulate',
 		requestObject
 	).then(async (res) => {
 		if (res.ok) {
@@ -88,8 +88,40 @@ export const getSimulation = async (tx: any): Promise<any> => {
 	return data as any;
 };
 
+export const setSimulationSharing = async (simulationId: string): Promise<any> => {
+	const requestObject: RequestInit = {
+		headers: {
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			'content-type': 'application/JSON',
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			'X-Access-Key': process.env.NEXT_PUBLIC_POLKASAFE_TENDERLY_KEY
+		},
+		method: 'POST'
+	};
+
+	console.log('in setSimulationSharing');
+
+	const data = await fetch(
+		`https://api.tenderly.co/api/v1/account/aadarsh012/project/polka/simulations/${simulationId}/share`,
+		requestObject
+	).then(async (res) => {
+		if (res.ok) {
+			return res.json();
+		}
+		console.log('res', res);
+		// eslint-disable-next-line @typescript-eslint/no-shadow
+		return res.json().then((data) => {
+			console.log(`${res.status} - ${res.statusText}: ${data?.error?.message}`);
+		});
+	});
+
+	console.log(data);
+
+	return data as any;
+};
+
 export const getSimulationLink = (simulationId: string): string => {
-	return `https://dashboard.tenderly.co/public/aadarsh012/polkasafe/simulator/${simulationId}`;
+	return `https://dashboard.tenderly.co/aadarsh012/polka/simulator/${simulationId}`;
 };
 
 const getGnosisSafeContractEthers = (safeAddress: string, chainId: number, version: string, ethAdapter: any): any => {
