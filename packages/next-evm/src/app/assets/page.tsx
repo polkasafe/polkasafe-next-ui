@@ -10,15 +10,17 @@ import AssetsTable from '@next-evm/app/components/Assets/AssetsTable';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
-import { currencies } from '@next-common/global/currencyConstants';
 import { useState } from 'react';
+import Loader from '@next-common/ui-components/Loader';
+import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 import ChangeCurrency from '../components/Assets/ChangeCurrency';
 
 const Assets = () => {
 	const { address: userAddress } = useGlobalUserDetailsContext();
-	const { allAssets } = useMultisigAssetsContext();
-	const [currency, setCurrency] = useState<string>(currencies.UNITED_STATES_DOLLAR);
+	const { allAssets, loadingAssets } = useMultisigAssetsContext();
+	const { currency: globalCurrency } = useGlobalCurrencyContext();
+	const [currency, setCurrency] = useState<string>(globalCurrency);
 
 	return (
 		<div className='h-[70vh] bg-bg-main rounded-lg'>
@@ -34,11 +36,15 @@ const Assets = () => {
 							setCurrency={setCurrency}
 						/>
 					</div>
-					<div className='mx-5'>
-						<AssetsTable
-							currency={currency}
-							assets={allAssets}
-						/>
+					<div className='mx-5 h-full'>
+						{loadingAssets ? (
+							<Loader size='large' />
+						) : (
+							<AssetsTable
+								currency={currency}
+								assets={allAssets}
+							/>
+						)}
 					</div>
 				</div>
 			) : (
