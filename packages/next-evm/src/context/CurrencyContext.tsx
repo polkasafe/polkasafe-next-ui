@@ -22,7 +22,7 @@ export interface CurrencyContextProviderProps {
 
 export function CurrencyContextProvider({ children }: CurrencyContextProviderProps): ReactNode {
 	const [allCurrencyPrices, setAllCurrencyPrices] = useState<{ [symbol: string]: { code: string; value: number } }>({});
-	const prevCurrency = typeof window !== undefined && localStorage.getItem('currency');
+	const prevCurrency = typeof window !== 'undefined' && localStorage.getItem('currency');
 	const defaultCurrency = Object.values(currencies).includes(prevCurrency)
 		? prevCurrency
 		: currencies.UNITED_STATES_DOLLAR;
