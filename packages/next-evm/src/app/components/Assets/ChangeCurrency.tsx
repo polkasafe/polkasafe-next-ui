@@ -9,6 +9,7 @@ import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 
 import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import ModalBtn from '../Multisig/ModalBtn';
 
 export const CurrencyFlag = ({ src, className }: { src: string; className?: string }) => {
@@ -29,10 +30,11 @@ const ChangeCurrency = ({
 	setCurrency
 }: {
 	className?: string;
-	currency: string;
-	setCurrency: React.Dispatch<React.SetStateAction<string>>;
+	currency?: string;
+	setCurrency?: React.Dispatch<React.SetStateAction<string>>;
 }) => {
 	const [openCurrencyChangedModal, setOpenCurrencyChangedModal] = useState<boolean>(false);
+	const { currency: globalCurrency, setCurrency: setGlobalCurrency } = useGlobalCurrencyContext();
 
 	const currencyOptions: ItemType[] = Object.values(currencies).map((c) => ({
 		key: c,
@@ -45,9 +47,15 @@ const ChangeCurrency = ({
 	}));
 
 	const onCurrencyChange = (e: any) => {
-		setCurrency(e.key);
-		localStorage.setItem('currency', e.key);
-		setOpenCurrencyChangedModal(true);
+		if (setCurrency) {
+			setCurrency(e.key);
+		} else {
+			setGlobalCurrency(e.key);
+			setOpenCurrencyChangedModal(true);
+			if (typeof window !== 'undefined') {
+				localStorage.setItem('currency', e.key);
+			}
+		}
 	};
 
 	return (
@@ -59,7 +67,7 @@ const ChangeCurrency = ({
 			>
 				<Form className='my-0 w-[560px]'>
 					<p className='text-white font-medium text-sm leading-[15px]'>
-						Your default Currency has been changed to {currencyProperties[currency].symbol}
+						Your default Currency has been changed to {currencyProperties[globalCurrency].symbol}
 					</p>
 					<div className='flex items-center justify-center gap-x-5 mt-[30px]'>
 						<ModalBtn
@@ -79,8 +87,8 @@ const ChangeCurrency = ({
 			>
 				<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
 					<span className='flex items-center gap-x-2'>
-						<CurrencyFlag src={currencyProperties[currency].logo} />
-						{currency} ({currencyProperties[currency].symbol})
+						<CurrencyFlag src={currencyProperties[currency || globalCurrency].logo} />
+						{currency || globalCurrency} ({currencyProperties[currency || globalCurrency].symbol})
 					</span>
 					<CircleArrowDownIcon className='text-primary' />
 				</div>

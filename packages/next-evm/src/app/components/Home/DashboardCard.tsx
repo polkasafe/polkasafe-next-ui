@@ -3,14 +3,13 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { PlusCircleOutlined } from '@ant-design/icons';
-import { Spin, Tooltip } from 'antd';
-import { ethers } from 'ethers';
-import React, { useState } from 'react';
+import { Skeleton, Tooltip } from 'antd';
+import React, { useEffect, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import AddressQr from '@next-common/ui-components/AddressQr';
-import { CopyIcon, QRIcon, AssetsIcon } from '@next-common/ui-components/CustomIcons';
+import { CopyIcon, QRIcon, AssetsIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
@@ -19,6 +18,10 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FundMultisig from '@next-evm/app/components/SendFunds/FundMultisig';
 import SendFundsForm from '@next-evm/app/components/SendFunds/SendFundsForm';
 import { chainProperties } from '@next-common/global/evm-network-constants';
+import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import formatBalance from '@next-evm/utils/formatBalance';
+import { currencyProperties } from '@next-common/global/currencyConstants';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IDashboardCard {
@@ -37,10 +40,20 @@ const DashboardCard = ({
 	setOpenTransactionModal
 }: IDashboardCard) => {
 	const { activeMultisig, multisigAddresses, activeMultisigData, multisigSettings } = useGlobalUserDetailsContext();
+	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
+	const { allAssets, loadingAssets } = useMultisigAssetsContext();
 	const { network } = useGlobalApiContext();
 
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
 	const currentMultisig = multisigAddresses?.find((item) => item.address === activeMultisig);
+	const [totalAssetValue, setTotalAssetValue] = useState<string>('');
+
+	useEffect(() => {
+		if (allAssets && allAssets.length > 0) {
+			const total = allAssets.reduce((sum, asset) => sum + Number(asset.balance_usd), 0);
+			setTotalAssetValue(total.toString());
+		}
+	}, [allAssets]);
 
 	return (
 		<>
@@ -114,6 +127,14 @@ const DashboardCard = ({
 								>
 									<CopyIcon className='text-primary' />
 								</button>
+								<a
+									href={`${chainProperties[network].blockExplorer}/address/${activeMultisig}`}
+									target='_blank'
+									rel='noreferrer'
+									className='text-primary mr-1'
+								>
+									<ExternalLinkIcon />
+								</a>
 								{currentMultisig?.address && (
 									<Tooltip
 										placement='right'
@@ -135,29 +156,36 @@ const DashboardCard = ({
 					</div>
 				</div>
 				<div className='flex gap-x-5 flex-wrap text-xs'>
-					<div>
-						<div className='text-white'>Signatories</div>
-						<div className='font-bold text-lg text-primary'>
-							{activeMultisigData?.signatories?.length
-								? activeMultisigData?.signatories?.length
-								: currentMultisig?.signatories.length || 0}
-						</div>
-					</div>
-					<div>
-						<div className='text-white'>{chainProperties[network].tokenSymbol}</div>
-						<div className='font-bold text-lg text-primary'>
-							{!activeMultisigData?.safeBalance ? (
-								<Spin size='default' />
-							) : (
-								ethers.utils
-									.formatEther(activeMultisigData.safeBalance.toString())
-									.split('')
-									.slice(0, 5)
-									.join('')
-									.replace(/\d(?=(\d{3})+\.)/g, '$&,')
-							)}
-						</div>
-					</div>
+					{loadingAssets ? (
+						<Skeleton
+							paragraph={{ rows: 1, width: 150 }}
+							active
+						/>
+					) : (
+						<>
+							<div>
+								<div className='text-white'>Signatories</div>
+								<div className='font-bold text-lg text-primary'>
+									{activeMultisigData?.signatories?.length
+										? activeMultisigData?.signatories?.length
+										: currentMultisig?.signatories.length || 0}
+								</div>
+							</div>
+							<div>
+								<div className='text-white'>Tokens</div>
+								<div className='font-bold text-lg text-primary'>{allAssets?.length || 0}</div>
+							</div>
+							<div>
+								<div className='text-white'>Total Asset Value</div>
+								<div className='font-bold text-lg text-primary'>
+									{formatBalance(
+										Number(totalAssetValue) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+									)}{' '}
+									{currencyProperties[currency].symbol}
+								</div>
+							</div>
+						</>
+					)}
 					{/* <div>
 						<div className='text-white'>USD Amount</div>
 						<div className='font-bold text-lg text-primary'>

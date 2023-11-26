@@ -10,11 +10,13 @@ import { useGlobalApiContext } from './ApiContext';
 
 export interface IMultisigAssetsContext {
 	allAssets: IAsset[];
+	loadingAssets: boolean;
 	setMultisigAssetsContextState: React.Dispatch<React.SetStateAction<IAsset[]>>;
 }
 
 export const initialMultisigAssetsContext: IMultisigAssetsContext = {
 	allAssets: [],
+	loadingAssets: false,
 	setMultisigAssetsContextState: (): void => {
 		throw new Error('setMultisigAssetsContextState function must be overridden');
 	}
@@ -28,12 +30,14 @@ export function useMultisigAssetsContext() {
 
 export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): ReactNode => {
 	const [allAssets, setAllAssets] = useState<IAsset[]>([]);
+	const [loading, setLoading] = useState<boolean>(false);
 
 	const { activeMultisig, gnosisSafe } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 
 	const handleGetAssets = useCallback(async () => {
 		try {
+			setLoading(true);
 			const tokenInfo = await gnosisSafe.getMultisigAllAssets(network, activeMultisig);
 			const assets: IAsset[] = tokenInfo.map((token: any) => ({
 				balance_token: token.balance / 10 ** (token?.token?.decimals || chainProperties[network].decimals),
@@ -45,8 +49,10 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 				token_decimals: token?.token?.decimals || chainProperties[network].decimals
 			}));
 			setAllAssets(assets);
+			setLoading(false);
 		} catch (error) {
 			console.log('ERROR', error);
+			setLoading(false);
 		}
 	}, [activeMultisig, gnosisSafe, network]);
 
@@ -54,7 +60,10 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 		handleGetAssets();
 	}, [handleGetAssets]);
 
-	const value = useMemo(() => ({ allAssets, setMultisigAssetsContextState: setAllAssets }), [allAssets]);
+	const value = useMemo(
+		() => ({ allAssets, loadingAssets: loading, setMultisigAssetsContextState: setAllAssets }),
+		[allAssets, loading]
+	);
 
 	return <MultisigAssetsContext.Provider value={value}>{children}</MultisigAssetsContext.Provider>;
 };
