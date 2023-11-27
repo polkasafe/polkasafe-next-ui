@@ -38,7 +38,7 @@ import notify from '@next-evm/utils/notify';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import Image from 'next/image';
-import { getSimulationLink } from '@next-evm/utils/simulation';
+import { getSimulationLink, setSimulationSharing } from '@next-evm/utils/simulation';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -241,9 +241,11 @@ const SendFundsForm = ({
 			chainProperties[network].chainId
 		);
 		if (simulationData && simulationData?.simulation?.status) {
+			await setSimulationSharing(simulationData?.simulation?.id);
 			setIsSimulationSuccess(true);
 			setSimulationId(simulationData?.simulation?.id);
 		} else if (simulationData && !simulationData?.simulation?.status) {
+			await setSimulationSharing(simulationData?.simulation?.id);
 			setIsSimulationFailed(true);
 			setSimulationId(simulationData?.simulation?.id);
 		}
