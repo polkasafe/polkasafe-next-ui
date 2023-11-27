@@ -13,7 +13,12 @@ import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import { ITransaction, NotificationStatus } from '@next-common/types';
-import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
+import {
+	ArrowUpRightIcon,
+	CircleArrowDownIcon,
+	CircleArrowUpIcon,
+	OutlineCloseIcon
+} from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
@@ -25,7 +30,9 @@ import { TransactionData, getTransactionDetails } from '@safe-global/safe-gatewa
 import { StaticImageData } from 'next/image';
 import formatBalance from '@next-evm/utils/formatBalance';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 import SentInfo from './SentInfo';
+import ReplaceTxnModal from './ReplaceTxnModal';
 
 export interface ITransactionProps {
 	date: Date;
@@ -39,6 +46,7 @@ export interface ITransactionProps {
 	txType?: any;
 	recipientAddress?: string;
 	advancedDetails: any;
+	refetchTxns: () => void;
 }
 
 const Transaction: FC<ITransactionProps> = ({
@@ -52,7 +60,8 @@ const Transaction: FC<ITransactionProps> = ({
 	onAfterApprove,
 	onAfterExecute,
 	txType,
-	recipientAddress
+	recipientAddress,
+	refetchTxns
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
@@ -71,7 +80,6 @@ const Transaction: FC<ITransactionProps> = ({
 	const router = useRouter();
 
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
-	const [callDataString] = useState<string>(callData || '');
 	const [transactionDetails, setTransactionDetails] = useState<ITransaction>({} as any);
 
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
@@ -85,6 +93,8 @@ const Transaction: FC<ITransactionProps> = ({
 	const token = chainProperties[network].tokenSymbol;
 	// const hash = location.hash.slice(1);
 	const [transactionDetailsLoading, setTransactionDetailsLoading] = useState<boolean>(false);
+
+	const [openReplaceTxnModal, setOpenReplaceTxnModal] = useState<boolean>(false);
 
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
 
@@ -260,6 +270,17 @@ const Transaction: FC<ITransactionProps> = ({
 			bordered={false}
 			defaultActiveKey={[`${urlHash}`]}
 		>
+			<ModalComponent
+				title='Replace Transaction'
+				onCancel={() => setOpenReplaceTxnModal(false)}
+				open={openReplaceTxnModal}
+			>
+				<ReplaceTxnModal
+					onCancel={() => setOpenReplaceTxnModal(false)}
+					txNonce={advancedDetails?.nonce || 0}
+					refetchTxns={refetchTxns}
+				/>
+			</ModalComponent>
 			<Collapse.Panel
 				showArrow={false}
 				key={`${callHash}`}
@@ -286,7 +307,13 @@ const Transaction: FC<ITransactionProps> = ({
 											: 'bg-success text-red-500'
 									} bg-opacity-10 p-[10px] rounded-lg`}
 								>
-									<ArrowUpRightIcon />
+									{txInfo?.type === 'Custom' && txInfo?.isCancellation ? (
+										<span className='flex items-center justify-center p-1 border border-failure rounded-full w-[15px] h-[15px]'>
+											<OutlineCloseIcon className='w-[6px] h-[6px]' />
+										</span>
+									) : (
+										<ArrowUpRightIcon />
+									)}
 								</span>
 
 								<span>
@@ -294,6 +321,8 @@ const Transaction: FC<ITransactionProps> = ({
 										'Adding New Owner'
 									) : txType === 'removeOwner' ? (
 										'Removing Owner'
+									) : txInfo?.type === 'Custom' && txInfo?.isCancellation ? (
+										'On-chain Rejection'
 									) : txType === 'Sent' || txType === 'transfer' || txType === 'multiSend' ? (
 										isMultiTokenTx ? (
 											<div className='flex gap-x-2'>
@@ -403,7 +432,6 @@ const Transaction: FC<ITransactionProps> = ({
 								  )
 								: txInfo?.recipient?.value || recipientAddress || ''
 						}
-						callDataString={callDataString}
 						callData={callData}
 						date={date}
 						approvals={approvals}
@@ -420,6 +448,8 @@ const Transaction: FC<ITransactionProps> = ({
 						tokenDecimals={txInfo?.transferInfo?.decimals}
 						multiSendTokens={tokenDetailsArray}
 						advancedDetails={advancedDetails}
+						isRejectionTxn={txInfo?.type === 'Custom' && txInfo?.isCancellation}
+						setOpenReplaceTxnModal={setOpenReplaceTxnModal}
 					/>
 				</div>
 			</Collapse.Panel>

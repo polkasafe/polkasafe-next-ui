@@ -20,7 +20,6 @@ interface IQueued {
 	setRefetch: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 	const { address, activeMultisig, setActiveMultisigData, activeMultisigData, gnosisSafe } =
 		useGlobalUserDetailsContext();
@@ -126,6 +125,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 								txType={transaction.type}
 								recipientAddress={transaction.to}
 								advancedDetails={transaction.advancedDetails}
+								refetchTxns={() => setRefetch((prev) => !prev)}
 							/>
 						</section>
 					);

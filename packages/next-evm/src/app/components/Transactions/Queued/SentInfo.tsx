@@ -13,11 +13,13 @@ import { chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,
+	CheckOutlined,
 	CircleCheckIcon,
 	CirclePlusIcon,
 	CircleWatchIcon,
 	CopyIcon,
-	EditIcon
+	EditIcon,
+	OutlineCloseIcon
 } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
@@ -39,7 +41,6 @@ interface ISentInfoProps {
 	className?: string;
 	callHash: string;
 	callData: string;
-	callDataString: string;
 	recipientAddress?: string | string[];
 	handleApproveTransaction: () => Promise<void>;
 	handleCancelTransaction: () => Promise<void>;
@@ -56,6 +57,8 @@ interface ISentInfoProps {
 		tokenAddress: string;
 	}[];
 	advancedDetails: any;
+	isRejectionTxn?: boolean;
+	setOpenReplaceTxnModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -65,7 +68,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 	transactionFields,
 	className,
 	callData,
-	callDataString,
 	callHash,
 	recipientAddress,
 	date,
@@ -80,7 +82,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 	tokenSymbol,
 	tokenDecimals,
 	multiSendTokens,
-	advancedDetails
+	advancedDetails,
+	isRejectionTxn,
+	setOpenReplaceTxnModal
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { network } = useGlobalApiContext();
@@ -138,6 +142,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 			</ModalComponent>
 			<article className='p-4 rounded-lg bg-bg-main flex-1'>
 				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') &&
+					!isRejectionTxn &&
 					recipientAddress &&
 					amount &&
 					(typeof recipientAddress === 'string' ? (
@@ -185,8 +190,19 @@ const SentInfo: FC<ISentInfoProps> = ({
 				{/* {!callData &&
 					<Input size='large' placeholder='Enter Call Data.' className='w-full my-2 text-sm font-normal leading-[15px] border-0 outline-0 placeholder:text-[#505050] bg-bg-secondary rounded-md text-white' onChange={(e) => setCallDataString(e.target.value)} />
 				} */}
-				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && (
+				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && !isRejectionTxn && (
 					<Divider className='bg-text_secondary my-5' />
+				)}
+				{isRejectionTxn && (
+					<div>
+						<section className='mb-4 text-sm border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
+							<p className='text-white'>
+								This is an on-chain rejection that won&apos;t send any funds. Executing this on-chain rejection will
+								replace all currently awaiting transactions with nonce {advancedDetails?.nonce || '0'}.
+							</p>
+						</section>
+						<Divider className='bg-text_secondary my-5' />
+					</div>
 				)}
 				<div className='flex items-center gap-x-5 mt-3 justify-between'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Created at:</span>
@@ -426,13 +442,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 						{/* {console.log(approvals)} */}
 						{!approvals.includes(userAddress) ? (
 							<Button
-								disabled={approvals.includes(userAddress) || (approvals.length === threshold - 1 && !callDataString)}
+								disabled={approvals.includes(userAddress)}
 								loading={loading}
+								icon={<CheckOutlined className='text-white' />}
 								onClick={handleApproveTransaction}
 								className={`w-full border-none text-sm font-normal ${
-									approvals.includes(userAddress) || (approvals.length === threshold - 1 && !callDataString)
-										? 'bg-highlight text-text_secondary'
-										: 'bg-primary text-white'
+									approvals.includes(userAddress) ? 'bg-highlight text-text_secondary' : 'bg-primary text-white'
 								}`}
 							>
 								Approve Transaction
@@ -441,6 +456,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							threshold === approvals.length && (
 								<Button
 									loading={loading}
+									icon={<CheckOutlined className='text-white' />}
 									onClick={handleExecuteTransaction}
 									className='w-full border-none text-sm font-normal bg-primary text-white'
 								>
@@ -448,6 +464,18 @@ const SentInfo: FC<ISentInfoProps> = ({
 								</Button>
 							)
 						)}
+						<Button
+							disabled={loading}
+							icon={
+								<span className='flex items-center justify-center p-1 border border-failure rounded-full w-[15px] h-[15px]'>
+									<OutlineCloseIcon className='w-[6px] h-[6px]' />
+								</span>
+							}
+							onClick={() => setOpenReplaceTxnModal(true)}
+							className='w-full border-none text-sm font-normal bg-failure bg-opacity-10 text-failure'
+						>
+							Replace Transaction
+						</Button>
 					</div>
 				</div>
 			</article>

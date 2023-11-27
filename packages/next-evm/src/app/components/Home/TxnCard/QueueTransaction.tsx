@@ -4,7 +4,7 @@
 
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { chainProperties } from '@next-common/global/evm-network-constants';
-import { ArrowUpRightIcon } from '@next-common/ui-components/CustomIcons';
+import { ArrowUpRightIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
@@ -134,11 +134,21 @@ const QueueTransaction = ({ callHash, callData }: ITransactionProps) => {
 		>
 			<div className='flex flex-1 items-center'>
 				<div className='bg-[#FF79F2] text-[#FF79F2] bg-opacity-10 rounded-lg h-[38px] w-[38px] flex items-center justify-center'>
-					<ArrowUpRightIcon />
+					{txInfo?.type === 'Custom' && txInfo?.isCancellation ? (
+						<span className='flex items-center justify-center p-1 border border-failure rounded-full text-failure w-[15px] h-[15px]'>
+							<OutlineCloseIcon className='w-[6px] h-[6px]' />
+						</span>
+					) : (
+						<ArrowUpRightIcon />
+					)}
 				</div>
 				<div className='ml-3'>
 					<h1 className='text-md text-white'>
-						<span>Txn: {shortenAddress(callHash)}</span>
+						{txInfo?.type === 'Custom' && txInfo?.isCancellation ? (
+							<span>On-chain Rejection</span>
+						) : (
+							<span>Txn: {shortenAddress(callHash)}</span>
+						)}
 					</h1>
 					<p className='text-text_secondary text-xs'>In Process...</p>
 				</div>
@@ -151,7 +161,7 @@ const QueueTransaction = ({ callHash, callData }: ITransactionProps) => {
 							paragraph={{ rows: 0, width: 150 }}
 							active
 						/>
-					) : isMultiTokenTx ? (
+					) : txInfo?.type === 'Custom' && txInfo?.isCancellation ? null : isMultiTokenTx ? (
 						<div className='flex gap-x-2 col-span-2'>
 							{tokenDetailsArray.map((item) => (
 								<ParachainIcon

@@ -102,6 +102,46 @@ export default class GnosisSafeService {
 		}
 	};
 
+	createRejectTransactionByNonce = async (
+		txNonce: number,
+		multisigAddress: string,
+		senderAddress: string
+	): Promise<string | null> => {
+		try {
+			const safeSdk = await Safe.create({
+				ethAdapter: this.ethAdapter,
+				isL1SafeMasterCopy: true,
+				safeAddress: multisigAddress
+			});
+			const signer = await this.ethAdapter.getSignerAddress();
+
+			const rejectionTransaction = await safeSdk.createRejectionTransaction(txNonce);
+			const safeTxHash = await safeSdk.getTransactionHash(rejectionTransaction);
+			let signature = (await safeSdk.signTransaction(rejectionTransaction)) as any;
+
+			signature = Object.fromEntries(signature.signatures.entries());
+			console.log(
+				multisigAddress,
+				rejectionTransaction.data,
+				safeTxHash,
+				senderAddress,
+				signature[signer.toLowerCase()].data
+			);
+			await this.safeService.proposeTransaction({
+				safeAddress: multisigAddress,
+				safeTransactionData: rejectionTransaction.data as any,
+				safeTxHash,
+				senderAddress,
+				senderSignature: signature[signer.toLowerCase()].data
+			});
+
+			return safeTxHash;
+		} catch (err) {
+			console.log('error from createRejectTransactionByNonce', err);
+			return null;
+		}
+	};
+
 	getSafeCreationInfo = async (safeAddress: string): Promise<SafeCreationInfoResponse | null> => {
 		try {
 			return await this.safeService.getSafeCreationInfo(safeAddress);
@@ -117,7 +157,8 @@ export default class GnosisSafeService {
 		value: string[],
 		senderAddress: string,
 		note?: string,
-		tokens?: IAsset[]
+		tokens?: IAsset[],
+		nonce?: number
 	): Promise<string | null> => {
 		try {
 			const safeSdk = await Safe.create({
@@ -136,6 +177,7 @@ export default class GnosisSafeService {
 			if (note) console.log(note);
 
 			const safeTransaction = await safeSdk.createTransaction({
+				options: { nonce },
 				safeTransactionData
 			});
 			const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);

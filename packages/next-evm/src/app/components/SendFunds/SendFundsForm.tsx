@@ -55,6 +55,7 @@ interface ISendFundsFormProps {
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
 	defaultSelectedAddress?: string;
 	defaultToken?: IAsset;
+	defaultTxNonce?: number;
 }
 
 const SendFundsForm = ({
@@ -62,6 +63,7 @@ const SendFundsForm = ({
 	onCancel,
 	defaultSelectedAddress,
 	setNewTxn,
+	defaultTxNonce,
 	defaultToken // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
 	const { activeMultisig, addressBook, address, gnosisSafe, multisigAddresses, transactionFields, activeMultisigData } =
@@ -266,7 +268,8 @@ const SendFundsForm = ({
 				amounts,
 				address,
 				note,
-				selectedTokens
+				selectedTokens,
+				defaultTxNonce
 			);
 
 			if (safeTxHash) {
@@ -533,7 +536,10 @@ const SendFundsForm = ({
 								</span>
 							) : isSimulationFailed ? (
 								<span className='flex items-center gap-x-1 text-failure'>
-									<OutlineCloseIcon /> Failed
+									<span className='flex items-center justify-center p-2 border border-failure rounded-full w-[14.33px] h-[14.33px]'>
+										<OutlineCloseIcon className='w-[5px] h-[5px]' />
+									</span>{' '}
+									Failed
 								</span>
 							) : (
 								<Button
