@@ -13,11 +13,13 @@ import SendFundsForm from '../../SendFunds/SendFundsForm';
 const ReplaceTxnModal = ({
 	txNonce,
 	onCancel,
-	refetchTxns
+	refetchTxns,
+	canCancelTx
 }: {
 	txNonce: number;
 	onCancel: () => void;
 	refetchTxns: () => void;
+	canCancelTx: boolean;
 }) => {
 	const [sendTokens, setSendTokens] = useState<boolean>(false);
 	const [loading, setLoading] = useState<boolean>(false);
@@ -71,14 +73,27 @@ const ReplaceTxnModal = ({
 				</Button>
 				<span className='text-sm'>OR</span>
 				<div className='flex items-center gap-x-2'>
-					<Button
-						size='large'
-						className='border-2 border-primary font-normal bg-transparent text-primary'
-						onClick={onRejectTxn}
-						loading={loading}
+					<Tooltip
+						title={
+							!canCancelTx ? (
+								<div className='text-text_secondary text-xs'>
+									<div>Transaction with nonce {txNonce} already has a reject transaction</div>
+								</div>
+							) : null
+						}
 					>
-						Reject Transaction
-					</Button>
+						<Button
+							size='large'
+							className={`border-2 ${
+								!canCancelTx ? 'border-text_secondary text-text_secondary' : 'border-primary text-primary'
+							} font-normal bg-transparent`}
+							onClick={onRejectTxn}
+							loading={loading}
+							disabled={!canCancelTx}
+						>
+							Reject Transaction
+						</Button>
+					</Tooltip>
 					<Tooltip
 						title={
 							<div className='text-text_secondary text-xs'>
