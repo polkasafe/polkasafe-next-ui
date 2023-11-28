@@ -438,7 +438,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							</div>
 						</Timeline.Item>
 					</Timeline>
-					<div className='w-full mt-3 flex flex-col gap-y-2 items-center'>
+					<div className='w-full mt-3 flex flex-col gap-y-3 items-center'>
 						{/* {console.log(approvals)} */}
 						{!approvals.includes(userAddress) ? (
 							<Button

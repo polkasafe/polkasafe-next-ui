@@ -4,8 +4,8 @@
 
 import './style.css';
 import TenderlyIcon from '@next-common/assets/icons/tenderly-icon.png';
-import { PlusCircleOutlined } from '@ant-design/icons';
-import { AutoComplete, Button, Divider, Dropdown, Form, Input, Spin } from 'antd';
+import { PlusCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { AutoComplete, Button, Divider, Dropdown, Form, Input, Spin, Tooltip } from 'antd';
 import { DefaultOptionType } from 'antd/es/select';
 import classNames from 'classnames';
 import { ethers } from 'ethers';
@@ -520,7 +520,22 @@ const SendFundsForm = ({
 					<section className='mt-[15px] flex items-center gap-x-[10px]'>
 						<article className='w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
 							<div className='flex flex-col gap-y-1'>
-								<span className='text-sm text-white'>Run a Simulation</span>
+								<span className='text-sm text-white flex items-center gap-x-2'>
+									Run a Simulation
+									<Tooltip
+										title={
+											<div className='text-text_secondary text-xs'>
+												<div>
+													Before executing this transaction, it can undergo a simulation to ensure its success,
+													generating a comprehensive report detailing the execution of the transaction.
+												</div>
+											</div>
+										}
+										placement='bottom'
+									>
+										<InfoCircleOutlined className='text-text_secondary' />
+									</Tooltip>
+								</span>
 								<span className='text-xs text-text_secondary flex items-center gap-x-1'>
 									Powered by{' '}
 									<Image

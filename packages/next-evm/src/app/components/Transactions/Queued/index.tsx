@@ -26,6 +26,8 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueuedTransactions[]>([]);
 	const { network } = useGlobalApiContext();
 
+	const [canCancelTx, setCanCancelTx] = useState<boolean>(true);
+
 	const handleAfterApprove = (callHash: string) => {
 		const payload = queuedTransactions.map((queue) => {
 			return queue.txHash === callHash ? { ...queue, signatures: [...(queue.signatures || []), { address }] } : queue;
@@ -126,6 +128,8 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 								recipientAddress={transaction.to}
 								advancedDetails={transaction.advancedDetails}
 								refetchTxns={() => setRefetch((prev) => !prev)}
+								canCancelTx={canCancelTx}
+								setCanCancelTx={setCanCancelTx}
 							/>
 						</section>
 					);

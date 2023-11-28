@@ -47,6 +47,8 @@ export interface ITransactionProps {
 	recipientAddress?: string;
 	advancedDetails: any;
 	refetchTxns: () => void;
+	canCancelTx: boolean;
+	setCanCancelTx: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const Transaction: FC<ITransactionProps> = ({
@@ -61,7 +63,9 @@ const Transaction: FC<ITransactionProps> = ({
 	onAfterExecute,
 	txType,
 	recipientAddress,
-	refetchTxns
+	refetchTxns,
+	canCancelTx,
+	setCanCancelTx
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
@@ -105,6 +109,10 @@ const Transaction: FC<ITransactionProps> = ({
 
 		setTxData(txDetails.txData);
 		setTxInfo(txDetails.txInfo);
+
+		if (txDetails.txInfo.type === 'Custom' && txDetails.txInfo.isCancellation) {
+			setCanCancelTx(false);
+		}
 
 		const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
 			`${EVM_API_URL}/getTransactionDetailsEth`,
@@ -279,6 +287,7 @@ const Transaction: FC<ITransactionProps> = ({
 					onCancel={() => setOpenReplaceTxnModal(false)}
 					txNonce={advancedDetails?.nonce || 0}
 					refetchTxns={refetchTxns}
+					canCancelTx={canCancelTx}
 				/>
 			</ModalComponent>
 			<Collapse.Panel
