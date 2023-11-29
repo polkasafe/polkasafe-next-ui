@@ -8,7 +8,6 @@ import { ArrowUpRightIcon, OutlineCloseIcon } from '@next-common/ui-components/C
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import shortenAddress from '@next-evm/utils/shortenAddress';
 import { getTransactionDetails, TransactionData } from '@safe-global/safe-gateway-typescript-sdk';
 import { StaticImageData } from 'next/image';
 import { ethers } from 'ethers';
@@ -16,23 +15,28 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from 'antd';
 import formatBalance from '@next-evm/utils/formatBalance';
+import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 interface ITransactionProps {
 	callHash: string;
 	callData: string;
+	txType: string;
+	recipientAddress?: string;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const QueueTransaction = ({ callHash, callData }: ITransactionProps) => {
+const QueueTransaction = ({ callHash, callData, txType, recipientAddress }: ITransactionProps) => {
 	const { network } = useGlobalApiContext();
 	const { allAssets } = useMultisigAssetsContext();
 	const { gnosisSafe } = useGlobalUserDetailsContext();
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [txInfo, setTxInfo] = useState<any>({} as any);
+
+	const [isRejectionTxn, setIsRejectionTxn] = useState<boolean>(false);
+
+	const [isCustomTxn, setIsCustomTxn] = useState<boolean>(false);
 
 	const [decodedCallData, setDecodedCallData] = useState<any>({});
 
@@ -51,6 +55,17 @@ const QueueTransaction = ({ callHash, callData }: ITransactionProps) => {
 			const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), callHash);
 			setTxData(txDetails.txData);
 			setTxInfo(txDetails.txInfo);
+			if (
+				txDetails?.txInfo?.type === 'Custom' &&
+				txDetails?.txInfo?.richDecodedInfo &&
+				txDetails?.txInfo?.richDecodedInfo?.fragments
+			) {
+				setIsCustomTxn(true);
+			}
+
+			if (txDetails?.txInfo?.type === 'Custom' && txDetails?.txInfo?.isCancellation) {
+				setIsRejectionTxn(true);
+			}
 			setLoading(false);
 		} catch (err) {
 			console.log(err);
@@ -132,71 +147,101 @@ const QueueTransaction = ({ callHash, callData }: ITransactionProps) => {
 			href={`/transactions?tab=Queue#${callHash}`}
 			className='flex items-center pb-2 mb-2'
 		>
-			<div className='flex flex-1 items-center'>
-				<div className='bg-[#FF79F2] text-[#FF79F2] bg-opacity-10 rounded-lg h-[38px] w-[38px] flex items-center justify-center'>
-					{txInfo?.type === 'Custom' && txInfo?.isCancellation ? (
-						<span className='flex items-center justify-center p-1 border border-failure rounded-full text-failure w-[15px] h-[15px]'>
+			<div className='flex flex-1 gap-x-3 items-center text-white'>
+				<span
+					className={`flex items-center justify-center w-9 h-9 ${
+						txType === 'addOwnerWithThreshold' || txType === 'removeOwner'
+							? 'bg-[#FF79F2] text-[#FF79F2]'
+							: 'bg-success text-red-500'
+					} bg-opacity-10 p-[10px] rounded-lg`}
+				>
+					{isRejectionTxn ? (
+						<span className='flex items-center justify-center p-1 border border-failure rounded-full w-[15px] h-[15px]'>
 							<OutlineCloseIcon className='w-[6px] h-[6px]' />
 						</span>
 					) : (
 						<ArrowUpRightIcon />
 					)}
-				</div>
-				<div className='ml-3'>
-					<h1 className='text-md text-white'>
-						{txInfo?.type === 'Custom' && txInfo?.isCancellation ? (
-							<span>On-chain Rejection</span>
-						) : (
-							<span>Txn: {shortenAddress(callHash)}</span>
-						)}
-					</h1>
-					<p className='text-text_secondary text-xs'>In Process...</p>
-				</div>
-			</div>
-
-			<div>
-				<h1 className='text-md text-white'>
+				</span>
+				<span className='w-full'>
 					{loading ? (
 						<Skeleton
 							paragraph={{ rows: 0, width: 150 }}
 							active
 						/>
-					) : txInfo?.type === 'Custom' && txInfo?.isCancellation ? null : isMultiTokenTx ? (
-						<div className='flex gap-x-2 col-span-2'>
-							{tokenDetailsArray.map((item) => (
+					) : txType === 'addOwnerWithThreshold' ? (
+						'Adding New Owner'
+					) : txType === 'removeOwner' ? (
+						'Removing Owner'
+					) : isRejectionTxn ? (
+						'On-chain Rejection'
+					) : txType === 'Sent' || txType === 'transfer' || txType === 'multiSend' ? (
+						isMultiTokenTx ? (
+							<div className='flex gap-x-2'>
+								Send Multiple Tokens
+								{tokenDetailsArray.map((item) => (
+									<ParachainIcon
+										tooltip={item.tokenSymbol}
+										src={item.tokenLogo}
+									/>
+								))}
+							</div>
+						) : (
+							<p className='flex items-center gap-x-2'>
+								Send
 								<ParachainIcon
-									tooltip={item.tokenSymbol}
-									src={item.tokenLogo}
+									src={
+										decodedCallData?.method === 'multiSend'
+											? tokenDetailsArray[0]?.tokenLogo
+											: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
+									}
 								/>
+								<span className='font-normal text-xs leading-[13px] text-failure'>
+									{formatBalance(
+										ethers.utils.formatUnits(
+											decodedCallData?.method === 'multiSend'
+												? BigInt(amount).toString()
+												: txInfo?.transferInfo?.value || 0,
+											decodedCallData?.method === 'multiSend'
+												? tokenDetailsArray[0]?.tokenDecimals
+												: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
+										)
+									)}{' '}
+									{decodedCallData?.method === 'multiSend'
+										? tokenDetailsArray[0]?.tokenSymbol
+										: txInfo?.transferInfo?.tokenSymbol || chainProperties[network].tokenSymbol}
+								</span>
+								To{' '}
+								{decodedCallData.method === 'multiSend' ? (
+									'Multiple Addresses'
+								) : (
+									<AddressComponent
+										onlyAddress
+										iconSize={25}
+										withBadge={false}
+										address={txInfo?.recipient?.value || recipientAddress || ''}
+									/>
+								)}
+							</p>
+						)
+					) : isCustomTxn ? (
+						<p className='flex items-center gap-x-2'>
+							{txInfo?.richDecodedInfo?.fragments?.map((item: any) => (
+								<span className='flex items-center gap-x-2'>
+									{item.type === 'text' ? (
+										item.value
+									) : item.type === 'tokenValue' ? (
+										<>
+											<ParachainIcon src={item?.logoUri} /> {formatBalance(item?.value)} {item?.symbol}
+										</>
+									) : null}
+								</span>
 							))}
-						</div>
-					) : (
-						<p className='col-span-2 flex items-center gap-x-[6px]'>
-							<ParachainIcon
-								src={
-									decodedCallData?.method === 'multiSend'
-										? tokenDetailsArray[0]?.tokenLogo
-										: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
-								}
-							/>
-							<span className='font-normal text-xs leading-[13px] text-failure'>
-								{formatBalance(
-									ethers.utils.formatUnits(
-										decodedCallData?.method === 'multiSend'
-											? BigInt(amount).toString()
-											: txInfo?.transferInfo?.value || 0,
-										decodedCallData?.method === 'multiSend'
-											? tokenDetailsArray[0]?.tokenDecimals
-											: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
-									)
-								)}{' '}
-								{decodedCallData?.method === 'multiSend'
-									? tokenDetailsArray[0]?.tokenSymbol
-									: txInfo?.transferInfo?.tokenSymbol || chainProperties[network].tokenSymbol}
-							</span>
 						</p>
+					) : (
+						'Custom Transaction'
 					)}
-				</h1>
+				</span>
 			</div>
 
 			<div className='flex justify-center items-center h-full px-2 text-text_secondary'>

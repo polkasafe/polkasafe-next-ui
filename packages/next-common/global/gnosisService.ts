@@ -29,6 +29,9 @@ const returnTxUrl = (network?: NETWORK): string => {
 	if (network === NETWORK.BNB) {
 		return 'https://safe-transaction-bsc.safe.global';
 	}
+	// if (network === NETWORK.ZETA_CHAIN) {
+	// return 'https://transaction-testnet.safe.zetachain.com/';
+	// }
 	return '';
 };
 

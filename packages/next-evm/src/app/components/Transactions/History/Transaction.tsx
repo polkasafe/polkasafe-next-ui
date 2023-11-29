@@ -16,7 +16,8 @@ import {
 	ArrowDownLeftIcon,
 	ArrowUpRightIcon,
 	CircleArrowDownIcon,
-	CircleArrowUpIcon
+	CircleArrowUpIcon,
+	OutlineCloseIcon
 } from '@next-common/ui-components/CustomIcons';
 import { IHistoryTransactions } from '@next-evm/utils/convertSafeData/convertSafeHistory';
 
@@ -70,6 +71,10 @@ const Transaction: FC<IHistoryTransactions> = ({
 		{ tokenSymbol: string; tokenDecimals: number; tokenLogo: StaticImageData | string; tokenAddress: string }[]
 	>([]);
 	const [isMultiTokenTx, setIsMultiTokenTx] = useState<boolean>(false);
+
+	const [isRejectionTxn, setIsRejectionTxn] = useState<boolean>(false);
+
+	const [isCustomTxn, setIsCustomTxn] = useState<boolean>(false);
 
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
 
@@ -168,6 +173,18 @@ const Transaction: FC<IHistoryTransactions> = ({
 	const getTxDetails = useCallback(async () => {
 		const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), txHash);
 
+		if (
+			txDetails?.txInfo?.type === 'Custom' &&
+			txDetails?.txInfo?.richDecodedInfo &&
+			txDetails?.txInfo?.richDecodedInfo?.fragments
+		) {
+			setIsCustomTxn(true);
+		}
+
+		if (txDetails?.txInfo?.type === 'Custom' && txDetails?.txInfo?.isCancellation) {
+			setIsRejectionTxn(true);
+		}
+
 		setTxData(txDetails.txData);
 		setTxInfo(txDetails.txInfo);
 	}, [txHash, network]);
@@ -228,7 +245,13 @@ const Transaction: FC<IHistoryTransactions> = ({
 						<p className={`${isFundType || isSentType ? 'col-span-5' : 'col-span-3'} flex items-center gap-x-3`}>
 							{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
 								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
-									<ArrowUpRightIcon />
+									{isRejectionTxn ? (
+										<span className='flex items-center justify-center p-1 border border-failure rounded-full w-[15px] h-[15px]'>
+											<OutlineCloseIcon className='w-[6px] h-[6px]' />
+										</span>
+									) : (
+										<ArrowUpRightIcon />
+									)}
 								</span>
 							) : (
 								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-green-500'>
@@ -282,6 +305,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 												/>
 											))}
 										</div>
+									) : isRejectionTxn ? (
+										'On-chain Rejection'
 									) : (
 										<p className='grid grid-cols-8 flex items-center'>
 											<span className='col-span-1'>Sent</span>
@@ -323,6 +348,20 @@ const Transaction: FC<IHistoryTransactions> = ({
 											</div>
 										</p>
 									)
+								) : isCustomTxn ? (
+									<p className='flex items-center gap-x-2'>
+										{txInfo?.richDecodedInfo?.fragments?.map((item: any) => (
+											<span className='flex items-center gap-x-2'>
+												{item.type === 'text' ? (
+													item.value
+												) : item.type === 'tokenValue' ? (
+													<>
+														<ParachainIcon src={item?.logoUri || ''} /> {formatBalance(item?.value)} {item?.symbol}
+													</>
+												) : null}
+											</span>
+										))}
+									</p>
 								) : type === 'removeOwner' ? (
 									'Removed Owner'
 								) : type === 'addOwnerWithThreshold' ? (
@@ -388,6 +427,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 							tokenSymbol={txInfo?.transferInfo?.tokenSymbol}
 							tokenDecimals={txInfo?.transferInfo?.decimals}
 							advancedDetails={advancedDetails}
+							isCustomTxn={isCustomTxn}
+							isRejectionTxn={isRejectionTxn}
 						/>
 					)}
 				</div>

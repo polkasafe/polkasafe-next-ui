@@ -2,6 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable sonarjs/cognitive-complexity */
 import { Collapse, Divider, Skeleton } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
@@ -95,10 +96,13 @@ const Transaction: FC<ITransactionProps> = ({
 	const [isMultiTokenTx, setIsMultiTokenTx] = useState<boolean>(false);
 
 	const token = chainProperties[network].tokenSymbol;
-	// const hash = location.hash.slice(1);
 	const [transactionDetailsLoading, setTransactionDetailsLoading] = useState<boolean>(false);
 
 	const [openReplaceTxnModal, setOpenReplaceTxnModal] = useState<boolean>(false);
+
+	const [isRejectionTxn, setIsRejectionTxn] = useState<boolean>(false);
+
+	const [isCustomTxn, setIsCustomTxn] = useState<boolean>(false);
 
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
 
@@ -109,6 +113,18 @@ const Transaction: FC<ITransactionProps> = ({
 
 		setTxData(txDetails.txData);
 		setTxInfo(txDetails.txInfo);
+
+		if (
+			txDetails?.txInfo?.type === 'Custom' &&
+			txDetails?.txInfo?.richDecodedInfo &&
+			txDetails?.txInfo?.richDecodedInfo?.fragments
+		) {
+			setIsCustomTxn(true);
+		}
+
+		if (txDetails?.txInfo?.type === 'Custom' && txDetails?.txInfo?.isCancellation) {
+			setIsRejectionTxn(true);
+		}
 
 		if (txDetails.txInfo.type === 'Custom' && txDetails.txInfo.isCancellation) {
 			setCanCancelTx(false);
@@ -124,6 +140,7 @@ const Transaction: FC<ITransactionProps> = ({
 			setTransactionDetails(getTransactionData);
 		}
 		setTransactionDetailsLoading(false);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [callHash, network]);
 	useEffect(() => {
 		getTxDetails();
@@ -316,7 +333,7 @@ const Transaction: FC<ITransactionProps> = ({
 											: 'bg-success text-red-500'
 									} bg-opacity-10 p-[10px] rounded-lg`}
 								>
-									{txInfo?.type === 'Custom' && txInfo?.isCancellation ? (
+									{isRejectionTxn ? (
 										<span className='flex items-center justify-center p-1 border border-failure rounded-full w-[15px] h-[15px]'>
 											<OutlineCloseIcon className='w-[6px] h-[6px]' />
 										</span>
@@ -330,7 +347,7 @@ const Transaction: FC<ITransactionProps> = ({
 										'Adding New Owner'
 									) : txType === 'removeOwner' ? (
 										'Removing Owner'
-									) : txInfo?.type === 'Custom' && txInfo?.isCancellation ? (
+									) : isRejectionTxn ? (
 										'On-chain Rejection'
 									) : txType === 'Sent' || txType === 'transfer' || txType === 'multiSend' ? (
 										isMultiTokenTx ? (
@@ -381,6 +398,20 @@ const Transaction: FC<ITransactionProps> = ({
 												)}
 											</p>
 										)
+									) : isCustomTxn ? (
+										<p className='flex items-center gap-x-2'>
+											{txInfo?.richDecodedInfo?.fragments?.map((item: any) => (
+												<span className='flex items-center gap-x-2'>
+													{item.type === 'text' ? (
+														item.value
+													) : item.type === 'tokenValue' ? (
+														<>
+															<ParachainIcon src={item?.logoUri} /> {formatBalance(item?.value)} {item?.symbol}
+														</>
+													) : null}
+												</span>
+											))}
+										</p>
 									) : (
 										'Custom Transaction'
 									)}
@@ -448,7 +479,6 @@ const Transaction: FC<ITransactionProps> = ({
 						loading={loading}
 						handleApproveTransaction={handleApproveTransaction}
 						handleExecuteTransaction={handleExecuteTransaction}
-						handleCancelTransaction={async () => {}}
 						note={transactionDetails.note || ''}
 						txType={txType}
 						transactionFields={transactionDetails.transactionFields}
@@ -457,7 +487,8 @@ const Transaction: FC<ITransactionProps> = ({
 						tokenDecimals={txInfo?.transferInfo?.decimals}
 						multiSendTokens={tokenDetailsArray}
 						advancedDetails={advancedDetails}
-						isRejectionTxn={txInfo?.type === 'Custom' && txInfo?.isCancellation}
+						isRejectionTxn={isRejectionTxn}
+						isCustomTxn={isCustomTxn}
 						setOpenReplaceTxnModal={setOpenReplaceTxnModal}
 					/>
 				</div>
