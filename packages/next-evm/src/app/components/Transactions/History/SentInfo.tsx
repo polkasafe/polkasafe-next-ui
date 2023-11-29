@@ -44,6 +44,8 @@ interface ISentInfoProps {
 		tokenLogo: StaticImageData | string;
 		tokenAddress: string;
 	}[];
+	isRejectionTxn?: boolean;
+	isCustomTxn?: boolean;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -62,7 +64,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 	transactionFields,
 	tokenDecimals,
 	tokenSymbol,
-	multiSendTokens
+	multiSendTokens,
+	isRejectionTxn,
+	isCustomTxn
 }) => {
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
@@ -76,6 +80,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 			<article className='p-4 rounded-lg bg-bg-main flex-1'>
 				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') &&
 					recipientAddress &&
+					!isRejectionTxn &&
+					!isCustomTxn &&
 					amount &&
 					(typeof recipientAddress === 'string' ? (
 						<>
@@ -119,6 +125,16 @@ const SentInfo: FC<ISentInfoProps> = ({
 								))}
 						</div>
 					))}
+				{isRejectionTxn && (
+					<div>
+						<section className='mb-4 text-sm border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
+							<p className='text-white'>
+								This is an on-chain rejection that won&apos;t send any funds. Executing this on-chain rejection will
+								replace all currently awaiting transactions with nonce {advancedDetails?.nonce || '0'}.
+							</p>
+						</section>
+					</div>
+				)}
 				<Divider className='bg-text_secondary my-5' />
 				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Executed By:</span>

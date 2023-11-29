@@ -104,6 +104,8 @@ const TxnCard = () => {
 													key={transaction.txHash}
 													callHash={transaction.txHash}
 													callData={transaction.data}
+													txType={transaction.type}
+													recipientAddress={transaction.to}
 												/>
 											);
 										})}
@@ -153,6 +155,7 @@ const TxnCard = () => {
 													receivedTransfers={transaction.receivedTransfers}
 													type={transaction.type}
 													amount_token={transaction.amount_token}
+													to={transaction.to}
 												/>
 											);
 										})}

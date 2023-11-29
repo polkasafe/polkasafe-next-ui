@@ -4,11 +4,10 @@
 
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { chainProperties } from '@next-common/global/evm-network-constants';
-import { ArrowDownLeftIcon, ArrowUpRightIcon } from '@next-common/ui-components/CustomIcons';
+import { ArrowDownLeftIcon, ArrowUpRightIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import shortenAddress from '@next-evm/utils/shortenAddress';
 import { getTransactionDetails, TransactionData } from '@safe-global/safe-gateway-typescript-sdk';
 import { StaticImageData } from 'next/image';
 import { ethers } from 'ethers';
@@ -16,6 +15,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from 'antd';
 import formatBalance from '@next-evm/utils/formatBalance';
+import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 interface IHistoryTransactions {
@@ -24,10 +24,18 @@ interface IHistoryTransactions {
 	type: string;
 	receivedTransfers?: any[];
 	amount_token: string;
+	to?: string;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amount_token }: IHistoryTransactions) => {
+const HistoryTransaction = ({
+	callHash,
+	callData,
+	type,
+	receivedTransfers,
+	amount_token,
+	to // eslint-disable-next-line sonarjs/cognitive-complexity
+}: IHistoryTransactions) => {
 	const { network } = useGlobalApiContext();
 	const { allAssets } = useMultisigAssetsContext();
 	const { gnosisSafe } = useGlobalUserDetailsContext();
@@ -51,12 +59,27 @@ const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amoun
 
 	const [loading, setLoading] = useState(false);
 
+	const [isRejectionTxn, setIsRejectionTxn] = useState<boolean>(false);
+
+	const [isCustomTxn, setIsCustomTxn] = useState<boolean>(false);
+
 	const getTxDetails = useCallback(async () => {
 		try {
 			setLoading(true);
 			const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), callHash);
 			setTxData(txDetails.txData);
 			setTxInfo(txDetails.txInfo);
+			if (
+				txDetails?.txInfo?.type === 'Custom' &&
+				txDetails?.txInfo?.richDecodedInfo &&
+				txDetails?.txInfo?.richDecodedInfo?.fragments
+			) {
+				setIsCustomTxn(true);
+			}
+
+			if (txDetails?.txInfo?.type === 'Custom' && txDetails?.txInfo?.isCancellation) {
+				setIsRejectionTxn(true);
+			}
 			setLoading(false);
 		} catch (err) {
 			console.log(err);
@@ -163,46 +186,82 @@ const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amoun
 	return (
 		<Link
 			href={`/transactions?tab=History#${callHash || ''}`}
-			className='flex items-center pb-2 mb-2'
+			className='flex items-center pb-2 mb-2 gap-x-3 text-white'
 			onClick={(e) => e.stopPropagation()}
 		>
-			<div className='flex flex-1 items-center'>
-				{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
-					<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
+			{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
+				<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
+					{isRejectionTxn ? (
+						<span className='flex items-center justify-center p-1 border border-failure rounded-full w-[15px] h-[15px]'>
+							<OutlineCloseIcon className='w-[6px] h-[6px]' />
+						</span>
+					) : (
 						<ArrowUpRightIcon />
-					</span>
-				) : (
-					<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-green-500'>
-						<ArrowDownLeftIcon />
-					</span>
-				)}
-				<div className='ml-3'>
-					<h1 className='text-md text-white'>
-						<span>Txn: {shortenAddress(callHash)} </span>
-					</h1>
-					<p className='text-text_secondary text-xs'>Completed</p>
-				</div>
-			</div>
-
-			<div>
-				<h1 className='text-md text-white'>
-					{loading ? (
-						<Skeleton
-							paragraph={{ rows: 0, width: 150 }}
-							active
-						/>
-					) : isSentType ? (
-						isMultiTokenTx ? (
-							<div className='flex gap-x-2 col-span-2'>
-								{tokenDetailsArray.map((item) => (
-									<ParachainIcon
-										tooltip={item.tokenSymbol}
-										src={item.tokenLogo}
-									/>
-								))}
+					)}
+				</span>
+			) : (
+				<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-green-500'>
+					<ArrowDownLeftIcon />
+				</span>
+			)}
+			<span className='flex-1'>
+				{loading ? (
+					<Skeleton
+						paragraph={{ rows: 0, width: 150 }}
+						active
+					/>
+				) : isFundType ? (
+					isMultiTokenTx ? (
+						<div className='flex gap-x-2 items-center'>
+							Received Multiple Tokens
+							{tokenDetailsArray.map((item) => (
+								<ParachainIcon
+									tooltip={item.tokenSymbol}
+									src={item.tokenLogo}
+								/>
+							))}
+						</div>
+					) : (
+						<p className='flex items-center grid grid-cols-8'>
+							<span className='col-span-1'>Received</span>
+							<div className='flex items-center col-span-7 gap-x-2'>
+								<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
+								<span className='font-normal text-xs leading-[13px] text-success'>
+									{formatBalance(
+										ethers?.utils?.formatUnits(
+											BigInt(amount)?.toString() || amount_token?.toString(),
+											tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
+										)
+									)}{' '}
+									{tokenDetailsArray[0]?.tokenSymbol || chainProperties[network].tokenSymbol}
+								</span>
+								from{' '}
+								<AddressComponent
+									onlyAddress
+									iconSize={25}
+									withBadge={false}
+									address={receivedTransfers?.[0]?.from}
+								/>
 							</div>
-						) : (
-							<p className='col-span-2 flex items-center gap-x-[6px]'>
+						</p>
+					)
+				) : isSentType ? (
+					isMultiTokenTx ? (
+						<div className='flex gap-x-2 items-center'>
+							Sent Multiple Tokens
+							{tokenDetailsArray.map((item) => (
+								<ParachainIcon
+									tooltip={item.tokenSymbol}
+									src={item.tokenLogo}
+								/>
+							))}
+						</div>
+					) : isRejectionTxn ? (
+						'On-chain Rejection'
+					) : (
+						<p className='grid grid-cols-8 flex items-center'>
+							<span className='col-span-1'>Sent</span>
+							<div className='flex items-center col-span-7 gap-x-2'>
 								<ParachainIcon
 									src={
 										decodedCallData?.method === 'multiSend'
@@ -215,8 +274,8 @@ const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amoun
 									{formatBalance(
 										ethers?.utils?.formatUnits(
 											decodedCallData?.method === 'multiSend'
-												? amount?.toString()
-												: txInfo?.transferInfo?.value || amount_token?.toString() || 0,
+												? BigInt(amount)?.toString()
+												: txInfo?.transferInfo?.value || amount_token?.toString(),
 											decodedCallData?.method === 'multiSend'
 												? tokenDetailsArray[0]?.tokenDecimals
 												: txInfo?.transferInfo?.decimals || chainProperties[network].decimals
@@ -226,38 +285,42 @@ const HistoryTransaction = ({ callHash, callData, type, receivedTransfers, amoun
 										? tokenDetailsArray[0]?.tokenSymbol
 										: txInfo?.transferInfo?.tokenSymbol || chainProperties[network].tokenSymbol}
 								</span>
-							</p>
-						)
-					) : isFundType ? (
-						isMultiTokenTx ? (
-							<div className='flex gap-x-2 col-span-2'>
-								{tokenDetailsArray.map((item) => (
-									<ParachainIcon
-										tooltip={item.tokenSymbol}
-										src={item.tokenLogo}
+								To{' '}
+								{decodedCallData?.method === 'multiSend' ? (
+									'Multiple Addresses'
+								) : (
+									<AddressComponent
+										iconSize={25}
+										onlyAddress
+										withBadge={false}
+										address={txInfo?.recipient?.value || to.toString() || ''}
 									/>
-								))}
+								)}
 							</div>
-						) : (
-							<p className='col-span-2 flex items-center gap-x-[6px]'>
-								<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
-								<span className='font-normal text-xs leading-[13px] text-success'>
-									{'+'}{' '}
-									{formatBalance(
-										ethers?.utils?.formatUnits(
-											BigInt(amount)?.toString() || 0,
-											tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
-										)
-									)}{' '}
-									{tokenDetailsArray[0]?.tokenSymbol || chainProperties[network].tokenSymbol}
-								</span>
-							</p>
-						)
-					) : (
-						<p className='col-span-2'>-</p>
-					)}
-				</h1>
-			</div>
+						</p>
+					)
+				) : isCustomTxn ? (
+					<p className='flex items-center gap-x-2'>
+						{txInfo?.richDecodedInfo?.fragments?.map((item: any) => (
+							<span className='flex items-center gap-x-2'>
+								{item.type === 'text' ? (
+									item.value
+								) : item.type === 'tokenValue' ? (
+									<>
+										<ParachainIcon src={item?.logoUri || ''} /> {formatBalance(item?.value)} {item?.symbol}
+									</>
+								) : null}
+							</span>
+						))}
+					</p>
+				) : type === 'removeOwner' ? (
+					'Removed Owner'
+				) : type === 'addOwnerWithThreshold' ? (
+					'Added Owner'
+				) : (
+					type
+				)}
+			</span>
 
 			<div className='flex justify-center items-center h-full px-2 text-text_secondary'>
 				<ArrowRightOutlined />

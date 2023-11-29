@@ -37,9 +37,11 @@ export enum NETWORK {
 	// MOONBEAM = 'moonbeam'
 	ARBITRUM = 'arbitrum',
 	OPTIMISM = 'optimism'
+	// ZETA_CHAIN = 'ZetaChain Athens-3 Testnet'
 }
 export const tokenSymbol = {
 	ASTR: 'ASTR',
+	// AZETA: 'AZETA',
 	BNB: 'BNB',
 	ETH: 'ETH',
 	GLMR: 'GLMR',
@@ -137,6 +139,17 @@ export const chainProperties: ChainPropType = {
 		tokenName: 'Gnosis Chain',
 		tokenSymbol: tokenSymbol.xDAI
 	}
+	// [NETWORK.ZETA_CHAIN]: {
+	// blockExplorer: 'https://explorer.zetachain.com',
+	// chainId: 7001,
+	// chainNamespace: CHAIN_NAMESPACES.EIP155,
+	// decimals: 18,
+	// displayName: 'ZetaChain Testnet',
+	// logo: gnosisChainLogo,
+	// rpcEndpoint: 'https://rpc.ankr.com/zetachain_evm_athens_testnet',
+	// tokenName: 'ZetaChain Testnet',
+	// tokenSymbol: tokenSymbol.AZETA
+	// }
 	// [NETWORK.MOONBEAM]: {
 	// blockExplorer: 'https://moonbeam-explorer.netlify.app/?network=Moonbeam',
 	// chainId: '0x504',

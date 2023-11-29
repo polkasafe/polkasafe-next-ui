@@ -5,8 +5,6 @@ import { Button, Collapse, Divider, Spin, Timeline } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
-import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
-import RemoveBtn from '@next-evm/app/components/Settings/RemoveBtn';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
@@ -43,7 +41,6 @@ interface ISentInfoProps {
 	callData: string;
 	recipientAddress?: string | string[];
 	handleApproveTransaction: () => Promise<void>;
-	handleCancelTransaction: () => Promise<void>;
 	handleExecuteTransaction: () => Promise<void>;
 	note: string;
 	txType?: string;
@@ -58,6 +55,7 @@ interface ISentInfoProps {
 	}[];
 	advancedDetails: any;
 	isRejectionTxn?: boolean;
+	isCustomTxn?: boolean;
 	setOpenReplaceTxnModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
@@ -75,7 +73,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 	loading,
 	threshold,
 	handleApproveTransaction,
-	handleCancelTransaction,
 	txType,
 	note,
 	transactionDetailsLoading,
@@ -84,6 +81,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 	multiSendTokens,
 	advancedDetails,
 	isRejectionTxn,
+	isCustomTxn,
 	setOpenReplaceTxnModal
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
@@ -91,7 +89,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 
 	const { address: userAddress, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
-	const [openCancelModal, setOpenCancelModal] = useState<boolean>(false);
 	const [updatedNote, setUpdatedNote] = useState(note);
 	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
 
@@ -105,29 +102,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 
 	return (
 		<div className={classNames('flex gap-x-4', className)}>
-			<ModalComponent
-				onCancel={() => setOpenCancelModal(false)}
-				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Cancel Transaction</h3>}
-				open={openCancelModal}
-			>
-				<div className='flex flex-col h-full'>
-					<div className='text-white'>Are you sure you want to cancel the Transaction?</div>
-					<div className='flex items-center justify-between mt-[40px]'>
-						<CancelBtn
-							title='No'
-							onClick={() => setOpenCancelModal(false)}
-						/>
-						<RemoveBtn
-							title='Yes, Cancel'
-							loading={loading}
-							onClick={() => {
-								handleCancelTransaction();
-								setOpenCancelModal(false);
-							}}
-						/>
-					</div>
-				</div>
-			</ModalComponent>
 			<ModalComponent
 				onCancel={() => setOpenEditNoteModal(false)}
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Add Note</h3>}
@@ -143,6 +117,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 			<article className='p-4 rounded-lg bg-bg-main flex-1'>
 				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') &&
 					!isRejectionTxn &&
+					!isCustomTxn &&
 					recipientAddress &&
 					amount &&
 					(typeof recipientAddress === 'string' ? (
@@ -190,7 +165,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 				{/* {!callData &&
 					<Input size='large' placeholder='Enter Call Data.' className='w-full my-2 text-sm font-normal leading-[15px] border-0 outline-0 placeholder:text-[#505050] bg-bg-secondary rounded-md text-white' onChange={(e) => setCallDataString(e.target.value)} />
 				} */}
-				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && !isRejectionTxn && (
+				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && !isCustomTxn && !isRejectionTxn && (
 					<Divider className='bg-text_secondary my-5' />
 				)}
 				{isRejectionTxn && (
