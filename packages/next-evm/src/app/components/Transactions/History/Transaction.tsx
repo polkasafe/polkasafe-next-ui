@@ -68,7 +68,13 @@ const Transaction: FC<IHistoryTransactions> = ({
 	const [txInfo, setTxInfo] = useState<any>({} as any);
 
 	const [tokenDetailsArray, setTokenDetailsArray] = useState<
-		{ tokenSymbol: string; tokenDecimals: number; tokenLogo: StaticImageData | string; tokenAddress: string }[]
+		{
+			tokenSymbol: string;
+			tokenDecimals: number;
+			tokenLogo: StaticImageData | string;
+			tokenAddress: string;
+			isFakeToken?: boolean;
+		}[]
 	>([]);
 	const [isMultiTokenTx, setIsMultiTokenTx] = useState<boolean>(false);
 
@@ -125,7 +131,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
+					const isFakeToken = !allAssets.some((asset) => asset.tokenAddress === item?.tokenInfo?.address);
 					tokenDetails.push({
+						isFakeToken,
 						tokenAddress: item?.tokenInfo?.address || '',
 						tokenDecimals: item?.tokenInfo?.decimals || chainProperties[network].decimals,
 						tokenLogo: item?.tokenInfo?.logoUri || chainProperties[network].logo,
@@ -221,7 +229,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 		}
 	};
 
-	return (
+	return tokenDetailsArray?.[0]?.isFakeToken && isFundType ? null : (
 		<Collapse
 			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'
 			bordered={false}
