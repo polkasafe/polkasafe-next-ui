@@ -17,8 +17,6 @@ import dayjs from 'dayjs';
 import QueueTransaction from './QueueTransaction';
 import HistoryTransaction from './HistoryTransaction';
 
-const DEFAULT_TXN_CARD_LIMIT = 8;
-
 const TxnCard = () => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueuedTransactions[]>([]);
@@ -31,7 +29,6 @@ const TxnCard = () => {
 		try {
 			const completedSafeData = await gnosisSafe.getAllTx(activeMultisig, {
 				executed: true,
-				limit: DEFAULT_TXN_CARD_LIMIT,
 				trusted: true
 			});
 			const safeData = await gnosisSafe.getPendingTx(activeMultisig);
@@ -144,7 +141,6 @@ const TxnCard = () => {
 								<div className='flex flex-col flex-1 overflow-y-auto'>
 									{completedTransactions
 										.sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1))
-										.filter((_: any, i: number) => i < 10)
 										// eslint-disable-next-line sonarjs/cognitive-complexity
 										.map((transaction) => {
 											return (

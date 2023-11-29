@@ -50,7 +50,13 @@ const HistoryTransaction = ({
 	const [amount, setAmount] = useState(0);
 
 	const [tokenDetailsArray, setTokenDetailsArray] = useState<
-		{ tokenSymbol: string; tokenDecimals: number; tokenLogo: StaticImageData | string; tokenAddress: string }[]
+		{
+			tokenSymbol: string;
+			tokenDecimals: number;
+			tokenLogo: StaticImageData | string;
+			tokenAddress: string;
+			isFakeToken?: boolean;
+		}[]
 	>([]);
 	const [isMultiTokenTx, setIsMultiTokenTx] = useState<boolean>(false);
 
@@ -138,7 +144,9 @@ const HistoryTransaction = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
+					const isFakeToken = !allAssets.some((asset) => asset.tokenAddress === item?.tokenInfo?.address);
 					tokenDetails.push({
+						isFakeToken,
 						tokenAddress: item?.tokenInfo?.address || '',
 						tokenDecimals: item?.tokenInfo?.decimals || chainProperties[network].decimals,
 						tokenLogo: item?.tokenInfo?.logoUri || chainProperties[network].logo,
@@ -183,7 +191,7 @@ const HistoryTransaction = ({
 		}
 	}, [tokenDetailsArray]);
 
-	return (
+	return tokenDetailsArray?.[0]?.isFakeToken && isFundType ? null : (
 		<Link
 			href={`/transactions?tab=History#${callHash || ''}`}
 			className='flex items-center pb-2 mb-2 gap-x-3 text-white'
