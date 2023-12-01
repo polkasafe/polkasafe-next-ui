@@ -23,10 +23,11 @@ interface ITransactionProps {
 	callData: string;
 	txType: string;
 	recipientAddress?: string;
+	value: string;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const QueueTransaction = ({ callHash, callData, txType, recipientAddress }: ITransactionProps) => {
+const QueueTransaction = ({ callHash, callData, txType, recipientAddress, value }: ITransactionProps) => {
 	const { network } = useGlobalApiContext();
 	const { allAssets } = useMultisigAssetsContext();
 	const { gnosisSafe } = useGlobalUserDetailsContext();
@@ -201,7 +202,7 @@ const QueueTransaction = ({ callHash, callData, txType, recipientAddress }: ITra
 										ethers.utils.formatUnits(
 											decodedCallData?.method === 'multiSend'
 												? BigInt(amount).toString()
-												: txInfo?.transferInfo?.value || 0,
+												: txInfo?.transferInfo?.value || value || 0,
 											decodedCallData?.method === 'multiSend'
 												? tokenDetailsArray[0]?.tokenDecimals
 												: txInfo?.transferInfo?.decimals || chainProperties[network].decimals

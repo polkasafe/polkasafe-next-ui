@@ -36,7 +36,7 @@ import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
 import notify from '@next-evm/utils/notify';
 
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import Image from 'next/image';
 import { getSimulationLink, setSimulationSharing } from '@next-evm/utils/simulation';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
@@ -275,7 +275,8 @@ const SendFundsForm = ({
 				address,
 				note,
 				selectedTokens,
-				defaultTxNonce
+				defaultTxNonce,
+				chainProperties[network].contractNetworks
 			);
 
 			if (safeTxHash) {
@@ -536,84 +537,87 @@ const SendFundsForm = ({
 						!item.amount ||
 						Number(item.amount) === 0 ||
 						Number(item.amount) > Number(item.token.balance_token)
-				) && (
-					<section className='mt-[15px] flex items-center gap-x-[10px]'>
-						<article className='w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
-							<div className='flex flex-col gap-y-1'>
-								<span className='text-sm text-white flex items-center gap-x-2'>
-									Run a Simulation
-									<Tooltip
-										title={
-											<div className='text-text_secondary text-xs'>
-												<div>
-													Before executing this transaction, it can undergo a simulation to ensure its success,
-													generating a comprehensive report detailing the execution of the transaction.
+				) &&
+					network !== NETWORK.ZETA_CHAIN && (
+						<section className='mt-[15px] flex items-center gap-x-[10px]'>
+							<article className='w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
+								<div className='flex flex-col gap-y-1'>
+									<span className='text-sm text-white flex items-center gap-x-2'>
+										Run a Simulation
+										<Tooltip
+											title={
+												<div className='text-text_secondary text-xs'>
+													<div>
+														Before executing this transaction, it can undergo a simulation to ensure its success,
+														generating a comprehensive report detailing the execution of the transaction.
+													</div>
 												</div>
-											</div>
-										}
-										placement='bottom'
-									>
-										<InfoCircleOutlined className='text-text_secondary' />
-									</Tooltip>
-								</span>
-								<span className='text-xs text-text_secondary flex items-center gap-x-1'>
-									Powered by{' '}
-									<Image
-										src={TenderlyIcon}
-										alt='tenderly'
-										width={65}
-									/>
-								</span>
-							</div>
-							{isSimulationSuccess ? (
-								<span className='flex items-center gap-x-1 text-success'>
-									<CheckOutlined /> Success
-								</span>
-							) : isSimulationFailed ? (
-								<span className='flex items-center gap-x-1 text-failure'>
-									<span className='flex items-center justify-center p-2 border border-failure rounded-full w-[14.33px] h-[14.33px]'>
-										<OutlineCloseIcon className='w-[5px] h-[5px]' />
-									</span>{' '}
-									Failed
-								</span>
-							) : (
-								<Button
-									onClick={handleSimulate}
-									title='Simulate'
-									loading={simulationLoading}
-									className='border-2 border-primary bg-highlight text-primary'
-									size='small'
-								>
-									Simulate
-								</Button>
-							)}
-						</article>
-						{simulationId && (
-							<article className='flex-1 flex items-center'>
-								<span className='-mr-1.5 z-0'>
-									<LineIcon className='text-5xl' />
-								</span>
-								<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] flex-1'>
-									<h2 className='text-base font-semibold mb-1 text-white'>
-										Simulation {isSimulationSuccess ? 'Successful' : 'Failed'}
-									</h2>
-									{simulationFailedReason && <p className='text-base mt-1 mb-2 text-white'>{simulationFailedReason}</p>}
-									<div className='flex gap-x-1'>
-										You can check the full report{' '}
-										<a
-											className='text-primary font-semibold flex items-center gap-x-1'
-											target='_blank'
-											href={getSimulationLink(simulationId)}
-											rel='noreferrer'
+											}
+											placement='bottom'
 										>
-											on Tenderly <ExternalLinkIcon />
-										</a>
-									</div>
-								</p>
+											<InfoCircleOutlined className='text-text_secondary' />
+										</Tooltip>
+									</span>
+									<span className='text-xs text-text_secondary flex items-center gap-x-1'>
+										Powered by{' '}
+										<Image
+											src={TenderlyIcon}
+											alt='tenderly'
+											width={65}
+										/>
+									</span>
+								</div>
+								{isSimulationSuccess ? (
+									<span className='flex items-center gap-x-1 text-success'>
+										<CheckOutlined /> Success
+									</span>
+								) : isSimulationFailed ? (
+									<span className='flex items-center gap-x-1 text-failure'>
+										<span className='flex items-center justify-center p-2 border border-failure rounded-full w-[14.33px] h-[14.33px]'>
+											<OutlineCloseIcon className='w-[5px] h-[5px]' />
+										</span>{' '}
+										Failed
+									</span>
+								) : (
+									<Button
+										onClick={handleSimulate}
+										title='Simulate'
+										loading={simulationLoading}
+										className='border-2 border-primary bg-highlight text-primary'
+										size='small'
+									>
+										Simulate
+									</Button>
+								)}
 							</article>
-						)}
-					</section>
-				)}
+							{simulationId && (
+								<article className='flex-1 flex items-center'>
+									<span className='-mr-1.5 z-0'>
+										<LineIcon className='text-5xl' />
+									</span>
+									<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] flex-1'>
+										<h2 className='text-base font-semibold mb-1 text-white'>
+											Simulation {isSimulationSuccess ? 'Successful' : 'Failed'}
+										</h2>
+										{simulationFailedReason && (
+											<p className='text-base mt-1 mb-2 text-white'>{simulationFailedReason}</p>
+										)}
+										<div className='flex gap-x-1'>
+											You can check the full report{' '}
+											<a
+												className='text-primary font-semibold flex items-center gap-x-1'
+												target='_blank'
+												href={getSimulationLink(simulationId)}
+												rel='noreferrer'
+											>
+												on Tenderly <ExternalLinkIcon />
+											</a>
+										</div>
+									</p>
+								</article>
+							)}
+						</section>
+					)}
 
 				<section className='mt-[15px] w-[500px]'>
 					<label className='text-primary font-normal text-xs block mb-[5px]'>Category*</label>

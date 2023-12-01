@@ -103,6 +103,7 @@ const TxnCard = () => {
 													callData={transaction.data}
 													txType={transaction.type}
 													recipientAddress={transaction.to}
+													value={transaction.amount_token}
 												/>
 											);
 										})}

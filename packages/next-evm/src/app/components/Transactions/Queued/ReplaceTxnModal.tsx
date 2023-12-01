@@ -8,6 +8,8 @@ import React, { useState } from 'react';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { chainProperties } from '@next-common/global/evm-network-constants';
+import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import SendFundsForm from '../../SendFunds/SendFundsForm';
 
 const ReplaceTxnModal = ({
@@ -25,11 +27,17 @@ const ReplaceTxnModal = ({
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const { address, activeMultisig, gnosisSafe } = useGlobalUserDetailsContext();
+	const { network } = useGlobalApiContext();
 
 	const onRejectTxn = async () => {
 		try {
 			setLoading(true);
-			const data = await gnosisSafe.createRejectTransactionByNonce(txNonce, activeMultisig, address);
+			const data = await gnosisSafe.createRejectTransactionByNonce(
+				txNonce,
+				activeMultisig,
+				address,
+				chainProperties[network].contractNetworks
+			);
 			if (data) {
 				queueNotification({
 					header: 'Success',

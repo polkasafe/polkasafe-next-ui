@@ -214,7 +214,11 @@ const Transaction: FC<ITransactionProps> = ({
 	const handleApproveTransaction = async () => {
 		setLoading(true);
 		try {
-			const response = await gnosisSafe.signAndConfirmTx(callHash, activeMultisig);
+			const response = await gnosisSafe.signAndConfirmTx(
+				callHash,
+				activeMultisig,
+				chainProperties[network].contractNetworks
+			);
 			if (response) {
 				const updateTx = {
 					signer: address,
@@ -247,7 +251,11 @@ const Transaction: FC<ITransactionProps> = ({
 	const handleExecuteTransaction = async () => {
 		setLoading(true);
 		try {
-			const { data: response, error } = await gnosisSafe.executeTx(callHash, activeMultisig);
+			const { data: response, error } = await gnosisSafe.executeTx(
+				callHash,
+				activeMultisig,
+				chainProperties[network].contractNetworks
+			);
 			if (error) {
 				queueNotification({
 					header: 'Execution Failed',

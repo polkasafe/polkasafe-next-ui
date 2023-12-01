@@ -52,7 +52,7 @@ export default class GnosisSafeService {
 	}
 
 	// eslint-disable-next-line consistent-return
-	createSafe = async (owners: [string], threshold: number): Promise<string | undefined> => {
+	createSafe = async (owners: [string], threshold: number, contractNetworks?: any): Promise<string | undefined> => {
 		try {
 			const safeAccountConfig: SafeAccountConfig = {
 				owners,
@@ -60,6 +60,7 @@ export default class GnosisSafeService {
 			};
 
 			const safeFactory = await SafeFactory.create({
+				contractNetworks,
 				ethAdapter: this.ethAdapter
 			});
 
@@ -105,10 +106,12 @@ export default class GnosisSafeService {
 	createRejectTransactionByNonce = async (
 		txNonce: number,
 		multisigAddress: string,
-		senderAddress: string
+		senderAddress: string,
+		contractNetworks?: any
 	): Promise<string | null> => {
 		try {
 			const safeSdk = await Safe.create({
+				contractNetworks,
 				ethAdapter: this.ethAdapter,
 				isL1SafeMasterCopy: true,
 				safeAddress: multisigAddress
@@ -158,10 +161,12 @@ export default class GnosisSafeService {
 		senderAddress: string,
 		note?: string,
 		tokens?: IAsset[],
-		nonce?: number
+		nonce?: number,
+		contractNetworks?: any
 	): Promise<string | null> => {
 		try {
 			const safeSdk = await Safe.create({
+				contractNetworks,
 				ethAdapter: this.ethAdapter,
 				isL1SafeMasterCopy: true,
 				safeAddress: multisigAddress
@@ -319,10 +324,12 @@ export default class GnosisSafeService {
 		multisigAddress: string,
 		senderAddress: string,
 		ownerAddress: string,
-		threshold: number
+		threshold: number,
+		contractNetworks?: any
 	): Promise<string | null> => {
 		try {
 			const safeSdk = await Safe.create({
+				contractNetworks,
 				ethAdapter: this.ethAdapter,
 				isL1SafeMasterCopy: true,
 				safeAddress: multisigAddress
@@ -362,10 +369,12 @@ export default class GnosisSafeService {
 		multisigAddress: string,
 		senderAddress: string,
 		ownerAddress: string,
-		threshold: number
+		threshold: number,
+		contractNetworks?: any
 	): Promise<string | null> => {
 		try {
 			const safeSdk = await Safe.create({
+				contractNetworks,
 				ethAdapter: this.ethAdapter,
 				isL1SafeMasterCopy: true,
 				safeAddress: multisigAddress
@@ -415,10 +424,15 @@ export default class GnosisSafeService {
 		return this.safeService.getAllTransactions(multisigAddress, options);
 	};
 
-	signAndConfirmTx = async (txHash: string, multisig: string): Promise<SignatureResponse | null> => {
+	signAndConfirmTx = async (
+		txHash: string,
+		multisig: string,
+		contractNetworks?: any
+	): Promise<SignatureResponse | null> => {
 		try {
 			const signer = await this.ethAdapter.getSignerAddress();
 			const safeSdk = await Safe.create({
+				contractNetworks,
 				ethAdapter: this.ethAdapter,
 				isL1SafeMasterCopy: true,
 				safeAddress: multisig
@@ -435,15 +449,12 @@ export default class GnosisSafeService {
 
 	executeTx = async (
 		txHash: string,
-		multisig: string
+		multisig: string,
+		contractNetworks?: any
 	): Promise<{ data: TransactionResult | null; error: string | null }> => {
 		try {
-			console.log({
-				ethAdapter: this.ethAdapter,
-				isL1SafeMasterCopy: true,
-				safeAddress: multisig
-			});
 			const safeSdk = await Safe.create({
+				contractNetworks,
 				ethAdapter: this.ethAdapter,
 				isL1SafeMasterCopy: true,
 				safeAddress: multisig
