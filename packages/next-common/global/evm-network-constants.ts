@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -9,6 +10,7 @@ import arbLogo from '@next-common/assets/parachains-logos/arbitrum-logo.png';
 import bnbLogo from '@next-common/assets/parachains-logos/bnb-logo.png';
 import gnosisChainLogo from '@next-common/assets/parachains-logos/gnosis-chain-logo.png';
 import opLogo from '@next-common/assets/parachains-logos/optimism-logo.png';
+import zetachainlogo from '@next-common/assets/parachains-logos/zetachain-logo.jpeg';
 // import moonbeamLogo from '@next-common/assets/parachains-logos/moonbeam-logo.png';
 import polygonLogo from '@next-common/assets/polygon.png';
 import { StaticImageData } from 'next/image';
@@ -24,6 +26,7 @@ export type ChainPropType = {
 		tokenSymbol: string;
 		tokenName: string;
 		logo: StaticImageData;
+		contractNetworks?: any;
 	};
 };
 
@@ -36,12 +39,12 @@ export enum NETWORK {
 	ASTAR = 'astar',
 	// MOONBEAM = 'moonbeam'
 	ARBITRUM = 'arbitrum',
-	OPTIMISM = 'optimism'
-	// ZETA_CHAIN = 'ZetaChain Athens-3 Testnet'
+	OPTIMISM = 'optimism',
+	ZETA_CHAIN = 'ZetaChain Athens-3 Testnet'
 }
 export const tokenSymbol = {
 	ASTR: 'ASTR',
-	// AZETA: 'AZETA',
+	AZETA: 'AZETA',
 	BNB: 'BNB',
 	ETH: 'ETH',
 	GLMR: 'GLMR',
@@ -138,18 +141,30 @@ export const chainProperties: ChainPropType = {
 		rpcEndpoint: 'https://rpc.gnosischain.com/',
 		tokenName: 'Gnosis Chain',
 		tokenSymbol: tokenSymbol.xDAI
+	},
+	[NETWORK.ZETA_CHAIN]: {
+		blockExplorer: 'https://explorer.zetachain.com',
+		chainId: 7001,
+		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		contractNetworks: {
+			'7001': {
+				createCallAddress: '0xB19D6FFc2182150F8Eb585b79D4ABcd7C5640A9d',
+				fallbackHandlerAddress: '0x017062a1dE2FE6b99BE3d9d37841FeD19F573804',
+				multiSendAddress: '0x998739BFdAAdde7C933B942a68053933098f9EDa',
+				multiSendCallOnlyAddress: '0xA1dabEF33b3B82c7814B6D82A79e50F4AC44102B',
+				safeMasterCopyAddress: '0x69f4D1788e39c87893C980c06EdF4b7f686e2938',
+				safeProxyFactoryAddress: '0xC22834581EbC8527d974F8a1c97E1bEA4EF910BC',
+				signMessageLibAddress: '0x98FFBBF51bb33A056B08ddf711f289936AafF717',
+				simulateTxAccessorAddress: '0x727a77a074D1E6c4530e814F89E618a3298FC044'
+			}
+		},
+		decimals: 18,
+		displayName: 'ZetaChain Testnet',
+		logo: zetachainlogo,
+		rpcEndpoint: 'https://rpc.ankr.com/zetachain_evm_athens_testnet',
+		tokenName: 'ZetaChain Testnet',
+		tokenSymbol: tokenSymbol.AZETA
 	}
-	// [NETWORK.ZETA_CHAIN]: {
-	// blockExplorer: 'https://explorer.zetachain.com',
-	// chainId: 7001,
-	// chainNamespace: CHAIN_NAMESPACES.EIP155,
-	// decimals: 18,
-	// displayName: 'ZetaChain Testnet',
-	// logo: gnosisChainLogo,
-	// rpcEndpoint: 'https://rpc.ankr.com/zetachain_evm_athens_testnet',
-	// tokenName: 'ZetaChain Testnet',
-	// tokenSymbol: tokenSymbol.AZETA
-	// }
 	// [NETWORK.MOONBEAM]: {
 	// blockExplorer: 'https://moonbeam-explorer.netlify.app/?network=Moonbeam',
 	// chainId: '0x504',

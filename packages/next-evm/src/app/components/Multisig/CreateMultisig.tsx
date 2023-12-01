@@ -24,6 +24,7 @@ import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import { EVM_API_URL } from '@next-common/global/apiUrls';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import AddAddress from '@next-evm/app/components/AddressBook/AddAddress';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import DragDrop from './DragDrop';
 import Search from './Search';
 import Signatory from './Signatory';
@@ -69,7 +70,11 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				return;
 			}
 
-			const safeAddress = await gnosisSafe.createSafe(signatories as [string], threshold);
+			const safeAddress = await gnosisSafe.createSafe(
+				signatories as [string],
+				threshold,
+				chainProperties[network].contractNetworks
+			);
 
 			if (!safeAddress) {
 				queueNotification({
