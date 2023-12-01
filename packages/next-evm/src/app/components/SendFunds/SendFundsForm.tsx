@@ -39,9 +39,11 @@ import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContex
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import Image from 'next/image';
 import { getSimulationLink, setSimulationSharing } from '@next-evm/utils/simulation';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
+import TxnSimulationFailedModal from './TxnSimulationFailedModal';
 
 export interface IRecipientAndAmount {
 	recipient: string;
@@ -107,8 +109,11 @@ const SendFundsForm = ({
 
 	const [isSimulationSuccess, setIsSimulationSuccess] = useState<boolean>(false);
 	const [isSimulationFailed, setIsSimulationFailed] = useState<boolean>(false);
+	const [simulationFailedReason, setSimulationFailedReason] = useState<string>('');
 
 	const [simulationId, setSimulationId] = useState<string>('');
+
+	const [openSimulationFailedModal, setOpenSimulationFailedModal] = useState<boolean>(false);
 
 	const onRecipientChange = (value: string, i: number) => {
 		setRecipientAndAmount((prevState) => {
@@ -249,6 +254,7 @@ const SendFundsForm = ({
 		} else if (simulationData && !simulationData?.simulation?.status) {
 			await setSimulationSharing(simulationData?.simulation?.id);
 			setIsSimulationFailed(true);
+			setSimulationFailedReason(simulationData?.simulation?.error_message || '');
 			setSimulationId(simulationData?.simulation?.id);
 		}
 		setSimulationLoading(false);
@@ -357,6 +363,20 @@ const SendFundsForm = ({
 			spinning={loading}
 			indicator={<LoadingLottie message={loadingMessages} />}
 		>
+			<ModalComponent
+				open={openSimulationFailedModal}
+				onCancel={() => setOpenSimulationFailedModal(false)}
+				title='Simulation Failed'
+			>
+				<TxnSimulationFailedModal
+					reason={simulationFailedReason}
+					onCancel={() => setOpenSimulationFailedModal(false)}
+					onProceed={() => {
+						handleSubmit();
+						setOpenSimulationFailedModal(false);
+					}}
+				/>
+			</ModalComponent>
 			<Form
 				className={classNames('max-h-[68vh] overflow-y-auto px-2')}
 				form={form}
@@ -577,6 +597,7 @@ const SendFundsForm = ({
 									<h2 className='text-base font-semibold mb-1 text-white'>
 										Simulation {isSimulationSuccess ? 'Successful' : 'Failed'}
 									</h2>
+									{simulationFailedReason && <p className='text-base mt-1 mb-2 text-white'>{simulationFailedReason}</p>}
 									<div className='flex gap-x-1'>
 										You can check the full report{' '}
 										<a
@@ -766,7 +787,7 @@ const SendFundsForm = ({
 						)
 					}
 					loading={loading}
-					onClick={handleSubmit}
+					onClick={isSimulationFailed ? () => setOpenSimulationFailedModal(true) : handleSubmit}
 					className='w-[250px]'
 					title='Make Transaction'
 				/>
