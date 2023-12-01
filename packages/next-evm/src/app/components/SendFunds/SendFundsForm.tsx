@@ -379,7 +379,7 @@ const SendFundsForm = ({
 				/>
 			</ModalComponent>
 			<Form
-				className={classNames('max-h-[68vh] overflow-y-auto px-2')}
+				className={classNames('max-h-[68vh] overflow-y-auto px-2 pb-8')}
 				form={form}
 				// eslint-disable-next-line no-template-curly-in-string
 				validateMessages={{ required: "Please add the '${name}'" }}

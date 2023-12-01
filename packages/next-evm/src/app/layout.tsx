@@ -8,7 +8,7 @@ import AppLayout from './components/AppLayout';
 // const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-	description: 'User friendly Multisig for Polkadot & Kusama ecosystem',
+	description: 'Enterprise asset management solution for EVM chains',
 	title: 'Polkasafe',
 	viewport: {
 		height: 'device-height',
