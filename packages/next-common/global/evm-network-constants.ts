@@ -25,8 +25,10 @@ export type ChainPropType = {
 		rpcEndpoint: string;
 		tokenSymbol: string;
 		tokenName: string;
+		tokenAddress?: string;
 		logo: StaticImageData;
 		contractNetworks?: any;
+		coingeckoId?: string;
 	};
 };
 
@@ -69,10 +71,12 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://polygonscan.com',
 		chainId: 137,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		coingeckoId: 'polygon-pos',
 		decimals: 18,
 		displayName: 'Polygon',
 		logo: polygonLogo,
 		rpcEndpoint: 'https://polygon-rpc.com/',
+		tokenAddress: '0x0000000000000000000000000000000000001010',
 		tokenName: 'Matic',
 		tokenSymbol: tokenSymbol.MATIC
 	},
@@ -80,6 +84,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://astar.subscan.io',
 		chainId: 592,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		coingeckoId: 'astar',
 		decimals: 18,
 		displayName: 'Astar',
 		logo: astarLogo,
@@ -91,6 +96,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://etherscan.io',
 		chainId: 1,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		coingeckoId: 'ethereum',
 		decimals: 18,
 		displayName: 'Ethereum',
 		logo: ethereumLogo,
@@ -102,6 +108,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://bscscan.com',
 		chainId: 56,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		coingeckoId: 'binance-smart-chain',
 		decimals: 18,
 		displayName: 'BNB Smart Chain',
 		logo: bnbLogo,
@@ -113,6 +120,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://arbiscan.io',
 		chainId: 42161,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		coingeckoId: 'arbitrum-one',
 		decimals: 18,
 		displayName: 'Arbitrum',
 		logo: arbLogo,
@@ -124,6 +132,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://optimistic.etherscan.io',
 		chainId: 10,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		coingeckoId: 'optimistic-ethereum',
 		decimals: 18,
 		displayName: 'Optimism',
 		logo: opLogo,
@@ -135,6 +144,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://gnosisscan.io',
 		chainId: 100,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
+		coingeckoId: 'xdai',
 		decimals: 18,
 		displayName: 'Gnosis Chain',
 		logo: gnosisChainLogo,

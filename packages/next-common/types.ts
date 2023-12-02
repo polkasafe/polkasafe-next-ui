@@ -208,6 +208,7 @@ export interface IAsset {
 	balance_token: string;
 	token_decimals?: number;
 	tokenAddress?: string | null;
+	fiat_conversion?: string;
 }
 
 export interface ITxNotification {

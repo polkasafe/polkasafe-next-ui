@@ -11,15 +11,15 @@ import SafeApiKit, {
 	SignatureResponse
 } from '@safe-global/api-kit';
 import Safe, { SafeAccountConfig, SafeFactory } from '@safe-global/protocol-kit';
+import { getBalances, type SafeBalanceResponse } from '@safe-global/safe-gateway-typescript-sdk';
 import {
 	MetaTransactionData,
 	// SafeTransactionDataPartial,
 	TransactionResult
 } from '@safe-global/safe-core-sdk-types';
-import { NETWORK } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 // eslint-disable-next-line import/no-cycle
 import createTokenTransferParams from '@next-evm/utils/createTokenTransaferParams';
-import getAllAssets from '@next-evm/utils/getAllAssets';
 import { IAsset } from '@next-common/types';
 import {
 	_getMultiSendCallOnlyPayload,
@@ -416,8 +416,17 @@ export default class GnosisSafeService {
 
 	// eslint-disable-next-line class-methods-use-this
 	getMultisigAllAssets = async (network: NETWORK, multisigAddress: string): Promise<any> => {
+		const assets: SafeBalanceResponse = await getBalances(
+			chainProperties[network].chainId.toString(),
+			multisigAddress,
+			undefined,
+			{
+				exclude_spam: true,
+				trusted: true
+			}
+		);
 		// eslint-disable-next-line @typescript-eslint/return-await
-		return await getAllAssets(network, multisigAddress);
+		return assets.items;
 	};
 
 	getAllTx = async (multisigAddress: string, options: any = {}): Promise<AllTransactionsListResponse> => {
