@@ -201,7 +201,7 @@ const QueueTransaction = ({ callHash, callData, txType, recipientAddress, value 
 									{formatBalance(
 										ethers.utils.formatUnits(
 											decodedCallData?.method === 'multiSend'
-												? BigInt(amount).toString()
+												? BigInt(!Number.isNaN(amount) ? amount : 0).toString()
 												: txInfo?.transferInfo?.value || value || 0,
 											decodedCallData?.method === 'multiSend'
 												? tokenDetailsArray[0]?.tokenDecimals

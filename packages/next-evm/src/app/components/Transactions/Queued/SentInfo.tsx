@@ -24,8 +24,11 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 
 import { ethers } from 'ethers';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { StaticImageData } from 'next/image';
+import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
+import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import EditNote from './EditNote';
+// eslint-disable-next-line import/no-cycle
+import { ITokenDetails } from './Transaction';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -47,12 +50,7 @@ interface ISentInfoProps {
 	transactionDetailsLoading: boolean;
 	tokenSymbol?: string;
 	tokenDecimals?: number;
-	multiSendTokens?: {
-		tokenSymbol: string;
-		tokenDecimals: number;
-		tokenLogo: StaticImageData | string;
-		tokenAddress: string;
-	}[];
+	multiSendTokens?: ITokenDetails[];
 	advancedDetails: any;
 	isRejectionTxn?: boolean;
 	isCustomTxn?: boolean;
@@ -125,8 +123,11 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
 								<span>Send</span>
 								<span className='text-failure'>
-									{amount
-										? ethers.utils.formatUnits(String(amount), tokenDecimals || chainProperties[network].decimals)
+									{amount && !Array.isArray(amount)
+										? ethers.utils.formatUnits(
+												BigInt(!Number.isNaN(amount) ? amount : 0).toString(),
+												tokenDecimals || chainProperties[network].decimals
+										  )
 										: '?'}{' '}
 									{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 								</span>
@@ -139,27 +140,41 @@ const SentInfo: FC<ISentInfoProps> = ({
 					) : (
 						<div className='flex flex-col gap-y-1 max-h-[200px] overflow-y-auto'>
 							{Array.isArray(recipientAddress) &&
-								recipientAddress.map((item, i) => (
-									<>
-										<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
-											<span>Send</span>
-											<span className='text-failure'>
-												{amount[i]
-													? ethers.utils.formatUnits(
-															String(amount[i]),
-															multiSendTokens?.[i]?.tokenDecimals || tokenDecimals || chainProperties[network].decimals
-													  )
-													: '?'}{' '}
-												{multiSendTokens?.[i]?.tokenSymbol || tokenSymbol || chainProperties[network].tokenSymbol}{' '}
-											</span>
-											<span>To:</span>
-										</p>
-										<div className='mt-3'>
-											<AddressComponent address={item} />
-										</div>
-										{recipientAddress.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
-									</>
-								))}
+								recipientAddress.map((item, i) => {
+									const formattedAmount = amount[i]
+										? ethers.utils.formatUnits(
+												BigInt(!Number.isNaN(amount[i]) ? amount[i] : 0).toString(),
+												multiSendTokens?.[i]?.tokenDecimals || tokenDecimals || chainProperties[network].decimals
+										  )
+										: 0;
+									return (
+										<>
+											<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
+												<span>Send</span>
+												<span className='text-failure'>
+													{amount[i] ? <span>{formattedAmount}</span> : '?'}{' '}
+													{multiSendTokens?.[i]?.tokenSymbol || tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+													{amount[i] &&
+														!Number.isNaN(amount[i]) &&
+														!Number.isNaN(multiSendTokens?.[i]?.fiatConversion) && (
+															<>
+																(
+																<FiatCurrencyValue
+																	value={tokenToUSDConversion(formattedAmount, multiSendTokens?.[i]?.fiatConversion)}
+																/>
+																)
+															</>
+														)}
+												</span>
+												<span>To:</span>
+											</p>
+											<div className='mt-3'>
+												<AddressComponent address={item} />
+											</div>
+											{recipientAddress.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
+										</>
+									);
+								})}
 						</div>
 					))}
 				{/* {!callData &&
