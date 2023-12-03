@@ -13,7 +13,7 @@ import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/Network
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
-import { ITransaction, NotificationStatus } from '@next-common/types';
+import { EAssetType, ITransaction, NotificationStatus } from '@next-common/types';
 import {
 	ArrowUpRightIcon,
 	CircleArrowDownIcon,
@@ -32,6 +32,7 @@ import { StaticImageData } from 'next/image';
 import formatBalance from '@next-evm/utils/formatBalance';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+// eslint-disable-next-line import/no-cycle
 import SentInfo from './SentInfo';
 import ReplaceTxnModal from './ReplaceTxnModal';
 
@@ -52,6 +53,14 @@ export interface ITransactionProps {
 	setCanCancelTx: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+export interface ITokenDetails {
+	tokenSymbol: string;
+	tokenDecimals: number;
+	tokenLogo: StaticImageData | string;
+	tokenAddress: string;
+	fiatConversion?: string | number;
+}
+
 const Transaction: FC<ITransactionProps> = ({
 	advancedDetails,
 	approvals,
@@ -70,7 +79,7 @@ const Transaction: FC<ITransactionProps> = ({
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
-	const { allAssets } = useMultisigAssetsContext();
+	const { allAssets, tokenFiatConversions } = useMultisigAssetsContext();
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [getMultiDataLoading] = useState(false);
@@ -90,9 +99,7 @@ const Transaction: FC<ITransactionProps> = ({
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
 	const [txInfo, setTxInfo] = useState<any>({} as any);
 
-	const [tokenDetailsArray, setTokenDetailsArray] = useState<
-		{ tokenSymbol: string; tokenDecimals: number; tokenLogo: StaticImageData | string; tokenAddress: string }[]
-	>([]);
+	const [tokenDetailsArray, setTokenDetailsArray] = useState<ITokenDetails[]>([]);
 	const [isMultiTokenTx, setIsMultiTokenTx] = useState<boolean>(false);
 
 	const token = chainProperties[network].tokenSymbol;
@@ -162,11 +169,12 @@ const Transaction: FC<ITransactionProps> = ({
 				);
 
 				const realContractAddresses = Object.keys(txData.addressInfoIndex);
-				const tokenDetails = [];
+				const tokenDetails: ITokenDetails[] = [];
 				tokenContractAddressArray.forEach((item) => {
 					if (realContractAddresses.includes(item)) {
 						const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
 						tokenDetails.push({
+							fiatConversion: assetDetails?.fiat_conversion,
 							tokenAddress: assetDetails?.tokenAddress || '',
 							tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
 							tokenLogo: assetDetails?.logoURI || chainProperties[network].logo,
@@ -174,6 +182,7 @@ const Transaction: FC<ITransactionProps> = ({
 						});
 					} else {
 						tokenDetails.push({
+							fiatConversion: tokenFiatConversions[EAssetType.NATIVE_TOKEN],
 							tokenAddress: '',
 							tokenDecimals: chainProperties[network].decimals,
 							tokenLogo: chainProperties[network].logo,
@@ -185,6 +194,7 @@ const Transaction: FC<ITransactionProps> = ({
 			} else {
 				setTokenDetailsArray([
 					{
+						fiatConversion: tokenFiatConversions[EAssetType.NATIVE_TOKEN],
 						tokenAddress: '',
 						tokenDecimals: chainProperties[network].decimals,
 						tokenLogo: chainProperties[network].logo,
@@ -201,7 +211,7 @@ const Transaction: FC<ITransactionProps> = ({
 			}, 0);
 			setAmount(totalAmount);
 		}
-	}, [allAssets, decodedCallData, network, txData]);
+	}, [allAssets, decodedCallData, network, tokenFiatConversions, txData]);
 
 	useEffect(() => {
 		if (tokenDetailsArray.length > 1) {
@@ -382,7 +392,7 @@ const Transaction: FC<ITransactionProps> = ({
 													{formatBalance(
 														ethers.utils.formatUnits(
 															decodedCallData?.method === 'multiSend'
-																? BigInt(amount).toString()
+																? BigInt(!Number.isNaN(amount) ? amount : 0).toString()
 																: txInfo?.transferInfo?.value || value || transactionDetails.amount_token,
 															decodedCallData?.method === 'multiSend'
 																? tokenDetailsArray[0]?.tokenDecimals
@@ -475,9 +485,7 @@ const Transaction: FC<ITransactionProps> = ({
 						callHash={callHash}
 						recipientAddress={
 							decodedCallData.method === 'multiSend'
-								? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
-										(item: any) => item?.dataDecoded?.parameters?.[0]?.value
-								  )
+								? decodedCallData?.parameters?.[0]?.valueDecoded?.map((item: any) => item?.to)
 								: txInfo?.recipient?.value || recipientAddress || ''
 						}
 						callData={callData}
