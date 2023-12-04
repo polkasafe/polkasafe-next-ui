@@ -62,7 +62,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 				if (token?.tokenInfo?.type === EAssetType.NATIVE_TOKEN) {
 					fiatConversions = { ...fiatConversions, [EAssetType.NATIVE_TOKEN]: token?.fiatConversion };
 				} else {
-					fiatConversions = { ...fiatConversions, [token?.tokenInfo?.tokenAddress || '']: token?.fiatConversion };
+					fiatConversions = { ...fiatConversions, [token?.tokenInfo?.address || '']: token?.fiatConversion };
 				}
 				return {
 					balance_token: ethers.utils.formatUnits(

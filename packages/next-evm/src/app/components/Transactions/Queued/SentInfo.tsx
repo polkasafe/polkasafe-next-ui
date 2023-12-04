@@ -26,6 +26,8 @@ import { ethers } from 'ethers';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { EAssetType } from '@next-common/types';
 import EditNote from './EditNote';
 // eslint-disable-next-line import/no-cycle
 import { ITokenDetails } from './Transaction';
@@ -50,6 +52,7 @@ interface ISentInfoProps {
 	transactionDetailsLoading: boolean;
 	tokenSymbol?: string;
 	tokenDecimals?: number;
+	tokenAddress?: string;
 	multiSendTokens?: ITokenDetails[];
 	advancedDetails: any;
 	isRejectionTxn?: boolean;
@@ -76,6 +79,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 	transactionDetailsLoading,
 	tokenSymbol,
 	tokenDecimals,
+	tokenAddress,
 	multiSendTokens,
 	advancedDetails,
 	isRejectionTxn,
@@ -86,6 +90,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 	const { network } = useGlobalApiContext();
 
 	const { address: userAddress, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
+	const { tokenFiatConversions } = useMultisigAssetsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const [updatedNote, setUpdatedNote] = useState(note);
 	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
@@ -130,6 +135,21 @@ const SentInfo: FC<ISentInfoProps> = ({
 										  )
 										: '?'}{' '}
 									{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+									{amount && !Number.isNaN(amount) && !Array.isArray(amount) && (
+										<>
+											(
+											<FiatCurrencyValue
+												value={tokenToUSDConversion(
+													ethers.utils.formatUnits(
+														BigInt(!Number.isNaN(amount) ? amount : 0).toString(),
+														tokenDecimals || chainProperties[network].decimals
+													),
+													tokenFiatConversions[tokenAddress || EAssetType.NATIVE_TOKEN]
+												)}
+											/>
+											)
+										</>
+									)}
 								</span>
 								<span>To:</span>
 							</p>
