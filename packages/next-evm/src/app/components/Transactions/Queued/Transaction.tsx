@@ -501,6 +501,7 @@ const Transaction: FC<ITransactionProps> = ({
 						transactionDetailsLoading={transactionDetailsLoading}
 						tokenSymbol={txInfo?.transferInfo?.tokenSymbol}
 						tokenDecimals={txInfo?.transferInfo?.decimals}
+						tokenAddress={txInfo?.transferInfo?.tokenAddress}
 						multiSendTokens={tokenDetailsArray}
 						advancedDetails={advancedDetails}
 						isRejectionTxn={isRejectionTxn}
