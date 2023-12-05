@@ -231,7 +231,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 	return tokenDetailsArray?.[0]?.isFakeToken && isFundType ? null : (
 		<Collapse
-			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'
+			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left mb-[10px]'
 			bordered={false}
 			defaultActiveKey={[`${urlHash}`]}
 		>
@@ -286,7 +286,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 												<span className='font-normal text-xs leading-[13px] text-success'>
 													{formatBalance(
 														ethers?.utils?.formatUnits(
-															BigInt(totalAmount)?.toString() || amount_token?.toString(),
+															BigInt(!Number.isNaN(totalAmount) ? totalAmount : 0)?.toString() ||
+																amount_token?.toString(),
 															tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
 														)
 													)}{' '}
@@ -331,7 +332,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 													{formatBalance(
 														ethers?.utils?.formatUnits(
 															decodedCallData?.method === 'multiSend'
-																? BigInt(totalAmount)?.toString()
+																? BigInt(!Number.isNaN(totalAmount) ? totalAmount : 0)?.toString()
 																: txInfo?.transferInfo?.value || amount_token?.toString(),
 															decodedCallData?.method === 'multiSend'
 																? tokenDetailsArray[0]?.tokenDecimals
@@ -411,7 +412,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 									: txInfo?.transferInfo?.value || String(amount_token)
 							}
 							approvals={approvals}
-							date={dayjs(created_at).format('lll')}
+							date={created_at}
 							recipientAddress={
 								decodedCallData.method === 'multiSend'
 									? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
@@ -434,6 +435,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							multiSendTokens={tokenDetailsArray}
 							tokenSymbol={txInfo?.transferInfo?.tokenSymbol}
 							tokenDecimals={txInfo?.transferInfo?.decimals}
+							tokenAddress={txInfo?.transferInfo?.tokenAddress}
 							advancedDetails={advancedDetails}
 							isCustomTxn={isCustomTxn}
 							isRejectionTxn={isRejectionTxn}
