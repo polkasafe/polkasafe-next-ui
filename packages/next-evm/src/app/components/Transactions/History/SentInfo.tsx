@@ -4,7 +4,7 @@
 import { Collapse, Divider, Spin, Timeline } from 'antd';
 import classNames from 'classnames';
 // import { ethers } from 'ethers';
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
@@ -20,12 +20,17 @@ import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import { ethers } from 'ethers';
 import { StaticImageData } from 'next/image';
+import getHistoricalTokenPrice from '@next-evm/utils/getHistoricalTokenPrice';
+import dayjs from 'dayjs';
+import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
+import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
+import getHistoricalNativeTokenPrice from '@next-evm/utils/getHistoricalNativeTokenPrice';
 
 interface ISentInfoProps {
 	amount: string | string[];
 	approvals: string[];
 	addressAddOrRemove?: string;
-	date: string;
+	date: Date;
 	// time: string;
 	className?: string;
 	recipientAddress: string | string[];
@@ -37,6 +42,7 @@ interface ISentInfoProps {
 	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
 	tokenSymbol?: string;
 	tokenDecimals?: number;
+	tokenAddress?: string;
 	advancedDetails: any;
 	multiSendTokens?: {
 		tokenSymbol: string;
@@ -66,7 +72,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 	tokenSymbol,
 	multiSendTokens,
 	isRejectionTxn,
-	isCustomTxn
+	isCustomTxn,
+	tokenAddress
 }) => {
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
@@ -74,6 +81,44 @@ const SentInfo: FC<ISentInfoProps> = ({
 	const threshold =
 		multisigAddresses?.find((item: any) => item.address === activeMultisig || item.proxy === activeMultisig)
 			?.threshold || 0;
+
+	const [usdValue, setUsdValue] = useState<string | string[]>('0');
+	// eslint-disable-next-line sonarjs/cognitive-complexity
+	useEffect(() => {
+		if (tokenAddress) {
+			getHistoricalTokenPrice(network, tokenAddress, date).then((res) => {
+				const prices: any[] = res?.prices || [];
+				prices.forEach((item, i) => {
+					if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
+						setUsdValue(Number(item[1]).toFixed(4));
+					}
+				});
+			});
+		} else if (amount && !Array.isArray(amount)) {
+			getHistoricalNativeTokenPrice(network, date).then((res) => {
+				const currentPrice = res?.market_data?.current_price?.usd || '0';
+				setUsdValue(Number(currentPrice).toFixed(4));
+			});
+		} else if (multiSendTokens && multiSendTokens.length > 0) {
+			multiSendTokens.forEach((token) => {
+				if (!token.tokenAddress) {
+					getHistoricalNativeTokenPrice(network, date).then((res) => {
+						const currentPrice = res?.market_data?.current_price?.usd || '0';
+						setUsdValue((prev) => [...prev, Number(currentPrice).toFixed(4)]);
+					});
+					return;
+				}
+				getHistoricalTokenPrice(network, token.tokenAddress, date).then((res) => {
+					const prices: any[] = res?.prices || [];
+					prices.forEach((item, i) => {
+						if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
+							setUsdValue((prev) => [...prev, Number(item[1]).toFixed(4)]);
+						}
+					});
+				});
+			});
+		}
+	}, [amount, date, multiSendTokens, network, tokenAddress]);
 
 	return (
 		<div className={classNames('flex gap-x-4', className)}>
@@ -92,6 +137,25 @@ const SentInfo: FC<ISentInfoProps> = ({
 										? ethers.utils.formatUnits(String(amount), tokenDecimals || chainProperties[network].decimals)
 										: '?'}{' '}
 									{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+									{amount &&
+										!Number.isNaN(amount) &&
+										!Array.isArray(amount) &&
+										!Array.isArray(usdValue) &&
+										Number(usdValue) !== 0 && (
+											<>
+												(
+												<FiatCurrencyValue
+													value={tokenToUSDConversion(
+														ethers.utils.formatUnits(
+															BigInt(!Number.isNaN(amount) ? amount : 0).toString(),
+															tokenDecimals || chainProperties[network].decimals
+														),
+														usdValue
+													)}
+												/>
+												)
+											</>
+										)}
 								</span>
 								<span>To:</span>
 							</p>
@@ -114,6 +178,24 @@ const SentInfo: FC<ISentInfoProps> = ({
 													  )
 													: '?'}{' '}
 												{multiSendTokens?.[i]?.tokenSymbol || tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+												{amount[i] &&
+													!Number.isNaN(amount[i]) &&
+													!Array.isArray(amount[i]) &&
+													Number(usdValue[i]) !== 0 && (
+														<>
+															(
+															<FiatCurrencyValue
+																value={tokenToUSDConversion(
+																	ethers.utils.formatUnits(
+																		BigInt(!Number.isNaN(amount[i]) ? amount[i] : 0).toString(),
+																		tokenDecimals || chainProperties[network].decimals
+																	),
+																	usdValue[i]
+																)}
+															/>
+															)
+														</>
+													)}
 											</span>
 											<span>To:</span>
 										</p>
@@ -155,7 +237,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Executed:</span>
 					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-						<span className='text-white font-normal text-sm leading-[15px]'>{date}</span>
+						<span className='text-white font-normal text-sm leading-[15px]'>{dayjs(date).format('lll')}</span>
 					</p>
 				</div>
 				{addressAddOrRemove && (

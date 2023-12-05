@@ -29,6 +29,7 @@ export type ChainPropType = {
 		logo: StaticImageData;
 		contractNetworks?: any;
 		coingeckoId?: string;
+		coingeckoNativeTokenId?: string;
 	};
 };
 
@@ -72,6 +73,7 @@ export const chainProperties: ChainPropType = {
 		chainId: 137,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'polygon-pos',
+		coingeckoNativeTokenId: 'matic-network',
 		decimals: 18,
 		displayName: 'Polygon',
 		logo: polygonLogo,
@@ -97,6 +99,7 @@ export const chainProperties: ChainPropType = {
 		chainId: 1,
 		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'ethereum',
+		coingeckoNativeTokenId: 'ethereum',
 		decimals: 18,
 		displayName: 'Ethereum',
 		logo: ethereumLogo,

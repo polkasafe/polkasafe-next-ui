@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Divider, Spin } from 'antd';
 import { ethers } from 'ethers';
-import React, { FC } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { CopyIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
@@ -11,6 +11,11 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { StaticImageData } from 'next/image';
+import getHistoricalTokenPrice from '@next-evm/utils/getHistoricalTokenPrice';
+import dayjs from 'dayjs';
+import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
+import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
+import getHistoricalNativeTokenPrice from '@next-evm/utils/getHistoricalNativeTokenPrice';
 
 interface IReceivedInfoProps {
 	addedOwner?: string;
@@ -39,6 +44,29 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 }) => {
 	const { network } = useGlobalApiContext();
 
+	const [usdValue, setUsdValue] = useState<string[]>([]);
+	useEffect(() => {
+		if (!tokenDetialsArray || tokenDetialsArray.length === 0) return;
+		tokenDetialsArray.forEach((token) => {
+			if (!token.tokenAddress) {
+				getHistoricalNativeTokenPrice(network, date).then((res) => {
+					const currentPrice = res?.market_data?.current_price?.usd || '0';
+					setUsdValue((prev) => [...prev, Number(currentPrice).toFixed(4)]);
+				});
+				return;
+			}
+			getHistoricalTokenPrice(network, token.tokenAddress, date).then((res) => {
+				console.log('res', res);
+				const prices: any[] = res?.prices || [];
+				prices.forEach((item, i) => {
+					if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
+						setUsdValue((prev) => [...prev, Number(item[1]).toFixed(4)]);
+					}
+				});
+			});
+		});
+	}, [date, network, tokenDetialsArray]);
+
 	return (
 		<article className='p-4 rounded-lg bg-bg-main flex-1'>
 			<div className='flex flex-col gap-y-1 max-h-[200px] overflow-y-auto'>
@@ -50,11 +78,26 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 								<span className='text-failure'>
 									{item.value
 										? ethers.utils.formatUnits(
-												String(item.value),
+												BigInt(!Number.isNaN(item.value) ? item.value : 0).toString(),
 												tokenDetialsArray?.[i]?.tokenDecimals || chainProperties[network].decimals
 										  )
 										: '?'}{' '}
 									{tokenDetialsArray?.[i]?.tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+									{item.value && !Number.isNaN(item.value) && Number(usdValue[i]) !== 0 && (
+										<>
+											(
+											<FiatCurrencyValue
+												value={tokenToUSDConversion(
+													ethers.utils.formatUnits(
+														BigInt(!Number.isNaN(item.value) ? item.value : 0).toString(),
+														tokenDetialsArray?.[i]?.tokenDecimals || chainProperties[network].decimals
+													),
+													usdValue[i]
+												)}
+											/>
+											)
+										</>
+									)}
 								</span>
 								<span>From:</span>
 							</p>
