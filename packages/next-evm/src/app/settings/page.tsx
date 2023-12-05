@@ -8,7 +8,9 @@ import React, { useState } from 'react';
 import ManageMultisig from '@next-evm/app/components/Settings/ManageMultisig';
 import Notifications from '@next-evm/app/components/Settings/Notifications';
 import TransactionFields from '@next-evm/app/components/Settings/TransactionFields';
+import { Button } from 'antd';
 import AddMultisigModal from '../components/Multisig/AddMultisigModal';
+import ChangeCurrency from '../components/Assets/ChangeCurrency';
 
 enum ETab {
 	SIGNATORIES,
@@ -21,34 +23,40 @@ const Settings = () => {
 	return (
 		<div className='scale-[80%] h-[125%] w-[125%] origin-top-left'>
 			<AddMultisigModal />
-			<div className='flex items-center mb-5'>
-				<button
-					onClick={() => setTab(ETab.SIGNATORIES)}
-					className={`rounded-lg p-3 text-sm leading-[15px] w-[110px] text-white ${
-						// eslint-disable-next-line sonarjs/no-duplicate-string
-						tab === ETab.SIGNATORIES && 'text-primary bg-highlight'
-					}`}
-				>
-					{/* <QueueIcon /> */}
-					Signatories
-				</button>
-				<button
-					onClick={() => setTab(ETab.NOTIFICATIONS)}
-					className={`rounded-lg p-3 text-sm leading-[15px] w-[110px] text-white ${
-						tab === ETab.NOTIFICATIONS && 'text-primary bg-highlight'
-					}`}
-				>
-					{/* <HistoryIcon/> */}
-					Notifications
-				</button>
-				<button
-					onClick={() => setTab(ETab.TRANSACTIONS)}
-					className={`rounded-lg p-3 text-sm leading-[15px] text-white ${
-						tab === ETab.TRANSACTIONS && 'text-primary bg-highlight'
-					}`}
-				>
-					Transaction Fields
-				</button>
+			<div className='flex items-center justify-between mb-5'>
+				<div className='flex items-center'>
+					<Button
+						size='large'
+						onClick={() => setTab(ETab.SIGNATORIES)}
+						className={`font-medium text-sm leading-[15px text-white outline-none border-none ${
+							// eslint-disable-next-line sonarjs/no-duplicate-string
+							tab === ETab.SIGNATORIES && 'text-primary bg-highlight'
+						}`}
+					>
+						{/* <QueueIcon /> */}
+						Signatories
+					</Button>
+					<Button
+						size='large'
+						onClick={() => setTab(ETab.NOTIFICATIONS)}
+						className={`font-medium text-sm leading-[15px] text-white outline-none border-none ${
+							tab === ETab.NOTIFICATIONS && 'text-primary bg-highlight'
+						}`}
+					>
+						{/* <HistoryIcon/> */}
+						Notifications
+					</Button>
+					<Button
+						size='large'
+						onClick={() => setTab(ETab.TRANSACTIONS)}
+						className={`font-medium text-sm leading-[15px] text-white outline-none border-none ${
+							tab === ETab.TRANSACTIONS && 'text-primary bg-highlight'
+						}`}
+					>
+						Transaction Fields
+					</Button>
+				</div>
+				<ChangeCurrency />
 			</div>
 			{tab === ETab.SIGNATORIES ? (
 				<ManageMultisig />

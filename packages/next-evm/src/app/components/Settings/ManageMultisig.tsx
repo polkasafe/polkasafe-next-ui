@@ -12,7 +12,6 @@ import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIco
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import { chainProperties } from '@next-common/global/evm-network-constants';
-import ChangeCurrency from '../Assets/ChangeCurrency';
 
 const ManageMultisig = () => {
 	const { multisigAddresses, activeMultisig, address: userAddress } = useGlobalUserDetailsContext();
@@ -76,9 +75,6 @@ const ManageMultisig = () => {
 					</section>
 				</div>
 			)}
-			<div className='mt-[30px] flex gap-x-[30px]'>
-				<ChangeCurrency />
-			</div>
 		</div>
 	);
 };
