@@ -20,8 +20,16 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 import Spinner from '@next-common/ui-components/Loader';
 
 const Home = () => {
-	const { address, multisigAddresses, loading, createdAt, addressBook, multisigSettings } =
-		useGlobalUserDetailsContext();
+	const {
+		address,
+		activeMultisig,
+		multisigAddresses,
+		loading,
+		createdAt,
+		addressBook,
+		multisigSettings,
+		isSharedSafe
+	} = useGlobalUserDetailsContext();
 	const metaMaskAddress = useAddress();
 
 	const [transactionLoading] = useState(false);
@@ -36,7 +44,7 @@ const Home = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [createdAt]);
 
-	return address === metaMaskAddress ? (
+	return address === metaMaskAddress || (activeMultisig && isSharedSafe) ? (
 		<>
 			<NewUserModal
 				open={openNewUserModal}
@@ -46,7 +54,7 @@ const Home = () => {
 				<Spinner size='large' />
 			) : multisigAddresses.filter(
 					(a: any) => a.network === network && !multisigSettings?.[`${a.address}`]?.deleted && !a.disabled
-			  ).length > 0 ? (
+			  ).length > 0 || activeMultisig ? (
 				<section>
 					<div className='mb-0 grid grid-cols-16 gap-4 grid-row-2 lg:grid-row-1 h-auto'>
 						<div className='col-start-1 col-end-13 lg:col-end-8'>

@@ -5,6 +5,7 @@
 // eslint-disable-next-line import/no-cycle
 import GnosisSafeService from '@next-evm/services/Gnosis';
 import { Dispatch, SetStateAction } from 'react';
+import { NETWORK } from './global/evm-network-constants';
 
 export enum CHANNEL {
 	EMAIL = 'email',
@@ -119,6 +120,10 @@ export interface UserDetailsContextTypeEVM {
 	setGnosisSafe: any;
 	transactionFields: ITransactionFields;
 	isNetworkMismatch: boolean;
+	isSharedSafe?: boolean;
+	notOwnerOfSafe?: boolean;
+	sharedSafeNetwork?: NETWORK;
+	sharedSafeAddress?: string;
 }
 
 export enum Wallet {

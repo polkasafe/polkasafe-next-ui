@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { PlusCircleOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { Skeleton, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
@@ -22,7 +22,6 @@ import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import formatBalance from '@next-evm/utils/formatBalance';
 import { currencyProperties } from '@next-common/global/currencyConstants';
-import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IDashboardCard {
 	className?: string;
@@ -39,7 +38,8 @@ const DashboardCard = ({
 	openTransactionModal,
 	setOpenTransactionModal
 }: IDashboardCard) => {
-	const { activeMultisig, multisigAddresses, activeMultisigData, multisigSettings } = useGlobalUserDetailsContext();
+	const { activeMultisig, multisigAddresses, activeMultisigData, multisigSettings, notOwnerOfSafe } =
+		useGlobalUserDetailsContext();
 	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
 	const { allAssets, loadingAssets } = useMultisigAssetsContext();
 	const { network } = useGlobalApiContext();
@@ -47,6 +47,8 @@ const DashboardCard = ({
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
 	const currentMultisig = multisigAddresses?.find((item) => item.address === activeMultisig);
 	const [totalAssetValue, setTotalAssetValue] = useState<string>('');
+
+	const baseURL = typeof window !== 'undefined' && global.window.location.href;
 
 	useEffect(() => {
 		if (allAssets && allAssets.length > 0) {
@@ -85,21 +87,21 @@ const DashboardCard = ({
 				className={`${className} relative bg-bg-main flex flex-col justify-between rounded-lg p-5 shadow-lg h-[17rem] scale-90 w-[111%] origin-top-left`}
 			>
 				<div className='absolute right-5 top-5'>
-					<a
-						href={`${chainProperties[network].blockExplorer}/address/${activeMultisig}`}
-						target='_blank'
-						className='flex gap-x-4 items-center'
-						rel='noreferrer'
-					>
-						<ParachainIcon src={chainProperties[network].logo} />
-					</a>
+					<Tooltip title='Copy Share Link'>
+						<button
+							className='text-text_secondary text-lg'
+							onClick={() => copyText(`${baseURL}?safe=${activeMultisig}&network=${network}`)}
+						>
+							<ShareAltOutlined />
+						</button>
+					</Tooltip>
 				</div>
 				<div className='w-full'>
 					<div className='flex gap-x-3 items-center'>
 						<div className='relative'>
 							<div className='border-2 border-primary p-1.5 rounded-full flex justify-center items-center'>
 								<MetaMaskAvatar
-									address={currentMultisig?.address || ''}
+									address={activeMultisig || currentMultisig?.address || ''}
 									size={50}
 								/>
 							</div>
@@ -112,7 +114,7 @@ const DashboardCard = ({
 						</div>
 						<div>
 							<div className='text-base font-bold text-white flex items-center gap-x-2'>
-								{multisigSettings[activeMultisig]?.name || currentMultisig?.name}
+								{multisigSettings[activeMultisig]?.name || currentMultisig?.name || activeMultisigData?.name}
 							</div>
 							<div className='flex text-xs'>
 								<div
@@ -135,7 +137,7 @@ const DashboardCard = ({
 								>
 									<ExternalLinkIcon />
 								</a>
-								{currentMultisig?.address && (
+								{activeMultisig && (
 									<Tooltip
 										placement='right'
 										className='cursor-pointer'
@@ -195,14 +197,16 @@ const DashboardCard = ({
 				</div>
 				<div className='flex justify-around w-full mt-5'>
 					<PrimaryButton
+						disabled={notOwnerOfSafe}
 						icon={<PlusCircleOutlined />}
 						onClick={() => setOpenTransactionModal(true)}
 						loading={transactionLoading}
-						className='w-[45%] flex items-center justify-center py-4 2xl:py-5 bg-primary text-white'
+						className='w-[45%] flex items-center justify-center py-4 2xl:py-5'
 					>
 						New Transaction
 					</PrimaryButton>
 					<PrimaryButton
+						disabled={notOwnerOfSafe}
 						secondary
 						onClick={() => setOpenFundMultisigModal(true)}
 						className='w-[45%] flex items-center justify-center py-4 2xl:py-5 '

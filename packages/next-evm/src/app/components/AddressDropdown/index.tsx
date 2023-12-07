@@ -36,11 +36,13 @@ const AddressDropdown = () => {
 				activeMultisig: '',
 				address: '',
 				addressBook: [],
-				multisigAddresses: []
+				isSharedSafe: false,
+				multisigAddresses: [],
+				sharedSafeAddress: ''
 			};
 		});
 		toggleVisibility(false);
-		return router.replace('/');
+		router.push('/');
 	};
 
 	if (!address) {

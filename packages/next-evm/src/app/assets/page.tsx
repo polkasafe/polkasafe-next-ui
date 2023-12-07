@@ -17,7 +17,7 @@ import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 import ChangeCurrency from '../components/Assets/ChangeCurrency';
 
 const Assets = () => {
-	const { address: userAddress } = useGlobalUserDetailsContext();
+	const { address: userAddress, activeMultisig, isSharedSafe } = useGlobalUserDetailsContext();
 	const { allAssets, loadingAssets } = useMultisigAssetsContext();
 	const { currency: globalCurrency } = useGlobalCurrencyContext();
 	const [currency, setCurrency] = useState<string>(globalCurrency);
@@ -25,7 +25,7 @@ const Assets = () => {
 	return (
 		<div className='h-[70vh] bg-bg-main rounded-lg'>
 			<AddMultisigModal />
-			{userAddress ? (
+			{userAddress || (activeMultisig && isSharedSafe) ? (
 				<div className='scale-[80%] w-[125%] h-[125%] origin-top-left'>
 					<div className='flex items-center justify-between mb-2 py-3 px-5'>
 						<div className='flex items-end gap-x-4'>

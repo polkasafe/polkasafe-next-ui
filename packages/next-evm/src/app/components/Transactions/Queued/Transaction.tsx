@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { EAssetType, ITransaction, NotificationStatus } from '@next-common/types';
 import {
 	ArrowUpRightIcon,
@@ -78,14 +78,21 @@ const Transaction: FC<ITransactionProps> = ({
 	setCanCancelTx
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
+	const { activeMultisig, address, gnosisSafe, isSharedSafe, sharedSafeNetwork, sharedSafeAddress } =
+		useGlobalUserDetailsContext();
 	const { allAssets, tokenFiatConversions } = useMultisigAssetsContext();
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [getMultiDataLoading] = useState(false);
 	const [loadingMessages, setLoadingMessage] = useState('');
 	const [openLoadingModal, setOpenLoadingModal] = useState(false);
-	const { network } = useGlobalApiContext();
+	const { network: defaultNetwork } = useGlobalApiContext();
+
+	const shared = sharedSafeAddress === activeMultisig;
+	const network =
+		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
+			? sharedSafeNetwork
+			: defaultNetwork;
 
 	const [decodedCallData, setDecodedCallData] = useState<any>({});
 
@@ -114,39 +121,44 @@ const Transaction: FC<ITransactionProps> = ({
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
 
 	const getTxDetails = useCallback(async () => {
-		setTransactionDetailsLoading(true);
+		try {
+			setTransactionDetailsLoading(true);
 
-		const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), callHash);
+			const txDetails = await getTransactionDetails(chainProperties[network].chainId.toString(), callHash);
 
-		setTxData(txDetails.txData);
-		setTxInfo(txDetails.txInfo);
+			setTxData(txDetails.txData);
+			setTxInfo(txDetails.txInfo);
 
-		if (
-			txDetails?.txInfo?.type === 'Custom' &&
-			txDetails?.txInfo?.richDecodedInfo &&
-			txDetails?.txInfo?.richDecodedInfo?.fragments
-		) {
-			setIsCustomTxn(true);
+			if (
+				txDetails?.txInfo?.type === 'Custom' &&
+				txDetails?.txInfo?.richDecodedInfo &&
+				txDetails?.txInfo?.richDecodedInfo?.fragments
+			) {
+				setIsCustomTxn(true);
+			}
+
+			if (txDetails?.txInfo?.type === 'Custom' && txDetails?.txInfo?.isCancellation) {
+				setIsRejectionTxn(true);
+			}
+
+			if (txDetails.txInfo.type === 'Custom' && txDetails.txInfo.isCancellation) {
+				setCanCancelTx(false);
+			}
+
+			const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
+				`${EVM_API_URL}/getTransactionDetailsEth`,
+				{ callHash },
+				{ network }
+			);
+
+			if (!getTransactionErr && getTransactionData) {
+				setTransactionDetails(getTransactionData);
+			}
+			setTransactionDetailsLoading(false);
+		} catch (err) {
+			console.log(err);
+			setTransactionDetailsLoading(false);
 		}
-
-		if (txDetails?.txInfo?.type === 'Custom' && txDetails?.txInfo?.isCancellation) {
-			setIsRejectionTxn(true);
-		}
-
-		if (txDetails.txInfo.type === 'Custom' && txDetails.txInfo.isCancellation) {
-			setCanCancelTx(false);
-		}
-
-		const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
-			`${EVM_API_URL}/getTransactionDetailsEth`,
-			{ callHash },
-			{ network }
-		);
-
-		if (!getTransactionErr && getTransactionData) {
-			setTransactionDetails(getTransactionData);
-		}
-		setTransactionDetailsLoading(false);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [callHash, network]);
 	useEffect(() => {
@@ -507,6 +519,7 @@ const Transaction: FC<ITransactionProps> = ({
 						isRejectionTxn={isRejectionTxn}
 						isCustomTxn={isCustomTxn}
 						setOpenReplaceTxnModal={setOpenReplaceTxnModal}
+						network={network}
 					/>
 				</div>
 			</Collapse.Panel>

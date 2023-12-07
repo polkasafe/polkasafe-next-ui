@@ -11,6 +11,7 @@ import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { chainProperties } from 'next-common/global/evm-network-constants';
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
+import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
@@ -22,6 +23,7 @@ interface IAssetsProps {
 const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { network } = useGlobalApiContext();
+	const { notOwnerOfSafe } = useGlobalUserDetailsContext();
 	const [selectedToken, setSeletedToken] = useState<IAsset>(assets[0]);
 	const { allCurrencyPrices } = useGlobalCurrencyContext();
 
@@ -92,6 +94,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 									className={` text-white w-fit ${
 										chainProperties[network].tokenSymbol !== name ? 'bg-secondary' : 'bg-primary'
 									}`}
+									disabled={notOwnerOfSafe}
 								>
 									<p className='font-normal text-sm'>Send</p>
 								</PrimaryButton>

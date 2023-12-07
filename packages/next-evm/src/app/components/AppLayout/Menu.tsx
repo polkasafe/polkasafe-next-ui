@@ -32,8 +32,16 @@ interface Props {
 }
 
 const Menu: FC<Props> = ({ className }) => {
-	const { multisigAddresses, setUserDetailsContextState, activeMultisig, multisigSettings } =
-		useGlobalUserDetailsContext();
+	const {
+		multisigAddresses,
+		setUserDetailsContextState,
+		activeMultisig,
+		multisigSettings,
+		notOwnerOfSafe,
+		isSharedSafe,
+		sharedSafeNetwork
+	} = useGlobalUserDetailsContext();
+	// const router = useRouter();
 	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(activeMultisig || '');
 	const pathname = usePathname();
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
@@ -48,6 +56,13 @@ const Menu: FC<Props> = ({ className }) => {
 
 	const [filteredMultisigs, setFilteredMultisigs] = useState<IMultisigAddress[]>([]);
 
+	const getPath = (basePath: string) => {
+		if (activeMultisig && isSharedSafe && sharedSafeNetwork) {
+			return `${basePath}?safe=${activeMultisig}&network=${sharedSafeNetwork}`;
+		}
+		return basePath;
+	};
+
 	useEffect(() => {
 		const filtered = multisigAddresses.filter(
 			(multisig) =>
@@ -58,35 +73,43 @@ const Menu: FC<Props> = ({ className }) => {
 
 	const menuItems = [
 		{
+			baseURl: '/',
 			icon: <HomeIcon />,
-			key: '/',
+			key: getPath('/'),
 			title: 'Home'
 		},
 		{
+			baseURl: '/exchange',
+			disabled: notOwnerOfSafe,
 			icon: <ExchangeIcon />,
-			key: '/exchange',
+			key: getPath('/exchange'),
 			new: true,
 			title: 'Exchange'
 		},
 		{
+			baseURl: '/assets',
 			icon: <AssetsIcon />,
-			key: '/assets',
+			key: getPath('/assets'),
 			title: 'Assets'
 		},
 		{
+			baseURl: '/transactions',
 			icon: <TransactionIcon />,
-			key: '/transactions',
+			key: getPath('/transactions'),
 			title: 'Transactions'
 		},
 		{
+			baseURl: '/address-book',
+			disabled: notOwnerOfSafe,
 			icon: <AddressBookIcon />,
-			key: '/address-book',
+			key: getPath('/address-book'),
 			title: 'Address Book'
 		},
 		{
+			baseURl: '/apps',
 			disabled: true,
 			icon: <AppsIcon />,
-			key: '/apps',
+			key: getPath('/apps'),
 			title: 'Apps'
 		}
 	];
@@ -94,13 +117,15 @@ const Menu: FC<Props> = ({ className }) => {
 	if (userAddress) {
 		menuItems.push(
 			{
+				baseURl: '/notification-settings',
 				icon: <NotificationIcon />,
-				key: '/notification-settings',
+				key: getPath('/notification-settings'),
 				title: 'Notifications'
 			},
 			{
+				baseURl: '/settings',
 				icon: <SettingsIcon />,
-				key: '/settings',
+				key: getPath('/settings'),
 				title: 'Settings'
 			}
 		);
@@ -112,7 +137,7 @@ const Menu: FC<Props> = ({ className }) => {
 				<section className='flex mb-7 justify-center w-full'>
 					<Link
 						className='text-white'
-						href='/'
+						href={getPath('/')}
 					>
 						<Badge
 							offset={[-15, 35]}
@@ -137,7 +162,7 @@ const Menu: FC<Props> = ({ className }) => {
 								>
 									<Link
 										className={`flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
-											item.key === pathname && 'bg-highlight text-primary'
+											item.baseURl === pathname && 'bg-highlight text-primary'
 										} ${item.disabled && 'pointer-events-none cursor-disabled text-text_secondary '} `}
 										href={item.key}
 									>
@@ -178,13 +203,17 @@ const Menu: FC<Props> = ({ className }) => {
 											multisig.address === selectedMultisigAddress && 'bg-highlight text-primary'
 										}`}
 										onClick={() => {
+											if (typeof window !== 'undefined') localStorage.setItem('active_multisig', multisig.address);
 											setUserDetailsContextState((prevState: any) => {
 												return {
 													...prevState,
-													activeMultisig: multisig.address
+													activeMultisig: multisig.address,
+													isSharedSafe: false,
+													notOwnerOfSafe: false,
+													sharedSafeAddress: '',
+													sharedSafeNetwork: network
 												};
 											});
-											if (typeof window !== 'undefined') localStorage.setItem('active_multisig', multisig.address);
 										}}
 									>
 										<MetaMaskAvatar

@@ -8,8 +8,7 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { CopyIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
-import { chainProperties } from '@next-common/global/evm-network-constants';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { StaticImageData } from 'next/image';
 import getHistoricalTokenPrice from '@next-evm/utils/getHistoricalTokenPrice';
 import dayjs from 'dayjs';
@@ -31,6 +30,7 @@ interface IReceivedInfoProps {
 		tokenLogo: StaticImageData | string;
 		tokenAddress: string;
 	}[];
+	network: NETWORK;
 }
 
 const ReceivedInfo: FC<IReceivedInfoProps> = ({
@@ -40,10 +40,9 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 	note,
 	loading,
 	addedOwner,
-	tokenDetialsArray
+	tokenDetialsArray,
+	network
 }) => {
-	const { network } = useGlobalApiContext();
-
 	const [usdValue, setUsdValue] = useState<string[]>([]);
 	useEffect(() => {
 		if (!tokenDetialsArray || tokenDetialsArray.length === 0) return;
