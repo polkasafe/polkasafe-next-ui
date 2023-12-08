@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { ArrowRightOutlined } from '@ant-design/icons';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ArrowUpRightIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
@@ -28,9 +28,16 @@ interface ITransactionProps {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const QueueTransaction = ({ callHash, callData, txType, recipientAddress, value }: ITransactionProps) => {
-	const { network } = useGlobalApiContext();
+	const { network: defaultNetwork } = useGlobalApiContext();
 	const { allAssets } = useMultisigAssetsContext();
-	const { gnosisSafe } = useGlobalUserDetailsContext();
+	const { gnosisSafe, isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } =
+		useGlobalUserDetailsContext();
+
+	const shared = sharedSafeAddress === activeMultisig;
+	const network =
+		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
+			? sharedSafeNetwork
+			: defaultNetwork;
 
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
 	const [txInfo, setTxInfo] = useState<any>({} as any);

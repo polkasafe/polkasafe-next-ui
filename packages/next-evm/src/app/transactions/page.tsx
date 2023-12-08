@@ -25,7 +25,7 @@ enum ETab {
 const Transactions = () => {
 	const [tab, setTab] = useState(ETab.QUEUE);
 	const searchParams = useSearchParams();
-	const { address } = useGlobalUserDetailsContext();
+	const { address, activeMultisig, isSharedSafe } = useGlobalUserDetailsContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
 	const [refetch, setRefetch] = useState<boolean>(false);
@@ -43,7 +43,7 @@ const Transactions = () => {
 	return (
 		<div className='bg-bg-main rounded-xl p-[20.5px] h-full relative'>
 			<AddMultisigModal />
-			{address ? (
+			{address || (activeMultisig && isSharedSafe) ? (
 				<>
 					<div className='flex items-center mb-4 scale-90 w-[111%] origin-top-left'>
 						<Button

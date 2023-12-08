@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { ArrowRightOutlined } from '@ant-design/icons';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ArrowDownLeftIcon, ArrowUpRightIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
@@ -36,13 +36,19 @@ const HistoryTransaction = ({
 	amount_token,
 	to // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IHistoryTransactions) => {
-	const { network } = useGlobalApiContext();
+	const { network: defaultNetwork } = useGlobalApiContext();
 	const { allAssets } = useMultisigAssetsContext();
-	const { gnosisSafe } = useGlobalUserDetailsContext();
+	const { gnosisSafe, isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } =
+		useGlobalUserDetailsContext();
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const shared = sharedSafeAddress === activeMultisig;
+	const network =
+		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
+			? sharedSafeNetwork
+			: defaultNetwork;
+
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 	const [txInfo, setTxInfo] = useState<any>({} as any);
 
 	const [decodedCallData, setDecodedCallData] = useState<any>({});
@@ -237,7 +243,7 @@ const HistoryTransaction = ({
 								<span className='font-normal text-xs leading-[13px] text-success'>
 									{formatBalance(
 										ethers?.utils?.formatUnits(
-											BigInt(amount)?.toString() || amount_token?.toString(),
+											BigInt(!Number.isNaN(amount) ? amount : 0)?.toString() || amount_token?.toString(),
 											tokenDetailsArray[0]?.tokenDecimals || chainProperties[network].decimals
 										)
 									)}{' '}
@@ -282,7 +288,7 @@ const HistoryTransaction = ({
 									{formatBalance(
 										ethers?.utils?.formatUnits(
 											decodedCallData?.method === 'multiSend'
-												? BigInt(amount)?.toString()
+												? BigInt(!Number.isNaN(amount) ? amount : 0)?.toString()
 												: txInfo?.transferInfo?.value || amount_token?.toString(),
 											decodedCallData?.method === 'multiSend'
 												? tokenDetailsArray[0]?.tokenDecimals

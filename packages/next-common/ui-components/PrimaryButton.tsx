@@ -24,13 +24,13 @@ const PrimaryButton = ({ className, children, onClick, size, loading, disabled, 
 			disabled={disabled}
 			size={size}
 			loading={loading}
-			className={`flex items-center rounded-lg border-none text-xs font-medium shadow-md outline-none md:text-sm md:font-bold ${
+			className={`flex items-center rounded-lg border-none text-xs font-medium shadow-md outline-none md:text-sm md:font-bold ${className} ${
 				disabled
 					? 'bg-highlight text-text_secondary'
 					: secondary
 					? 'bg-highlight text-primary'
 					: 'bg-primary text-white'
-			} ${className}`}
+			}`}
 			onClick={onClick}
 		>
 			{children}

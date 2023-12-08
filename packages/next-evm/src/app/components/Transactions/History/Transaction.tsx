@@ -10,7 +10,7 @@ import React, { FC, useCallback, useEffect, useState } from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ITransaction } from '@next-common/types';
 import {
 	ArrowDownLeftIcon,
@@ -48,9 +48,17 @@ const Transaction: FC<IHistoryTransactions> = ({
 	receivedTransfers
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { network } = useGlobalApiContext();
-	const { gnosisSafe } = useGlobalUserDetailsContext();
+	const { network: defaultNetwork } = useGlobalApiContext();
+	const { gnosisSafe, isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } =
+		useGlobalUserDetailsContext();
 	const { allAssets } = useMultisigAssetsContext();
+
+	const shared = sharedSafeAddress === activeMultisig;
+	const network =
+		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
+			? sharedSafeNetwork
+			: defaultNetwork;
+
 	const token = chainProperties[network].tokenSymbol;
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -401,6 +409,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							note={transactionDetails?.note || ''}
 							loading={loading}
 							tokenDetialsArray={tokenDetailsArray}
+							network={network}
 						/>
 					) : (
 						<SentInfo
@@ -439,6 +448,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							advancedDetails={advancedDetails}
 							isCustomTxn={isCustomTxn}
 							isRejectionTxn={isRejectionTxn}
+							network={network}
 						/>
 					)}
 				</div>

@@ -5,9 +5,8 @@ import { Collapse, Divider, Spin, Timeline } from 'antd';
 import classNames from 'classnames';
 // import { ethers } from 'ethers';
 import React, { FC, useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,
@@ -52,6 +51,7 @@ interface ISentInfoProps {
 	}[];
 	isRejectionTxn?: boolean;
 	isCustomTxn?: boolean;
+	network: NETWORK;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -73,11 +73,11 @@ const SentInfo: FC<ISentInfoProps> = ({
 	multiSendTokens,
 	isRejectionTxn,
 	isCustomTxn,
-	tokenAddress
+	tokenAddress,
+	network
 }) => {
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
 	const threshold =
 		multisigAddresses?.find((item: any) => item.address === activeMultisig || item.proxy === activeMultisig)
 			?.threshold || 0;

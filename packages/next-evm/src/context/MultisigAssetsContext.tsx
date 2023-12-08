@@ -4,7 +4,7 @@
 
 import React, { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { EAssetType, IAsset } from '@next-common/types';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ethers } from 'ethers';
 import { useGlobalUserDetailsContext } from './UserDetailsContext';
 import { useGlobalApiContext } from './ApiContext';
@@ -36,23 +36,17 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 	const [tokenFiatConversions, setTokenFiatConversions] = useState<{ [tokenAddress: string]: string }>({});
 	const [loading, setLoading] = useState<boolean>(false);
 
-	const { activeMultisig, gnosisSafe } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
+	const { activeMultisig, gnosisSafe, isSharedSafe, sharedSafeNetwork, sharedSafeAddress } =
+		useGlobalUserDetailsContext();
+	const { network: defaultNetwork } = useGlobalApiContext();
 
 	const handleGetAssets = useCallback(async () => {
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const fetchTokenPrice = async (contractAddresses: string[]) => {
-			const addresses = contractAddresses.length > 1 ? contractAddresses.join(',') : contractAddresses[0];
-			console.log(chainProperties[network].coingeckoId);
-			const data = await fetch(
-				`https://api.coingecko.com/api/v3/simple/token_price/${chainProperties[network].coingeckoId}?contract_addresses=${addresses}&vs_currencies=usd&x_cg_demo_api_key=CG-N6AKA6gXHJdZRCzwzkug1JR9`,
-				{ method: 'GET' }
-			);
-
-			return data.json();
-		};
-
 		try {
+			const shared = sharedSafeAddress === activeMultisig;
+			const network =
+				isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
+					? sharedSafeNetwork
+					: defaultNetwork;
 			setLoading(true);
 			const tokenInfo = await gnosisSafe.getMultisigAllAssets(network, activeMultisig);
 
@@ -88,7 +82,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 			console.log('ERROR', error);
 			setLoading(false);
 		}
-	}, [activeMultisig, gnosisSafe, network]);
+	}, [activeMultisig, defaultNetwork, gnosisSafe, isSharedSafe, sharedSafeAddress, sharedSafeNetwork]);
 
 	useEffect(() => {
 		handleGetAssets();

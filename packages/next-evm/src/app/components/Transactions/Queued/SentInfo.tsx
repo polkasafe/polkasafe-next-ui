@@ -5,9 +5,8 @@ import { Button, Collapse, Divider, Spin, Timeline } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,
@@ -58,6 +57,7 @@ interface ISentInfoProps {
 	isRejectionTxn?: boolean;
 	isCustomTxn?: boolean;
 	setOpenReplaceTxnModal: React.Dispatch<React.SetStateAction<boolean>>;
+	network: NETWORK;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -84,12 +84,11 @@ const SentInfo: FC<ISentInfoProps> = ({
 	advancedDetails,
 	isRejectionTxn,
 	isCustomTxn,
-	setOpenReplaceTxnModal
+	setOpenReplaceTxnModal,
+	network
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { network } = useGlobalApiContext();
-
-	const { address: userAddress, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
+	const { address: userAddress, multisigAddresses, activeMultisig, notOwnerOfSafe } = useGlobalUserDetailsContext();
 	const { tokenFiatConversions } = useMultisigAssetsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const [updatedNote, setUpdatedNote] = useState(note);
@@ -452,7 +451,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						{/* {console.log(approvals)} */}
 						{!approvals.includes(userAddress) ? (
 							<Button
-								disabled={approvals.includes(userAddress)}
+								disabled={approvals.includes(userAddress) || notOwnerOfSafe}
 								loading={loading}
 								icon={<CheckOutlined className='text-white' />}
 								onClick={handleApproveTransaction}
@@ -465,6 +464,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						) : (
 							threshold === approvals.length && (
 								<Button
+									disabled={notOwnerOfSafe}
 									loading={loading}
 									icon={<CheckOutlined className='text-white' />}
 									onClick={handleExecuteTransaction}
@@ -475,7 +475,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							)
 						)}
 						<Button
-							disabled={loading}
+							disabled={loading || notOwnerOfSafe}
 							icon={
 								<span className='flex items-center justify-center p-1 border border-failure rounded-full w-[15px] h-[15px]'>
 									<OutlineCloseIcon className='w-[6px] h-[6px]' />
