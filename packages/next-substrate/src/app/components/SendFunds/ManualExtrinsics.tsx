@@ -206,7 +206,7 @@ const ManualExtrinsics = ({
 		setFormState((prevState) => {
 			const inputParamsNew = [...prevState.inputParams];
 			inputParamsNew[ind] = { type: paramField.type, value };
-			return { ...prevState, inputParamsNew };
+			return { ...prevState, inputParams: inputParamsNew };
 		});
 	};
 
