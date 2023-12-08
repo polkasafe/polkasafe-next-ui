@@ -151,6 +151,7 @@
 		"react-hooks/rules-of-hooks": "error",
 		"react-hooks/exhaustive-deps": "warn",
 		"react/require-default-props": "off",
+		"jsx-a11y/control-has-associated-label": "off",
 		"semi": [
 			2,
 			"always"

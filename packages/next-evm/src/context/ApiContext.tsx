@@ -4,7 +4,17 @@
 
 import '@polkadot/api-augment';
 
-import { Arbitrum, Astar, Binance, Ethereum, Gnosis, Goerli, Optimism, Polygon } from '@thirdweb-dev/chains';
+import {
+	Arbitrum,
+	Astar,
+	Binance,
+	Ethereum,
+	Gnosis,
+	Goerli,
+	Optimism,
+	Polygon,
+	ZetachainAthens3Testnet
+} from '@thirdweb-dev/chains';
 import { metamaskWallet, ThirdwebProvider, walletConnect } from '@thirdweb-dev/react';
 import React, { useContext, useMemo, useState } from 'react';
 import { NETWORK } from '@next-common/global/evm-network-constants';
@@ -32,7 +42,8 @@ const chains: any = {
 	'gnosis chain': Gnosis,
 	goerli: Goerli,
 	optimism: Optimism,
-	polygon: Polygon
+	polygon: Polygon,
+	[NETWORK.ZETA_CHAIN]: ZetachainAthens3Testnet
 };
 
 export function ApiContextProvider({ children }: ApiContextProviderProps): React.ReactElement {

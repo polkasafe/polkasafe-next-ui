@@ -10,6 +10,7 @@ import { CheckOutlined, CopyIcon, ExternalLinkIcon } from '@next-common/ui-compo
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 // import Loader from '../../UserFlow/Loader';
 
@@ -81,7 +82,7 @@ const Review = ({ multisigData, signatories, multisigName }: Props) => {
 										<CopyIcon className='mr-2 text-text_secondary hover:text-primary' />
 									</button>
 									<a
-										href={`https://${network}.subscan.io/account/${multisigData?.address}`}
+										href={`${chainProperties[network].blockExplorer}/address/${multisigData?.address}`}
 										target='_blank'
 										rel='noreferrer'
 									>

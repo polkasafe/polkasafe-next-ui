@@ -16,6 +16,7 @@ import { NotificationStatus } from '@next-common/types';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import addNewTransaction from '@next-evm/utils/addNewTransaction';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 const RemoveOwner = ({
 	addressToRemove,
@@ -45,7 +46,13 @@ const RemoveOwner = ({
 	const handleRemoveOwner = async () => {
 		setLoading(true);
 		try {
-			const safeTxHash = await gnosisSafe.createRemoveOwner(activeMultisig, address, addressToRemove, newThreshold);
+			const safeTxHash = await gnosisSafe.createRemoveOwner(
+				activeMultisig,
+				address,
+				addressToRemove,
+				newThreshold,
+				chainProperties[network].contractNetworks
+			);
 			if (safeTxHash) {
 				addNewTransaction({
 					amount: '0',

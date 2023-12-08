@@ -93,6 +93,10 @@ input {
     margin: 0;
 }
 
+.ant-layout-content {
+  flex: auto !important;
+}
+
 .ant-btn-primary {
   color: blue_primary !important;
 

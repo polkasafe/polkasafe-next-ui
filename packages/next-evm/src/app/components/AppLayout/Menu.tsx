@@ -17,6 +17,7 @@ import {
 	AddressBookIcon,
 	AppsIcon,
 	AssetsIcon,
+	ExchangeIcon,
 	HomeIcon,
 	NotificationIcon,
 	SettingsIcon,
@@ -60,6 +61,12 @@ const Menu: FC<Props> = ({ className }) => {
 			icon: <HomeIcon />,
 			key: '/',
 			title: 'Home'
+		},
+		{
+			icon: <ExchangeIcon />,
+			key: '/exchange',
+			new: true,
+			title: 'Exchange'
 		},
 		{
 			icon: <AssetsIcon />,
@@ -136,7 +143,7 @@ const Menu: FC<Props> = ({ className }) => {
 									>
 										{item.icon}
 										{item.title}
-										{item.title === 'Notifications' && (
+										{item.new && (
 											<div className='px-[6px] py-[1px] text-[10px] rounded-lg text-xs bg-primary text-white'>New</div>
 										)}
 										{item.title === 'Apps' && (
@@ -184,7 +191,7 @@ const Menu: FC<Props> = ({ className }) => {
 											address={multisig.address}
 											size={23}
 										/>
-										<span className='truncate'>{multisig.name}</span>
+										<span className='truncate'>{multisigSettings[multisig.address]?.name || multisig.name}</span>
 									</button>
 								</li>
 							);

@@ -17,6 +17,7 @@ import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import addNewTransaction from '@next-evm/utils/addNewTransaction';
 import styled from 'styled-components';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 interface ISignatory {
 	name: string;
@@ -91,7 +92,8 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 				activeMultisig,
 				address,
 				signatoriesArray?.[0].address,
-				newThreshold
+				newThreshold,
+				chainProperties[network].contractNetworks
 			);
 			if (safeTxHash) {
 				addNewTransaction({

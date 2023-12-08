@@ -40,7 +40,7 @@ export async function POST(req: Request) {
 	if (!signatories || !threshold || !multisigName || !safeAddress) {
 		return NextResponse.json({ data: null, error: responseMessages.missing_params }, { status: 400 });
 	}
-	if (!Array.isArray(signatories) || signatories.length < 2)
+	if (!Array.isArray(signatories) || signatories.length < 1)
 		return NextResponse.json({ data: null, error: responseMessages.invalid_params }, { status: 400 });
 
 	if (Number.isNaN(threshold) || Number(threshold) > signatories.length) {
@@ -88,6 +88,13 @@ export async function POST(req: Request) {
 		updated_at: new Date()
 	};
 	await multisigColl.doc(safeAddress).set(multisigDocument);
+
+	await addressRef.update({
+		multisigAddresses: [...addressRefData.multisigAddresses, multisigDocument],
+		[`multisigSettings.${safeAddress}`]: {
+			name: multisigName
+		}
+	});
 
 	if (addressBook) {
 		const addressBookRef = firestoreDB.collection('addressBooks').doc(`${safeAddress}_${network}`);

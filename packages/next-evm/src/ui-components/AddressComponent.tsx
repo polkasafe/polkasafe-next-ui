@@ -12,6 +12,7 @@ import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 
 import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 
 interface IAddressComponent {
 	address: string;
@@ -63,13 +64,19 @@ const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, only
 			)}
 			{onlyAddress ? (
 				<div className='flex items-center gap-x-3 font-normal text-sm text-text_secondary'>
-					<span className='text-white'>{shortenAddress(address || '', 10)}</span>
+					<span className='text-white'>
+						{addressObj?.nickName ||
+							addressObj?.name ||
+							multisigAddresses.find((item) => item.address === address)?.name ||
+							records?.[address]?.name ||
+							shortenAddress(address || '', 10)}
+					</span>
 					<span className='flex items-center gap-x-2'>
 						<button onClick={() => copyText(address)}>
 							<CopyIcon className='hover:text-primary' />
 						</button>
 						<a
-							href={`https://${network}.subscan.io/account/${address}`}
+							href={`${chainProperties[network].blockExplorer}/address/${address}`}
 							target='_blank'
 							rel='noreferrer'
 						>
@@ -83,7 +90,7 @@ const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, only
 						{name ||
 							addressObj?.nickName ||
 							addressObj?.name ||
-							multisigAddresses.find((item) => item.address === address || item.proxy === address)?.name ||
+							multisigAddresses.find((item) => item.address === address)?.name ||
 							records?.[address]?.name ||
 							DEFAULT_ADDRESS_NAME}
 					</div>
@@ -94,7 +101,7 @@ const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, only
 								<CopyIcon className='hover:text-primary' />
 							</button>
 							<a
-								href={`https://${network}.subscan.io/account/${address}`}
+								href={`${chainProperties[network].blockExplorer}/address/${address}`}
 								target='_blank'
 								rel='noreferrer'
 							>

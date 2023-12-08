@@ -13,6 +13,7 @@ import { ReactNode } from 'react';
 import antdTheme from '@next-evm/styles/antdTheme';
 import { AddMultisigProvider } from '@next-evm/context/AddMultisigContext';
 import { MultisigAssetsProvider } from '@next-evm/context/MultisigAssetsContext';
+import { CurrencyContextProvider } from '@next-evm/context/CurrencyContext';
 
 export default function Providers({ children }: { children?: ReactNode }) {
 	return (
@@ -24,7 +25,9 @@ export default function Providers({ children }: { children?: ReactNode }) {
 							<ActiveMultisigProvider>
 								<AddMultisigProvider>
 									<MultisigAssetsProvider>
-										<DAppContextProvider>{children}</DAppContextProvider>
+										<CurrencyContextProvider>
+											<DAppContextProvider>{children}</DAppContextProvider>
+										</CurrencyContextProvider>
 									</MultisigAssetsProvider>
 								</AddMultisigProvider>
 							</ActiveMultisigProvider>

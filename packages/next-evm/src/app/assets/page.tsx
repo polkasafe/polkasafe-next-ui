@@ -10,30 +10,41 @@ import AssetsTable from '@next-evm/app/components/Assets/AssetsTable';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { useState } from 'react';
+import Loader from '@next-common/ui-components/Loader';
+import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import AddMultisigModal from '../components/Multisig/AddMultisigModal';
+import ChangeCurrency from '../components/Assets/ChangeCurrency';
 
 const Assets = () => {
 	const { address: userAddress } = useGlobalUserDetailsContext();
-	const { allAssets } = useMultisigAssetsContext();
+	const { allAssets, loadingAssets } = useMultisigAssetsContext();
+	const { currency: globalCurrency } = useGlobalCurrencyContext();
+	const [currency, setCurrency] = useState<string>(globalCurrency);
 
 	return (
 		<div className='h-[70vh] bg-bg-main rounded-lg'>
 			<AddMultisigModal />
 			{userAddress ? (
-				<div className='grid grid-cols-12 gap-4'>
-					<div className='col-start-1 col-end-13'>
-						<div className='flex items-center justify-between'>
-							<div className='flex items-end gap-x-4'>
-								<h2 className='text-base font-bold text-white mt-3 ml-5'>Tokens</h2>
-							</div>
-							{/* <div className='flex items-center justify-center mr-5 mt-3'>
-						<p className='text-text_secondary mx-2'>Currency:</p>
-						<DropDown />
-					</div> */}
+				<div className='scale-[80%] w-[125%] h-[125%] origin-top-left'>
+					<div className='flex items-center justify-between mb-2 py-3 px-5'>
+						<div className='flex items-end gap-x-4'>
+							<h2 className='text-lg font-bold text-white'>Tokens</h2>
 						</div>
+						<ChangeCurrency
+							currency={currency}
+							setCurrency={setCurrency}
+						/>
 					</div>
-					<div className='col-start-1 col-end-13 mx-5'>
-						<AssetsTable assets={allAssets} />
+					<div className='mx-5 h-full'>
+						{loadingAssets ? (
+							<Loader size='large' />
+						) : (
+							<AssetsTable
+								currency={currency}
+								assets={allAssets}
+							/>
+						)}
 					</div>
 				</div>
 			) : (

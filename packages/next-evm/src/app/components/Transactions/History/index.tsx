@@ -11,9 +11,6 @@ import Loader from '@next-common/ui-components/Loader';
 import Pagination from '@next-common/ui-components/Pagination';
 import { convertSafeHistoryData } from '@next-evm/utils/convertSafeData/convertSafeHistory';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
-import { getTransactionHistory } from '@safe-global/safe-gateway-typescript-sdk';
-
-import { chainProperties } from '@next-common/global/evm-network-constants';
 import NoTransactionsHistory from './NoTransactionsHistory';
 import Transaction from './Transaction';
 
@@ -30,13 +27,13 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 	const { network } = useGlobalApiContext();
 	const { address } = useGlobalUserDetailsContext();
 
-	// useEffect(() => {
-	// const hash = location.hash.slice(1);
-	// const elem = document.getElementById(hash);
-	// if (elem) {
-	// elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
-	// }
-	// }, [location.hash, transactions]);
+	useEffect(() => {
+		const hash = typeof window !== 'undefined' && window.location.hash.slice(1);
+		const elem = document.getElementById(hash);
+		if (elem) {
+			elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
+		}
+	}, []);
 
 	useEffect(() => {
 		if (!gnosisSafe) {
@@ -45,20 +42,11 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 		(async () => {
 			setLoading(true);
 			try {
-				const txDetails = await getTransactionHistory(
-					chainProperties[network].chainId.toString(),
-					activeMultisig,
-					undefined
-				);
-				const filteredTxDetials = txDetails?.results.filter((item) => item.type === 'TRANSACTION');
 				const safeData = await gnosisSafe.getAllTx(activeMultisig, {
 					executed: true,
 					trusted: true
 				});
-				console.log(safeData);
-				const convertedData = safeData.results.map((safe: any, i) =>
-					convertSafeHistoryData({ ...safe, network }, (filteredTxDetials[i] as any)?.transaction.txInfo)
-				);
+				const convertedData = safeData.results.map((safe: any) => convertSafeHistoryData({ ...safe, network }));
 				setTransactions(convertedData);
 				updateDB(UpdateDB.Update_History_Transaction, { transactions: convertedData }, address, network);
 			} catch (error) {
@@ -81,7 +69,7 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 	return (
 		<>
 			{transactions && transactions.length > 0 ? (
-				<div className='flex flex-col gap-y-[10px] mb-2'>
+				<div className='flex flex-col mb-2'>
 					{transactions
 						.sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1))
 						.map((transaction, index) => {

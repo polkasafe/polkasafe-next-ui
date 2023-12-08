@@ -208,6 +208,13 @@ export interface IAsset {
 	balance_token: string;
 	token_decimals?: number;
 	tokenAddress?: string | null;
+	fiat_conversion?: string;
+	type?: EAssetType;
+}
+
+export enum EAssetType {
+	NATIVE_TOKEN = 'NATIVE_TOKEN',
+	ERC20 = 'ERC20'
 }
 
 export interface ITxNotification {

@@ -4,6 +4,7 @@
 
 import { Form } from 'antd';
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-evm/app/components/Settings/RemoveBtn';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
@@ -18,6 +19,8 @@ const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 	const { activeMultisig, multisigAddresses, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const [loading, setLoading] = useState<boolean>(false);
 	const { network } = useGlobalApiContext();
+
+	const router = useRouter();
 
 	const multisig = multisigAddresses.find(
 		(item: any) => item.address === activeMultisig || item.proxy === activeMultisig
@@ -71,7 +74,6 @@ const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 					return {
 						...prevState,
 						activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
-						multisigAddresses: newMutlisigArray,
 						multisigSettings: {
 							...prevState.multisigSettings,
 							[multisig.address]: {
@@ -81,6 +83,7 @@ const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 						}
 					};
 				});
+				router.push('/');
 				onCancel();
 			}
 		} catch (error) {

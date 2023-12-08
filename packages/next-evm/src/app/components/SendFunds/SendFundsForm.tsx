@@ -3,8 +3,9 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import './style.css';
-import { PlusCircleOutlined } from '@ant-design/icons';
-import { AutoComplete, Button, Divider, Dropdown, Form, Input, Spin } from 'antd';
+import TenderlyIcon from '@next-common/assets/icons/tenderly-icon.png';
+import { PlusCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
+import { AutoComplete, Button, Divider, Dropdown, Form, Input, Spin, Tooltip } from 'antd';
 import { DefaultOptionType } from 'antd/es/select';
 import classNames from 'classnames';
 import { ethers } from 'ethers';
@@ -20,8 +21,10 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import Balance from '@next-evm/ui-components/Balance';
 import BalanceInput from '@next-evm/ui-components/BalanceInput';
 import {
+	CheckOutlined,
 	CircleArrowDownIcon,
 	DeleteIcon,
+	ExternalLinkIcon,
 	LineIcon,
 	OutlineCloseIcon,
 	SquareDownArrowIcon
@@ -33,9 +36,14 @@ import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
 import notify from '@next-evm/utils/notify';
 
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
+import Image from 'next/image';
+import { getSimulationLink, setSimulationSharing } from '@next-evm/utils/simulation';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
+import TxnSimulationFailedModal from './TxnSimulationFailedModal';
 
 export interface IRecipientAndAmount {
 	recipient: string;
@@ -49,6 +57,7 @@ interface ISendFundsFormProps {
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
 	defaultSelectedAddress?: string;
 	defaultToken?: IAsset;
+	defaultTxNonce?: number;
 }
 
 const SendFundsForm = ({
@@ -56,6 +65,7 @@ const SendFundsForm = ({
 	onCancel,
 	defaultSelectedAddress,
 	setNewTxn,
+	defaultTxNonce,
 	defaultToken // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
 	const { activeMultisig, addressBook, address, gnosisSafe, multisigAddresses, transactionFields, activeMultisigData } =
@@ -94,6 +104,16 @@ const SendFundsForm = ({
 		category: string;
 		subfields: { [subfield: string]: { name: string; value: string } };
 	}>({ category: 'none', subfields: {} });
+
+	const [simulationLoading, setSimulationLoading] = useState<boolean>(false);
+
+	const [isSimulationSuccess, setIsSimulationSuccess] = useState<boolean>(false);
+	const [isSimulationFailed, setIsSimulationFailed] = useState<boolean>(false);
+	const [simulationFailedReason, setSimulationFailedReason] = useState<string>('');
+
+	const [simulationId, setSimulationId] = useState<string>('');
+
+	const [openSimulationFailedModal, setOpenSimulationFailedModal] = useState<boolean>(false);
 
 	const onRecipientChange = (value: string, i: number) => {
 		setRecipientAndAmount((prevState) => {
@@ -207,7 +227,38 @@ const SendFundsForm = ({
 				});
 			}
 		});
+		setSimulationId('');
+		setIsSimulationFailed(false);
+		setIsSimulationSuccess(false);
 	}, [recipientAndAmount]);
+
+	const handleSimulate = async () => {
+		const recipients = recipientAndAmount.map((r) => r.recipient);
+		const amounts = recipientAndAmount.map((a) =>
+			ethers.utils.parseUnits(a.amount, a.token?.token_decimals || 'ether').toString()
+		);
+		const selectedTokens = recipientAndAmount.map((r) => r.token);
+		setSimulationLoading(true);
+		const simulationData = await gnosisSafe.getTxSimulationData(
+			activeMultisig,
+			recipients,
+			amounts,
+			address,
+			selectedTokens,
+			chainProperties[network].chainId
+		);
+		if (simulationData && simulationData?.simulation?.status) {
+			await setSimulationSharing(simulationData?.simulation?.id);
+			setIsSimulationSuccess(true);
+			setSimulationId(simulationData?.simulation?.id);
+		} else if (simulationData && !simulationData?.simulation?.status) {
+			await setSimulationSharing(simulationData?.simulation?.id);
+			setIsSimulationFailed(true);
+			setSimulationFailedReason(simulationData?.simulation?.error_message || '');
+			setSimulationId(simulationData?.simulation?.id);
+		}
+		setSimulationLoading(false);
+	};
 
 	const handleSubmit = async () => {
 		setLoading(true);
@@ -223,7 +274,9 @@ const SendFundsForm = ({
 				amounts,
 				address,
 				note,
-				selectedTokens
+				selectedTokens,
+				defaultTxNonce,
+				chainProperties[network].contractNetworks
 			);
 
 			if (safeTxHash) {
@@ -311,8 +364,22 @@ const SendFundsForm = ({
 			spinning={loading}
 			indicator={<LoadingLottie message={loadingMessages} />}
 		>
+			<ModalComponent
+				open={openSimulationFailedModal}
+				onCancel={() => setOpenSimulationFailedModal(false)}
+				title='Simulation Failed'
+			>
+				<TxnSimulationFailedModal
+					reason={simulationFailedReason}
+					onCancel={() => setOpenSimulationFailedModal(false)}
+					onProceed={() => {
+						handleSubmit();
+						setOpenSimulationFailedModal(false);
+					}}
+				/>
+			</ModalComponent>
 			<Form
-				className={classNames('max-h-[68vh] overflow-y-auto px-2')}
+				className={classNames('max-h-[68vh] overflow-y-auto px-2 pb-8')}
 				form={form}
 				// eslint-disable-next-line no-template-curly-in-string
 				validateMessages={{ required: "Please add the '${name}'" }}
@@ -392,7 +459,6 @@ const SendFundsForm = ({
 													) : (
 														<AutoComplete
 															autoFocus
-															defaultOpen
 															filterOption={(inputValue, options) => {
 																return inputValue && options?.value ? String(options?.value) === inputValue : true;
 															}}
@@ -459,18 +525,99 @@ const SendFundsForm = ({
 									The beneficiary will have access to the transferred fees when the transaction is included in a block.
 								</p>
 							</article>
-							<article className='w-[412px] flex items-center'>
-								<span className='-mr-1.5 z-0'>
-									<LineIcon className='text-5xl' />
-								</span>
-								<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] -mb-5'>
-									If the recipient account is new, the balance needs to be more than the existential deposit. Likewise
-									if the sending account balance drops below the same value, the account will be removed from the state.
-								</p>
-							</article>
 						</div>
 					</div>
 				</section>
+
+				{!recipientAndAmount.some(
+					(item) =>
+						item.recipient === '' ||
+						item.amount === '0' ||
+						Number.isNaN(Number(item.amount)) ||
+						!item.amount ||
+						Number(item.amount) === 0 ||
+						Number(item.amount) > Number(item.token.balance_token)
+				) &&
+					network !== NETWORK.ZETA_CHAIN && (
+						<section className='mt-[15px] flex items-center gap-x-[10px]'>
+							<article className='w-[500px] border border-primary rounded-lg p-3 flex justify-between items-center'>
+								<div className='flex flex-col gap-y-1'>
+									<span className='text-sm text-white flex items-center gap-x-2'>
+										Run a Simulation
+										<Tooltip
+											title={
+												<div className='text-text_secondary text-xs'>
+													<div>
+														Before executing this transaction, it can undergo a simulation to ensure its success,
+														generating a comprehensive report detailing the execution of the transaction.
+													</div>
+												</div>
+											}
+											placement='bottom'
+										>
+											<InfoCircleOutlined className='text-text_secondary' />
+										</Tooltip>
+									</span>
+									<span className='text-xs text-text_secondary flex items-center gap-x-1'>
+										Powered by{' '}
+										<Image
+											src={TenderlyIcon}
+											alt='tenderly'
+											width={65}
+										/>
+									</span>
+								</div>
+								{isSimulationSuccess ? (
+									<span className='flex items-center gap-x-1 text-success'>
+										<CheckOutlined /> Success
+									</span>
+								) : isSimulationFailed ? (
+									<span className='flex items-center gap-x-1 text-failure'>
+										<span className='flex items-center justify-center p-2 border border-failure rounded-full w-[14.33px] h-[14.33px]'>
+											<OutlineCloseIcon className='w-[5px] h-[5px]' />
+										</span>{' '}
+										Failed
+									</span>
+								) : (
+									<Button
+										onClick={handleSimulate}
+										title='Simulate'
+										loading={simulationLoading}
+										className='border-2 border-primary bg-highlight text-primary'
+										size='small'
+									>
+										Simulate
+									</Button>
+								)}
+							</article>
+							{simulationId && (
+								<article className='flex-1 flex items-center'>
+									<span className='-mr-1.5 z-0'>
+										<LineIcon className='text-5xl' />
+									</span>
+									<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] flex-1'>
+										<h2 className='text-base font-semibold mb-1 text-white'>
+											Simulation {isSimulationSuccess ? 'Successful' : 'Failed'}
+										</h2>
+										{simulationFailedReason && (
+											<p className='text-base mt-1 mb-2 text-white'>{simulationFailedReason}</p>
+										)}
+										<div className='flex gap-x-1'>
+											You can check the full report{' '}
+											<a
+												className='text-primary font-semibold flex items-center gap-x-1'
+												target='_blank'
+												href={getSimulationLink(simulationId)}
+												rel='noreferrer'
+											>
+												on Tenderly <ExternalLinkIcon />
+											</a>
+										</div>
+									</p>
+								</article>
+							)}
+						</section>
+					)}
 
 				<section className='mt-[15px] w-[500px]'>
 					<label className='text-primary font-normal text-xs block mb-[5px]'>Category*</label>
@@ -631,7 +778,12 @@ const SendFundsForm = ({
 					disabled={
 						recipientAndAmount.some(
 							(item) =>
-								item.recipient === '' || item.amount === '0' || Number.isNaN(Number(item.amount)) || !item.amount
+								item.recipient === '' ||
+								item.amount === '0' ||
+								Number.isNaN(Number(item.amount)) ||
+								!item.amount ||
+								Number(item.amount) === 0 ||
+								Number(item.amount) > Number(item.token.balance_token)
 						) ||
 						Object.keys(transactionFields[category].subfields).some(
 							(key) =>
@@ -639,7 +791,7 @@ const SendFundsForm = ({
 						)
 					}
 					loading={loading}
-					onClick={handleSubmit}
+					onClick={isSimulationFailed ? () => setOpenSimulationFailedModal(true) : handleSubmit}
 					className='w-[250px]'
 					title='Make Transaction'
 				/>

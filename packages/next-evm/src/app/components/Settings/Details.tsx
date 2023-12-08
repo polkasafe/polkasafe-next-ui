@@ -61,9 +61,8 @@ const Details = () => {
 					<div className='flex items-center justify-between gap-x-5 mt-7'>
 						<span>Safe Name:</span>
 						<span className='text-white flex items-center gap-x-3'>
-							{multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
-								multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
-									?.name ||
+							{multisigSettings?.[activeMultisig]?.name ||
+								multisigAddresses?.find((item) => item.address === activeMultisig)?.name ||
 								DEFAULT_MULTISIG_NAME}
 							<button onClick={() => setOpenRenameModal(true)}>
 								<EditIcon className='text-primary cursor-pointer' />

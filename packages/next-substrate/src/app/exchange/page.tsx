@@ -55,12 +55,11 @@ const Exchange = ({ className }: { className?: string }) => {
 		if (!walletAddress || !coinAmount || Number.isNaN(coinAmount)) return;
 
 		// const transakConfig: TransakConfig = {
-		// apiKey: '969ffa75-9ce9-4b52-b856-78cf7d5b5b65',
-		// environment: Transak.ENVIRONMENTS.STAGING,
-		// defaultCryptoAmount: Number(coinAmount),
+		// apiKey: process.env.NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY,
+		// environment: Transak.ENVIRONMENTS.PRODUCTION,
+		// cryptoAmount: Number(coinAmount),
 		// walletAddress: getEncodedAddress(walletAddress, network) || walletAddress,
-		// defaultNetwork: network
-		// // For the full list of customisation options check the link below
+		// productsAvailed: onrampFlowType
 		// };
 
 		// const transak = new Transak(transakConfig);
@@ -90,7 +89,7 @@ const Exchange = ({ className }: { className?: string }) => {
 						<span
 							onClick={() => setOnrampFlowType(EOnramp.BUY)}
 							className={`p-[10px] bg-opacity-10 text-xl text-white flex items-center justify-center flex-col gap-y-3 ${
-								onrampFlowType === 1 ? 'bg-success text-success' : 'bg-text_secondary'
+								onrampFlowType === EOnramp.BUY ? 'bg-success text-success' : 'bg-text_secondary'
 							} cursor-pointer rounded-lg leading-none w-[180px] h-[120px]`}
 						>
 							<PlusCircleOutlined />
@@ -99,7 +98,7 @@ const Exchange = ({ className }: { className?: string }) => {
 						<span
 							onClick={() => setOnrampFlowType(EOnramp.SELL)}
 							className={`p-[10px] bg-opacity-10 text-xl text-white flex items-center justify-center flex-col gap-y-3 ${
-								onrampFlowType === 2 ? 'bg-success text-success' : 'bg-text_secondary'
+								onrampFlowType === EOnramp.SELL ? 'bg-success text-success' : 'bg-text_secondary'
 							} cursor-pointer rounded-lg leading-none w-[180px] h-[120px]`}
 						>
 							<MinusCircleOutlined />

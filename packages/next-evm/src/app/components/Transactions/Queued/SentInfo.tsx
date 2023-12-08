@@ -5,26 +5,32 @@ import { Button, Collapse, Divider, Spin, Timeline } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
-import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
-import RemoveBtn from '@next-evm/app/components/Settings/RemoveBtn';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,
+	CheckOutlined,
 	CircleCheckIcon,
 	CirclePlusIcon,
 	CircleWatchIcon,
 	CopyIcon,
-	EditIcon
+	EditIcon,
+	OutlineCloseIcon
 } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 
 import { ethers } from 'ethers';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
+import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { EAssetType } from '@next-common/types';
 import EditNote from './EditNote';
+// eslint-disable-next-line import/no-cycle
+import { ITokenDetails } from './Transaction';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -38,17 +44,20 @@ interface ISentInfoProps {
 	className?: string;
 	callHash: string;
 	callData: string;
-	callDataString: string;
 	recipientAddress?: string | string[];
 	handleApproveTransaction: () => Promise<void>;
-	handleCancelTransaction: () => Promise<void>;
 	handleExecuteTransaction: () => Promise<void>;
 	note: string;
 	txType?: string;
 	transactionDetailsLoading: boolean;
 	tokenSymbol?: string;
 	tokenDecimals?: number;
-	multiSendTokens?: { tokenSymbol: string; tokenDecimals: number }[];
+	tokenAddress?: string;
+	multiSendTokens?: ITokenDetails[];
+	advancedDetails: any;
+	isRejectionTxn?: boolean;
+	isCustomTxn?: boolean;
+	setOpenReplaceTxnModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -58,7 +67,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 	transactionFields,
 	className,
 	callData,
-	callDataString,
 	callHash,
 	recipientAddress,
 	date,
@@ -66,20 +74,24 @@ const SentInfo: FC<ISentInfoProps> = ({
 	loading,
 	threshold,
 	handleApproveTransaction,
-	handleCancelTransaction,
 	txType,
 	note,
 	transactionDetailsLoading,
 	tokenSymbol,
 	tokenDecimals,
-	multiSendTokens
+	tokenAddress,
+	multiSendTokens,
+	advancedDetails,
+	isRejectionTxn,
+	isCustomTxn,
+	setOpenReplaceTxnModal
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { network } = useGlobalApiContext();
 
 	const { address: userAddress, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
+	const { tokenFiatConversions } = useMultisigAssetsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
-	const [openCancelModal, setOpenCancelModal] = useState<boolean>(false);
 	const [updatedNote, setUpdatedNote] = useState(note);
 	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
 
@@ -94,29 +106,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 	return (
 		<div className={classNames('flex gap-x-4', className)}>
 			<ModalComponent
-				onCancel={() => setOpenCancelModal(false)}
-				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Cancel Transaction</h3>}
-				open={openCancelModal}
-			>
-				<div className='flex flex-col h-full'>
-					<div className='text-white'>Are you sure you want to cancel the Transaction?</div>
-					<div className='flex items-center justify-between mt-[40px]'>
-						<CancelBtn
-							title='No'
-							onClick={() => setOpenCancelModal(false)}
-						/>
-						<RemoveBtn
-							title='Yes, Cancel'
-							loading={loading}
-							onClick={() => {
-								handleCancelTransaction();
-								setOpenCancelModal(false);
-							}}
-						/>
-					</div>
-				</div>
-			</ModalComponent>
-			<ModalComponent
 				onCancel={() => setOpenEditNoteModal(false)}
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Add Note</h3>}
 				open={openEditNoteModal}
@@ -130,6 +119,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 			</ModalComponent>
 			<article className='p-4 rounded-lg bg-bg-main flex-1'>
 				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') &&
+					!isRejectionTxn &&
+					!isCustomTxn &&
 					recipientAddress &&
 					amount &&
 					(typeof recipientAddress === 'string' ? (
@@ -137,10 +128,28 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
 								<span>Send</span>
 								<span className='text-failure'>
-									{amount
-										? ethers.utils.formatUnits(String(amount), tokenDecimals || chainProperties[network].decimals)
+									{amount && !Array.isArray(amount)
+										? ethers.utils.formatUnits(
+												BigInt(!Number.isNaN(amount) ? amount : 0).toString(),
+												tokenDecimals || chainProperties[network].decimals
+										  )
 										: '?'}{' '}
 									{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+									{amount && !Number.isNaN(amount) && !Array.isArray(amount) && (
+										<>
+											(
+											<FiatCurrencyValue
+												value={tokenToUSDConversion(
+													ethers.utils.formatUnits(
+														BigInt(!Number.isNaN(amount) ? amount : 0).toString(),
+														tokenDecimals || chainProperties[network].decimals
+													),
+													tokenFiatConversions[tokenAddress || EAssetType.NATIVE_TOKEN]
+												)}
+											/>
+											)
+										</>
+									)}
 								</span>
 								<span>To:</span>
 							</p>
@@ -149,36 +158,61 @@ const SentInfo: FC<ISentInfoProps> = ({
 							</div>
 						</>
 					) : (
-						<div className='flex flex-col gap-y-1'>
+						<div className='flex flex-col gap-y-1 max-h-[200px] overflow-y-auto'>
 							{Array.isArray(recipientAddress) &&
-								recipientAddress.map((item, i) => (
-									<>
-										<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
-											<span>Send</span>
-											<span className='text-failure'>
-												{amount[i]
-													? ethers.utils.formatUnits(
-															String(amount[i]),
-															multiSendTokens?.[i]?.tokenDecimals || tokenDecimals || chainProperties[network].decimals
-													  )
-													: '?'}{' '}
-												{multiSendTokens?.[i]?.tokenSymbol || tokenSymbol || chainProperties[network].tokenSymbol}{' '}
-											</span>
-											<span>To:</span>
-										</p>
-										<div className='mt-3'>
-											<AddressComponent address={item} />
-										</div>
-										{recipientAddress.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
-									</>
-								))}
+								recipientAddress.map((item, i) => {
+									const formattedAmount = amount[i]
+										? ethers.utils.formatUnits(
+												BigInt(!Number.isNaN(amount[i]) ? amount[i] : 0).toString(),
+												multiSendTokens?.[i]?.tokenDecimals || tokenDecimals || chainProperties[network].decimals
+										  )
+										: 0;
+									return (
+										<>
+											<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
+												<span>Send</span>
+												<span className='text-failure'>
+													{amount[i] ? <span>{formattedAmount}</span> : '?'}{' '}
+													{multiSendTokens?.[i]?.tokenSymbol || tokenSymbol || chainProperties[network].tokenSymbol}{' '}
+													{amount[i] &&
+														!Number.isNaN(amount[i]) &&
+														!Number.isNaN(multiSendTokens?.[i]?.fiatConversion) && (
+															<>
+																(
+																<FiatCurrencyValue
+																	value={tokenToUSDConversion(formattedAmount, multiSendTokens?.[i]?.fiatConversion)}
+																/>
+																)
+															</>
+														)}
+												</span>
+												<span>To:</span>
+											</p>
+											<div className='mt-3'>
+												<AddressComponent address={item} />
+											</div>
+											{recipientAddress.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
+										</>
+									);
+								})}
 						</div>
 					))}
 				{/* {!callData &&
 					<Input size='large' placeholder='Enter Call Data.' className='w-full my-2 text-sm font-normal leading-[15px] border-0 outline-0 placeholder:text-[#505050] bg-bg-secondary rounded-md text-white' onChange={(e) => setCallDataString(e.target.value)} />
 				} */}
-				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && (
+				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && !isCustomTxn && !isRejectionTxn && (
 					<Divider className='bg-text_secondary my-5' />
+				)}
+				{isRejectionTxn && (
+					<div>
+						<section className='mb-4 text-sm border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
+							<p className='text-white'>
+								This is an on-chain rejection that won&apos;t send any funds. Executing this on-chain rejection will
+								replace all currently awaiting transactions with nonce {advancedDetails?.nonce || '0'}.
+							</p>
+						</section>
+						<Divider className='bg-text_secondary my-5' />
+					</div>
 				)}
 				<div className='flex items-center gap-x-5 mt-3 justify-between'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Created at:</span>
@@ -193,6 +227,31 @@ const SentInfo: FC<ISentInfoProps> = ({
 						</span>
 						<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
 							<AddressComponent address={addressAddOrRemove} />
+						</p>
+					</div>
+				)}
+				<div className='flex items-center gap-x-5 mt-3 justify-between'>
+					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
+					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
+						<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 10)}</span>
+						<span className='flex items-center gap-x-2 text-sm'>
+							<button onClick={() => copyText(callHash)}>
+								<CopyIcon className='hover:text-primary' />
+							</button>
+							{/* <ExternalLinkIcon /> */}
+						</span>
+					</p>
+				</div>
+				{callData && (
+					<div className='flex items-center gap-x-5 mt-3 justify-between'>
+						<span className='text-text_secondary font-normal text-sm leading-[15px]'>Call Data:</span>
+						<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
+							<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callData, 10)}</span>
+							<span className='flex items-center gap-x-2 text-sm'>
+								<button onClick={() => copyText(callData)}>
+									<CopyIcon className='hover:text-primary' />
+								</button>
+							</span>
 						</p>
 					</div>
 				)}
@@ -253,75 +312,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 							)}
 					</>
 				)}
-				{showDetails && (
-					<>
-						{/* <div className='flex items-center gap-x-5 mt-3 justify-between'>
-							<span className='text-text_secondary font-normal text-sm leading-[15px]'>
-								Created By:
-							</span>
-							<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-								<span className='text-white font-normal text-sm leading-[15px]'>
-									<div className='mt-3 flex items-center gap-x-4'>
-										{recipientAddress && (
-											<MetaMaskAvatar address={recipientAddress} size={30} />
-										)}
-										<div className='flex flex-col gap-y-[6px]'>
-											<p className='font-medium text-sm leading-[15px] text-white'>
-												{recipientAddress
-													? addressBook?.find(
-														(item: any) => item.address === recipientAddress
-													)?.name || DEFAULT_ADDRESS_NAME
-													: '?'}
-											</p>
-											{recipientAddress && (
-												<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-													<span>{shortenAddress(recipientAddress)}</span>
-													<span className='flex items-center gap-x-2 text-sm'>
-														<button onClick={() => copyText(recipientAddress)}>
-															<CopyIcon className='hover:text-primary' />
-														</button>
-														<a
-															href={`https://${network}.subscan.io/account/${recipientAddress}`}
-															target='_blank'
-															rel='noreferrer'
-														>
-															<ExternalLinkIcon />
-														</a>
-													</span>
-												</p>
-											)}
-										</div>
-									</div>
-								</span>
-							</p>
-						</div> */}
-						<div className='flex items-center gap-x-5 mt-3 justify-between'>
-							<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
-							<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-								<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 10)}</span>
-								<span className='flex items-center gap-x-2 text-sm'>
-									<button onClick={() => copyText(callHash)}>
-										<CopyIcon className='hover:text-primary' />
-									</button>
-									{/* <ExternalLinkIcon /> */}
-								</span>
-							</p>
-						</div>
-						{callData && (
-							<div className='flex items-center gap-x-5 mt-3 justify-between'>
-								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Call Data:</span>
-								<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-									<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callData, 10)}</span>
-									<span className='flex items-center gap-x-2 text-sm'>
-										<button onClick={() => copyText(callData)}>
-											<CopyIcon className='hover:text-primary' />
-										</button>
-									</span>
-								</p>
-							</div>
-						)}
-					</>
-				)}
 				<p
 					onClick={() => setShowDetails((prev) => !prev)}
 					className='text-primary cursor-pointer font-medium text-sm leading-[15px] mt-5 flex items-center gap-x-3'
@@ -329,6 +319,32 @@ const SentInfo: FC<ISentInfoProps> = ({
 					<span>{showDetails ? 'Hide' : 'Advanced'} Details</span>
 					<ArrowRightIcon />
 				</p>
+				{showDetails &&
+					advancedDetails &&
+					typeof advancedDetails === 'object' &&
+					Object.keys(advancedDetails).map((adv) => (
+						<div
+							key={adv}
+							className='flex items-center gap-x-5 mt-3 justify-between'
+						>
+							<span className='text-text_secondary font-normal text-sm leading-[15px]'>{adv}:</span>
+							<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
+								<span className='text-white font-normal text-sm leading-[15px]'>
+									{String(advancedDetails[adv]).startsWith('0x')
+										? shortenAddress(advancedDetails[adv], 10)
+										: advancedDetails[adv]}
+								</span>
+								{String(advancedDetails[adv]).startsWith('0x') ? (
+									<span className='flex items-center gap-x-2 text-sm'>
+										<button onClick={() => copyText(callHash)}>
+											<CopyIcon className='hover:text-primary' />
+										</button>
+										{/* <ExternalLinkIcon /> */}
+									</span>
+								) : null}
+							</p>
+						</div>
+					))}
 			</article>
 			<article className='p-8 rounded-lg bg-bg-main max-w-[328px] w-full'>
 				<div>
@@ -432,17 +448,16 @@ const SentInfo: FC<ISentInfoProps> = ({
 							</div>
 						</Timeline.Item>
 					</Timeline>
-					<div className='w-full mt-3 flex flex-col gap-y-2 items-center'>
+					<div className='w-full mt-3 flex flex-col gap-y-3 items-center'>
 						{/* {console.log(approvals)} */}
 						{!approvals.includes(userAddress) ? (
 							<Button
-								disabled={approvals.includes(userAddress) || (approvals.length === threshold - 1 && !callDataString)}
+								disabled={approvals.includes(userAddress)}
 								loading={loading}
+								icon={<CheckOutlined className='text-white' />}
 								onClick={handleApproveTransaction}
 								className={`w-full border-none text-sm font-normal ${
-									approvals.includes(userAddress) || (approvals.length === threshold - 1 && !callDataString)
-										? 'bg-highlight text-text_secondary'
-										: 'bg-primary text-white'
+									approvals.includes(userAddress) ? 'bg-highlight text-text_secondary' : 'bg-primary text-white'
 								}`}
 							>
 								Approve Transaction
@@ -451,6 +466,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							threshold === approvals.length && (
 								<Button
 									loading={loading}
+									icon={<CheckOutlined className='text-white' />}
 									onClick={handleExecuteTransaction}
 									className='w-full border-none text-sm font-normal bg-primary text-white'
 								>
@@ -458,6 +474,18 @@ const SentInfo: FC<ISentInfoProps> = ({
 								</Button>
 							)
 						)}
+						<Button
+							disabled={loading}
+							icon={
+								<span className='flex items-center justify-center p-1 border border-failure rounded-full w-[15px] h-[15px]'>
+									<OutlineCloseIcon className='w-[6px] h-[6px]' />
+								</span>
+							}
+							onClick={() => setOpenReplaceTxnModal(true)}
+							className='w-full border-none text-sm font-normal bg-failure bg-opacity-10 text-failure'
+						>
+							Replace Transaction
+						</Button>
 					</div>
 				</div>
 			</article>
