@@ -58,13 +58,15 @@ import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import UploadAttachment, { ISubfieldAndAttachment } from './UploadAttachment';
 import AddAddressModal from './AddAddressModal';
+import SetIdentity from './SetIdentity';
 
 export enum ETransactionType {
 	SEND_TOKEN = 'Send Token',
 	MANUAL_EXTRINSIC = 'Manual Extrinsic',
 	CALL_DATA = 'Call Data',
 	SUBMIT_PREIMAGE = 'Submit Preimage',
-	SUBMIT_PROPOSAL = 'Submit Proposal'
+	SUBMIT_PROPOSAL = 'Submit Proposal',
+	SET_IDENTITY = 'Set Identity'
 }
 
 interface ISendFundsFormProps {
@@ -530,6 +532,11 @@ const SendFundsForm = ({
 							/>
 						) : transactionType === ETransactionType.SUBMIT_PROPOSAL ? (
 							<SubmitProposal
+								className={className}
+								setCallData={setCallData}
+							/>
+						) : transactionType === ETransactionType.SET_IDENTITY ? (
+							<SetIdentity
 								className={className}
 								setCallData={setCallData}
 							/>
