@@ -6,8 +6,8 @@ import { ArrowRightOutlined, ReloadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
-import NoTransactionsHistory from '~assets/icons/no-transaction.svg';
-import NoTransactionsQueued from '~assets/icons/no-transactions-queued.svg';
+import NoTransactionsHistory from '@next-common/assets/icons/no-transaction-home.svg';
+import NoTransactionsQueued from '@next-common/assets/icons/no-transaction-queued-home.svg';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
@@ -111,7 +111,7 @@ const TxnCard = ({
 						`${SUBSTRATE_API_URL}/getMultisigQueue`,
 						{
 							limit: 10,
-							multisigAddress: multisig?.address,
+							multisigAddress: activeMultisig,
 							network,
 							page: 1
 						}

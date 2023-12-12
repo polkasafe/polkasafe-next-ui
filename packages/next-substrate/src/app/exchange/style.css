@@ -33,8 +33,3 @@
 .ant-skeleton .ant-skeleton-content .ant-skeleton-title +.ant-skeleton-paragraph{
     margin-block-start: 8px !important;
 }
-
-.ant-dropdown {
-    transform: scale(0.9) !important;
-    transform-origin: center !important;
-}

@@ -20,7 +20,7 @@ import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 const Assets = () => {
 	const [loading, setLoading] = useState<boolean>(false);
-	const { address, activeMultisig, isProxy, multisigAddresses } = useGlobalUserDetailsContext();
+	const { address, activeMultisig, isProxy, multisigAddresses, isSharedMultisig } = useGlobalUserDetailsContext();
 	const [activeAddress, setActiveAddress] = useState<'Proxy' | 'Multisig'>(isProxy ? 'Proxy' : 'Multisig');
 	const [assetsData, setAssetsData] = useState<IAsset[]>([]);
 	const { network } = useGlobalApiContext();
@@ -31,7 +31,7 @@ const Assets = () => {
 		try {
 			setLoading(true);
 			const { data, error } = await nextApiClientFetch<IAsset[]>(`${SUBSTRATE_API_URL}/getAssetsForAddress`, {
-				address: activeAddress === 'Proxy' ? multisig.proxy : multisig.address,
+				address: isSharedMultisig ? activeMultisig : activeAddress === 'Proxy' ? multisig.proxy : multisig.address,
 				network
 			});
 
@@ -48,7 +48,7 @@ const Assets = () => {
 			console.log('ERROR', error);
 			setLoading(false);
 		}
-	}, [activeAddress, multisig, network]);
+	}, [activeAddress, activeMultisig, isSharedMultisig, multisig, network]);
 
 	useEffect(() => {
 		handleGetAssets();
@@ -58,7 +58,7 @@ const Assets = () => {
 
 	return (
 		<div className='h-[70vh] bg-bg-main rounded-lg'>
-			{address ? (
+			{address || isSharedMultisig ? (
 				<div className='grid grid-cols-12 gap-4'>
 					<AddMultisigModal />
 					<div className='col-start-1 col-end-13'>

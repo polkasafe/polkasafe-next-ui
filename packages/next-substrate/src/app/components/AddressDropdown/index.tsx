@@ -41,8 +41,10 @@ const AddressDropdown = () => {
 				activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
 				address: '',
 				addressBook: [],
+				isSharedMultisig: false,
 				loggedInWallet: Wallet.POLKADOT,
-				multisigAddresses: []
+				multisigAddresses: [],
+				sharedMultisigInfo: undefined
 			};
 		});
 		setActiveMultisigContextState((prev) => ({
@@ -58,6 +60,20 @@ const AddressDropdown = () => {
 		return (
 			<Link
 				href='/'
+				onClick={() =>
+					setUserDetailsContextState((prevState) => {
+						return {
+							...prevState,
+							activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
+							address: '',
+							addressBook: [],
+							isSharedMultisig: false,
+							loggedInWallet: Wallet.POLKADOT,
+							multisigAddresses: [],
+							sharedMultisigInfo: undefined
+						};
+					})
+				}
 				className='flex items-center justify-center gap-x-2 outline-none border-none text-white bg-highlight rounded-lg p-2.5 shadow-none text-xs'
 			>
 				<WarningRoundedIcon className='text-sm text-primary' />

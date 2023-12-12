@@ -29,8 +29,16 @@ interface Props {
 }
 
 const Menu: FC<Props> = ({ className }) => {
-	const { multisigAddresses, activeMultisig, multisigSettings, isProxy, setUserDetailsContextState } =
-		useGlobalUserDetailsContext();
+	const {
+		multisigAddresses,
+		activeMultisig,
+		multisigSettings,
+		isProxy,
+		setUserDetailsContextState,
+		isSharedMultisig,
+		notOwnerOfMultisig,
+		sharedMultisigInfo
+	} = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(
 		(typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || ''
@@ -40,36 +48,51 @@ const Menu: FC<Props> = ({ className }) => {
 
 	const { setOpenAddMultisigModal } = useAddMultisigContext();
 
+	const getPath = (basePath: string) => {
+		if (sharedMultisigInfo && isSharedMultisig) {
+			return `${basePath}?safe=${activeMultisig}&network=${network}`;
+		}
+		return basePath;
+	};
+
 	const menuItems = [
 		{
+			baseURL: '/',
 			icon: <HomeIcon />,
-			key: '/',
+			key: getPath('/'),
 			title: 'Home'
 		},
 		{
+			baseURL: '/exchange',
+			disabled: notOwnerOfMultisig,
 			icon: <ExchangeIcon />,
-			key: '/exchange',
+			key: getPath('/exchange'),
 			new: true,
 			title: 'Exchange'
 		},
 		{
+			baseURL: '/assets',
 			icon: <AssetsIcon />,
-			key: '/assets',
+			key: getPath('/assets'),
 			title: 'Assets'
 		},
 		{
+			baseURL: '/transactions',
 			icon: <TransactionIcon />,
-			key: '/transactions',
+			key: getPath('/transactions'),
 			title: 'Transactions'
 		},
 		{
+			baseURL: '/address-book',
+			disabled: notOwnerOfMultisig,
 			icon: <AddressBookIcon />,
-			key: '/address-book',
+			key: getPath('/address-book'),
 			title: 'Address Book'
 		},
 		{
+			baseURL: '/apps',
 			icon: <AppsIcon />,
-			key: '/apps',
+			key: getPath('/apps'),
 			title: 'Apps'
 		}
 	];
@@ -77,13 +100,15 @@ const Menu: FC<Props> = ({ className }) => {
 	if (userAddress) {
 		menuItems.push(
 			{
+				baseURL: '/notifications-settings',
 				icon: <NotificationIcon />,
-				key: '/notification-settings',
+				key: getPath('/notification-settings'),
 				title: 'Notifications'
 			},
 			{
+				baseURL: '/settings',
 				icon: <SettingsIcon />,
-				key: '/settings',
+				key: getPath('/settings'),
 				title: 'Settings'
 			}
 		);
@@ -122,11 +147,16 @@ const Menu: FC<Props> = ({ className }) => {
 		setUserDetailsContextState((prevState) => {
 			return {
 				...prevState,
-				activeMultisig: active?.proxy && isProxy ? active.proxy : selectedMultisigAddress
+				activeMultisig:
+					sharedMultisigInfo && isSharedMultisig
+						? sharedMultisigInfo.address
+						: active?.proxy && isProxy
+						? active.proxy
+						: selectedMultisigAddress
 			};
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [multisigAddresses, selectedMultisigAddress, isProxy]);
+	}, [multisigAddresses, selectedMultisigAddress, isProxy, sharedMultisigInfo, isSharedMultisig]);
 
 	return (
 		<div className={`bg-bg-main flex flex-col h-full py-[25px] px-3 ${className}`}>
@@ -134,7 +164,7 @@ const Menu: FC<Props> = ({ className }) => {
 				<section className='flex mb-7 justify-center w-full'>
 					<Link
 						className='text-white'
-						href='/'
+						href={getPath('/')}
 					>
 						<Badge
 							offset={[-15, 35]}
@@ -159,8 +189,8 @@ const Menu: FC<Props> = ({ className }) => {
 								>
 									<Link
 										className={`flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
-											item.key === pathname && 'bg-highlight text-primary'
-										}`}
+											item.baseURL === pathname && 'bg-highlight text-primary'
+										} ${item.disabled && 'pointer-events-none cursor-disabled text-text_secondary '} `}
 										href={item.key}
 									>
 										{item.icon}
@@ -207,11 +237,14 @@ const Menu: FC<Props> = ({ className }) => {
 												multisig.address === selectedMultisigAddress && 'bg-highlight text-primary'
 											}`}
 											onClick={() => {
-												setUserDetailsContextState((prevState) => {
+												setUserDetailsContextState((prevState: any) => {
 													return {
 														...prevState,
-														activeMultisig: multisig.proxy ? multisig.proxy : multisig.address,
-														isProxy: !!multisig.proxy
+														activeMultisig: multisig.address,
+														isSharedSafe: false,
+														notOwnerOfSafe: false,
+														sharedMultisigAddress: '',
+														sharedMultisigInfo: undefined
 													};
 												});
 												setSelectedMultisigAddress(multisig.address);

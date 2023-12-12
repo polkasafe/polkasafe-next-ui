@@ -43,7 +43,7 @@ const History: FC<IHistory> = ({
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
+	const { activeMultisig, multisigAddresses, isSharedMultisig } = useGlobalUserDetailsContext();
 	const { currencyPrice } = useGlobalCurrencyContext();
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 	const { network } = useGlobalApiContext();
@@ -87,7 +87,7 @@ const History: FC<IHistory> = ({
 					`${SUBSTRATE_API_URL}/getMultisigHistory`,
 					{
 						limit: multisig.proxy ? 5 : 10,
-						multisigAddress: multisig?.address,
+						multisigAddress: isSharedMultisig ? activeMultisig : multisig?.address,
 						page: currentPage
 					}
 				);

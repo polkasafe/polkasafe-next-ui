@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { PlusCircleOutlined, SyncOutlined } from '@ant-design/icons';
+import { PlusCircleOutlined, SyncOutlined, ShareAltOutlined } from '@ant-design/icons';
 import Identicon from '@polkadot/react-identicon';
 import { Button, Dropdown, Skeleton, Tooltip, Spin } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
@@ -16,7 +16,7 @@ import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
-import { IAsset } from '@next-common/types';
+import { IAsset, IMultisigAddress } from '@next-common/types';
 // import AddressQr from '@next-common/ui-components/AddressQr';
 import { CopyIcon, QRIcon, WalletIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
@@ -28,6 +28,7 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import AddressQr from '@next-common/ui-components/AddressQr';
+import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import ExistentialDeposit from '../SendFunds/ExistentialDeposit';
 import FundMultisig from '../SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
@@ -51,8 +52,16 @@ const DashboardCard = ({
 	setOpenTransactionModal,
 	isOnchain // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IDashboardCard) => {
-	const { activeMultisig, multisigAddresses, multisigSettings, isProxy, setUserDetailsContextState } =
-		useGlobalUserDetailsContext();
+	const {
+		activeMultisig,
+		multisigAddresses,
+		multisigSettings,
+		isProxy,
+		setUserDetailsContextState,
+		isSharedMultisig,
+		sharedMultisigInfo,
+		notOwnerOfMultisig
+	} = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
@@ -61,9 +70,19 @@ const DashboardCard = ({
 	const [signatureLoader, setsignatureLoader] = useState<boolean>(true);
 	const [assetDataLoader, setassetDataLoader] = useState<boolean>(true);
 	const [transactionType, setTransactionType] = useState<ETransactionType>(ETransactionType.SEND_TOKEN);
-	const currentMultisig = multisigAddresses?.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
-	);
+	const [currentMultisig, setCurrentMultisig] = useState<IMultisigAddress>({} as any);
+
+	useEffect(() => {
+		if (isSharedMultisig && sharedMultisigInfo) {
+			setCurrentMultisig(sharedMultisigInfo as any);
+		} else {
+			setCurrentMultisig(
+				multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+			);
+		}
+	}, [activeMultisig, isSharedMultisig, multisigAddresses, sharedMultisigInfo]);
+
+	const baseURL = typeof window !== 'undefined' && global.window.location.origin;
 
 	const transactionTypes: ItemType[] = Object.values(ETransactionType)
 		.filter(
@@ -81,10 +100,7 @@ const DashboardCard = ({
 
 	const handleGetAssets = useCallback(async () => {
 		try {
-			const address = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!address || !signature || !activeMultisig) return;
+			if (!activeMultisig) return;
 
 			const { data, error } = await nextApiClientFetch<IAsset[]>(`${SUBSTRATE_API_URL}/getAssetsForAddress`, {
 				address: activeMultisig,
@@ -156,6 +172,14 @@ const DashboardCard = ({
 			>
 				<div className='absolute right-5 top-5'>
 					<div className='flex gap-x-4 items-center'>
+						<Tooltip title='Copy Share Link'>
+							<button
+								className='text-text_secondary text-lg'
+								onClick={() => copyText(`${baseURL}?safe=${activeMultisig}&network=${network}`)}
+							>
+								<ShareAltOutlined />
+							</button>
+						</Tooltip>
 						<a
 							className='w-5'
 							target='_blank'
@@ -205,7 +229,7 @@ const DashboardCard = ({
 								className={`border-2 rounded-full bg-transparent ${
 									hasProxy && isProxy ? 'border-[#FF79F2]' : 'border-primary'
 								} p-1.5`}
-								value={activeMultisig}
+								value={currentMultisig?.address}
 								size={50}
 								theme='polkadot'
 							/>
@@ -214,12 +238,14 @@ const DashboardCard = ({
 									hasProxy && isProxy ? 'bg-[#FF79F2] text-highlight' : 'bg-primary text-white'
 								} text-sm rounded-lg absolute -bottom-0 left-[16px] px-2`}
 							>
-								{currentMultisig?.threshold}/{currentMultisig?.signatories.length}
+								{currentMultisig?.threshold}/{currentMultisig?.signatories?.length}
 							</div>
 						</div>
 						<div>
 							<div className='text-base font-bold text-white flex items-center gap-x-2'>
-								{multisigSettings?.[`${activeMultisig}_${network}`]?.name || currentMultisig?.name}
+								{multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
+									currentMultisig?.name ||
+									DEFAULT_MULTISIG_NAME}
 								<div
 									className={`px-2 py-[2px] rounded-md text-xs font-medium ${
 										hasProxy && isProxy ? 'bg-[#FF79F2] text-highlight' : 'bg-primary text-white'
@@ -240,14 +266,15 @@ const DashboardCard = ({
 							</div>
 							<div className='flex text-xs'>
 								<div
-									title={(activeMultisig && getEncodedAddress(activeMultisig, network)) || ''}
+									title={(currentMultisig?.address && getEncodedAddress(currentMultisig?.address, network)) || ''}
 									className=' font-normal text-text_secondary'
 								>
-									{activeMultisig && shortenAddress(getEncodedAddress(activeMultisig, network) || '')}
+									{currentMultisig.address &&
+										shortenAddress(getEncodedAddress(currentMultisig?.address, network) || '')}
 								</div>
 								<button
 									className='ml-2 mr-1'
-									onClick={() => copyText(activeMultisig, true, network)}
+									onClick={() => copyText(currentMultisig?.address, true, network)}
 								>
 									<CopyIcon className='text-primary' />
 								</button>
@@ -258,7 +285,7 @@ const DashboardCard = ({
 										<div className='p-2'>
 											<AddressQr
 												size={100}
-												address={activeMultisig}
+												address={currentMultisig?.address}
 											/>
 										</div>
 									}
@@ -280,7 +307,7 @@ const DashboardCard = ({
 							<div>
 								<div className='text-white'>Signatories</div>
 								<div className='font-bold text-lg text-primary'>
-									{signatureLoader ? <Spin size='default' /> : currentMultisig?.signatories.length || 0}
+									{signatureLoader ? <Spin size='default' /> : currentMultisig?.signatories?.length || 0}
 								</div>
 							</div>
 							<div>
@@ -307,6 +334,7 @@ const DashboardCard = ({
 				<div className='flex justify-around w-full mt-5'>
 					<Dropdown
 						trigger={['click']}
+						disabled={notOwnerOfMultisig}
 						menu={{
 							items: transactionTypes,
 							onClick: (e) => {
@@ -316,6 +344,7 @@ const DashboardCard = ({
 						}}
 					>
 						<PrimaryButton
+							disabled={notOwnerOfMultisig}
 							icon={<PlusCircleOutlined />}
 							loading={transactionLoading}
 							className='w-[45%] flex items-center justify-center py-4 2xl:py-5'
@@ -325,6 +354,7 @@ const DashboardCard = ({
 					</Dropdown>
 					<PrimaryButton
 						secondary
+						disabled={notOwnerOfMultisig}
 						onClick={() => setOpenFundMultisigModal(true)}
 						className='w-[45%] flex items-center justify-center py-4 2xl:py-5 '
 						icon={<WalletIcon fill='#1573FE' />}

@@ -98,7 +98,13 @@ const SentInfo: FC<ISentInfoProps> = ({
 	const { api, apiReady, network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
-	const { address: userAddress, addressBook, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
+	const {
+		address: userAddress,
+		addressBook,
+		multisigAddresses,
+		activeMultisig,
+		notOwnerOfMultisig
+	} = useGlobalUserDetailsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const [openCancelModal, setOpenCancelModal] = useState<boolean>(false);
 	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
@@ -638,6 +644,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						{!approvals.includes(userAddress) && (
 							<Button
 								disabled={
+									notOwnerOfMultisig ||
 									approvals.includes(userAddress) ||
 									!decodedCallData ||
 									(approvals.length === threshold - 1 && !callDataString)
@@ -657,7 +664,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						)}
 						{depositor === userAddress && (
 							<Button
-								disabled={!callDataString || !decodedCallData}
+								disabled={notOwnerOfMultisig || !callDataString || !decodedCallData}
 								loading={loading}
 								onClick={() => setOpenCancelModal(true)}
 								className={`w-full border-none text-white text-sm font-normal bg-failure ${

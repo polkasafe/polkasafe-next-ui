@@ -19,7 +19,7 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 const AddressCard = ({ className }: { className?: string }) => {
 	const { network } = useGlobalApiContext();
 	const { records } = useActiveMultisigContext();
-	const { addressBook } = useGlobalUserDetailsContext();
+	const { addressBook, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 
 	const [addresses, setAddresses] = useState<string[]>([]);
 	const [openAddressModal, setOpenAddressModal] = useState<boolean>(false);
@@ -76,12 +76,13 @@ const AddressCard = ({ className }: { className?: string }) => {
 				</div>
 				<div className='w-full mt-5 flex justify-center'>
 					<PrimaryButton
+						disabled={notOwnerOfMultisig}
 						secondary
 						className='w-[90%] flex items-center justify-center py-4 2xl:py-5'
 						onClick={() => setOpenAddressModal(true)}
 						icon={<AddAddrIcon />}
 					>
-						<p className='px-2 text-primary'>Add Address</p>
+						Add Address
 					</PrimaryButton>
 				</div>
 				{/* TODO: Empty state */}

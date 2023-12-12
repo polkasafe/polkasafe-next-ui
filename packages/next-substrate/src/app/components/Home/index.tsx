@@ -40,7 +40,9 @@ const Home = ({ className }: { className?: string }) => {
 		multisigSettings,
 		createdAt,
 		addressBook,
-		activeMultisig
+		activeMultisig,
+		isSharedMultisig,
+		sharedMultisigInfo
 	} = useGlobalUserDetailsContext();
 	const { network, api, apiReady } = useGlobalApiContext();
 	const { openProxyModal, setOpenProxyModal } = useAddMultisigContext();
@@ -148,7 +150,7 @@ const Home = ({ className }: { className?: string }) => {
 		}
 	}, [activeMultisig, isOnchain, userAddress]);
 
-	return userAddress ? (
+	return userAddress || isSharedMultisig ? (
 		<>
 			<NewUserModal
 				open={openNewUserModal}
@@ -165,12 +167,17 @@ const Home = ({ className }: { className?: string }) => {
 					onCancel={() => setOpenProxyModal(false)}
 				/>
 			</ModalComponent>
-			{multisigAddresses &&
-			multisigAddresses.filter(
-				(m) => m.network === network && !multisigSettings?.[`${m.address}_${m.network}`]?.deleted && !m.disabled
-			).length > 0 ? (
+			{(multisigAddresses &&
+				multisigAddresses.filter(
+					(m) => m.network === network && !multisigSettings?.[`${m.address}_${m.network}`]?.deleted && !m.disabled
+				).length > 0) ||
+			sharedMultisigInfo ? (
 				<section>
-					{!['alephzero'].includes(network) && !hasProxy && !proxyNotInDb && isOnchain && !proxyInProcess ? (
+					{isSharedMultisig ? null : !['alephzero'].includes(network) &&
+					  !hasProxy &&
+					  !proxyNotInDb &&
+					  isOnchain &&
+					  !proxyInProcess ? (
 						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left border-2 border-solid border-waiting text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 							<p className='text-white'>Create a proxy to edit or backup your Multisig.</p>
 							<Button

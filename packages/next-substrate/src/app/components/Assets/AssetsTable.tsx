@@ -11,6 +11,7 @@ import formatUSDWithUnits from '@next-substrate/utils/formatUSDWithUnits';
 
 import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
 
@@ -21,6 +22,7 @@ interface IAssetsProps {
 const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
+	const { notOwnerOfMultisig } = useGlobalUserDetailsContext();
 
 	return (
 		<div className='text-sm font-medium leading-[15px] scale-[80%] w-[125%] h-[125%] origin-top-left'>
@@ -81,6 +83,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 									)}
 								</p>
 								<PrimaryButton
+									disabled={notOwnerOfMultisig}
 									onClick={() => setOpenTransactionModal(true)}
 									className='bg-primary text-white w-fit'
 								>
