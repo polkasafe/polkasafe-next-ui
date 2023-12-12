@@ -38,7 +38,7 @@ dayjs.extend(LocalizedFormat);
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 function AppLayout({ className, children }: { className?: string; children: React.ReactNode }) {
-	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
+	const { activeMultisig, multisigAddresses, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
 	const { network } = useGlobalApiContext();
 	const { iframeVisibility, setIframeVisibility } = useGlobalDAppContext();
@@ -52,6 +52,16 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 	const IframeUrl = `https://sub.id/${getSubstrateAddress(activeMultisig)}`;
 	const isAppsPage = pathname.split('/').pop() === 'apps';
 	const hideSlider = iframeState && isAppsPage;
+
+	useEffect(() => {
+		if (multisigAddresses.some((item) => item.address === activeMultisig || item.proxy === activeMultisig)) {
+			setUserDetailsContextState((prev) => ({
+				...prev,
+				notOwnerOfMultisig: false
+			}));
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeMultisig, multisigAddresses]);
 
 	const getSharedAddressBook = useCallback(async () => {
 		if (

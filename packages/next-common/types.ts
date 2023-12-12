@@ -94,6 +94,11 @@ export interface UserDetailsContextType {
 	transactionFields: ITransactionFields;
 	two_factor_auth?: I2FASettings;
 	tfa_token?: I2FAToken;
+	isSharedMultisig?: boolean;
+	notOwnerOfMultisig?: boolean;
+	sharedMultisigNetwork?: NETWORK;
+	sharedMultisigAddress?: string;
+	sharedMultisigInfo?: { signatories: string[]; threshold: number; address: string; name?: string };
 }
 
 export interface UserDetailsContextTypeEVM {

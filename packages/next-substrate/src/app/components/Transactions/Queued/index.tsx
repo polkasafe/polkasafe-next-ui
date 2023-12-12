@@ -63,7 +63,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 					`${SUBSTRATE_API_URL}/getMultisigQueue`,
 					{
 						limit: 10,
-						multisigAddress: multisig?.address,
+						multisigAddress: activeMultisig,
 						network,
 						page: 1
 					}

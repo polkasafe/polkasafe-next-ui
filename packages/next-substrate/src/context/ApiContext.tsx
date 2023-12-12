@@ -33,6 +33,7 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
 		setApiReady(false);
 		setApi(new ApiPromise({ provider }));
+		if (typeof window !== 'undefined') localStorage.setItem('network', network);
 	}, [network]);
 
 	useEffect(() => {
