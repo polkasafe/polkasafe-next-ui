@@ -14,8 +14,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { IAsset } from '@next-common/types';
 import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import getAssetsForAddress from '@next-substrate/utils/getAssetsForAddress';
 import AddMultisigModal from '../components/Multisig/AddMultisigModal';
 
 const Assets = () => {
@@ -30,10 +29,10 @@ const Assets = () => {
 	const handleGetAssets = useCallback(async () => {
 		try {
 			setLoading(true);
-			const { data, error } = await nextApiClientFetch<IAsset[]>(`${SUBSTRATE_API_URL}/getAssetsForAddress`, {
-				address: isSharedMultisig ? activeMultisig : activeAddress === 'Proxy' ? multisig.proxy : multisig.address,
+			const { data, error } = await getAssetsForAddress(
+				isSharedMultisig ? activeMultisig : activeAddress === 'Proxy' ? multisig.proxy : multisig.address,
 				network
-			});
+			);
 
 			if (error) {
 				setLoading(false);

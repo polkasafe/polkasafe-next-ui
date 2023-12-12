@@ -14,6 +14,7 @@ import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import getMultisigQueueTransactions from '@next-substrate/utils/getMultisigQueueTransactions';
 import NoTransactionsQueued from './NoTransactionsQueued';
 import Transaction from './Transaction';
 
@@ -27,13 +28,12 @@ interface IQueued {
 }
 
 const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
-	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
+	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueueItem[]>([]);
 	const pathname = usePathname();
 	const [amountUSD, setAmountUSD] = useState<string>('');
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	useEffect(() => {
 		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
@@ -49,15 +49,34 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 		}
 	}, [queuedTransactions, pathname]);
 
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const fetchQueuedTransactions = useCallback(async () => {
 		try {
 			setLoading(true);
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature || !activeMultisig) {
-				console.log('ERROR');
-				setLoading(false);
+			if (!userAddress || !signature) {
+				if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
+					const { data: queueTransactions, error: queueTransactionsError } = await getMultisigQueueTransactions(
+						activeMultisig,
+						network,
+						10,
+						1
+					);
+
+					if (queueTransactionsError) {
+						setLoading(false);
+						return;
+					}
+
+					if (queueTransactions) {
+						setQueuedTransactions(queueTransactions);
+						setLoading(false);
+					}
+				} else {
+					setLoading(false);
+				}
 			} else {
 				const { data: queueTransactions, error: queueTransactionsError } = await nextApiClientFetch<IQueueItem[]>(
 					`${SUBSTRATE_API_URL}/getMultisigQueue`,
@@ -108,7 +127,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 							date={dayjs(transaction.created_at).format('llll')}
 							status={transaction.status}
 							approvals={transaction.approvals}
-							threshold={multisig?.threshold || 0}
+							threshold={transaction?.threshold || 0}
 							callData={transaction.callData}
 							callHash={transaction.callHash}
 							note={transaction.note || ''}
