@@ -49,7 +49,8 @@ const Transaction: FC<ITransaction> = ({
 	const [decodedCallData, setDecodedCallData] = useState<any>();
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
-	const type: 'Sent' | 'Received' = multisig?.address === from || multisig?.proxy === from ? 'Sent' : 'Received';
+	const type: 'Sent' | 'Received' =
+		activeMultisig === from || multisig?.address === from || multisig?.proxy === from ? 'Sent' : 'Received';
 	const pathname = usePathname();
 	const hash = pathname.slice(1);
 

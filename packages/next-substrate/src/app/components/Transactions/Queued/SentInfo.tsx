@@ -184,6 +184,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 				isProxyAddApproval ||
 				isProxyRemovalApproval ||
 				getMultiDataLoading ||
+				notOwnerOfMultisig ||
 				customTx ? null : recipientAddress && amount && !customTx ? (
 					typeof recipientAddress === 'string' ? (
 						<>
@@ -331,7 +332,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						<p className=''>Transaction was not created on Polkasafe, enter call data to fetch this data.</p>
 					</section>
 				)}
-				{!callData && (
+				{!callData && !notOwnerOfMultisig && (
 					<Input
 						size='large'
 						placeholder='Enter Call Data.'

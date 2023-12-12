@@ -25,6 +25,8 @@ import shortenAddress from '@next-substrate/utils/shortenAddress';
 
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import getMultisigQueueTransactions from '@next-substrate/utils/getMultisigQueueTransactions';
+import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisigHistoricalTransactions';
 
 const TxnCard = ({
 	newTxn,
@@ -35,7 +37,7 @@ const TxnCard = ({
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, addressBook, multisigAddresses } = useGlobalUserDetailsContext();
+	const { activeMultisig, addressBook, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 	const { api, apiReady, network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
@@ -46,8 +48,6 @@ const TxnCard = ({
 	const [queueLoading, setQueueLoading] = useState<boolean>(false);
 
 	const [amountUSD, setAmountUSD] = useState<string>('');
-
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	useEffect(() => {
 		if (!api || !apiReady) return;
@@ -68,11 +68,31 @@ const TxnCard = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [api, apiReady, queuedTransactions]);
 
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
 		const getTransactions = async () => {
-			if (!userAddress || !signature || !activeMultisig) return;
-
 			setHistoryLoading(true);
+			if (!userAddress || !signature) {
+				if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
+					const {
+						data: { transactions: multisigTransactions },
+						error: multisigError
+					} = await getMultisigHistoricalTransactions(activeMultisig, network, 10, 1);
+
+					if (multisigError) {
+						setHistoryLoading(false);
+						console.log('Error in Fetching Transactions: ', multisigError);
+					}
+
+					if (multisigTransactions) {
+						setHistoryLoading(false);
+						setTransactions(multisigTransactions);
+					}
+				} else {
+					setHistoryLoading(false);
+				}
+				return;
+			}
 			try {
 				const {
 					data: { transactions: multisigTransactions },
@@ -97,15 +117,35 @@ const TxnCard = ({
 			}
 		};
 		getTransactions();
-	}, [activeMultisig, network, signature, userAddress, newTxn, currency]);
+	}, [activeMultisig, network, signature, userAddress, newTxn, currency, isSharedMultisig, notOwnerOfMultisig]);
 
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
 		const getQueue = async () => {
 			try {
 				setQueueLoading(true);
 
-				if (!userAddress || !signature || !activeMultisig) {
-					setQueueLoading(false);
+				if (!userAddress || !signature) {
+					if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
+						const { data: queueTransactions, error: queueTransactionsError } = await getMultisigQueueTransactions(
+							activeMultisig,
+							network,
+							10,
+							1
+						);
+
+						if (queueTransactionsError) {
+							setQueueLoading(false);
+							return;
+						}
+
+						if (queueTransactions) {
+							setQueuedTransactions(queueTransactions);
+							setQueueLoading(false);
+						}
+					} else {
+						setQueueLoading(false);
+					}
 				} else {
 					const { data: queueTransactions, error: queueTransactionsError } = await nextApiClientFetch<IQueueItem[]>(
 						`${SUBSTRATE_API_URL}/getMultisigQueue`,
@@ -134,7 +174,7 @@ const TxnCard = ({
 		};
 
 		getQueue();
-	}, [activeMultisig, multisig?.address, network, newTxn, signature, userAddress]);
+	}, [activeMultisig, isSharedMultisig, network, newTxn, notOwnerOfMultisig, signature, userAddress]);
 
 	useEffect(() => {
 		if (!userAddress || !signature || !activeMultisig) return;

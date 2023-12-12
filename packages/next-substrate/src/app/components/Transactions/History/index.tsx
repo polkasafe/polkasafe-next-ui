@@ -17,6 +17,7 @@ import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisigHistoricalTransactions';
 import ExportTransactionsHistory, { EExportType } from './ExportTransactionsHistory';
 
 import NoTransactionsHistory from './NoTransactionsHistory';
@@ -43,7 +44,7 @@ const History: FC<IHistory> = ({
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, multisigAddresses, isSharedMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, multisigAddresses, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 	const { currencyPrice } = useGlobalCurrencyContext();
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 	const { network } = useGlobalApiContext();
@@ -71,11 +72,28 @@ const History: FC<IHistory> = ({
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
 		const getTransactions = async () => {
-			if (!userAddress || !signature || !multisig || !activeMultisig) {
-				console.log('ERROR');
+			setLoading(true);
+			if (!userAddress || !signature || !multisig) {
+				if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
+					const {
+						data: { transactions: multisigTransactions },
+						error: multisigError
+					} = await getMultisigHistoricalTransactions(activeMultisig, network, 10, 1);
+
+					if (multisigError) {
+						setLoading(false);
+						console.log('Error in Fetching Transactions: ', multisigError);
+					}
+
+					if (multisigTransactions) {
+						setLoading(false);
+						setTransactions(multisigTransactions);
+					}
+				} else {
+					setLoading(false);
+				}
 				return;
 			}
-			setLoading(true);
 			try {
 				let data: any = [];
 				let docs: number = 0;

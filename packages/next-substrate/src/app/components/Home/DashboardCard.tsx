@@ -25,10 +25,9 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import AddressQr from '@next-common/ui-components/AddressQr';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
+import getAssetsForAddress from '@next-substrate/utils/getAssetsForAddress';
 import ExistentialDeposit from '../SendFunds/ExistentialDeposit';
 import FundMultisig from '../SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
@@ -102,10 +101,7 @@ const DashboardCard = ({
 		try {
 			if (!activeMultisig) return;
 
-			const { data, error } = await nextApiClientFetch<IAsset[]>(`${SUBSTRATE_API_URL}/getAssetsForAddress`, {
-				address: activeMultisig,
-				network
-			});
+			const { data, error } = await getAssetsForAddress(activeMultisig, network);
 
 			if (currentMultisig) {
 				setsignatureLoader(false);
