@@ -3,7 +3,6 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { ChainNamespaceType, CHAIN_NAMESPACES } from '@web3auth/base';
 import astarLogo from '@next-common/assets/astar-logo.png';
 import ethereumLogo from '@next-common/assets/eth-logo.png';
 import arbLogo from '@next-common/assets/parachains-logos/arbitrum-logo.png';
@@ -19,7 +18,6 @@ export type ChainPropType = {
 	[network: string]: {
 		blockExplorer: string;
 		chainId: number;
-		chainNamespace: ChainNamespaceType;
 		decimals: number;
 		displayName: string;
 		rpcEndpoint: string;
@@ -60,7 +58,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.GOERLI]: {
 		blockExplorer: 'https://goerli.etherscan.io',
 		chainId: 5,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		decimals: 18,
 		displayName: 'Goerli',
 		logo: ethereumLogo,
@@ -71,7 +68,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.POLYGON]: {
 		blockExplorer: 'https://polygonscan.com',
 		chainId: 137,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'polygon-pos',
 		coingeckoNativeTokenId: 'matic-network',
 		decimals: 18,
@@ -85,7 +81,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.ASTAR]: {
 		blockExplorer: 'https://astar.subscan.io',
 		chainId: 592,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'astar',
 		decimals: 18,
 		displayName: 'Astar',
@@ -97,7 +92,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.ETHEREUM]: {
 		blockExplorer: 'https://etherscan.io',
 		chainId: 1,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'ethereum',
 		coingeckoNativeTokenId: 'ethereum',
 		decimals: 18,
@@ -110,7 +104,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.BNB]: {
 		blockExplorer: 'https://bscscan.com',
 		chainId: 56,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'binance-smart-chain',
 		decimals: 18,
 		displayName: 'BNB Smart Chain',
@@ -122,7 +115,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.ARBITRUM]: {
 		blockExplorer: 'https://arbiscan.io',
 		chainId: 42161,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'arbitrum-one',
 		decimals: 18,
 		displayName: 'Arbitrum',
@@ -134,7 +126,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.OPTIMISM]: {
 		blockExplorer: 'https://optimistic.etherscan.io',
 		chainId: 10,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'optimistic-ethereum',
 		decimals: 18,
 		displayName: 'Optimism',
@@ -146,7 +137,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.GNOSIS]: {
 		blockExplorer: 'https://gnosisscan.io',
 		chainId: 100,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		coingeckoId: 'xdai',
 		decimals: 18,
 		displayName: 'Gnosis Chain',
@@ -158,7 +148,6 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.ZETA_CHAIN]: {
 		blockExplorer: 'https://explorer.zetachain.com',
 		chainId: 7001,
-		chainNamespace: CHAIN_NAMESPACES.EIP155,
 		contractNetworks: {
 			'7001': {
 				createCallAddress: '0xB19D6FFc2182150F8Eb585b79D4ABcd7C5640A9d',
