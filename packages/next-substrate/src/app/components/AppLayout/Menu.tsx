@@ -19,6 +19,7 @@ import {
 	HomeIcon,
 	NotificationIcon,
 	SettingsIcon,
+	StarIcon,
 	TransactionIcon,
 	UserPlusIcon
 } from '@next-common/ui-components/CustomIcons';
@@ -69,6 +70,13 @@ const Menu: FC<Props> = ({ className }) => {
 			key: getPath('/exchange'),
 			new: true,
 			title: 'Exchange'
+		},
+		{
+			baseURL: '/watchlist',
+			icon: <StarIcon />,
+			key: getPath('/watchlist'),
+			new: true,
+			title: 'Watchlist'
 		},
 		{
 			baseURL: '/assets',

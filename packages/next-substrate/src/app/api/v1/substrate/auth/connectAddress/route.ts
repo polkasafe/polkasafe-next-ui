@@ -70,7 +70,8 @@ export async function POST(req: Request) {
 				notification_preferences: addressDoc.notification_preferences || DEFAULT_NOTIFICATION_PREFERENCES,
 				tfa_token: addressDoc.tfa_token,
 				transactionFields: addressDoc.transactionFields,
-				two_factor_auth: addressDoc.two_factor_auth
+				two_factor_auth: addressDoc.two_factor_auth,
+				watchlists: addressDoc.watchlists
 			};
 
 			if (!addressDoc.notification_preferences) {

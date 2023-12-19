@@ -79,6 +79,12 @@ export interface ITransactionFields {
 	};
 }
 
+export interface IWatchlist {
+	name: string;
+	address: string;
+	network: string;
+}
+
 export interface UserDetailsContextType {
 	loggedInWallet: Wallet;
 	activeMultisig: string;
@@ -99,6 +105,7 @@ export interface UserDetailsContextType {
 	sharedMultisigNetwork?: NETWORK;
 	sharedMultisigAddress?: string;
 	sharedMultisigInfo?: { signatories: string[]; threshold: number; address: string; name?: string };
+	watchlists?: { [address: string]: IWatchlist };
 }
 
 export interface UserDetailsContextTypeEVM {
@@ -192,6 +199,7 @@ export interface IUser {
 	transactionFields?: ITransactionFields;
 	two_factor_auth?: I2FASettings;
 	tfa_token?: I2FAToken;
+	watchlists?: { [address: string]: IWatchlist };
 }
 
 export interface IMultisigAddress {

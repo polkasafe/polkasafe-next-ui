@@ -322,7 +322,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 
 	const searchParams = useSearchParams();
 
-	const sharedMultisigAddress = searchParams.get('safe');
+	const sharedMultisigAddress = searchParams.get('multisig');
 	const sharedMultisigNetwork = searchParams.get('network');
 
 	const [sharedMultisigInfo, setSharedMultisigInfo] = useState<
@@ -409,7 +409,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 						userData?.notification_preferences || initialUserDetailsContext.notification_preferences,
 					transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields,
 					tfa_token: userData?.tfa_token,
-					two_factor_auth: userData?.two_factor_auth
+					two_factor_auth: userData?.two_factor_auth,
+					watchlists: userData?.watchlists
 				};
 			});
 		} else {
@@ -425,7 +426,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					addressBook: [],
 					loggedInWallet: Wallet.POLKADOT,
 					multisigAddresses: [],
-					multisigSettings: {}
+					multisigSettings: {},
+					watchlists: {}
 				};
 			});
 			if (!sharedMultisigAddress) {
