@@ -94,6 +94,8 @@ import SubWalletSVG from '@next-common/assets/wallet/subwallet-icon.svg';
 import HistorySVG from '~assets/History.svg';
 import PolkassemblySVG from '~assets/polkassembly-logo.svg';
 import SubIDSVG from '~assets/subid.svg';
+import WatchIconSVG from '~assets/icons/watch-icon.svg';
+import StarSVG from '~assets/icons/star-icon.svg';
 
 export const AddIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
@@ -782,6 +784,20 @@ export const PolkassemblyIcon: React.FC<Partial<CustomIconComponentProps>> = (
 export const SubIDIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={SubIDSVG}
+		{...props}
+	/>
+);
+
+export const WatchIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
+	<Icon
+		component={WatchIconSVG}
+		{...props}
+	/>
+);
+
+export const StarIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
+	<Icon
+		component={StarSVG}
 		{...props}
 	/>
 );

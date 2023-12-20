@@ -458,7 +458,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 						multisigSettings: userData?.multisigSettings || {},
 						notification_preferences:
 							userData?.notification_preferences || initialUserDetailsContext.notification_preferences,
-						transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields
+						transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields,
+						watchlists: userData?.watchlists
 					};
 				});
 				if (!signer) {

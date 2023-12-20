@@ -154,7 +154,8 @@ const ConnectWallet = () => {
 							},
 							tfa_token: userData?.tfa_token,
 							transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields,
-							two_factor_auth: userData?.two_factor_auth
+							two_factor_auth: userData?.two_factor_auth,
+							watchlists: userData?.watchlists
 						};
 					});
 				}
@@ -269,7 +270,8 @@ const ConnectWallet = () => {
 							},
 							tfa_token: userData?.tfa_token,
 							transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields,
-							two_factor_auth: userData?.two_factor_auth
+							two_factor_auth: userData?.two_factor_auth,
+							watchlists: userData?.watchlists
 						};
 					});
 				}
