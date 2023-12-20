@@ -67,7 +67,8 @@ export async function POST(req: Request) {
 					})),
 					multisigSettings: addressDoc.multisigSettings,
 					notification_preferences: addressDoc.notification_preferences || DEFAULT_NOTIFICATION_PREFERENCES,
-					transactionFields: addressDoc.transactionFields
+					transactionFields: addressDoc.transactionFields,
+					watchlists: addressDoc.watchlists
 				};
 
 				if (!addressDoc.notification_preferences) {

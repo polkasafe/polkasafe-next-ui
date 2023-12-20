@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
 import { Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import AddressComponent from '@next-common/ui-components/AddressComponent';
+import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
+import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { DeleteIcon, WatchIcon } from '@next-common/ui-components/CustomIcons';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties } from '@next-common/global/evm-network-constants';
 import RemoveFromWatchlist from './RemoveFromWatchlist';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
@@ -87,7 +86,7 @@ const AddressList = () => {
 				<Tooltip title='Watch'>
 					<a
 						target='_blank'
-						href={`${baseURL}?multisig=${watchlists[item]?.address}&network=${watchlists[item]?.network}`}
+						href={`${baseURL}?safe=${watchlists[item]?.address}&network=${watchlists[item]?.network}`}
 						rel='noreferrer'
 					>
 						<button className='text-primary bg-highlight flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'>
@@ -96,7 +95,7 @@ const AddressList = () => {
 					</a>
 				</Tooltip>
 				<RemoveAddressModal
-					address={getSubstrateAddress(watchlists[item]?.address) || watchlists[item]?.address}
+					address={watchlists[item]?.address}
 					name={watchlists[item]?.name}
 					network={watchlists[item]?.network}
 				/>
@@ -106,6 +105,7 @@ const AddressList = () => {
 			<AddressComponent
 				address={watchlists[item]?.address}
 				onlyAddress
+				withBadge={false}
 			/>
 		),
 		key: item,

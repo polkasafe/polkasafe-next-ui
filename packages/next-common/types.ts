@@ -136,6 +136,7 @@ export interface UserDetailsContextTypeEVM {
 	notOwnerOfSafe?: boolean;
 	sharedSafeNetwork?: NETWORK;
 	sharedSafeAddress?: string;
+	watchlists?: { [address: string]: IWatchlist };
 }
 
 export enum Wallet {
