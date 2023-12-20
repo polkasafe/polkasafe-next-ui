@@ -74,13 +74,13 @@ const Menu: FC<Props> = ({ className }) => {
 
 	const menuItems = [
 		{
-			baseURl: '/',
+			baseURL: '/',
 			icon: <HomeIcon />,
 			key: getPath('/'),
 			title: 'Home'
 		},
 		{
-			baseURl: '/exchange',
+			baseURL: '/exchange',
 			disabled: notOwnerOfSafe,
 			icon: <ExchangeIcon />,
 			key: getPath('/exchange'),
@@ -95,26 +95,26 @@ const Menu: FC<Props> = ({ className }) => {
 			title: 'Watchlist'
 		},
 		{
-			baseURl: '/assets',
+			baseURL: '/assets',
 			icon: <AssetsIcon />,
 			key: getPath('/assets'),
 			title: 'Assets'
 		},
 		{
-			baseURl: '/transactions',
+			baseURL: '/transactions',
 			icon: <TransactionIcon />,
 			key: getPath('/transactions'),
 			title: 'Transactions'
 		},
 		{
-			baseURl: '/address-book',
+			baseURL: '/address-book',
 			disabled: notOwnerOfSafe,
 			icon: <AddressBookIcon />,
 			key: getPath('/address-book'),
 			title: 'Address Book'
 		},
 		{
-			baseURl: '/apps',
+			baseURL: '/apps',
 			disabled: true,
 			icon: <AppsIcon />,
 			key: getPath('/apps'),
@@ -125,13 +125,13 @@ const Menu: FC<Props> = ({ className }) => {
 	if (userAddress) {
 		menuItems.push(
 			{
-				baseURl: '/notification-settings',
+				baseURL: '/notification-settings',
 				icon: <NotificationIcon />,
 				key: getPath('/notification-settings'),
 				title: 'Notifications'
 			},
 			{
-				baseURl: '/settings',
+				baseURL: '/settings',
 				icon: <SettingsIcon />,
 				key: getPath('/settings'),
 				title: 'Settings'
@@ -170,7 +170,7 @@ const Menu: FC<Props> = ({ className }) => {
 								>
 									<Link
 										className={`flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
-											item.baseURl === pathname && 'bg-highlight text-primary'
+											item.baseURL === pathname && 'bg-highlight text-primary'
 										} ${item.disabled && 'pointer-events-none cursor-disabled text-text_secondary '} `}
 										href={item.key}
 									>
