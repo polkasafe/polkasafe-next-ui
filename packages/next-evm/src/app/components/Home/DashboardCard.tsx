@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { PlusCircleOutlined, ShareAltOutlined } from '@ant-design/icons';
-import { Skeleton, Tooltip } from 'antd';
+import { Dropdown, Skeleton, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
@@ -16,12 +16,13 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FundMultisig from '@next-evm/app/components/SendFunds/FundMultisig';
-import SendFundsForm from '@next-evm/app/components/SendFunds/SendFundsForm';
+import SendFundsForm, { ETransactionTypeEVM } from '@next-evm/app/components/SendFunds/SendFundsForm';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import formatBalance from '@next-evm/utils/formatBalance';
 import { currencyProperties } from '@next-common/global/currencyConstants';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
 
 interface IDashboardCard {
 	className?: string;
@@ -47,8 +48,18 @@ const DashboardCard = ({
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
 	const currentMultisig = multisigAddresses?.find((item) => item.address === activeMultisig);
 	const [totalAssetValue, setTotalAssetValue] = useState<string>('');
+	const [transactionType, setTransactionType] = useState<ETransactionTypeEVM>(ETransactionTypeEVM.SEND_TOKEN);
 
 	const baseURL = typeof window !== 'undefined' && global.window.location.href;
+
+	const transactionTypes: ItemType[] = Object.values(ETransactionTypeEVM)
+		.filter((item) => {
+			return !(item === ETransactionTypeEVM.STREAM_PAYMENTS && !chainProperties[network].nativeSuperTokenAddress);
+		})
+		.map((item) => ({
+			key: item,
+			label: <span className='text-white flex items-center gap-x-2'>{item}</span>
+		}));
 
 	useEffect(() => {
 		if (allAssets && allAssets.length > 0) {
@@ -65,11 +76,13 @@ const DashboardCard = ({
 					setOpenTransactionModal(false);
 					setNewTxn((prev) => !prev);
 				}}
-				title={<h3 className='text-white mb-8 text-lg font-semibold'>Send Funds</h3>}
+				title={<h3 className='text-white mb-8 text-lg font-semibold'>{transactionType}</h3>}
 			>
 				<SendFundsForm
 					setNewTxn={setNewTxn}
 					onCancel={() => setOpenTransactionModal(false)}
+					transactionType={transactionType}
+					setTransactionType={setTransactionType}
 				/>
 			</ModalComponent>
 			<ModalComponent
@@ -196,15 +209,26 @@ const DashboardCard = ({
 					</div> */}
 				</div>
 				<div className='flex justify-around w-full mt-5'>
-					<PrimaryButton
+					<Dropdown
+						trigger={['click']}
 						disabled={notOwnerOfSafe}
-						icon={<PlusCircleOutlined />}
-						onClick={() => setOpenTransactionModal(true)}
-						loading={transactionLoading}
-						className='w-[45%] flex items-center justify-center py-4 2xl:py-5'
+						menu={{
+							items: transactionTypes,
+							onClick: (e) => {
+								setTransactionType(e.key as ETransactionTypeEVM);
+								setOpenTransactionModal(true);
+							}
+						}}
 					>
-						New Transaction
-					</PrimaryButton>
+						<PrimaryButton
+							disabled={notOwnerOfSafe}
+							icon={<PlusCircleOutlined />}
+							loading={transactionLoading}
+							className='w-[45%] flex items-center justify-center py-4 2xl:py-5'
+						>
+							New Transaction
+						</PrimaryButton>
+					</Dropdown>
 					<PrimaryButton
 						disabled={notOwnerOfSafe}
 						secondary

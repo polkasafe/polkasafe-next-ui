@@ -16,10 +16,12 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ExternalLinkIcon, HistoryIcon, QueueIcon } from '@next-common/ui-components/CustomIcons';
 import AddMultisigModal from '../components/Multisig/AddMultisigModal';
+import Streamed from '../components/Transactions/Streamed';
 
 enum ETab {
 	QUEUE,
-	HISTORY
+	HISTORY,
+	STREAMED
 }
 
 const Transactions = () => {
@@ -51,6 +53,7 @@ const Transactions = () => {
 							// icon={<QueueIcon />}
 							size='large'
 							className={`font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
+								// eslint-disable-next-line sonarjs/no-duplicate-string
 								tab === ETab.QUEUE && 'text-primary bg-highlight'
 							}`}
 						>
@@ -66,10 +69,21 @@ const Transactions = () => {
 						>
 							History
 						</Button>
+						<Button
+							onClick={() => setTab(ETab.STREAMED)}
+							// icon={<HistoryIcon />}
+							size='large'
+							className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
+								tab === ETab.STREAMED && 'text-primary bg-highlight'
+							}`}
+						>
+							Streamed
+						</Button>
 						<div className='flex-1' />
 						<Button
 							size='large'
 							onClick={() => setRefetch((prev) => !prev)}
+							disabled={loading}
 							icon={
 								<SyncOutlined
 									spin={loading}
@@ -82,7 +96,13 @@ const Transactions = () => {
 						</Button>
 					</div>
 					<div className='h-full max-h-[690px] overflow-auto pr-2'>
-						{tab === ETab.HISTORY ? (
+						{tab === ETab.STREAMED ? (
+							<Streamed
+								loading={loading}
+								setLoading={setLoading}
+								refetch={refetch}
+							/>
+						) : tab === ETab.HISTORY ? (
 							<History
 								loading={loading}
 								refetch={refetch}

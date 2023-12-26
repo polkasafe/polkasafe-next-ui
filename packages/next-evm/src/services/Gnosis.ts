@@ -28,6 +28,8 @@ import {
 	getSimulation,
 	getStateOverwrites
 } from '@next-evm/utils/simulation';
+import { Interface } from '@ethersproject/abi';
+import streamABI from '../../stream-abi.json';
 
 (BigInt.prototype as any).toJSON = function () {
 	return this.toString();
@@ -178,6 +180,209 @@ export default class GnosisSafeService {
 				value,
 				tokens
 			);
+
+			if (note) console.log(note);
+
+			const safeTransaction = await safeSdk.createTransaction({
+				options: { nonce },
+				safeTransactionData
+			});
+			const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
+			let signature = (await safeSdk.signTransaction(safeTransaction)) as any;
+
+			signature = Object.fromEntries(signature.signatures.entries());
+			console.log(
+				multisigAddress,
+				safeTransaction.data,
+				safeTxHash,
+				senderAddress,
+				signature[signer.toLowerCase()].data
+			);
+			await this.safeService.proposeTransaction({
+				safeAddress: multisigAddress,
+				safeTransactionData: safeTransaction.data as any,
+				safeTxHash,
+				senderAddress,
+				senderSignature: signature[signer.toLowerCase()].data
+			});
+
+			return safeTxHash;
+		} catch (err) {
+			console.log(err);
+			// console.log('error from createSafeTx', err);
+			return null;
+		}
+	};
+
+	createStreamTx = async (
+		multisigAddress: string,
+		to: string,
+		value: string,
+		senderAddress: string,
+		superTokenAddress: string,
+		note?: string,
+		nonce?: number,
+		contractNetworks?: any
+	): Promise<string | null> => {
+		try {
+			const safeSdk = await Safe.create({
+				contractNetworks,
+				ethAdapter: this.ethAdapter,
+				isL1SafeMasterCopy: true,
+				safeAddress: multisigAddress
+			});
+			const signer = await this.ethAdapter.getSignerAddress();
+
+			const abi = streamABI;
+
+			const contractInterface = new Interface(abi);
+
+			const data = contractInterface.encodeFunctionData('createFlow', [
+				superTokenAddress,
+				multisigAddress,
+				to,
+				value,
+				'0x'
+			]);
+
+			const safeTransactionData: MetaTransactionData = {
+				data,
+				to: '0xcfA132E353cB4E398080B9700609bb008eceB125',
+				value: '0'
+			};
+
+			if (note) console.log(note);
+
+			const safeTransaction = await safeSdk.createTransaction({
+				options: { nonce },
+				safeTransactionData
+			});
+			const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
+			let signature = (await safeSdk.signTransaction(safeTransaction)) as any;
+
+			signature = Object.fromEntries(signature.signatures.entries());
+			console.log(
+				multisigAddress,
+				safeTransaction.data,
+				safeTxHash,
+				senderAddress,
+				signature[signer.toLowerCase()].data
+			);
+			await this.safeService.proposeTransaction({
+				safeAddress: multisigAddress,
+				safeTransactionData: safeTransaction.data as any,
+				safeTxHash,
+				senderAddress,
+				senderSignature: signature[signer.toLowerCase()].data
+			});
+
+			return safeTxHash;
+		} catch (err) {
+			console.log(err);
+			// console.log('error from createSafeTx', err);
+			return null;
+		}
+	};
+
+	createUpdateStreamTx = async (
+		multisigAddress: string,
+		to: string,
+		value: string,
+		senderAddress: string,
+		superTokenAddress: string,
+		note?: string,
+		nonce?: number,
+		contractNetworks?: any
+	): Promise<string | null> => {
+		try {
+			const safeSdk = await Safe.create({
+				contractNetworks,
+				ethAdapter: this.ethAdapter,
+				isL1SafeMasterCopy: true,
+				safeAddress: multisigAddress
+			});
+			const signer = await this.ethAdapter.getSignerAddress();
+
+			const abi = streamABI;
+
+			const contractInterface = new Interface(abi);
+
+			const data = contractInterface.encodeFunctionData('updateFlow', [
+				superTokenAddress,
+				multisigAddress,
+				to,
+				value,
+				'0x'
+			]);
+
+			const safeTransactionData: MetaTransactionData = {
+				data,
+				to: '0xcfA132E353cB4E398080B9700609bb008eceB125',
+				value: '0'
+			};
+
+			if (note) console.log(note);
+
+			const safeTransaction = await safeSdk.createTransaction({
+				options: { nonce },
+				safeTransactionData
+			});
+			const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
+			let signature = (await safeSdk.signTransaction(safeTransaction)) as any;
+
+			signature = Object.fromEntries(signature.signatures.entries());
+			console.log(
+				multisigAddress,
+				safeTransaction.data,
+				safeTxHash,
+				senderAddress,
+				signature[signer.toLowerCase()].data
+			);
+			await this.safeService.proposeTransaction({
+				safeAddress: multisigAddress,
+				safeTransactionData: safeTransaction.data as any,
+				safeTxHash,
+				senderAddress,
+				senderSignature: signature[signer.toLowerCase()].data
+			});
+
+			return safeTxHash;
+		} catch (err) {
+			console.log(err);
+			// console.log('error from createSafeTx', err);
+			return null;
+		}
+	};
+
+	createDeleteStreamTx = async (
+		multisigAddress: string,
+		to: string,
+		senderAddress: string,
+		superTokenAddress: string,
+		note?: string,
+		nonce?: number,
+		contractNetworks?: any
+	): Promise<string | null> => {
+		try {
+			const safeSdk = await Safe.create({
+				contractNetworks,
+				ethAdapter: this.ethAdapter,
+				isL1SafeMasterCopy: true,
+				safeAddress: multisigAddress
+			});
+			const signer = await this.ethAdapter.getSignerAddress();
+
+			const abi = streamABI;
+
+			const contractInterface = new Interface(abi);
+
+			const data = contractInterface.encodeFunctionData('deleteFlow', [superTokenAddress, multisigAddress, to, '0x']);
+
+			const safeTransactionData: MetaTransactionData = {
+				data,
+				to: '0xcfA132E353cB4E398080B9700609bb008eceB125',
+				value: '0'
+			};
 
 			if (note) console.log(note);
 

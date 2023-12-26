@@ -56,6 +56,7 @@ interface ISentInfoProps {
 	advancedDetails: any;
 	isRejectionTxn?: boolean;
 	isCustomTxn?: boolean;
+	isContractInteraction?: boolean;
 	setOpenReplaceTxnModal: React.Dispatch<React.SetStateAction<boolean>>;
 	network: NETWORK;
 }
@@ -85,7 +86,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 	isRejectionTxn,
 	isCustomTxn,
 	setOpenReplaceTxnModal,
-	network
+	network,
+	isContractInteraction
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { address: userAddress, multisigAddresses, activeMultisig, notOwnerOfSafe } = useGlobalUserDetailsContext();
@@ -120,6 +122,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') &&
 					!isRejectionTxn &&
 					!isCustomTxn &&
+					!isContractInteraction &&
 					recipientAddress &&
 					amount &&
 					(typeof recipientAddress === 'string' ? (
@@ -199,9 +202,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 				{/* {!callData &&
 					<Input size='large' placeholder='Enter Call Data.' className='w-full my-2 text-sm font-normal leading-[15px] border-0 outline-0 placeholder:text-[#505050] bg-bg-secondary rounded-md text-white' onChange={(e) => setCallDataString(e.target.value)} />
 				} */}
-				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') && !isCustomTxn && !isRejectionTxn && (
-					<Divider className='bg-text_secondary my-5' />
-				)}
+				{!(txType === 'addOwnerWithThreshold' || txType === 'removeOwner') &&
+					!isCustomTxn &&
+					!isContractInteraction &&
+					!isRejectionTxn && <Divider className='bg-text_secondary my-5' />}
 				{isRejectionTxn && (
 					<div>
 						<section className='mb-4 text-sm border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
@@ -210,6 +214,15 @@ const SentInfo: FC<ISentInfoProps> = ({
 								replace all currently awaiting transactions with nonce {advancedDetails?.nonce || '0'}.
 							</p>
 						</section>
+						<Divider className='bg-text_secondary my-5' />
+					</div>
+				)}
+				{isContractInteraction && recipientAddress && typeof recipientAddress === 'string' && (
+					<div>
+						<div className='mt-3 flex flex-col gap-y-2 text-white font-medium text-sm'>
+							<span>Interact with: </span>
+							<AddressComponent address={recipientAddress} />
+						</div>
 						<Divider className='bg-text_secondary my-5' />
 					</div>
 				)}

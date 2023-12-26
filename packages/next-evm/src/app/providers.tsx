@@ -14,6 +14,7 @@ import antdTheme from '@next-evm/styles/antdTheme';
 import { AddMultisigProvider } from '@next-evm/context/AddMultisigContext';
 import { MultisigAssetsProvider } from '@next-evm/context/MultisigAssetsContext';
 import { CurrencyContextProvider } from '@next-evm/context/CurrencyContext';
+import { SuperfluidProvider } from '@next-evm/context/SuperfluidContext';
 
 export default function Providers({ children }: { children?: ReactNode }) {
 	return (
@@ -22,15 +23,17 @@ export default function Providers({ children }: { children?: ReactNode }) {
 				(
 					<ApiContextProvider>
 						<UserDetailsProvider>
-							<ActiveMultisigProvider>
-								<AddMultisigProvider>
-									<MultisigAssetsProvider>
-										<CurrencyContextProvider>
-											<DAppContextProvider>{children}</DAppContextProvider>
-										</CurrencyContextProvider>
-									</MultisigAssetsProvider>
-								</AddMultisigProvider>
-							</ActiveMultisigProvider>
+							<SuperfluidProvider>
+								<ActiveMultisigProvider>
+									<AddMultisigProvider>
+										<MultisigAssetsProvider>
+											<CurrencyContextProvider>
+												<DAppContextProvider>{children}</DAppContextProvider>
+											</CurrencyContextProvider>
+										</MultisigAssetsProvider>
+									</AddMultisigProvider>
+								</ActiveMultisigProvider>
+							</SuperfluidProvider>
 						</UserDetailsProvider>
 					</ApiContextProvider>
 				) as React.ReactNode
