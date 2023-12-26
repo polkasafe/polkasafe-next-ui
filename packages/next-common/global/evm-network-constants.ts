@@ -28,6 +28,7 @@ export type ChainPropType = {
 		contractNetworks?: any;
 		coingeckoId?: string;
 		coingeckoNativeTokenId?: string;
+		nativeSuperTokenAddress?: string;
 	};
 };
 
@@ -61,6 +62,7 @@ export const chainProperties: ChainPropType = {
 		decimals: 18,
 		displayName: 'Goerli',
 		logo: ethereumLogo,
+		nativeSuperTokenAddress: '0x5943f705abb6834cad767e6e4bb258bc48d9c947',
 		rpcEndpoint: 'https://goerli.blockpi.network/v1/rpc/public',
 		tokenName: 'GoerliETH',
 		tokenSymbol: tokenSymbol.ETH
@@ -73,6 +75,7 @@ export const chainProperties: ChainPropType = {
 		decimals: 18,
 		displayName: 'Polygon',
 		logo: polygonLogo,
+		nativeSuperTokenAddress: '0x3aD736904E9e65189c3000c7DD2c8AC8bB7cD4e3',
 		rpcEndpoint: 'https://polygon-rpc.com/',
 		tokenAddress: '0x0000000000000000000000000000000000001010',
 		tokenName: 'Matic',
@@ -97,6 +100,7 @@ export const chainProperties: ChainPropType = {
 		decimals: 18,
 		displayName: 'Ethereum',
 		logo: ethereumLogo,
+		nativeSuperTokenAddress: '0xc22bea0be9872d8b7b3933cec70ece4d53a900da',
 		rpcEndpoint: 'https://eth.api.onfinality.io/public',
 		tokenName: 'Ethereum',
 		tokenSymbol: tokenSymbol.ETH
@@ -108,6 +112,7 @@ export const chainProperties: ChainPropType = {
 		decimals: 18,
 		displayName: 'BNB Smart Chain',
 		logo: bnbLogo,
+		nativeSuperTokenAddress: '0x529a4116f160c833c61311569d6b33dff41fd657',
 		rpcEndpoint: 'https://bsc-dataseed.binance.org/',
 		tokenName: 'BNB Smart Chain',
 		tokenSymbol: tokenSymbol.BNB
@@ -119,6 +124,7 @@ export const chainProperties: ChainPropType = {
 		decimals: 18,
 		displayName: 'Arbitrum',
 		logo: arbLogo,
+		nativeSuperTokenAddress: '0xe6c8d111337d0052b9d88bf5d7d55b7f8385acd3',
 		rpcEndpoint: 'https://arb1.arbitrum.io/rpc',
 		tokenName: 'Arbitrum',
 		tokenSymbol: tokenSymbol.ETH
@@ -130,6 +136,7 @@ export const chainProperties: ChainPropType = {
 		decimals: 18,
 		displayName: 'Optimism',
 		logo: opLogo,
+		nativeSuperTokenAddress: '0x1828bff08bd244f7990eddcd9b19cc654b33cdb4',
 		rpcEndpoint: 'https://mainnet.optimism.io/',
 		tokenName: 'Optimism',
 		tokenSymbol: tokenSymbol.OP
@@ -141,6 +148,7 @@ export const chainProperties: ChainPropType = {
 		decimals: 18,
 		displayName: 'Gnosis Chain',
 		logo: gnosisChainLogo,
+		nativeSuperTokenAddress: '0x59988e47a3503aafaa0368b9def095c818fdca01',
 		rpcEndpoint: 'https://rpc.gnosischain.com/',
 		tokenName: 'Gnosis Chain',
 		tokenSymbol: tokenSymbol.xDAI

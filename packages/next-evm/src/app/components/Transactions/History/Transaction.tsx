@@ -89,6 +89,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 	const [isRejectionTxn, setIsRejectionTxn] = useState<boolean>(false);
 
 	const [isCustomTxn, setIsCustomTxn] = useState<boolean>(false);
+	const [isContractInteraction, setIsContractInteraction] = useState<boolean>(false);
 
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
 
@@ -199,6 +200,10 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 		if (txDetails?.txInfo?.type === 'Custom' && txDetails?.txInfo?.isCancellation) {
 			setIsRejectionTxn(true);
+		}
+
+		if (txDetails?.txInfo?.type === 'Custom' && !(txDetails?.txInfo as any)?.transferInfo) {
+			setIsContractInteraction(true);
 		}
 
 		setTxData(txDetails.txData);
@@ -383,6 +388,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 									'Removed Owner'
 								) : type === 'addOwnerWithThreshold' ? (
 									'Added Owner'
+								) : isContractInteraction ? (
+									'Contract Interaction'
 								) : (
 									type
 								)}
@@ -449,6 +456,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							isCustomTxn={isCustomTxn}
 							isRejectionTxn={isRejectionTxn}
 							network={network}
+							isContractInteraction={isContractInteraction}
 						/>
 					)}
 				</div>

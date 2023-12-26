@@ -51,6 +51,7 @@ interface ISentInfoProps {
 	}[];
 	isRejectionTxn?: boolean;
 	isCustomTxn?: boolean;
+	isContractInteraction?: boolean;
 	network: NETWORK;
 }
 
@@ -74,7 +75,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 	isRejectionTxn,
 	isCustomTxn,
 	tokenAddress,
-	network
+	network,
+	isContractInteraction
 }) => {
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
@@ -127,6 +129,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 					recipientAddress &&
 					!isRejectionTxn &&
 					!isCustomTxn &&
+					!isContractInteraction &&
 					amount &&
 					(typeof recipientAddress === 'string' ? (
 						<>
@@ -215,6 +218,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 								replace all currently awaiting transactions with nonce {advancedDetails?.nonce || '0'}.
 							</p>
 						</section>
+					</div>
+				)}
+				{isContractInteraction && recipientAddress && typeof recipientAddress === 'string' && (
+					<div className='mt-3 flex flex-col gap-y-2 text-white font-medium text-sm'>
+						<span>Interact with: </span>
+						<AddressComponent address={recipientAddress} />
 					</div>
 				)}
 				<Divider className='bg-text_secondary my-5' />

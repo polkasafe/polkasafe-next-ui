@@ -116,7 +116,8 @@ const Transaction: FC<ITransactionProps> = ({
 
 	const [isRejectionTxn, setIsRejectionTxn] = useState<boolean>(false);
 
-	const [isCustomTxn, setIsCustomTxn] = useState<boolean>(false);
+	const [isCustomTxnWithHumanDesc, setIsCustomTxnWithHumanDesc] = useState<boolean>(false);
+	const [isContractInteraction, setIsContractInteraction] = useState<boolean>(false);
 
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
 
@@ -134,7 +135,7 @@ const Transaction: FC<ITransactionProps> = ({
 				txDetails?.txInfo?.richDecodedInfo &&
 				txDetails?.txInfo?.richDecodedInfo?.fragments
 			) {
-				setIsCustomTxn(true);
+				setIsCustomTxnWithHumanDesc(true);
 			}
 
 			if (txDetails?.txInfo?.type === 'Custom' && txDetails?.txInfo?.isCancellation) {
@@ -143,6 +144,10 @@ const Transaction: FC<ITransactionProps> = ({
 
 			if (txDetails.txInfo.type === 'Custom' && txDetails.txInfo.isCancellation) {
 				setCanCancelTx(false);
+			}
+
+			if (txDetails?.txInfo?.type === 'Custom' && !(txDetails?.txInfo as any)?.transferInfo) {
+				setIsContractInteraction(true);
 			}
 
 			const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
@@ -428,7 +433,7 @@ const Transaction: FC<ITransactionProps> = ({
 												)}
 											</p>
 										)
-									) : isCustomTxn ? (
+									) : isCustomTxnWithHumanDesc ? (
 										<p className='flex items-center gap-x-2'>
 											{txInfo?.richDecodedInfo?.fragments?.map((item: any) => (
 												<span className='flex items-center gap-x-2'>
@@ -442,6 +447,8 @@ const Transaction: FC<ITransactionProps> = ({
 												</span>
 											))}
 										</p>
+									) : isContractInteraction ? (
+										'Contract Interaction'
 									) : (
 										'Custom Transaction'
 									)}
@@ -517,7 +524,8 @@ const Transaction: FC<ITransactionProps> = ({
 						multiSendTokens={tokenDetailsArray}
 						advancedDetails={advancedDetails}
 						isRejectionTxn={isRejectionTxn}
-						isCustomTxn={isCustomTxn}
+						isCustomTxn={isCustomTxnWithHumanDesc}
+						isContractInteraction={isContractInteraction}
 						setOpenReplaceTxnModal={setOpenReplaceTxnModal}
 						network={network}
 					/>

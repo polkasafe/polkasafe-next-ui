@@ -40,6 +40,8 @@ import { NETWORK, chainProperties } from '@next-common/global/evm-network-consta
 import Image from 'next/image';
 import { getSimulationLink, setSimulationSharing } from '@next-evm/utils/simulation';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { useSuperfluidContext } from '@next-evm/context/SuperfluidContext';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -51,6 +53,21 @@ export interface IRecipientAndAmount {
 	token: IAsset;
 }
 
+export enum ETransactionTypeEVM {
+	SEND_TOKEN = 'Send Token',
+	STREAM_PAYMENTS = 'Stream Payments'
+}
+
+export enum EFlowRates {
+	SECOND = '1',
+	MINUTE = '60',
+	HOUR = '3600',
+	DAY = '86400',
+	WEEK = '604800',
+	MONTH = '2628000',
+	YEAR = '31536000'
+}
+
 interface ISendFundsFormProps {
 	onCancel?: () => void;
 	className?: string;
@@ -58,6 +75,10 @@ interface ISendFundsFormProps {
 	defaultSelectedAddress?: string;
 	defaultToken?: IAsset;
 	defaultTxNonce?: number;
+	transactionType?: ETransactionTypeEVM;
+	setTransactionType?: React.Dispatch<React.SetStateAction<ETransactionTypeEVM>>;
+	updateStreamAmount?: string;
+	updateStream?: boolean;
 }
 
 const SendFundsForm = ({
@@ -66,6 +87,10 @@ const SendFundsForm = ({
 	defaultSelectedAddress,
 	setNewTxn,
 	defaultTxNonce,
+	transactionType = ETransactionTypeEVM.SEND_TOKEN,
+	setTransactionType,
+	updateStreamAmount,
+	updateStream,
 	defaultToken // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
 	const { activeMultisig, addressBook, address, gnosisSafe, multisigAddresses, transactionFields, activeMultisigData } =
@@ -73,6 +98,7 @@ const SendFundsForm = ({
 	const { network } = useGlobalApiContext();
 	const { records } = useActiveMultisigContext();
 	const { allAssets } = useMultisigAssetsContext();
+	const { superfluidFramework } = useSuperfluidContext();
 
 	const [note, setNote] = useState<string>('');
 	const [loading, setLoading] = useState(false);
@@ -114,6 +140,38 @@ const SendFundsForm = ({
 	const [simulationId, setSimulationId] = useState<string>('');
 
 	const [openSimulationFailedModal, setOpenSimulationFailedModal] = useState<boolean>(false);
+
+	const [streamRecipient, setStreamRecipient] = useState<string>(
+		defaultSelectedAddress ? defaultSelectedAddress || '' : address || ''
+	);
+	const [streamAmount, setStreamAmount] = useState<string>(updateStreamAmount || '');
+	const [weiAmount, setWeiAmount] = useState<string>('');
+
+	const [flowRate, setFlowRate] = useState<EFlowRates>(EFlowRates.MONTH);
+
+	const [streamToken, setStreamToken] = useState<IAsset>(defaultToken || allAssets[0] || ({} as IAsset));
+
+	const transactionTypes: ItemType[] = Object.values(ETransactionTypeEVM)
+		.filter((item) => {
+			return !(item === ETransactionTypeEVM.STREAM_PAYMENTS && !chainProperties[network].nativeSuperTokenAddress);
+		})
+		.map((item) => ({
+			key: item,
+			label: <span className='text-white text-sm flex items-center gap-x-2'>{item}</span>
+		}));
+
+	const flowRates: ItemType[] = Object.keys(EFlowRates).map((item) => ({
+		key: EFlowRates[item],
+		label: <span className='text-white text-sm flex items-center gap-x-2'>/ {item.toLowerCase()}</span>
+	}));
+
+	useEffect(() => {
+		if (!streamAmount) return;
+
+		const wei = ethers.utils.parseUnits(streamAmount, 'ether');
+		const amountAsPerFlowrate = BigInt(wei.toString()) / BigInt(flowRate);
+		setWeiAmount(amountAsPerFlowrate.toString());
+	}, [flowRate, streamAmount]);
 
 	const onRecipientChange = (value: string, i: number) => {
 		setRecipientAndAmount((prevState) => {
@@ -204,33 +262,43 @@ const SendFundsForm = ({
 	}, [activeMultisigData, recipientAndAmount]);
 
 	useEffect(() => {
-		if (!recipientAndAmount) return;
-
-		recipientAndAmount.forEach((item, i) => {
-			if (
-				item.recipient &&
-				(!isValidWeb3Address(item.recipient) ||
-					recipientAndAmount.indexOf(
-						recipientAndAmount.find((a) => item.recipient === a.recipient) as IRecipientAndAmount
-					) !== i)
-			) {
-				setValidRecipient((prev) => {
-					const copyArray = [...prev];
-					copyArray[i] = false;
-					return copyArray;
-				});
+		setValidRecipient([]);
+		if (transactionType === ETransactionTypeEVM.STREAM_PAYMENTS) {
+			if (!isValidWeb3Address(streamRecipient)) {
+				setValidRecipient([false]);
 			} else {
-				setValidRecipient((prev) => {
-					const copyArray = [...prev];
-					copyArray[i] = true;
-					return copyArray;
-				});
+				setValidRecipient([true]);
 			}
-		});
+		} else {
+			if (!recipientAndAmount) return;
+
+			recipientAndAmount.forEach((item, i) => {
+				if (
+					item.recipient &&
+					(!isValidWeb3Address(item.recipient) ||
+						recipientAndAmount.indexOf(
+							recipientAndAmount.find((a) => item.recipient === a.recipient) as IRecipientAndAmount
+						) !== i)
+				) {
+					setValidRecipient((prev) => {
+						const copyArray = [...prev];
+						copyArray[i] = false;
+						return copyArray;
+					});
+				} else {
+					setValidRecipient((prev) => {
+						const copyArray = [...prev];
+						copyArray[i] = true;
+						return copyArray;
+					});
+				}
+			});
+		}
+
 		setSimulationId('');
 		setIsSimulationFailed(false);
 		setIsSimulationSuccess(false);
-	}, [recipientAndAmount]);
+	}, [recipientAndAmount, streamRecipient, transactionType]);
 
 	const handleSimulate = async () => {
 		const recipients = recipientAndAmount.map((r) => r.recipient);
@@ -263,21 +331,60 @@ const SendFundsForm = ({
 	const handleSubmit = async () => {
 		setLoading(true);
 		try {
+			let safeTxHash = '';
+
 			const recipients = recipientAndAmount.map((r) => r.recipient);
 			const amounts = recipientAndAmount.map((a) =>
 				ethers.utils.parseUnits(a.amount, a.token?.token_decimals || 'ether').toString()
 			);
 			const selectedTokens = recipientAndAmount.map((r) => r.token);
-			const safeTxHash = await gnosisSafe.createSafeTx(
-				activeMultisig,
-				recipients,
-				amounts,
-				address,
-				note,
-				selectedTokens,
-				defaultTxNonce,
-				chainProperties[network].contractNetworks
-			);
+			if (transactionType === ETransactionTypeEVM.STREAM_PAYMENTS) {
+				const superToken = await superfluidFramework.loadSuperToken(`${streamToken.name}x`);
+				const tokenAddress = superToken.address;
+				if (!tokenAddress) {
+					setLoading(false);
+					queueNotification({
+						header: 'Failed!',
+						message: 'Selected Token is not Supported',
+						status: NotificationStatus.ERROR
+					});
+					return;
+				}
+				if (updateStream) {
+					safeTxHash = await gnosisSafe.createUpdateStreamTx(
+						activeMultisig,
+						streamRecipient,
+						weiAmount,
+						address,
+						tokenAddress,
+						note,
+						defaultTxNonce,
+						chainProperties[network].contractNetworks
+					);
+				} else {
+					safeTxHash = await gnosisSafe.createStreamTx(
+						activeMultisig,
+						streamRecipient,
+						weiAmount,
+						address,
+						tokenAddress,
+						note,
+						defaultTxNonce,
+						chainProperties[network].contractNetworks
+					);
+				}
+			} else {
+				safeTxHash = await gnosisSafe.createSafeTx(
+					activeMultisig,
+					recipients,
+					amounts,
+					address,
+					note,
+					selectedTokens,
+					defaultTxNonce,
+					chainProperties[network].contractNetworks
+				);
+			}
 
 			if (safeTxHash) {
 				addNewTransaction({
@@ -288,7 +395,7 @@ const SendFundsForm = ({
 					network,
 					note,
 					safeAddress: activeMultisig,
-					to: recipients,
+					to: transactionType === ETransactionTypeEVM.STREAM_PAYMENTS ? streamRecipient : recipients,
 					transactionFields: transactionFieldsObject,
 					type: 'sent'
 				});
@@ -384,6 +491,25 @@ const SendFundsForm = ({
 				// eslint-disable-next-line no-template-curly-in-string
 				validateMessages={{ required: "Please add the '${name}'" }}
 			>
+				{setTransactionType && (
+					<section className='flex justify-end w-full'>
+						<Dropdown
+							trigger={['click']}
+							className={`border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer ${className}`}
+							menu={{
+								items: transactionTypes,
+								onClick: (e) => {
+									setTransactionType?.(e.key as ETransactionTypeEVM);
+								}
+							}}
+						>
+							<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+								<span className='flex items-center gap-x-2 text-sm'>{transactionType}</span>
+								<CircleArrowDownIcon className='text-primary' />
+							</div>
+						</Dropdown>
+					</section>
+				)}
 				<section>
 					<p className='text-primary font-normal text-xs leading-[13px]'>Sending from</p>
 					<div className='flex items-center gap-x-[10px] mt-[14px]'>
@@ -411,122 +537,231 @@ const SendFundsForm = ({
 				</section>
 
 				<section className=''>
-					<div className='flex items-start gap-x-[10px]'>
-						<div>
-							<div className='flex flex-col gap-y-3 mb-2'>
-								{recipientAndAmount.map(({ recipient }, i) => (
-									<article
-										key={recipient}
-										className='w-[500px] flex items-start gap-x-2'
-									>
-										<AddAddressModal
-											showAddressModal={showAddressModal}
-											setShowAddressModal={setShowAddressModal}
-											setAutoCompleteAddresses={setAutoCompleteAddresses}
-											defaultAddress={recipient}
-										/>
-										<div className='w-[55%]'>
-											<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
-												Recipient*
-											</label>
-											<Form.Item
-												name='recipient'
-												rules={[{ required: true }]}
-												help={
-													(!recipient && 'Recipient Address is Required') ||
-													(!validRecipient[i] && 'Please add a valid Address')
+					{transactionType === ETransactionTypeEVM.STREAM_PAYMENTS ? (
+						<div className='flex flex-col gap-y-4 w-[500px]'>
+							<AddAddressModal
+								showAddressModal={showAddressModal}
+								setShowAddressModal={setShowAddressModal}
+								setAutoCompleteAddresses={setAutoCompleteAddresses}
+								defaultAddress={streamRecipient}
+							/>
+							<div>
+								<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Recipient*</label>
+								<Form.Item
+									name='recipient'
+									rules={[{ required: true }]}
+									help={
+										(!streamRecipient && 'Recipient Address is Required') ||
+										(!validRecipient[0] && 'Please add a valid Address')
+									}
+									className='border-0 outline-0 my-0 p-0'
+									validateStatus={streamRecipient && validRecipient[0] ? 'success' : 'error'}
+								>
+									<div className='h-[50px]'>
+										{streamRecipient &&
+										autocompleteAddresses.some((item) => item.value && String(item.value) === streamRecipient) ? (
+											<div className='border border-solid border-primary rounded-lg px-2 h-full flex justify-between items-center'>
+												{
+													autocompleteAddresses.find((item) => item.value && String(item.value) === streamRecipient)
+														?.label
 												}
-												className='border-0 outline-0 my-0 p-0'
-												validateStatus={recipient && validRecipient[i] ? 'success' : 'error'}
-											>
-												<div className='h-[50px]'>
-													{recipient &&
-													autocompleteAddresses.some((item) => item.value && String(item.value) === recipient) ? (
-														<div className='border border-solid border-primary rounded-lg px-2 h-full flex justify-between items-center'>
-															{
-																autocompleteAddresses.find((item) => item.value && String(item.value) === recipient)
-																	?.label
-															}
-															<button
-																className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center z-100'
-																onClick={() => {
-																	onRecipientChange('', i);
-																}}
-															>
-																<OutlineCloseIcon className='text-primary w-2 h-2' />
-															</button>
-														</div>
-													) : (
-														<AutoComplete
-															autoFocus
-															filterOption={(inputValue, options) => {
-																return inputValue && options?.value ? String(options?.value) === inputValue : true;
-															}}
-															notFoundContent={
-																validRecipient[i] && (
-																	<Button
-																		icon={<PlusCircleOutlined className='text-primary' />}
-																		className='bg-transparent border-none outline-none text-primary text-sm flex items-center'
-																		onClick={() => setShowAddressModal(true)}
-																	>
-																		Add Address to Address Book
-																	</Button>
-																)
-															}
-															options={autocompleteAddresses.filter(
-																(item) =>
-																	!recipientAndAmount.some(
-																		(r) => r.recipient && item.value && r.recipient === (String(item.value) || '')
-																	)
-															)}
-															id='recipient'
-															placeholder='Send to Address..'
-															onChange={(value) => onRecipientChange(value, i)}
-															value={recipientAndAmount[i].recipient}
-															defaultValue={defaultSelectedAddress || ''}
-														/>
-													)}
-												</div>
-											</Form.Item>
-										</div>
-										<div className='flex items-center gap-x-2 w-[45%]'>
-											<BalanceInput
-												token={recipientAndAmount[i].token}
-												onTokenChange={(t) => onTokenChange(t, i)}
-												label='Amount*'
-												onChange={(balance) => onAmountChange(balance, i)}
-											/>
-											{i !== 0 && (
-												<Button
-													onClick={() => onRemoveRecipient(i)}
-													className='text-failure border-none outline-none bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
+												<button
+													className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center z-100'
+													onClick={() => {
+														setStreamRecipient('');
+													}}
 												>
-													<DeleteIcon />
-												</Button>
-											)}
-										</div>
-									</article>
-								))}
+													<OutlineCloseIcon className='text-primary w-2 h-2' />
+												</button>
+											</div>
+										) : (
+											<AutoComplete
+												autoFocus
+												filterOption={(inputValue, options) => {
+													return inputValue && options?.value ? String(options?.value) === inputValue : true;
+												}}
+												notFoundContent={
+													validRecipient[0] && (
+														<Button
+															icon={<PlusCircleOutlined className='text-primary' />}
+															className='bg-transparent border-none outline-none text-primary text-sm flex items-center'
+															onClick={() => setShowAddressModal(true)}
+														>
+															Add Address to Address Book
+														</Button>
+													)
+												}
+												options={autocompleteAddresses.filter(
+													(item) =>
+														!recipientAndAmount.some(
+															(r) => r.recipient && item.value && r.recipient === (String(item.value) || '')
+														)
+												)}
+												id='recipient'
+												placeholder='Send to Address..'
+												onChange={(value) => setStreamRecipient(value)}
+												value={streamRecipient}
+												defaultValue={defaultSelectedAddress || ''}
+											/>
+										)}
+									</div>
+								</Form.Item>
 							</div>
-							<Button
-								icon={<PlusCircleOutlined className='text-primary' />}
-								className='bg-transparent p-0 border-none outline-none text-primary text-sm flex items-center'
-								onClick={onAddRecipient}
-							>
-								Add Another Recipient
-							</Button>
+							<div className='flex items-start gap-x-2'>
+								<div className='flex-1'>
+									<BalanceInput
+										label='Flow Rate'
+										defaultValue={updateStreamAmount}
+										onChange={(balance) => setStreamAmount(balance)}
+										token={streamToken}
+										onTokenChange={(t) => setStreamToken(t)}
+									/>
+								</div>
+								<div>
+									<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px] py-2' />
+									<Dropdown
+										trigger={['click']}
+										className={`border border-primary rounded-lg p-3 bg-bg-secondary cursor-pointer ${className}`}
+										menu={{
+											items: flowRates,
+											onClick: (e) => {
+												setFlowRate?.(e.key as EFlowRates);
+											}
+										}}
+									>
+										<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+											<span className='flex items-center gap-x-2 text-sm'>
+												/{' '}
+												{Object.keys(EFlowRates)
+													.find((k) => EFlowRates[k] === flowRate)
+													?.toString()
+													?.toLowerCase()}
+											</span>
+											<CircleArrowDownIcon className='text-primary' />
+										</div>
+									</Dropdown>
+								</div>
+							</div>
 						</div>
-						<div className='flex flex-col gap-y-4'>
-							<article className='w-[412px] flex items-center'>
-								<span className='-mr-1.5 z-0'>
-									<LineIcon className='text-5xl' />
-								</span>
-								<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px]'>
-									The beneficiary will have access to the transferred fees when the transaction is included in a block.
-								</p>
-							</article>
+					) : (
+						<div className='flex items-start gap-x-[10px]'>
+							<div>
+								<div className='flex flex-col gap-y-3 mb-2'>
+									{recipientAndAmount.map(({ recipient }, i) => (
+										<article
+											key={recipient}
+											className='w-[500px] flex items-start gap-x-2'
+										>
+											<AddAddressModal
+												showAddressModal={showAddressModal}
+												setShowAddressModal={setShowAddressModal}
+												setAutoCompleteAddresses={setAutoCompleteAddresses}
+												defaultAddress={recipient}
+											/>
+											<div className='w-[55%]'>
+												<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
+													Recipient*
+												</label>
+												<Form.Item
+													name='recipient'
+													rules={[{ required: true }]}
+													help={
+														(!recipient && 'Recipient Address is Required') ||
+														(!validRecipient[i] && 'Please add a valid Address')
+													}
+													className='border-0 outline-0 my-0 p-0'
+													validateStatus={recipient && validRecipient[i] ? 'success' : 'error'}
+												>
+													<div className='h-[50px]'>
+														{recipient &&
+														autocompleteAddresses.some((item) => item.value && String(item.value) === recipient) ? (
+															<div className='border border-solid border-primary rounded-lg px-2 h-full flex justify-between items-center'>
+																{
+																	autocompleteAddresses.find((item) => item.value && String(item.value) === recipient)
+																		?.label
+																}
+																<button
+																	className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center z-100'
+																	onClick={() => {
+																		onRecipientChange('', i);
+																	}}
+																>
+																	<OutlineCloseIcon className='text-primary w-2 h-2' />
+																</button>
+															</div>
+														) : (
+															<AutoComplete
+																autoFocus
+																filterOption={(inputValue, options) => {
+																	return inputValue && options?.value ? String(options?.value) === inputValue : true;
+																}}
+																notFoundContent={
+																	validRecipient[i] && (
+																		<Button
+																			icon={<PlusCircleOutlined className='text-primary' />}
+																			className='bg-transparent border-none outline-none text-primary text-sm flex items-center'
+																			onClick={() => setShowAddressModal(true)}
+																		>
+																			Add Address to Address Book
+																		</Button>
+																	)
+																}
+																options={autocompleteAddresses.filter(
+																	(item) =>
+																		!recipientAndAmount.some(
+																			(r) => r.recipient && item.value && r.recipient === (String(item.value) || '')
+																		)
+																)}
+																id='recipient'
+																placeholder='Send to Address..'
+																onChange={(value) => onRecipientChange(value, i)}
+																value={recipientAndAmount[i].recipient}
+																defaultValue={defaultSelectedAddress || ''}
+															/>
+														)}
+													</div>
+												</Form.Item>
+											</div>
+											<div className='flex items-center gap-x-2 w-[45%]'>
+												<BalanceInput
+													token={recipientAndAmount[i].token}
+													onTokenChange={(t) => onTokenChange(t, i)}
+													label='Amount*'
+													onChange={(balance) => onAmountChange(balance, i)}
+												/>
+												{i !== 0 && (
+													<Button
+														onClick={() => onRemoveRecipient(i)}
+														className='text-failure border-none outline-none bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
+													>
+														<DeleteIcon />
+													</Button>
+												)}
+											</div>
+										</article>
+									))}
+								</div>
+								<Button
+									icon={<PlusCircleOutlined className='text-primary' />}
+									className='bg-transparent p-0 border-none outline-none text-primary text-sm flex items-center'
+									onClick={onAddRecipient}
+								>
+									Add Another Recipient
+								</Button>
+							</div>
+							<div className='flex flex-col gap-y-4'>
+								<article className='w-[412px] flex items-center'>
+									<span className='-mr-1.5 z-0'>
+										<LineIcon className='text-5xl' />
+									</span>
+									<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px]'>
+										The beneficiary will have access to the transferred fees when the transaction is included in a
+										block.
+									</p>
+								</article>
+							</div>
 						</div>
-					</div>
+					)}
 				</section>
 
 				{!recipientAndAmount.some(
@@ -776,15 +1011,23 @@ const SendFundsForm = ({
 				/>
 				<ModalBtn
 					disabled={
-						recipientAndAmount.some(
-							(item) =>
-								item.recipient === '' ||
-								item.amount === '0' ||
-								Number.isNaN(Number(item.amount)) ||
-								!item.amount ||
-								Number(item.amount) === 0 ||
-								Number(item.amount) > Number(item.token.balance_token)
-						) ||
+						(transactionType === ETransactionTypeEVM.SEND_TOKEN &&
+							recipientAndAmount.some(
+								(item, i) =>
+									item.recipient === '' ||
+									item.amount === '0' ||
+									Number.isNaN(Number(item.amount)) ||
+									!item.amount ||
+									Number(item.amount) === 0 ||
+									Number(item.amount) > Number(item.token.balance_token) ||
+									!validRecipient[i]
+							)) ||
+						(transactionType === ETransactionTypeEVM.STREAM_PAYMENTS &&
+							(streamRecipient === '' ||
+								streamAmount === '0' ||
+								Number.isNaN(Number(streamAmount)) ||
+								!streamAmount ||
+								Number(streamAmount) === 0)) ||
 						Object.keys(transactionFields[category].subfields).some(
 							(key) =>
 								!transactionFieldsObject.subfields[key]?.value && transactionFields[category].subfields[key].required

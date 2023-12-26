@@ -48,7 +48,7 @@ const BalanceInput = ({
 		}
 		setIsValidInput(true);
 
-		if (amount > Number(token.balance_token)) {
+		if (token && amount > Number(token?.balance_token)) {
 			setInsufficientBalance(true);
 			return;
 		}
