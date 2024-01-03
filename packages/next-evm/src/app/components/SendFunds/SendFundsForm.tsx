@@ -46,6 +46,7 @@ import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
 import TxnSimulationFailedModal from './TxnSimulationFailedModal';
+import TransactionBuilder from './TransactionBuilder';
 
 export interface IRecipientAndAmount {
 	recipient: string;
@@ -55,7 +56,8 @@ export interface IRecipientAndAmount {
 
 export enum ETransactionTypeEVM {
 	SEND_TOKEN = 'Send Token',
-	STREAM_PAYMENTS = 'Stream Payments'
+	STREAM_PAYMENTS = 'Stream Payments',
+	TRANSACTION_BUILDER = 'Transaction Builder'
 }
 
 export enum EFlowRates {
@@ -164,6 +166,10 @@ const SendFundsForm = ({
 		key: EFlowRates[item],
 		label: <span className='text-white text-sm flex items-center gap-x-2'>/ {item.toLowerCase()}</span>
 	}));
+
+	// transaction Builder vars
+	const [txnBuilderData, setTxnBuilderData] = useState<string>('');
+	const [txnBuilderToAddress, setTxnBuilderToAddress] = useState<string>('');
 
 	useEffect(() => {
 		if (!streamAmount) return;
@@ -373,6 +379,16 @@ const SendFundsForm = ({
 						chainProperties[network].contractNetworks
 					);
 				}
+			} else if (transactionType === ETransactionTypeEVM.TRANSACTION_BUILDER) {
+				safeTxHash = await gnosisSafe.createTxnBuilderTx(
+					activeMultisig,
+					txnBuilderToAddress,
+					address,
+					txnBuilderData,
+					note,
+					defaultTxNonce,
+					chainProperties[network].contractNetworks
+				);
 			} else {
 				safeTxHash = await gnosisSafe.createSafeTx(
 					activeMultisig,
@@ -643,6 +659,11 @@ const SendFundsForm = ({
 								</div>
 							</div>
 						</div>
+					) : transactionType === ETransactionTypeEVM.TRANSACTION_BUILDER ? (
+						<TransactionBuilder
+							setToAddress={setTxnBuilderToAddress}
+							setTxnData={setTxnBuilderData}
+						/>
 					) : (
 						<div className='flex items-start gap-x-[10px]'>
 							<div>
@@ -1028,6 +1049,8 @@ const SendFundsForm = ({
 								Number.isNaN(Number(streamAmount)) ||
 								!streamAmount ||
 								Number(streamAmount) === 0)) ||
+						(transactionType === ETransactionTypeEVM.TRANSACTION_BUILDER &&
+							(!txnBuilderData || !txnBuilderToAddress)) ||
 						Object.keys(transactionFields[category].subfields).some(
 							(key) =>
 								!transactionFieldsObject.subfields[key]?.value && transactionFields[category].subfields[key].required
