@@ -3,14 +3,16 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import React, { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { EAssetType, IAsset } from '@next-common/types';
+import { EAssetType, IAsset, INFTAsset } from '@next-common/types';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ethers } from 'ethers';
+import { getCollectiblesPage } from '@safe-global/safe-gateway-typescript-sdk';
 import { useGlobalUserDetailsContext } from './UserDetailsContext';
 import { useGlobalApiContext } from './ApiContext';
 
 export interface IMultisigAssetsContext {
 	allAssets: IAsset[];
+	allNfts: INFTAsset[];
 	tokenFiatConversions: { [tokenAddress: string]: string };
 	loadingAssets: boolean;
 	setMultisigAssetsContextState: React.Dispatch<React.SetStateAction<IAsset[]>>;
@@ -18,6 +20,7 @@ export interface IMultisigAssetsContext {
 
 export const initialMultisigAssetsContext: IMultisigAssetsContext = {
 	allAssets: [],
+	allNfts: [],
 	loadingAssets: false,
 	setMultisigAssetsContextState: (): void => {
 		throw new Error('setMultisigAssetsContextState function must be overridden');
@@ -33,6 +36,7 @@ export function useMultisigAssetsContext() {
 
 export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): ReactNode => {
 	const [allAssets, setAllAssets] = useState<IAsset[]>([]);
+	const [allNfts, setAllNfts] = useState<INFTAsset[]>([]);
 	const [tokenFiatConversions, setTokenFiatConversions] = useState<{ [tokenAddress: string]: string }>({});
 	const [loading, setLoading] = useState<boolean>(false);
 
@@ -49,6 +53,8 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 					: defaultNetwork;
 			setLoading(true);
 			const tokenInfo = await gnosisSafe.getMultisigAllAssets(network, activeMultisig);
+
+			const nftInfo = await getCollectiblesPage(chainProperties[network].chainId.toString(), activeMultisig);
 
 			let fiatConversions = {};
 
@@ -74,9 +80,20 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 				};
 			});
 
+			const nfts: INFTAsset[] = nftInfo.results.map((nft) => ({
+				imageUri: nft.imageUri,
+				logoURI: nft.logoUri,
+				name: nft.tokenName,
+				symbol: nft.tokenSymbol,
+				tokenAddress: nft.address,
+				tokenId: nft.id,
+				tokenNameWithID: nft.name
+			}));
+
 			setTokenFiatConversions(fiatConversions);
 
 			setAllAssets(assets);
+			setAllNfts(nfts);
 			setLoading(false);
 		} catch (error) {
 			console.log('ERROR', error);
@@ -89,8 +106,14 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 	}, [handleGetAssets]);
 
 	const value = useMemo(
-		() => ({ allAssets, loadingAssets: loading, setMultisigAssetsContextState: setAllAssets, tokenFiatConversions }),
-		[allAssets, loading, tokenFiatConversions]
+		() => ({
+			allAssets,
+			allNfts,
+			loadingAssets: loading,
+			setMultisigAssetsContextState: setAllAssets,
+			tokenFiatConversions
+		}),
+		[allAssets, allNfts, loading, tokenFiatConversions]
 	);
 
 	return <MultisigAssetsContext.Provider value={value}>{children}</MultisigAssetsContext.Provider>;

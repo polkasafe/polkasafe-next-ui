@@ -227,9 +227,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 							// </Button>
 							// </Tooltip>
 							<>
-								<div className='text-sm text-text_secondary'>
-									Addresses imported directly from your Polkadot.js wallet
-								</div>
+								<div className='text-sm text-text_secondary'>Addresses imported directly from your Metamask wallet</div>
 								{walletAccounts
 									.filter((item: string) => item !== userAddress)
 									.map((account: string, i: number) => (

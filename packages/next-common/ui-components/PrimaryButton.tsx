@@ -9,7 +9,7 @@ import React, { ReactNode } from 'react';
 interface Props {
 	className?: string;
 	children: ReactNode;
-	onClick?: () => void;
+	onClick?: (e?: React.MouseEvent<HTMLElement, MouseEvent>) => void;
 	size?: SizeType;
 	loading?: boolean;
 	disabled?: boolean;
@@ -31,7 +31,7 @@ const PrimaryButton = ({ className, children, onClick, size, loading, disabled, 
 					? 'bg-highlight text-primary'
 					: 'bg-primary text-white'
 			}`}
-			onClick={onClick}
+			onClick={(e) => onClick?.(e)}
 		>
 			{children}
 		</Button>

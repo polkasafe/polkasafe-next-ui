@@ -20,9 +20,17 @@ interface IAddressComponent {
 	withBadge?: boolean;
 	name?: string;
 	onlyAddress?: boolean;
+	addressLength?: number;
 }
 
-const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, onlyAddress }: IAddressComponent) => {
+const AddressComponent = ({
+	address,
+	name,
+	withBadge = true,
+	iconSize = 30,
+	onlyAddress,
+	addressLength
+}: IAddressComponent) => {
 	const { network } = useGlobalApiContext();
 	const { addressBook, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
 	const { records } = useActiveMultisigContext();
@@ -69,7 +77,7 @@ const AddressComponent = ({ address, name, withBadge = true, iconSize = 30, only
 							addressObj?.name ||
 							multisigAddresses.find((item) => item.address === address)?.name ||
 							records?.[address]?.name ||
-							shortenAddress(address || '', 10)}
+							shortenAddress(address || '', addressLength || 10)}
 					</span>
 					<span className='flex items-center gap-x-2'>
 						<button onClick={() => copyText(address)}>

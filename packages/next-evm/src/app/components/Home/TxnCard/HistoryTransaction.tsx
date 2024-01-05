@@ -252,6 +252,7 @@ const HistoryTransaction = ({
 								from{' '}
 								<AddressComponent
 									onlyAddress
+									addressLength={6}
 									iconSize={25}
 									withBadge={false}
 									address={receivedTransfers?.[0]?.from}
@@ -305,6 +306,7 @@ const HistoryTransaction = ({
 								) : (
 									<AddressComponent
 										iconSize={25}
+										addressLength={6}
 										onlyAddress
 										withBadge={false}
 										address={txInfo?.recipient?.value || to.toString() || ''}
