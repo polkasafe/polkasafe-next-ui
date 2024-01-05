@@ -29,6 +29,7 @@ import {
 	getStateOverwrites
 } from '@next-evm/utils/simulation';
 import { Interface } from '@ethersproject/abi';
+import createNftTransferParams from '@next-evm/utils/createNftTransferParams';
 import streamABI from '../../stream-abi.json';
 
 (BigInt.prototype as any).toJSON = function () {
@@ -179,6 +180,65 @@ export default class GnosisSafeService {
 				to,
 				value,
 				tokens
+			);
+
+			if (note) console.log(note);
+
+			const safeTransaction = await safeSdk.createTransaction({
+				options: { nonce },
+				safeTransactionData
+			});
+			const safeTxHash = await safeSdk.getTransactionHash(safeTransaction);
+			let signature = (await safeSdk.signTransaction(safeTransaction)) as any;
+
+			signature = Object.fromEntries(signature.signatures.entries());
+			console.log(
+				multisigAddress,
+				safeTransaction.data,
+				safeTxHash,
+				senderAddress,
+				signature[signer.toLowerCase()].data
+			);
+			await this.safeService.proposeTransaction({
+				safeAddress: multisigAddress,
+				safeTransactionData: safeTransaction.data as any,
+				safeTxHash,
+				senderAddress,
+				senderSignature: signature[signer.toLowerCase()].data
+			});
+
+			return safeTxHash;
+		} catch (err) {
+			console.log(err);
+			// console.log('error from createSafeTx', err);
+			return null;
+		}
+	};
+
+	createNftTx = async (
+		multisigAddress: string,
+		to: string,
+		senderAddress: string,
+		tokenId: string,
+		tokenAddress: string,
+		note?: string,
+		nonce?: number,
+		contractNetworks?: any
+	): Promise<string | null> => {
+		try {
+			const safeSdk = await Safe.create({
+				contractNetworks,
+				ethAdapter: this.ethAdapter,
+				isL1SafeMasterCopy: true,
+				safeAddress: multisigAddress
+			});
+			const signer = await this.ethAdapter.getSignerAddress();
+
+			const safeTransactionData: MetaTransactionData = createNftTransferParams(
+				multisigAddress,
+				to,
+				tokenId,
+				tokenAddress
 			);
 
 			if (note) console.log(note);

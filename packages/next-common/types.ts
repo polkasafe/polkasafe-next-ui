@@ -231,6 +231,16 @@ export interface IAsset {
 	type?: EAssetType;
 }
 
+export interface INFTAsset {
+	name: string;
+	tokenNameWithID: string;
+	logoURI?: string;
+	symbol?: string;
+	tokenAddress: string;
+	tokenId: string;
+	imageUri: string;
+}
+
 export enum EAssetType {
 	NATIVE_TOKEN = 'NATIVE_TOKEN',
 	ERC20 = 'ERC20'

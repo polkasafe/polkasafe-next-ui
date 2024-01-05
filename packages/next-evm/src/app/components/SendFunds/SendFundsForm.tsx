@@ -16,7 +16,7 @@ import ModalBtn from '@next-evm/app/components/Multisig/ModalBtn';
 import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { EFieldType, IAsset, NotificationStatus } from '@next-common/types';
+import { EFieldType, IAsset, INFTAsset, NotificationStatus } from '@next-common/types';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import Balance from '@next-evm/ui-components/Balance';
 import BalanceInput from '@next-evm/ui-components/BalanceInput';
@@ -47,6 +47,7 @@ import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
 import TxnSimulationFailedModal from './TxnSimulationFailedModal';
 import TransactionBuilder from './TransactionBuilder';
+import SendNFT from './SendNFT';
 
 export interface IRecipientAndAmount {
 	recipient: string;
@@ -56,6 +57,7 @@ export interface IRecipientAndAmount {
 
 export enum ETransactionTypeEVM {
 	SEND_TOKEN = 'Send Token',
+	SEND_NFT = 'Send NFT',
 	STREAM_PAYMENTS = 'Stream Payments',
 	TRANSACTION_BUILDER = 'Transaction Builder'
 }
@@ -81,6 +83,7 @@ interface ISendFundsFormProps {
 	setTransactionType?: React.Dispatch<React.SetStateAction<ETransactionTypeEVM>>;
 	updateStreamAmount?: string;
 	updateStream?: boolean;
+	defaultNFT?: INFTAsset;
 }
 
 const SendFundsForm = ({
@@ -93,13 +96,14 @@ const SendFundsForm = ({
 	setTransactionType,
 	updateStreamAmount,
 	updateStream,
+	defaultNFT,
 	defaultToken // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
 	const { activeMultisig, addressBook, address, gnosisSafe, multisigAddresses, transactionFields, activeMultisigData } =
 		useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const { records } = useActiveMultisigContext();
-	const { allAssets } = useMultisigAssetsContext();
+	const { allAssets, allNfts } = useMultisigAssetsContext();
 	const { superfluidFramework } = useSuperfluidContext();
 
 	const [note, setNote] = useState<string>('');
@@ -166,6 +170,11 @@ const SendFundsForm = ({
 		key: EFlowRates[item],
 		label: <span className='text-white text-sm flex items-center gap-x-2'>/ {item.toLowerCase()}</span>
 	}));
+
+	// nft txns vars
+
+	const [selectedNFT, setSelectedNFT] = useState<INFTAsset>(defaultNFT || allNfts[0] || ({} as INFTAsset));
+	const [nftRecipient, setNftRecipient] = useState<string>(address || '');
 
 	// transaction Builder vars
 	const [txnBuilderData, setTxnBuilderData] = useState<string>('');
@@ -385,6 +394,17 @@ const SendFundsForm = ({
 					txnBuilderToAddress,
 					address,
 					txnBuilderData,
+					note,
+					defaultTxNonce,
+					chainProperties[network].contractNetworks
+				);
+			} else if (transactionType === ETransactionTypeEVM.SEND_NFT) {
+				safeTxHash = await gnosisSafe.createNftTx(
+					activeMultisig,
+					nftRecipient,
+					address,
+					selectedNFT.tokenId,
+					selectedNFT.tokenAddress,
 					note,
 					defaultTxNonce,
 					chainProperties[network].contractNetworks
@@ -663,6 +683,12 @@ const SendFundsForm = ({
 						<TransactionBuilder
 							setToAddress={setTxnBuilderToAddress}
 							setTxnData={setTxnBuilderData}
+						/>
+					) : transactionType === ETransactionTypeEVM.SEND_NFT ? (
+						<SendNFT
+							setNftRecipient={setNftRecipient}
+							setSelectedNft={setSelectedNFT}
+							selectedNft={selectedNFT}
 						/>
 					) : (
 						<div className='flex items-start gap-x-[10px]'>
@@ -1051,6 +1077,7 @@ const SendFundsForm = ({
 								Number(streamAmount) === 0)) ||
 						(transactionType === ETransactionTypeEVM.TRANSACTION_BUILDER &&
 							(!txnBuilderData || !txnBuilderToAddress)) ||
+						(transactionType === ETransactionTypeEVM.SEND_NFT && (!nftRecipient || !selectedNFT)) ||
 						Object.keys(transactionFields[category].subfields).some(
 							(key) =>
 								!transactionFieldsObject.subfields[key]?.value && transactionFields[category].subfields[key].required
