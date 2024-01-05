@@ -27,7 +27,7 @@ const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { network } = useGlobalApiContext();
 	const { notOwnerOfSafe } = useGlobalUserDetailsContext();
-	const [selectedNFT, setSeletedNFT] = useState<INFTAsset>(nfts[0]);
+	const [selectedNFT, setSeletedNFT] = useState<INFTAsset>();
 
 	const [viewNFT, setViewNFT] = useState<boolean>(false);
 
@@ -44,22 +44,24 @@ const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 					defaultNFT={selectedNFT}
 				/>
 			</ModalComponent>
-			<ModalComponent
-				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>{selectedNFT.name}</h3>}
-				open={viewNFT}
-				onCancel={() => setViewNFT(false)}
-			>
-				<div className='flex flex-col justify-center items-center text-white text-lg gap-y-4'>
-					<Image
-						height={300}
-						width={300}
-						className='rounded-md'
-						src={selectedNFT.imageUri}
-						alt={selectedNFT.tokenNameWithID}
-					/>
-					<p>{selectedNFT.tokenNameWithID}</p>
-				</div>
-			</ModalComponent>
+			{selectedNFT && (
+				<ModalComponent
+					title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>{selectedNFT.name}</h3>}
+					open={viewNFT}
+					onCancel={() => setViewNFT(false)}
+				>
+					<div className='flex flex-col justify-center items-center text-white text-lg gap-y-4'>
+						<Image
+							height={300}
+							width={300}
+							className='rounded-md'
+							src={selectedNFT.imageUri}
+							alt={selectedNFT.tokenNameWithID}
+						/>
+						<p>{selectedNFT.tokenNameWithID}</p>
+					</div>
+				</ModalComponent>
+			)}
 			<article className='grid grid-cols-4 gap-x-5 bg-bg-secondary text-text_secondary py-5 px-4 rounded-lg'>
 				<span className='col-span-1'>Collection</span>
 				<span className='col-span-1'>Token ID</span>
