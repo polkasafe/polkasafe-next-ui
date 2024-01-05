@@ -225,6 +225,7 @@ const QueueTransaction = ({ callHash, callData, txType, recipientAddress, value 
 								) : (
 									<AddressComponent
 										onlyAddress
+										addressLength={6}
 										iconSize={25}
 										withBadge={false}
 										address={txInfo?.recipient?.value || recipientAddress || ''}
