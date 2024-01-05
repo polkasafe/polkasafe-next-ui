@@ -1077,7 +1077,8 @@ const SendFundsForm = ({
 								Number(streamAmount) === 0)) ||
 						(transactionType === ETransactionTypeEVM.TRANSACTION_BUILDER &&
 							(!txnBuilderData || !txnBuilderToAddress)) ||
-						(transactionType === ETransactionTypeEVM.SEND_NFT && (!nftRecipient || !selectedNFT)) ||
+						(transactionType === ETransactionTypeEVM.SEND_NFT &&
+							(!nftRecipient || !selectedNFT || Object.keys(selectedNFT).length === 0)) ||
 						Object.keys(transactionFields[category].subfields).some(
 							(key) =>
 								!transactionFieldsObject.subfields[key]?.value && transactionFields[category].subfields[key].required

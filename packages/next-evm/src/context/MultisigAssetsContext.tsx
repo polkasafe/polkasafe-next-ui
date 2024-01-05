@@ -80,15 +80,18 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 				};
 			});
 
-			const nfts: INFTAsset[] = nftInfo.results.map((nft) => ({
-				imageUri: nft.imageUri,
-				logoURI: nft.logoUri,
-				name: nft.tokenName,
-				symbol: nft.tokenSymbol,
-				tokenAddress: nft.address,
-				tokenId: nft.id,
-				tokenNameWithID: nft.name
-			}));
+			const nfts: INFTAsset[] =
+				nftInfo.results.length > 0
+					? nftInfo.results.map((nft) => ({
+							imageUri: nft.imageUri,
+							logoURI: nft.logoUri,
+							name: nft.tokenName,
+							symbol: nft.tokenSymbol,
+							tokenAddress: nft.address,
+							tokenId: nft.id,
+							tokenNameWithID: nft.name
+					  }))
+					: [];
 
 			setTokenFiatConversions(fiatConversions);
 
