@@ -61,10 +61,7 @@ export async function POST(req: Request) {
 					email: addressDoc.email,
 					created_at: addressDoc.created_at,
 					addressBook: addressDoc.addressBook,
-					multisigAddresses: addressDoc.multisigAddresses.map((item) => ({
-						...item,
-						signatories: item.signatories.map((signatory) => signatory)
-					})),
+					multisigAddresses: addressDoc.multisigAddresses || [],
 					multisigSettings: addressDoc.multisigSettings,
 					notification_preferences: addressDoc.notification_preferences || DEFAULT_NOTIFICATION_PREFERENCES,
 					transactionFields: addressDoc.transactionFields,
