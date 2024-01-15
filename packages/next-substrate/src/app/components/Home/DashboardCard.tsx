@@ -265,7 +265,7 @@ const DashboardCard = ({
 									title={(currentMultisig?.address && getEncodedAddress(currentMultisig?.address, network)) || ''}
 									className=' font-normal text-text_secondary'
 								>
-									{currentMultisig.address &&
+									{currentMultisig?.address &&
 										shortenAddress(getEncodedAddress(currentMultisig?.address, network) || '')}
 								</div>
 								<button
