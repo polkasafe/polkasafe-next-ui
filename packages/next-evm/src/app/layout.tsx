@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 // import { Inter } from 'next/font/google'
 import '@next-evm/styles/globals.css';
 import NextTopLoader from 'nextjs-toploader';
-import Providers from './providers';
-import AppLayout from './components/AppLayout';
+import Providers from '@next-evm/app/providers';
+import LayoutWrapper from './components/LayoutWrapper';
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -24,14 +24,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 		<html lang='en'>
 			<body>
 				<Providers>
-					{
-						(
-							<AppLayout>
-								<NextTopLoader />
-								{children}
-							</AppLayout>
-						) as React.ReactNode
-					}
+					<LayoutWrapper>
+						<NextTopLoader />
+						{children}
+					</LayoutWrapper>
 				</Providers>
 			</body>
 		</html>

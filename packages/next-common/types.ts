@@ -16,6 +16,21 @@ export enum CHANNEL {
 	IN_APP = 'in_app'
 }
 
+export interface IMultisigAndNetwork {
+	name?: string;
+	address: string;
+	network: string;
+}
+
+export interface IOrganisation {
+	id: string;
+	name: string;
+	desc?: string;
+	multisigs: IMultisigAndNetwork[];
+	addressBook: IAddressBookItem[];
+	members: string[];
+}
+
 export interface IUserNotificationChannelPreferences {
 	name: CHANNEL;
 	enabled: boolean;
@@ -109,6 +124,8 @@ export interface UserDetailsContextType {
 }
 
 export interface UserDetailsContextTypeEVM {
+	organisations?: IOrganisation[];
+	userID: string;
 	loggedInWallet: any;
 	activeMultisig: string;
 	address: string;
@@ -119,7 +136,7 @@ export interface UserDetailsContextTypeEVM {
 	multisigSettings: { [multisigAddress: string]: IMultisigSettings };
 	addressBook: IAddressBookItem[];
 	setUserDetailsContextState: Dispatch<SetStateAction<UserDetailsContextTypeEVM>>;
-	activeMultisigData?: any;
+	activeMultisigData: IMultisigAndNetwork;
 	activeMultisigTxs?: any[];
 	setLoading?: any;
 	loading?: boolean;
@@ -190,6 +207,8 @@ export interface I2FAToken {
 }
 
 export interface IUser {
+	organisations?: IOrganisation[];
+	userID: string;
 	address: string;
 	email: string | null;
 	addressBook?: IAddressBookItem[];

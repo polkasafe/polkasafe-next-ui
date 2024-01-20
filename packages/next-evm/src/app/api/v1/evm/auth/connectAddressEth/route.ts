@@ -7,39 +7,31 @@
 import { responseMessages } from '@next-common/constants/response_messages';
 import { firestoreDB } from '@next-evm/utils/firebaseInit';
 import { headers } from 'next/headers';
-import { NextResponse } from 'next/server';
+import Server from 'next/server';
 import { CHANNEL, IAddressBookItem, IUser, IUserNotificationPreferences, IUserResponse } from '@next-common/types';
 import { DEFAULT_USER_ADDRESS_NAME } from '@next-common/global/default';
-import verifyEthSignature from '@next-common/utils/verifyEthSignature';
 
 // eslint-disable-next-line import/prefer-default-export, @typescript-eslint/no-unused-vars
 export async function POST(req: Request) {
 	const headersList = headers();
+	const userID = headersList.get('x-user-id');
 	const address = headersList.get('x-address');
-	const signature = headersList.get('x-signature');
-	const network = headersList.get('x-network');
 
-	if (!signature || !address) {
-		return NextResponse.json({ data: null, error: responseMessages.missing_headers }, { status: 400 });
+	console.log('before');
+	if (!userID) {
+		return Server.NextResponse.json({ data: null, error: responseMessages.missing_headers }, { status: 400 });
 	}
-	const docId = `${address}_${network}`;
+	console.log('afterr');
+	const docId = `${userID}`;
 	const addressRef = firestoreDB.collection('addresses').doc(docId);
 	const doc = await addressRef.get();
-	let token = '';
-
-	if (doc.exists) {
-		const data = doc.data();
-		token = data?.token;
-	}
-	const isValid = await verifyEthSignature(address, signature, token);
-	if (!isValid) return NextResponse.json({ data: null, error: responseMessages.invalid_signature }, { status: 400 });
 
 	try {
 		const DEFAULT_NOTIFICATION_PREFERENCES: IUserNotificationPreferences = {
 			channelPreferences: {
 				[CHANNEL.IN_APP]: {
 					enabled: true,
-					handle: String(address),
+					handle: String(address || ''),
 					name: CHANNEL.IN_APP,
 					verified: true
 				}
@@ -50,6 +42,7 @@ export async function POST(req: Request) {
 		// check if address doc already exists
 		if (doc.exists) {
 			const data = doc.data();
+			console.log('data', data);
 			if (data && data.created_at) {
 				const addressDoc = {
 					...data,
@@ -57,6 +50,8 @@ export async function POST(req: Request) {
 				} as IUser;
 
 				const resUser: IUserResponse = {
+					organisations: addressDoc.organisations,
+					userID: addressDoc.userID,
 					address: addressDoc.address,
 					email: addressDoc.email,
 					created_at: addressDoc.created_at,
@@ -73,18 +68,19 @@ export async function POST(req: Request) {
 					await doc.ref.update({ notification_preferences: DEFAULT_NOTIFICATION_PREFERENCES });
 				}
 
-				return NextResponse.json({ data: resUser, error: null }, { status: 200 });
+				return Server.NextResponse.json({ data: resUser, error: null }, { status: 200 });
 			}
 		}
 
 		const newAddress: IAddressBookItem = {
 			name: DEFAULT_USER_ADDRESS_NAME,
-			address: String(address)
+			address: String(address || '')
 		};
 
 		// else create a new user document
 		const newUser: IUser = {
-			address: String(address),
+			userID,
+			address: String(address || ''),
 			created_at: new Date(),
 			email: null,
 			addressBook: [newAddress],
@@ -94,9 +90,9 @@ export async function POST(req: Request) {
 		};
 
 		await addressRef.set(newUser, { merge: true });
-		return NextResponse.json({ data: newUser, error: null }, { status: 200 });
+		return Server.NextResponse.json({ data: newUser, error: null }, { status: 200 });
 	} catch (err: unknown) {
 		console.error('Error in connectAddress :', { err, stack: (err as any).stack });
-		return NextResponse.json({ data: null, error: responseMessages.internal }, { status: 500 });
+		return Server.NextResponse.json({ data: null, error: responseMessages.internal }, { status: 500 });
 	}
 }

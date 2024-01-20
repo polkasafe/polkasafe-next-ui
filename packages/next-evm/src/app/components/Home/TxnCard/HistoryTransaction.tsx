@@ -129,7 +129,7 @@ const HistoryTransaction = ({
 			const tokenDetails = [];
 			tokenContractAddressArray.forEach((item) => {
 				if (realContractAddresses.includes(item)) {
-					const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
+					const assetDetails = allAssets[activeMultisig].find((asset) => asset.tokenAddress === item);
 					tokenDetails.push({
 						tokenAddress: assetDetails?.tokenAddress || '',
 						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -150,7 +150,9 @@ const HistoryTransaction = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
-					const isFakeToken = !allAssets.some((asset) => asset.tokenAddress === item?.tokenInfo?.address);
+					const isFakeToken = !allAssets[activeMultisig].some(
+						(asset) => asset.tokenAddress === item?.tokenInfo?.address
+					);
 					tokenDetails.push({
 						isFakeToken,
 						tokenAddress: item?.tokenInfo?.address || '',
@@ -187,7 +189,7 @@ const HistoryTransaction = ({
 			return sum + Number(a);
 		}, 0);
 		setAmount(total);
-	}, [allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, txData]);
+	}, [activeMultisig, allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, txData]);
 
 	useEffect(() => {
 		if (tokenDetailsArray.length > 1) {

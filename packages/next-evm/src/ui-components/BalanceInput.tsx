@@ -15,6 +15,7 @@ import formatBalance from '@next-evm/utils/formatBalance';
 
 interface Props {
 	className?: string;
+	multisigAddress: string;
 	label?: string;
 	onChange: (balance: string) => void;
 	placeholder?: string;
@@ -25,6 +26,7 @@ interface Props {
 
 const BalanceInput = ({
 	className,
+	multisigAddress,
 	label = '',
 	onChange,
 	placeholder = '',
@@ -55,7 +57,7 @@ const BalanceInput = ({
 		setInsufficientBalance(false);
 	};
 
-	const tokenOptions: ItemType[] = allAssets?.map((item) => ({
+	const tokenOptions: ItemType[] = allAssets[multisigAddress]?.map((item) => ({
 		key: item.name,
 		label: (
 			<span className='flex items-center gap-x-2 text-white'>
@@ -77,7 +79,7 @@ const BalanceInput = ({
 	}));
 
 	const onTokenOptionChange = (e: any) => {
-		const selectedToken = allAssets?.find((item) => item.name === e.key);
+		const selectedToken = allAssets[multisigAddress]?.find((item) => item.name === e.key);
 		if (selectedToken) onTokenChange?.(selectedToken);
 	};
 
@@ -115,7 +117,7 @@ const BalanceInput = ({
 								defaultValue={defaultValue}
 								className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white pr-24'
 							/>
-							{allAssets?.length > 0 && token ? (
+							{allAssets[multisigAddress]?.length > 0 && token ? (
 								<Dropdown
 									trigger={['click']}
 									className={className}

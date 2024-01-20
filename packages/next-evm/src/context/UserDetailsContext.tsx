@@ -3,27 +3,33 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 /* eslint-disable sort-keys */
 
-import { EthersAdapter } from '@safe-global/protocol-kit';
-import { useAddress, useMetamask, useNetworkMismatch, useSigner } from '@thirdweb-dev/react';
-import { ethers } from 'ethers';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-import { chainProperties, NETWORK } from '@next-common/global/evm-network-constants';
-import returnTxUrl from '@next-common/global/gnosisService';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 import GnosisSafeService from '@next-evm/services/Gnosis';
-import { EFieldType, IUser, Triggers, UserDetailsContextTypeEVM, Wallet } from '@next-common/types';
+import {
+	EFieldType,
+	IMultisigAndNetwork,
+	IUser,
+	Triggers,
+	UserDetailsContextTypeEVM,
+	Wallet
+} from '@next-common/types';
 import InvalidNetwork from '@next-common/ui-components/InvalidNetwork';
-import { convertSafeMultisig } from '@next-evm/utils/convertSafeData/convertSafeMultisig';
-import { EVM_API_AUTH_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import logout from '@next-evm/utils/logout';
-import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
+import { usePrivy } from '@privy-io/react-auth';
+// import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+// import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import { useGlobalApiContext } from './ApiContext';
 
 const initialUserDetailsContext: UserDetailsContextTypeEVM = {
+	userID: '',
+	organisations: [],
 	activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
+	activeMultisigData: {} as IMultisigAndNetwork,
 	address: (typeof window !== 'undefined' && localStorage.getItem('address')) || '',
 	addressBook: [],
 	createdAt: new Date(),
@@ -323,135 +329,135 @@ export function useGlobalUserDetailsContext() {
 }
 
 export const UserDetailsProvider = ({ children }: { children?: ReactNode }): ReactNode => {
-	const address = useAddress();
-	const isNetworkMismatch = useNetworkMismatch();
 	const [userDetailsContextState, setUserDetailsContextState] = useState(initialUserDetailsContext);
-	const [activeMultisigData, setActiveMultisigData] = useState<any>({});
 	const { network } = useGlobalApiContext();
 	const router = useRouter();
 	const [gnosisSafe, setGnosisSafe] = useState<GnosisSafeService>({} as any);
-	const signer = useSigner();
 
 	const [loading, setLoading] = useState(false);
-	const connect = useMetamask();
 
 	const searchParams = useSearchParams();
+
+	const { user, authenticated } = usePrivy();
+
+	console.log('user', user);
 
 	const sharedSafeAddress = searchParams.get('safe');
 	const sharedSafeNetwork = searchParams.get('network');
 
-	const prevActiveMultisig = typeof window !== 'undefined' && localStorage.getItem('active_multisig');
+	// const prevActiveMultisig = typeof window !== 'undefined' && localStorage.getItem('active_multisig');
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
-	const getSharedSafeAddressData = useCallback(async () => {
-		if (!sharedSafeAddress || !sharedSafeNetwork) return;
+	// const getSharedSafeAddressData = useCallback(async () => {
+	// 	if (!sharedSafeAddress || !sharedSafeNetwork) return;
 
-		if (typeof window !== 'undefined' && localStorage.getItem('signature')) {
-			const signature = localStorage.getItem('signature');
-			setLoading(true);
-			const { data: userData, error: connectAddressErr } = await nextApiClientFetch<IUser>(
-				`${EVM_API_AUTH_URL}/connectAddressEth`,
-				{},
-				{ address, signature, network }
-			);
-			if (!connectAddressErr && userData) {
-				setUserDetailsContextState((prevState) => {
-					return {
-						...prevState,
-						activeMultisig: sharedSafeAddress,
-						address: userData?.address,
-						addressBook: userData?.addressBook || [],
-						createdAt: userData?.created_at,
-						multisigAddresses: userData?.multisigAddresses?.filter((a: any) => a.network === network),
-						multisigSettings: userData?.multisigSettings || {},
-						notification_preferences:
-							userData?.notification_preferences || initialUserDetailsContext.notification_preferences,
-						transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields
-					};
-				});
-			}
-		}
+	// 	if (typeof window !== 'undefined' && localStorage.getItem('signature')) {
+	// 		const signature = localStorage.getItem('signature');
+	// 		setLoading(true);
+	// 		const { data: userData, error: connectAddressErr } = await nextApiClientFetch<IUser>(
+	// 			`${EVM_API_AUTH_URL}/connectAddressEth`,
+	// 			{},
+	// 			{ address, userID }
+	// 		);
+	// 		if (!connectAddressErr && userData) {
+	// 			setUserDetailsContextState((prevState) => {
+	// 				return {
+	// 					...prevState,
+	// 					activeMultisig: sharedSafeAddress,
+	// 					address: userData?.address,
+	// 					addressBook: userData?.addressBook || [],
+	// 					createdAt: userData?.created_at,
+	// 					multisigAddresses: userData?.multisigAddresses?.filter((a: any) => a.network === network),
+	// 					multisigSettings: userData?.multisigSettings || {},
+	// 					notification_preferences:
+	// 						userData?.notification_preferences || initialUserDetailsContext.notification_preferences,
+	// 					transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields
+	// 				};
+	// 			});
+	// 		}
+	// 	}
 
-		let gnosisService: GnosisSafeService;
-		if (signer) {
-			const txUrl = returnTxUrl(sharedSafeNetwork as NETWORK);
-			const web3Adapter = new EthersAdapter({
-				ethers,
-				signerOrProvider: signer
-			});
-			gnosisService = new GnosisSafeService(web3Adapter, signer, txUrl);
-			setGnosisSafe(gnosisService);
-		} else {
-			const txUrl = returnTxUrl(sharedSafeNetwork as NETWORK);
-			const web3Adapter = new EthersAdapter({
-				ethers,
-				signerOrProvider: ethers.getDefaultProvider()
-			});
-			gnosisService = new GnosisSafeService(web3Adapter, signer, txUrl);
-			setGnosisSafe(gnosisService);
-		}
+	// 	let gnosisService: GnosisSafeService;
+	// 	if (signer) {
+	// 		const txUrl = returnTxUrl(sharedSafeNetwork as NETWORK);
+	// 		const web3Adapter = new EthersAdapter({
+	// 			ethers,
+	// 			signerOrProvider: signer
+	// 		});
+	// 		gnosisService = new GnosisSafeService(web3Adapter, signer, txUrl);
+	// 		setGnosisSafe(gnosisService);
+	// 	} else {
+	// 		const txUrl = returnTxUrl(sharedSafeNetwork as NETWORK);
+	// 		const web3Adapter = new EthersAdapter({
+	// 			ethers,
+	// 			signerOrProvider: ethers.getDefaultProvider()
+	// 		});
+	// 		gnosisService = new GnosisSafeService(web3Adapter, signer, txUrl);
+	// 		setGnosisSafe(gnosisService);
+	// 	}
 
-		const multiData = await gnosisService.getMultisigData(sharedSafeAddress);
-		if (multiData) {
-			const activeData = convertSafeMultisig({
-				...multiData,
-				name: DEFAULT_ADDRESS_NAME,
-				network: sharedSafeNetwork || network
-			});
-			setActiveMultisigData({ ...activeData });
-		}
-		if (!multiData) {
-			router.push('/');
-		}
-		let isOwner = false;
-		if (address) {
-			const multisigsOfAddress = await gnosisService.getAllSafeByOwner(address);
-			if (multisigsOfAddress.safes.includes(sharedSafeAddress)) {
-				isOwner = true;
-			}
-		}
-		setUserDetailsContextState((prev) => ({
-			...prev,
-			activeMultisig: sharedSafeAddress,
-			isSharedSafe: true,
-			notOwnerOfSafe: !isOwner,
-			sharedSafeAddress,
-			sharedSafeNetwork: sharedSafeNetwork as NETWORK
-		}));
-		setLoading(false);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [network, sharedSafeAddress, sharedSafeNetwork, signer, address]);
+	// 	const multiData = await gnosisService.getMultisigData(sharedSafeAddress);
+	// 	if (multiData) {
+	// 		const activeData = convertSafeMultisig({
+	// 			...multiData,
+	// 			name: DEFAULT_ADDRESS_NAME,
+	// 			network: sharedSafeNetwork || network
+	// 		});
+	// 		setActiveMultisigData({ ...activeData });
+	// 	}
+	// 	if (!multiData) {
+	// 		router.push('/');
+	// 	}
+	// 	let isOwner = false;
+	// 	if (address) {
+	// 		const multisigsOfAddress = await gnosisService.getAllSafeByOwner(address);
+	// 		if (multisigsOfAddress.safes.includes(sharedSafeAddress)) {
+	// 			isOwner = true;
+	// 		}
+	// 	}
+	// 	setUserDetailsContextState((prev) => ({
+	// 		...prev,
+	// 		activeMultisig: sharedSafeAddress,
+	// 		isSharedSafe: true,
+	// 		notOwnerOfSafe: !isOwner,
+	// 		sharedSafeAddress,
+	// 		sharedSafeNetwork: sharedSafeNetwork as NETWORK
+	// 	}));
+	// 	setLoading(false);
+	// 	// eslint-disable-next-line react-hooks/exhaustive-deps
+	// }, [network, sharedSafeAddress, sharedSafeNetwork, signer, address]);
 
 	const connectAddress = useCallback(
-		// eslint-disable-next-line @typescript-eslint/no-shadow, sonarjs/cognitive-complexity
-		async (passedNetwork: string = network, address?: string, signature?: string) => {
-			if (isNetworkMismatch) {
-				return;
-			}
-			if (!address && typeof window !== 'undefined' && !localStorage.getItem('address')) {
+		// eslint-disable-next-line @typescript-eslint/no-shadow, sonarjs/cognitive-complexity, @typescript-eslint/no-unused-vars
+		async (userID: string, address?: string, isLogin?: boolean) => {
+			console.log('connectAddress claleed');
+			if (!userID) {
 				return;
 			}
 			setLoading(true);
-			const { data: userData, error: connectAddressErr } = await nextApiClientFetch<IUser>(
-				`${EVM_API_AUTH_URL}/connectAddressEth`,
-				{},
-				{ address, signature, network: passedNetwork }
-			);
-			if (!connectAddressErr && userData) {
+			const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/loginEth`, {
+				headers: firebaseFunctionsHeader('0x491286D1907458c6446078a6462E7072EAcb8A7c'),
+				method: 'POST'
+			});
+			const { data: userData, error: loginError } = (await loginRes.json()) as {
+				data: IUser;
+				error: string;
+			};
+			console.log('login', userData, loginError);
+
+			// const { data: userData, error: connectAddressErr } = await nextApiClientFetch<IUser>(
+			// `${EVM_API_AUTH_URL}/connectAddressEth`,
+			// {},
+			// { address, userID }
+			// );
+			if (!loginError && userData) {
 				setUserDetailsContextState((prevState) => {
 					return {
 						...prevState,
-						activeMultisig:
-							prevActiveMultisig &&
-							userData?.multisigAddresses?.some(
-								(item) => item.address === prevActiveMultisig && item.network === network
-							)
-								? prevActiveMultisig
-								: userData?.multisigAddresses?.filter(
-										(a: any) =>
-											a.network === network && !userData?.multisigSettings?.[`${a.address}`]?.deleted && !a.disabled
-								  )?.[0]?.address || '',
-						address: userData?.address,
+						organisations: userData.organisations || [],
+						userID: userData.userID,
+						activeMultisig: '',
+						address: userData?.address?.[0],
 						addressBook: userData?.addressBook || [],
 						createdAt: userData?.created_at,
 						multisigAddresses: userData?.multisigAddresses?.filter((a: any) => a.network === network),
@@ -462,171 +468,62 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 						watchlists: userData?.watchlists
 					};
 				});
-				if (!signer) {
-					await connect({
-						chainId: chainProperties?.[network].chainId || 592
-					});
-				}
-				if (signer) {
-					const txUrl = returnTxUrl(network);
-					const web3Adapter = new EthersAdapter({
-						ethers,
-						signerOrProvider: signer
-					});
-					const gnosisService = new GnosisSafeService(web3Adapter, signer, txUrl);
-					setGnosisSafe(gnosisService);
+				if (!userData.organisations || userData.organisations.length === 0) {
+					console.log('home');
+					router.replace('/create-org');
+				} else if (isLogin) {
+					router.replace('/');
 				}
 			} else {
 				logout();
 				setUserDetailsContextState(initialUserDetailsContext);
-				router.push('/');
+				console.log('in logout block');
+				router.push('/login');
 			}
 			setLoading(false);
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[network, signer]
+		[network]
 	);
-
-	useEffect(() => {
-		if (signer) {
-			const txUrl = returnTxUrl(
-				userDetailsContextState.activeMultisig === sharedSafeAddress ? (sharedSafeNetwork as NETWORK) : network
-			);
-			const web3Adapter = new EthersAdapter({
-				ethers,
-				signerOrProvider: signer
-			});
-			const gnosisService = new GnosisSafeService(web3Adapter, signer, txUrl);
-			setGnosisSafe(gnosisService);
-		}
-	}, [network, sharedSafeAddress, sharedSafeNetwork, signer, userDetailsContextState.activeMultisig]);
-
-	const updateCurrentMultisigData = useCallback(async () => {
-		if (
-			!userDetailsContextState.activeMultisig ||
-			Boolean(!Object.keys(gnosisSafe).length) ||
-			!userDetailsContextState.multisigAddresses ||
-			!userDetailsContextState.address
-		) {
-			return;
-		}
-		try {
-			let activeData: any = {};
-			const multisig = userDetailsContextState.multisigAddresses.find(
-				(multi) => multi.address === userDetailsContextState.activeMultisig
-			);
-			if (!multisig) {
-				return;
-			}
-			if (!userDetailsContextState.activeMultisig) {
-				return;
-			}
-			const multiData = await gnosisSafe.getMultisigData(userDetailsContextState.activeMultisig);
-			if (multiData) {
-				activeData = convertSafeMultisig({
-					...multiData,
-					name: multisig?.name || DEFAULT_ADDRESS_NAME,
-					network
-				});
-			}
-			const safeBalance = await signer?.provider?.getBalance(userDetailsContextState.activeMultisig);
-			setActiveMultisigData({ ...activeData, safeBalance });
-		} catch (err) {
-			console.log('err from update current multisig data', err);
-		}
-	}, [
-		network,
-		gnosisSafe,
-		signer?.provider,
-		userDetailsContextState.address,
-		userDetailsContextState.activeMultisig,
-		userDetailsContextState.multisigAddresses
-	]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
-		if (
-			sharedSafeAddress &&
-			isValidWeb3Address(sharedSafeAddress) &&
-			sharedSafeNetwork &&
-			Object.values(NETWORK).includes(sharedSafeNetwork as NETWORK)
-		) {
-			getSharedSafeAddressData();
-			return;
+		// if (
+		// sharedSafeAddress &&
+		// isValidWeb3Address(sharedSafeAddress) &&
+		// sharedSafeNetwork &&
+		// Object.values(NETWORK).includes(sharedSafeNetwork as NETWORK)
+		// ) {
+		// // getSharedSafeAddressData();
+		// return;
+		// }
+		if (authenticated) {
+			console.log('wallet changed');
+			connectAddress(user?.id, user?.wallet?.address);
 		}
-		if (address) {
-			if (typeof window !== 'undefined' && localStorage.getItem('address') !== address && !sharedSafeAddress) {
-				localStorage.removeItem('signature');
-				localStorage.removeItem('address');
-				setUserDetailsContextState(initialUserDetailsContext);
-				router.replace('/');
-				setLoading(false);
-				return;
-			}
-			if (typeof window !== 'undefined' && localStorage.getItem('signature')) {
-				const signature = localStorage.getItem('signature') || '';
-				connectAddress(network, address, signature);
-			} else {
-				if (typeof window !== 'undefined') localStorage.clear();
-				setLoading(false);
-				if (!sharedSafeAddress) router.push('/');
-			}
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [address, network, sharedSafeAddress, sharedSafeNetwork]);
+	}, [authenticated, connectAddress, network, router, sharedSafeAddress, sharedSafeNetwork, user]);
 
-	useEffect(() => {
-		if (!userDetailsContextState.activeMultisig || userDetailsContextState.activeMultisig === sharedSafeAddress) {
-			return;
-		}
-		updateCurrentMultisigData();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [userDetailsContextState]);
-
-	// eslint-disable-next-line react-hooks/exhaustive-deps
-	const handleNetworkMisMatch = async () => {
-		await connect({ chainId: chainProperties?.[network].chainId || 592 });
-	};
-
-	useEffect(() => {
-		if (isNetworkMismatch) {
-			handleNetworkMisMatch();
-		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [isNetworkMismatch]);
+	useEffect(() => {}, []);
 
 	const value = useMemo(
 		() => ({
-			activeMultisigData,
 			connectAddress,
 			loading,
 			...userDetailsContextState,
 			gnosisSafe,
-			isNetworkMismatch,
-			setActiveMultisigData,
 			setGnosisSafe,
 			setLoading,
-			setUserDetailsContextState,
-			updateCurrentMultisigData
+			setUserDetailsContextState
 		}),
-		[
-			activeMultisigData,
-			connectAddress,
-			gnosisSafe,
-			isNetworkMismatch,
-			loading,
-			updateCurrentMultisigData,
-			userDetailsContextState
-		]
+		[connectAddress, gnosisSafe, loading, userDetailsContextState]
 	);
 
 	if (!gnosisSafe) return null;
 
 	return (
 		<UserDetailsContext.Provider value={value}>
-			{isNetworkMismatch &&
-			typeof window !== 'undefined' &&
+			{typeof window !== 'undefined' &&
 			localStorage.getItem('signature') &&
 			!Object.values(NETWORK).includes(network) ? (
 				<InvalidNetwork />

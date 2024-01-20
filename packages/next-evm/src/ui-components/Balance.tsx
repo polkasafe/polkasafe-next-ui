@@ -4,9 +4,9 @@
 
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
-import { useSigner } from '@thirdweb-dev/react';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
+import { useWallets } from '@privy-io/react-auth';
 
 interface Props {
 	className?: string;
@@ -14,18 +14,20 @@ interface Props {
 }
 
 const Balance = ({ address, className }: Props) => {
-	const signer = useSigner();
 	const { network } = useGlobalApiContext();
+
+	const { wallets } = useWallets();
 
 	const [balance, setBalance] = useState<string>('0');
 
 	const fetchEthBalance = async (a: string) => {
 		try {
-			if (!signer?.provider) {
+			if (!wallets?.[0]) {
 				return;
 			}
-			const accountBalance = ethers?.utils?.formatEther(await signer.provider?.getBalance(a));
-			if (accountBalance) setBalance(accountBalance);
+			const provider = await wallets[0]?.getEthersProvider();
+			const accountBalance = await provider.getBalance(a);
+			if (accountBalance) setBalance(ethers.utils.formatEther(accountBalance));
 		} catch (err) {
 			console.log('Err from fetchEthBalance', err);
 		}

@@ -4,7 +4,6 @@
 import { Button } from 'antd';
 import React, { useRef, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
@@ -13,6 +12,8 @@ import Balance from '@next-evm/ui-components/Balance';
 import { CircleArrowDownIcon, CopyIcon, WarningRoundedIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
+import { useLogout, useWallets, usePrivy } from '@privy-io/react-auth';
+import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface IAddress {
@@ -23,12 +24,18 @@ const AddressDropdown = () => {
 	const { address, addressBook, loggedInWallet, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const router = useRouter();
+	const { logout } = useLogout();
+	const { wallets } = useWallets();
+	const { connectWallet } = usePrivy();
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [isVisible, toggleVisibility] = useState(false);
 	const isMouseEnter = useRef(false);
 
+	console.log(wallets);
+
 	const handleDisconnect = async () => {
+		logout();
 		if (typeof window !== 'undefined') localStorage.clear();
 		setUserDetailsContextState((prevState: any) => {
 			return {
@@ -38,22 +45,23 @@ const AddressDropdown = () => {
 				addressBook: [],
 				isSharedSafe: false,
 				multisigAddresses: [],
-				sharedSafeAddress: ''
+				sharedSafeAddress: '',
+				userID: ''
 			};
 		});
 		toggleVisibility(false);
-		router.push('/');
+		router.replace('/login');
 	};
 
-	if (!address) {
+	if (!wallets[0]?.address) {
 		return (
-			<Link
-				href='/'
-				className='flex items-center justify-center gap-x-2 outline-none border-none text-white bg-highlight rounded-lg p-2.5 shadow-none text-xs'
+			<PrimaryButton
+				onClick={connectWallet}
+				size='large'
 			>
 				<WarningRoundedIcon className='text-sm text-primary' />
-				Not Connected
-			</Link>
+				Connect Wallet
+			</PrimaryButton>
 		);
 	}
 

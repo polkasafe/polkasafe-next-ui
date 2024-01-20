@@ -96,6 +96,8 @@ import PolkassemblySVG from '~assets/polkassembly-logo.svg';
 import SubIDSVG from '~assets/subid.svg';
 import WatchIconSVG from '~assets/icons/watch-icon.svg';
 import StarSVG from '~assets/icons/star-icon.svg';
+import ArrowLeftCircleSVG from '~assets/icons/arrow-left-circle.svg';
+import ArrowRightCircleSVG from '~assets/icons/arrow-right-circle.svg';
 
 export const AddIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
@@ -798,6 +800,24 @@ export const WatchIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Pa
 export const StarIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={StarSVG}
+		{...props}
+	/>
+);
+
+export const ArrowLeftCircle: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
+	<Icon
+		component={ArrowLeftCircleSVG}
+		{...props}
+	/>
+);
+
+export const ArrowRightCircle: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
+	<Icon
+		component={ArrowRightCircleSVG}
 		{...props}
 	/>
 );

@@ -8,7 +8,8 @@ import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { CheckOutlined, CircleArrowDownIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import Address from '@next-evm/ui-components/Address';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 
 // import Loader from '@next-evm/app/components/UserFlow/Loader';
 
@@ -17,21 +18,20 @@ interface Props {
 	setMultisigAddress: React.Dispatch<React.SetStateAction<string>>;
 	multisigName: string;
 	setMultisigName: React.Dispatch<React.SetStateAction<string>>;
+	network: NETWORK;
 }
 
-const NameAddress = ({ className, setMultisigAddress, multisigName, setMultisigName }: Props) => {
+const NameAddress = ({ className, setMultisigAddress, multisigName, setMultisigName, network }: Props) => {
 	const { address, gnosisSafe } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
-	const { multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
+	const { multisigSettings } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 
 	const [allSafes, setAllSafes] = useState<Array<{ address: string }>>([]);
 	const [selectedAddress, setSelectedAddress] = useState<string>('');
 	const [loading, setLoading] = useState<boolean>(false);
+	const multisigAddresses = activeOrg?.multisigs || [];
 	const multisigs = multisigAddresses
-		.filter(
-			(multisig) =>
-				multisig.network === network && !multisigSettings?.[`${multisig.address}`]?.deleted && !multisig.disabled
-		)
+		.filter((multisig) => multisig.network === network && !multisigSettings?.[`${multisig.address}`]?.deleted)
 		.map((item) => item.address);
 
 	useEffect(() => {

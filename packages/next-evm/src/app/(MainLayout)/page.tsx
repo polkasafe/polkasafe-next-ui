@@ -6,7 +6,7 @@
 'use client';
 
 import Home from '@next-evm/app/components/Home';
-import AddMultisigModal from './components/Multisig/AddMultisigModal';
+import AddMultisigModal from '@next-evm/app/components/Multisig/AddMultisigModal';
 
 const HomePage: React.FC = () => {
 	return (

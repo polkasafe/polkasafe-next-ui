@@ -21,12 +21,12 @@ import NoAssets from './NoAssets';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IAssetsProps {
-	nfts: INFTAsset[];
+	nfts: { [multisigAddress: string]: INFTAsset[] };
 }
 const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { network } = useGlobalApiContext();
-	const { notOwnerOfSafe } = useGlobalUserDetailsContext();
+	const { notOwnerOfSafe, activeMultisig } = useGlobalUserDetailsContext();
 	const [selectedNFT, setSeletedNFT] = useState<INFTAsset>();
 
 	const [viewNFT, setViewNFT] = useState<boolean>(false);
@@ -68,8 +68,8 @@ const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 				<span className='col-span-1'>Links</span>
 				<span className='col-span-1'>Action</span>
 			</article>
-			{nfts && nfts.length > 0 ? (
-				nfts.map((nft, index) => {
+			{nfts && nfts[activeMultisig]?.length > 0 ? (
+				nfts[activeMultisig]?.map((nft, index) => {
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
 					const { tokenAddress, tokenNameWithID, name, imageUri, tokenId, logoURI } = nft;
 					return (
@@ -179,7 +179,7 @@ const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 									</PrimaryButton>
 								</p>
 							</article>
-							{nfts.length !== index ? <Divider className='bg-text_secondary my-0' /> : null}
+							{nfts[activeMultisig].length !== index ? <Divider className='bg-text_secondary my-0' /> : null}
 						</>
 					);
 				})

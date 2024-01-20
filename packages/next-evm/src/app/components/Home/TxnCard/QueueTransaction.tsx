@@ -104,7 +104,7 @@ const QueueTransaction = ({ callHash, callData, txType, recipientAddress, value 
 				const tokenDetails = [];
 				tokenContractAddressArray.forEach((item) => {
 					if (realContractAddresses.includes(item)) {
-						const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
+						const assetDetails = allAssets[activeMultisig].find((asset) => asset.tokenAddress === item);
 						tokenDetails.push({
 							tokenAddress: assetDetails?.tokenAddress || '',
 							tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -140,7 +140,7 @@ const QueueTransaction = ({ callHash, callData, txType, recipientAddress, value 
 			}, 0);
 			setAmount(totalAmount);
 		}
-	}, [allAssets, decodedCallData, network, txData]);
+	}, [activeMultisig, allAssets, decodedCallData, network, txData]);
 
 	useEffect(() => {
 		if (tokenDetailsArray.length > 1) {

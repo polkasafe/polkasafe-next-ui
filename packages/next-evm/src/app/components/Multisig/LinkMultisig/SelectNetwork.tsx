@@ -2,11 +2,32 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 import React from 'react';
-import NetworksDropdown from '@next-evm/app/components/NetworksDropdown';
+import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
+import { Dropdown } from 'antd';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import NetworkCard, { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 // import Loader from '../../UserFlow/Loader';
 
-const SelectNetwork = () => {
+const SelectNetwork = ({
+	network,
+	setNetwork
+}: {
+	network: NETWORK;
+	setNetwork: React.Dispatch<React.SetStateAction<NETWORK>>;
+}) => {
+	const networkOptions: ItemType[] = Object.values(NETWORK).map((item) => ({
+		key: item,
+		label: (
+			<NetworkCard
+				selectedNetwork={network}
+				key={item}
+				network={item}
+			/>
+		)
+	}));
+
 	return (
 		<div>
 			<div className='flex flex-col items-center w-[800px] h-[400px]'>
@@ -34,9 +55,25 @@ const SelectNetwork = () => {
 				<div>
 					<p className='text-primary mt-10 w-[500px]'>Select a network on which the safe was created</p>
 				</div>
-				<div>
-					<NetworksDropdown className='w-[500px] justify-between mt-3' />
-				</div>
+				<Dropdown
+					trigger={['click']}
+					className='border border-primary rounded-lg p-1.5 bg-bg-secondary cursor-pointer min-w-[150px]'
+					menu={{
+						items: networkOptions,
+						onClick: (e) => setNetwork(e.key as NETWORK)
+					}}
+				>
+					<div className='flex justify-between items-center text-white gap-x-2'>
+						<div className='capitalize flex items-center gap-x-2 text-sm'>
+							<ParachainIcon
+								size={15}
+								src={chainProperties[network].logo}
+							/>
+							{network}
+						</div>
+						<CircleArrowDownIcon className='text-primary' />
+					</div>
+				</Dropdown>
 			</div>
 		</div>
 	);

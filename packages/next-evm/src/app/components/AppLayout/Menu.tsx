@@ -4,7 +4,8 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
-import { Badge } from 'antd';
+import './styles.css';
+import { Badge, Dropdown } from 'antd';
 import classNames from 'classnames';
 import React, { FC, useEffect, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
@@ -13,10 +14,12 @@ import { usePathname } from 'next/navigation';
 import PolkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
+import emptyImage from '@next-common/assets/icons/empty-image.png';
 import {
 	AddressBookIcon,
 	AppsIcon,
 	AssetsIcon,
+	CircleArrowDownIcon,
 	ExchangeIcon,
 	HomeIcon,
 	NotificationIcon,
@@ -26,7 +29,13 @@ import {
 	UserPlusIcon
 } from '@next-common/ui-components/CustomIcons';
 import { useAddMultisigContext } from '@next-evm/context/AddMultisigContext';
-import { IMultisigAddress } from '@next-common/types';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { IOrganisation } from '@next-common/types';
+import Image from 'next/image';
+import { ActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
+import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
+// import { IMultisigAddress } from '@next-common/types';
 
 interface Props {
 	className?: string;
@@ -34,7 +43,8 @@ interface Props {
 
 const Menu: FC<Props> = ({ className }) => {
 	const {
-		multisigAddresses,
+		userID,
+		organisations,
 		setUserDetailsContextState,
 		activeMultisig,
 		multisigSettings,
@@ -43,9 +53,10 @@ const Menu: FC<Props> = ({ className }) => {
 		sharedSafeNetwork
 	} = useGlobalUserDetailsContext();
 	// const router = useRouter();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(activeMultisig || '');
 	const pathname = usePathname();
-	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
+	// const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	const { network } = useGlobalApiContext();
 	useEffect(() => {
 		if (activeMultisig) {
@@ -55,8 +66,6 @@ const Menu: FC<Props> = ({ className }) => {
 
 	const { setOpenAddMultisigModal } = useAddMultisigContext();
 
-	const [filteredMultisigs, setFilteredMultisigs] = useState<IMultisigAddress[]>([]);
-
 	const getPath = (basePath: string) => {
 		if (activeMultisig && isSharedSafe && sharedSafeNetwork) {
 			return `${basePath}?safe=${activeMultisig}&network=${sharedSafeNetwork}`;
@@ -64,13 +73,7 @@ const Menu: FC<Props> = ({ className }) => {
 		return basePath;
 	};
 
-	useEffect(() => {
-		const filtered = multisigAddresses.filter(
-			(multisig) =>
-				multisig.network === network && !multisigSettings?.[`${multisig.address}`]?.deleted && !multisig.disabled
-		);
-		setFilteredMultisigs(filtered);
-	}, [multisigAddresses, multisigSettings, network]);
+	const multisigs = activeOrg?.multisigs;
 
 	const menuItems = [
 		{
@@ -122,7 +125,7 @@ const Menu: FC<Props> = ({ className }) => {
 		}
 	];
 
-	if (userAddress) {
+	if (userID) {
 		menuItems.push(
 			{
 				baseURL: '/notification-settings',
@@ -138,6 +141,11 @@ const Menu: FC<Props> = ({ className }) => {
 			}
 		);
 	}
+
+	const orgOptions: ItemType[] = organisations?.map((item) => ({
+		key: JSON.stringify(item),
+		label: <span className='text-white truncate capitalize'>{item.name}</span>
+	}));
 
 	return (
 		<div className={classNames(className, 'bg-bg-main flex flex-col h-full py-[25px] px-3')}>
@@ -159,6 +167,31 @@ const Menu: FC<Props> = ({ className }) => {
 						</Badge>
 					</Link>
 				</section>
+				{orgOptions && orgOptions.length > 0 && ActiveMultisigContext && (
+					<section className='w-full mb-2'>
+						<Dropdown
+							trigger={['click']}
+							className='p-2 org_dropdown cursor-pointer'
+							menu={{
+								items: orgOptions,
+								onClick: (e) => setActiveOrg(JSON.parse(e.key) as IOrganisation)
+							}}
+						>
+							<div className='flex justify-between items-center text-white gap-x-2'>
+								<div className='flex items-center gap-x-3'>
+									<Image
+										width={30}
+										height={30}
+										src={emptyImage}
+										alt='empty profile image'
+									/>
+									<span className='text-sm text-white capitalize'>{activeOrg?.name}</span>
+								</div>
+								<CircleArrowDownIcon className='text-white' />
+							</div>
+						</Dropdown>
+					</section>
+				)}
 				<section>
 					<h2 className='uppercase text-text_secondary ml-3 text-[10px] font-primary'>Menu</h2>
 					<ul className='flex flex-col py-2 text-white list-none'>
@@ -194,13 +227,13 @@ const Menu: FC<Props> = ({ className }) => {
 			<h2 className='uppercase text-text_secondary ml-3 text-[10px] font-primary flex items-center justify-between'>
 				<span>Multisigs</span>
 				<span className='bg-highlight text-primary rounded-full flex items-center justify-center h-5 w-5 font-normal text-xs'>
-					{filteredMultisigs ? filteredMultisigs.length : '0'}
+					{multisigs ? multisigs.length : '0'}
 				</span>
 			</h2>
 			<section className='overflow-y-auto max-h-full [&::-webkit-scrollbar]:hidden flex-1 mb-3'>
-				{filteredMultisigs && (
+				{multisigs && (
 					<ul className='flex flex-col gap-y-2 py-3 text-white list-none'>
-						{filteredMultisigs.map((multisig) => {
+						{multisigs.map((multisig) => {
 							return (
 								<li
 									className='w-full'
@@ -216,6 +249,7 @@ const Menu: FC<Props> = ({ className }) => {
 												return {
 													...prevState,
 													activeMultisig: multisig.address,
+													activeMultisigData: multisig,
 													isSharedSafe: false,
 													notOwnerOfSafe: false,
 													sharedSafeAddress: '',
@@ -228,7 +262,9 @@ const Menu: FC<Props> = ({ className }) => {
 											address={multisig.address}
 											size={23}
 										/>
-										<span className='truncate'>{multisigSettings[multisig.address]?.name || multisig.name}</span>
+										<span className='truncate'>
+											{multisigSettings[multisig.address]?.name || multisig.name || DEFAULT_ADDRESS_NAME}
+										</span>
 									</button>
 								</li>
 							);
@@ -236,7 +272,7 @@ const Menu: FC<Props> = ({ className }) => {
 					</ul>
 				)}
 			</section>
-			{userAddress && (
+			{userID && (
 				<section className='mt-auto'>
 					<button
 						className='text-white bg-primary p-3 rounded-lg w-full flex items-center justify-center gap-x-2 cursor-pointer'

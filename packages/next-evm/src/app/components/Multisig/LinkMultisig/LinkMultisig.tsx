@@ -8,7 +8,6 @@ import { SafeInfoResponse } from '@safe-global/api-kit';
 import React, { useState } from 'react';
 import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import AddBtn from '@next-evm/app/components/Multisig/ModalBtn';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { IMultisigAddress, ISharedAddressBookRecord, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
@@ -17,6 +16,7 @@ import { EVM_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 import NameAddress from './NameAddress';
 import SelectNetwork from './SelectNetwork';
 import Owners from './Owners';
@@ -35,7 +35,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 	const [viewReviews, setViewReviews] = useState(true);
 	const { address, addressBook, gnosisSafe, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
-	const { network } = useGlobalApiContext();
+	const [network, setNetwork] = useState<NETWORK>(NETWORK.ETHEREUM);
 
 	const [multisigAddress, setMultisigAddress] = useState<string>('');
 
@@ -205,7 +205,10 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 
 	return nameAddress ? (
 		<div>
-			<SelectNetwork />
+			<SelectNetwork
+				network={network}
+				setNetwork={setNetwork}
+			/>
 			<div className='flex items-center justify-center gap-x-5 mt-[40px]'>
 				<CancelBtn onClick={onCancel} />
 				<AddBtn
@@ -219,6 +222,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 			{viewOwners ? (
 				<div>
 					<NameAddress
+						network={network}
 						multisigName={multisigName}
 						setMultisigName={setMultisigName}
 						setMultisigAddress={setMultisigAddress}

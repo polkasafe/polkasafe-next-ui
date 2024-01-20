@@ -84,7 +84,13 @@ const TransactionBuilder = ({
 	};
 
 	useEffect(() => {
-		if (!abi || !selectedFunction || inputValues.includes('') || inputValues.length !== functionInputs.length) return;
+		if (
+			!abi ||
+			!selectedFunction ||
+			(functionInputs.length !== 0 && inputValues.includes('')) ||
+			inputValues.length !== functionInputs.length
+		)
+			return;
 
 		try {
 			const contractInterface = new Interface(abi);

@@ -174,7 +174,9 @@ export default class GnosisSafeService {
 				isL1SafeMasterCopy: true,
 				safeAddress: multisigAddress
 			});
+			console.log('after safe', this.ethAdapter.getSigner);
 			const signer = await this.ethAdapter.getSignerAddress();
+			console.log('signer', signer);
 
 			const safeTransactionData: MetaTransactionData | MetaTransactionData[] = createTokenTransferParams(
 				to,
@@ -748,7 +750,7 @@ export default class GnosisSafeService {
 			}
 		);
 		// eslint-disable-next-line @typescript-eslint/return-await
-		return assets.items;
+		return assets;
 	};
 
 	getAllTx = async (multisigAddress: string, options: any = {}): Promise<AllTransactionsListResponse> => {

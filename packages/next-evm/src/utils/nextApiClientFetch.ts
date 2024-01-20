@@ -3,21 +3,18 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import getNetwork from './getNetwork';
 
 import messages from './messages';
 
 async function nextApiClientFetch<T>(
 	url: string,
 	data?: { [key: string]: any },
-	headers?: { address?: string; network?: string; signature?: string },
+	headers?: { address?: string; userID?: string },
 	method?: 'GET' | 'POST'
 ): Promise<{ data?: T; error?: string }> {
-	const network = getNetwork();
-
 	const response = await fetch(`${typeof window !== 'undefined' && window.location.origin}/${url}`, {
 		body: JSON.stringify(data),
-		headers: firebaseFunctionsHeader(headers?.network || network, headers?.address || '', headers?.signature || ''),
+		headers: firebaseFunctionsHeader(headers?.address || '', headers?.userID || ''),
 		method: method || 'POST'
 	});
 
