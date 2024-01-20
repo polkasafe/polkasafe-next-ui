@@ -19,7 +19,7 @@ import InvalidNetwork from '@next-common/ui-components/InvalidNetwork';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 
 import logout from '@next-evm/utils/logout';
-import { usePrivy } from '@privy-io/react-auth';
+import { usePrivy, useWallets } from '@privy-io/react-auth';
 // import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 // import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
@@ -333,6 +333,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	const { network } = useGlobalApiContext();
 	const router = useRouter();
 	const [gnosisSafe, setGnosisSafe] = useState<GnosisSafeService>({} as any);
+	const { wallets } = useWallets();
 
 	const [loading, setLoading] = useState(false);
 
@@ -436,7 +437,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			}
 			setLoading(true);
 			const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/loginEth`, {
-				headers: firebaseFunctionsHeader('0x491286D1907458c6446078a6462E7072EAcb8A7c'),
+				headers: firebaseFunctionsHeader(wallets?.[0]?.address),
 				method: 'POST'
 			});
 			const { data: userData, error: loginError } = (await loginRes.json()) as {
@@ -484,7 +485,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			// eslint-disable-next-line react-hooks/exhaustive-deps
 		},
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-		[network]
+		[network, wallets]
 	);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity

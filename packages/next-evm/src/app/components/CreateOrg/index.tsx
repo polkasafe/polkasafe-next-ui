@@ -86,7 +86,7 @@ const CreateOrg = () => {
 				multisigs: linkedMultisigs,
 				name: orgName
 			}),
-			headers: firebaseFunctionsHeader('0x491286D1907458c6446078a6462E7072EAcb8A7c'),
+			headers: firebaseFunctionsHeader(wallets?.[0].address),
 			method: 'POST'
 		});
 		const { data: createOrgData, error: createOrgError } = (await createOrgRes.json()) as {
