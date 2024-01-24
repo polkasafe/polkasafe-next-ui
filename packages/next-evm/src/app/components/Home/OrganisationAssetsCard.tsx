@@ -1,6 +1,6 @@
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
-import { Dropdown } from 'antd';
+import { Dropdown, Skeleton } from 'antd';
 import React, { useState } from 'react';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
@@ -25,7 +25,7 @@ const OrganisationAssetsCard = ({
 }: IOrganisationAssetsCard) => {
 	const [transactionType, setTransactionType] = useState<ETransactionTypeEVM>(ETransactionTypeEVM.SEND_TOKEN);
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
-	const { organisationBalance } = useMultisigAssetsContext();
+	const { organisationBalance, loadingAssets } = useMultisigAssetsContext();
 
 	const transactionTypes: ItemType[] = Object.values(ETransactionTypeEVM)
 		// .filter((item) => {
@@ -70,7 +70,14 @@ const OrganisationAssetsCard = ({
 				<div className='circle_3 absolute' />
 				<div>
 					<p className='text-sm text-text_secondary mb-3'>Total Balance</p>
-					<p className='text-[30px] font-bold text-white'>$ {formatBalance(organisationBalance?.total)}</p>
+					{loadingAssets ? (
+						<Skeleton
+							paragraph={{ rows: 0, width: 150 }}
+							active
+						/>
+					) : (
+						<p className='text-[30px] font-bold text-white'>$ {formatBalance(organisationBalance?.total)}</p>
+					)}
 				</div>
 				<div className='flex justify-between w-full mt-5'>
 					<Dropdown

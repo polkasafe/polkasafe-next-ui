@@ -72,6 +72,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 		if (!activeOrg) return;
 
 		try {
+			setLoading(true);
 			const allMultisigs = activeOrg?.multisigs;
 
 			const totalOrgBalance: IOrganisationBalance = {
