@@ -351,6 +351,6 @@ input {
   background-color: transparent !important;
 }
 
-:where(.css-dev-only-do-not-override-3mqfnx).ant-modal .ant-modal-content {
-  background-color: #1B2028;
+.ant-modal .ant-modal-content {
+  background-color: #1B2028 !important;
 }
