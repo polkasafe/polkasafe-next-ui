@@ -7,17 +7,14 @@
 import { Button, Form, Input } from 'antd';
 import React, { useState } from 'react';
 import ContactImg from '@next-common/assets/icons/contact-us.svg';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { NotificationStatus } from '@next-common/types';
 import { NotifyMail } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
-import AddMultisigModal from '../components/Multisig/AddMultisigModal';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 
 const ContactUs = () => {
-	const { network } = useGlobalApiContext();
-
 	const [name, setName] = useState<string>('');
 	const [email, setEmail] = useState<string>('');
 	const [message, setMessage] = useState<string>('');
@@ -27,15 +24,19 @@ const ContactUs = () => {
 		try {
 			setLoading(true);
 
-			const { data: contactFormData, error: contactFormError } = await nextApiClientFetch<any>(
-				`${EVM_API_URL}/addContactFormResponseEth`,
-				{
+			const addContactRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addContactFormResponseEth`, {
+				body: JSON.stringify({
 					email,
 					message,
 					name
-				},
-				{ network }
-			);
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: contactFormData, error: contactFormError } = (await addContactRes.json()) as {
+				data: any;
+				error: string;
+			};
 
 			if (contactFormError) {
 				queueNotification({

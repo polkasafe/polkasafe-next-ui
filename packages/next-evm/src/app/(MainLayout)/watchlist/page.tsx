@@ -8,16 +8,16 @@ import React from 'react';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import Link from 'next/link';
-import AddMultisigModal from '../components/Multisig/AddMultisigModal';
-import WatchlistComponents from '../components/Watchlist';
+import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
+import WatchlistComponents from '../../components/Watchlist';
 
 const Watchlist = () => {
-	const { address } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
 
 	return (
 		<div className='bg-bg-main rounded-xl p-[20.5px] h-full relative'>
 			<AddMultisigModal />
-			{address ? (
+			{userID ? (
 				<WatchlistComponents />
 			) : (
 				<div className='h-full w-full flex items-center justify-center text-primary font-bold text-lg'>

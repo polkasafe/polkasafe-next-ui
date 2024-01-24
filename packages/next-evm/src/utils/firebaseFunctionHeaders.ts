@@ -3,8 +3,8 @@ const firebaseFunctionsHeader = (address?: string, network?: string, contentType
 	Accept: 'application/json',
 	'Content-Type': contentType || 'application/json',
 	'x-address': address || localStorage.getItem('address') || '',
-	'x-token': localStorage.getItem('privy:token').split('"')[1] || '',
-	'x-network': network || ''
+	'x-network': network || '',
+	'x-token': localStorage.getItem('privy:token').split('"')[1] || ''
 });
 
 export default firebaseFunctionsHeader;

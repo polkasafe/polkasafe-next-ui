@@ -5,13 +5,19 @@
 
 const NOTIFICATION_ENGINE_API_KEY = '47c058d8-2ddc-421e-aeb5-e2aa99001949';
 
-export default function firebaseFunctionsHeader(address?: string, userID?: string, contentType?: string) {
+export default function firebaseFunctionsHeader(
+	network: string,
+	address?: string,
+	signature?: string,
+	contentType?: string
+) {
 	return {
 		Accept: 'application/json',
 		'Content-Type': contentType || 'application/json',
 		'x-address': address || (typeof window !== 'undefined' && localStorage.getItem('address')) || '',
 		'x-api-key': NOTIFICATION_ENGINE_API_KEY,
-		'x-source': 'polkasafe',
-		'x-user-id': userID || (typeof window !== 'undefined' && localStorage.getItem('user-id')) || ''
+		'x-network': network || (typeof window !== 'undefined' && localStorage.getItem('network')) || '',
+		'x-signature': signature || (typeof window !== 'undefined' && localStorage.getItem('signature')) || '',
+		'x-source': 'polkasafe'
 	};
 }

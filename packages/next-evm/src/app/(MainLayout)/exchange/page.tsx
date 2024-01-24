@@ -20,8 +20,9 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import Image from 'next/image';
 import { NETWORK } from '@next-common/global/evm-network-constants';
-import { ParachainIcon } from '../components/NetworksDropdown/NetworkCard';
-import AddMultisigModal from '../components/Multisig/AddMultisigModal';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { ParachainIcon } from '../../components/NetworksDropdown/NetworkCard';
+import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 
 enum EOnramp {
 	BUY = 'BUY',
@@ -31,24 +32,39 @@ enum EOnramp {
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const Exchange = ({ className }: { className?: string }) => {
 	const { address: userAddress, activeMultisig } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { allAssets } = useMultisigAssetsContext();
 	const { network } = useGlobalApiContext();
 
+	const [selectedMultisig, setSelectedMultisig] = useState<string>(
+		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
+	);
+
 	const [onrampFlowType, setOnrampFlowType] = useState<EOnramp>(EOnramp.BUY);
-	const [coinCode, setCoinCode] = useState(allAssets[0]?.name);
+	const [coinCode, setCoinCode] = useState<string>();
 	const [coinAmount, setCoinAmount] = useState<string>();
-	const [maxAmount, setMaxAmount] = useState<string>(allAssets[0]?.balance_token);
+	const [maxAmount, setMaxAmount] = useState<string>();
 	// const [defaultMax, setDefaultMax] = useState<boolean>(false);
 
 	useEffect(() => {
-		if (!allAssets || allAssets.length === 0) return;
-		const max = allAssets.find((item) => item.name === coinCode)?.balance_token;
+		if (!allAssets || allAssets[selectedMultisig]?.length === 0) return;
+		setCoinCode(allAssets[selectedMultisig]?.[0]?.name);
+	}, [allAssets, selectedMultisig]);
+
+	useEffect(() => {
+		if (!allAssets || allAssets[selectedMultisig]?.length === 0) return;
+		const max = allAssets[selectedMultisig].find((item) => item.name === coinCode)?.balance_token;
 		setMaxAmount(max);
-	}, [allAssets, coinCode]);
+	}, [allAssets, coinCode, selectedMultisig]);
+
+	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
+		key: JSON.stringify(item),
+		label: <AddressComponent address={item.address} />
+	}));
 
 	const currencyOptions: ItemType[] =
-		allAssets && allAssets.length > 0
-			? allAssets.map((token) => ({
+		allAssets && allAssets[selectedMultisig]?.length > 0
+			? allAssets[selectedMultisig]?.map((token) => ({
 					key: token.name,
 					label: (
 						<span className='text-white flex items-center gap-x-2'>
@@ -78,7 +94,6 @@ const Exchange = ({ className }: { className?: string }) => {
 
 		transak.init();
 	};
-
 	return (
 		<div
 			className={`scale-[80%] w-[125%] h-[125%] p-5 origin-top-left bg-bg-main rounded-lg flex justify-center ${className}`}
@@ -108,15 +123,22 @@ const Exchange = ({ className }: { className?: string }) => {
 							</span>
 						</div>
 						<div>
-							<div className='flex items-center justify-between mb-[5px]'>
-								<label className='text-primary font-normal text-xs leading-[13px] block'>Wallet Address*</label>
-							</div>
-							<article className='w-full p-[10px] border border-solid border-primary rounded-lg flex items-center justify-between'>
-								<AddressComponent
-									withBadge={false}
-									address={activeMultisig}
-								/>
-							</article>
+							<Dropdown
+								trigger={['click']}
+								className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer'
+								menu={{
+									items: multisigOptions,
+									onClick: (e) => {
+										console.log(JSON.parse(e.key));
+										setSelectedMultisig(JSON.parse(e.key)?.address);
+									}
+								}}
+							>
+								<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+									<AddressComponent address={selectedMultisig} />
+									<CircleArrowDownIcon className='text-primary' />
+								</div>
+							</Dropdown>
 						</div>
 						<div className='flex-1'>
 							<div className='flex justify-between items-center mb-[5px]'>
@@ -173,7 +195,9 @@ const Exchange = ({ className }: { className?: string }) => {
 										}}
 									>
 										<div className='absolute cursor-pointer right-0 text-white pr-3 flex items-center gap-x-1 justify-center'>
-											<ParachainIcon src={allAssets?.find((item) => item.name === coinCode)?.logoURI || ''} />
+											<ParachainIcon
+												src={allAssets[selectedMultisig]?.find((item) => item.name === coinCode)?.logoURI || ''}
+											/>
 											<span>{coinCode}</span>
 											<CircleArrowDownIcon className='text-primary ml-1' />
 										</div>
@@ -183,7 +207,7 @@ const Exchange = ({ className }: { className?: string }) => {
 						</div>
 						<PrimaryButton
 							disabled={
-								!activeMultisig ||
+								!selectedMultisig ||
 								!coinAmount ||
 								Number.isNaN(Number(coinAmount)) ||
 								Number(coinAmount) === 0 ||

@@ -6,7 +6,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import NoTransactionsHistory from '@next-common/assets/icons/no-transaction-home.svg';
 import NoTransactionsQueued from '@next-common/assets/icons/no-transaction-queued-home.svg';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
@@ -14,28 +13,49 @@ import { convertSafeHistoryData, IHistoryTransactions } from '@next-evm/utils/co
 import { IQueuedTransactions, convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
 import dayjs from 'dayjs';
-import QueueTransaction from './QueueTransaction';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import { ethers } from 'ethers';
+import { NETWORK } from '@next-common/global/evm-network-constants';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { useWallets } from '@privy-io/react-auth';
 import HistoryTransaction from './HistoryTransaction';
+import QueueTransaction from './QueueTransaction';
 
 const TxnCard = () => {
-	const { activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeMultisigData, address } = useGlobalUserDetailsContext();
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueuedTransactions[]>([]);
 	const [completedTransactions, setCompletedTransactions] = useState<IHistoryTransactions[]>([]);
-	const { network } = useGlobalApiContext();
 	const [loading, setLoading] = useState<boolean>(false);
 
+	const [gnosisSafe, setGnosisSafe] = useState<GnosisSafeService>();
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+
 	const handleTransactions = useCallback(async () => {
+		if (!activeMultisig || !connectedWallet) return;
 		setLoading(true);
 		try {
-			const completedSafeData = await gnosisSafe.getAllTx(activeMultisig, {
+			const txUrl = returnTxUrl(activeMultisigData.network as NETWORK);
+			const provider = await connectedWallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+			setGnosisSafe(gnosisService);
+			const completedSafeData = await gnosisService.getAllTx(activeMultisig, {
 				executed: true,
 				trusted: true
 			});
-			const safeData = await gnosisSafe.getPendingTx(activeMultisig);
+			const safeData = await gnosisService.getPendingTx(activeMultisig);
 			const convertedCompletedData = completedSafeData.results.map((safe: any) =>
-				convertSafeHistoryData({ ...safe, network })
+				convertSafeHistoryData({ ...safe, network: activeMultisigData.network })
 			);
-			const convertedData = safeData.results.map((safe: any) => convertSafePendingData({ ...safe, network }));
+			const convertedData = safeData.results.map((safe: any) =>
+				convertSafePendingData({ ...safe, network: activeMultisigData.network })
+			);
 			// await Promise.all(
 			// convertedCompletedData.map(async (txn) => {
 			// const decoded = txn.data && (await gnosisSafe.safeService.decodeData(txn.data));
@@ -54,20 +74,17 @@ const TxnCard = () => {
 				UpdateDB.Update_Pending_Transaction,
 				{ transactions: [...convertedData, ...convertedCompletedData] },
 				address,
-				network
+				activeMultisigData.network
 			);
 		} catch (e) {
 			console.log(e);
 			setLoading(false);
 		}
-	}, [activeMultisig, address, network, gnosisSafe]);
+	}, [activeMultisig, activeMultisigData.network, address, connectedWallet]);
 
 	useEffect(() => {
-		if (!activeMultisig || !gnosisSafe) {
-			return;
-		}
 		handleTransactions();
-	}, [activeMultisig, handleTransactions, gnosisSafe]);
+	}, [handleTransactions]);
 
 	return (
 		<div>
@@ -95,9 +112,11 @@ const TxnCard = () => {
 									{queuedTransactions
 										.sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1))
 										.filter((_: any, i: number) => i < 10)
-										.map((transaction: any) => {
+										.map((transaction) => {
 											return (
 												<QueueTransaction
+													network={transaction.network as NETWORK}
+													gnosisSafe={gnosisSafe}
 													key={transaction.txHash}
 													callHash={transaction.txHash}
 													callData={transaction.data}
@@ -146,6 +165,8 @@ const TxnCard = () => {
 										.map((transaction) => {
 											return (
 												<HistoryTransaction
+													network={transaction.network as NETWORK}
+													gnosisSafe={gnosisSafe}
 													key={transaction.txHash}
 													callData={transaction.data}
 													callHash={transaction.txHash}

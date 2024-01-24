@@ -8,12 +8,12 @@ import { useRouter } from 'next/navigation';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import { ArrowLeftCircle, ArrowRightCircle, CheckOutlined } from '@next-common/ui-components/CustomIcons';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
-import { IOrganisation } from '@next-common/types';
+import { IMultisigAddress, IOrganisation } from '@next-common/types';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import CancelBtn from '../Settings/CancelBtn';
 import OrgNameAndImageStep from './OrgNameAndImageStep';
-import LinkMultisigStep, { ILinkedMultisig } from './LinkMultisigStep';
+import LinkMultisigStep from './LinkMultisigStep';
 import ReviewOrgStep from './ReviewOrgStep';
 
 interface ISteps {
@@ -31,7 +31,7 @@ const CreateOrg = () => {
 	console.log('user', user);
 	const [orgName, setOrgName] = useState<string>('');
 	const [orgDesc, setOrgDesc] = useState<string>('');
-	const [linkedMultisigs, setLinkedMultisigs] = useState<ILinkedMultisig[]>([]);
+	const [linkedMultisigs, setLinkedMultisigs] = useState<IMultisigAddress[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { setActiveOrg } = useActiveOrgContext();

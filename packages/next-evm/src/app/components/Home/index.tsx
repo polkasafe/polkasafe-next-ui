@@ -11,7 +11,6 @@ import NewUserModal from '@next-evm/app/components/Home/ConnectWallet/NewUserMod
 import DashboardCard from '@next-evm/app/components/Home/DashboardCard';
 import TxnCard from '@next-evm/app/components/Home/TxnCard';
 import AddMultisig from '@next-evm/app/components/Multisig/AddMultisig';
-import Loader from '@next-evm/app/components/UserFlow/Loader';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import Spinner from '@next-common/ui-components/Loader';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
@@ -85,13 +84,9 @@ const Home = () => {
 					</section>
 				)
 			) : (
-				<section className='bg-bg-main p-5 rounded-lg scale-90 w-[111%] h-[111%] origin-top-left'>
-					<section className='grid grid-cols-2 gap-x-5'>
-						<Loader className='bg-primary col-span-1' />
-						<Loader className='bg-primary col-span-1' />
-					</section>
+				<section className='bg-bg-main flex justify-center items-center p-5 rounded-lg scale-90 w-[111%] h-[111%] origin-top-left'>
 					<AddMultisig
-						className='mt-4'
+						// className='mt-4'
 						homepage
 					/>
 				</section>

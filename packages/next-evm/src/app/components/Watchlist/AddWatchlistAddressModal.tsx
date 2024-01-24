@@ -3,29 +3,28 @@ import { Dropdown, Form, Input } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
 import { chainProperties, NETWORK } from '@next-common/global/evm-network-constants';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import Loader from '@next-common/ui-components/Loader';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { NotificationStatus } from '@next-common/types';
 import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
 import getSafeInfoByNetwork from '@next-evm/utils/getSafeInfoByNetwork';
-import { useSigner } from '@thirdweb-dev/react';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useWallets } from '@privy-io/react-auth';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import ModalBtn from '../Settings/ModalBtn';
 import CancelBtn from '../Settings/CancelBtn';
 
 const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCancel: () => void }) => {
-	const { network } = useGlobalApiContext();
 	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const [name, setName] = useState<string>('');
-	const [selectedNetwork, setSelectedNetwork] = useState(network);
+	const [selectedNetwork, setSelectedNetwork] = useState(NETWORK.ETHEREUM);
 	const [validMultisig, setValidMultisig] = useState(false);
 
-	const signer = useSigner();
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 
 	const [fetchInfoLoading, setFetchInfoLoading] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -48,14 +47,19 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 		if (!address || !selectedNetwork || !validMultisig) return;
 
 		setLoading(true);
-		const { data: watchlistData, error: watchlistError } = await nextApiClientFetch<string>(
-			`${EVM_API_URL}/addAddressToWatchlist`,
-			{
+		const watchlistRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addAddressToWatchlist`, {
+			body: JSON.stringify({
 				address,
 				name,
 				network: selectedNetwork
-			}
-		);
+			}),
+			headers: firebaseFunctionsHeader(connectedWallet.address),
+			method: 'POST'
+		});
+		const { data: watchlistData, error: watchlistError } = (await watchlistRes.json()) as {
+			data: string;
+			error: string;
+		};
 
 		if (watchlistData && !watchlistError) {
 			setLoading(false);
@@ -94,7 +98,12 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 
 		try {
 			setFetchInfoLoading(true);
-			const multiData = await getSafeInfoByNetwork(address, selectedNetwork, signer);
+			const provider = await connectedWallet.getEthersProvider();
+			const multiData = await getSafeInfoByNetwork(
+				address,
+				selectedNetwork,
+				provider.getSigner(connectedWallet?.address)
+			);
 
 			setFetchInfoLoading(false);
 
@@ -106,7 +115,7 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 			setFetchInfoLoading(false);
 			setValidMultisig(false);
 		}
-	}, [address, selectedNetwork, signer]);
+	}, [address, connectedWallet, selectedNetwork]);
 
 	useEffect(() => {
 		multisigInfo();

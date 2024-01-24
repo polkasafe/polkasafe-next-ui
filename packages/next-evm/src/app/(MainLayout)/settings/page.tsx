@@ -9,8 +9,8 @@ import ManageMultisig from '@next-evm/app/components/Settings/ManageMultisig';
 import Notifications from '@next-evm/app/components/Settings/Notifications';
 import TransactionFields from '@next-evm/app/components/Settings/TransactionFields';
 import { Button } from 'antd';
-import AddMultisigModal from '../components/Multisig/AddMultisigModal';
-import ChangeCurrency from '../components/Assets/ChangeCurrency';
+import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
+import ChangeCurrency from '../../components/Assets/ChangeCurrency';
 
 enum ETab {
 	SIGNATORIES,

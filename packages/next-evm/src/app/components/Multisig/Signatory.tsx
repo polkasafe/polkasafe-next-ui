@@ -13,6 +13,7 @@ import { IAddressBookItem } from '@next-common/types';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import inputToBn from '@next-evm/utils/inputToBn';
 import shortenAddress from '@next-evm/utils/shortenAddress';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 interface ISignature {
 	name: string;
@@ -29,19 +30,23 @@ interface ISignatoryProps {
 }
 
 const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISignatoryProps) => {
-	const { address: userAddress, addressBook } = useGlobalUserDetailsContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 
 	const [addresses, setAddresses] = useState<ISignature[]>([]);
 
 	const walletAccounts = useGetWalletAccounts();
 
+	const { activeOrg } = useActiveOrgContext();
+
 	useEffect(() => {
+		if (!activeOrg || !activeOrg.addressBook) return;
+
 		setAddresses(
-			addressBook
+			activeOrg.addressBook
 				?.filter(
-					(item: any, i: any) =>
-						i !== 0 &&
+					(item) =>
+						item.address !== userAddress &&
 						(filterAddress ? item.address.includes(filterAddress, 0) || item.name.includes(filterAddress, 0) : true)
 				)
 				.map((item: IAddressBookItem, i: number) => ({
@@ -51,7 +56,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 				}))
 		);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [addressBook]);
+	}, [activeOrg]);
 
 	useEffect(() => {
 		const fetchBalances = async () => {
@@ -70,7 +75,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 		};
 		fetchBalances();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [addressBook]);
+	}, [activeOrg]);
 
 	const dragStart = (event: any) => {
 		event.dataTransfer.setData('text', event.target.id);
@@ -192,7 +197,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 										draggable
 										onDragStart={dragStart}
 									>
-										{address.name}
+										{address.name || shortenAddress(address.address)}
 										{lowBalance && signatories.includes(address.address) && (
 											<Tooltip
 												title={
@@ -265,7 +270,8 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 							key={`0-${signatories[0]}`}
 							className='bg-bg-main p-2 m-1 rounded-md text-white cursor-default flex items-center gap-x-2 cursor-grab'
 						>
-							{addressBook[0]?.name}{' '}
+							{activeOrg?.addressBook?.find((item) => item.address === userAddress)?.name ||
+								shortenAddress(userAddress)}{' '}
 							<Tooltip title={<span className='text-sm text-text_secondary'>Your Wallet Address</span>}>
 								<Badge status='success' />
 							</Tooltip>

@@ -26,7 +26,7 @@ export interface IOrganisation {
 	id: string;
 	name: string;
 	desc?: string;
-	multisigs: IMultisigAndNetwork[];
+	multisigs: IMultisigAddress[];
 	addressBook: IAddressBookItem[];
 	members: string[];
 }
@@ -208,7 +208,7 @@ export interface I2FAToken {
 
 export interface IUser {
 	organisations?: IOrganisation[];
-	userID: string;
+	userId: string;
 	address: string;
 	email: string | null;
 	addressBook?: IAddressBookItem[];
@@ -227,7 +227,7 @@ export interface IMultisigAddress {
 	name: string;
 	signatories: string[];
 	network: string;
-	created_at: Date;
+	created_at?: Date;
 	updated_at?: Date;
 	threshold: number;
 	proxy?: string;

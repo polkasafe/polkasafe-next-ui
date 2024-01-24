@@ -26,7 +26,9 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { EVM_API_URL, FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useWallets } from '@privy-io/react-auth';
 import DiscordInfoModal from './DiscordInfoModal';
 import SlackInfoModal from './SlackInfoModal';
 import TelegramInfoModal from './TelegramInfoModal';
@@ -34,7 +36,7 @@ import TelegramInfoModal from './TelegramInfoModal';
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const Notifications = () => {
 	const pathname = usePathname();
-	const { notification_preferences, address, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { notification_preferences, address, userID, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const [notifyAfter, setNotifyAfter] = useState<number>(8);
 	const emailPreference = notification_preferences?.channelPreferences?.[CHANNEL.EMAIL];
 	const [email, setEmail] = useState<string>(emailPreference?.handle || '');
@@ -54,6 +56,9 @@ const Notifications = () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [resendEmail, setResendEmail] = useState<boolean>(emailPreference?.verified || false);
 	const [enabledUpdate, setEnableUpdate] = useState<boolean>(false);
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 
 	const emailVerificationRegex =
 		/^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -133,80 +138,85 @@ const Notifications = () => {
 
 	const updateNotificationPreferences = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			if (!userID) return;
+			const newPreferences: { [index: string]: IUserNotificationTriggerPreferences } = {
+				[Triggers.CANCELLED_TRANSACTION]: {
+					enabled: cancelledTxn,
+					name: Triggers.CANCELLED_TRANSACTION
+				},
+				[Triggers.EXECUTED_TRANSACTION]: {
+					enabled: txnExecuted,
+					name: Triggers.EXECUTED_TRANSACTION
+				},
+				[Triggers.EDIT_MULTISIG_USERS_EXECUTED]: {
+					enabled: txnExecuted,
+					name: Triggers.EDIT_MULTISIG_USERS_EXECUTED
+				},
+				[Triggers.EXECUTED_PROXY]: {
+					enabled: txnExecuted,
+					name: Triggers.EXECUTED_PROXY
+				},
+				[Triggers.INIT_MULTISIG_TRANSFER]: {
+					enabled: newTxn,
+					name: Triggers.INIT_MULTISIG_TRANSFER
+				},
+				[Triggers.CREATED_PROXY]: {
+					enabled: newTxn,
+					name: Triggers.CREATED_PROXY
+				},
+				[Triggers.SCHEDULED_APPROVAL_REMINDER]: {
+					enabled: scheduleTxn,
+					hoursToRemindIn: notifyAfter,
+					name: Triggers.SCHEDULED_APPROVAL_REMINDER
+				},
+				[Triggers.EDIT_MULTISIG_USERS_START]: {
+					enabled: newTxn,
+					name: Triggers.EDIT_MULTISIG_USERS_START
+				},
+				[Triggers.APPROVAL_REMINDER]: {
+					enabled: remindersFromOthers,
+					name: Triggers.APPROVAL_REMINDER
+				}
+			};
+			setLoading(true);
 
-			if (!userAddress || !signature) {
-				console.log('ERROR');
-			} else {
-				const newPreferences: { [index: string]: IUserNotificationTriggerPreferences } = {
-					[Triggers.CANCELLED_TRANSACTION]: {
-						enabled: cancelledTxn,
-						name: Triggers.CANCELLED_TRANSACTION
-					},
-					[Triggers.EXECUTED_TRANSACTION]: {
-						enabled: txnExecuted,
-						name: Triggers.EXECUTED_TRANSACTION
-					},
-					[Triggers.EDIT_MULTISIG_USERS_EXECUTED]: {
-						enabled: txnExecuted,
-						name: Triggers.EDIT_MULTISIG_USERS_EXECUTED
-					},
-					[Triggers.EXECUTED_PROXY]: {
-						enabled: txnExecuted,
-						name: Triggers.EXECUTED_PROXY
-					},
-					[Triggers.INIT_MULTISIG_TRANSFER]: {
-						enabled: newTxn,
-						name: Triggers.INIT_MULTISIG_TRANSFER
-					},
-					[Triggers.CREATED_PROXY]: {
-						enabled: newTxn,
-						name: Triggers.CREATED_PROXY
-					},
-					[Triggers.SCHEDULED_APPROVAL_REMINDER]: {
-						enabled: scheduleTxn,
-						hoursToRemindIn: notifyAfter,
-						name: Triggers.SCHEDULED_APPROVAL_REMINDER
-					},
-					[Triggers.EDIT_MULTISIG_USERS_START]: {
-						enabled: newTxn,
-						name: Triggers.EDIT_MULTISIG_USERS_START
-					},
-					[Triggers.APPROVAL_REMINDER]: {
-						enabled: remindersFromOthers,
-						name: Triggers.APPROVAL_REMINDER
-					}
-				};
-				setLoading(true);
-
-				const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
-					await nextApiClientFetch<string>(`${EVM_API_URL}/updateNotificationTriggerPreferencesEth`, {
+			const updateNotificationTriggerRes = await fetch(
+				`${FIREBASE_FUNCTIONS_URL}/updateNotificationTriggerPreferencesEth`,
+				{
+					body: JSON.stringify({
 						triggerPreferences: newPreferences
-					});
-
-				if (updateNotificationTriggerError) {
-					queueNotification({
-						header: 'Failed!',
-						message: updateNotificationTriggerError,
-						status: NotificationStatus.ERROR
-					});
-					setLoading(false);
-					return;
+					}),
+					headers: firebaseFunctionsHeader(connectedWallet.address),
+					method: 'POST'
 				}
+			);
+			const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
+				(await updateNotificationTriggerRes.json()) as {
+					data: string;
+					error: string;
+				};
 
-				if (updateNotificationTriggerData) {
-					queueNotification({
-						header: 'Success!',
-						message: 'Your Notification Preferences has been Updated.',
-						status: NotificationStatus.SUCCESS
-					});
-					setUserDetailsContextState((prev) => ({
-						...prev,
-						notification_preferences: { ...prev.notification_preferences, triggerPreferences: newPreferences }
-					}));
-					setLoading(false);
-				}
+			if (updateNotificationTriggerError) {
+				queueNotification({
+					header: 'Failed!',
+					message: updateNotificationTriggerError,
+					status: NotificationStatus.ERROR
+				});
+				setLoading(false);
+				return;
+			}
+
+			if (updateNotificationTriggerData) {
+				queueNotification({
+					header: 'Success!',
+					message: 'Your Notification Preferences has been Updated.',
+					status: NotificationStatus.SUCCESS
+				});
+				setUserDetailsContextState((prev) => ({
+					...prev,
+					notification_preferences: { ...prev.notification_preferences, triggerPreferences: newPreferences }
+				}));
+				setLoading(false);
 			}
 		} catch (error) {
 			console.log('ERROR', error);
@@ -229,10 +239,7 @@ const Notifications = () => {
 		reset?: boolean;
 	}) => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress || !signature) {
+			if (!userID) {
 				console.log('ERROR');
 				return;
 			}
@@ -248,22 +255,33 @@ const Notifications = () => {
 						[channel]: { ...notification_preferences.channelPreferences?.[channel], enabled }
 				  };
 
-			const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
-				await nextApiClientFetch<string>(`${EVM_API_URL}/updateNotificationTriggerPreferencesEth`, {
-					channelPreferences: newChannelPreferences
-				});
+			const updateNotificationChannelRes = await fetch(
+				`${FIREBASE_FUNCTIONS_URL}/updateNotificationChannelPreferencesEth`,
+				{
+					body: JSON.stringify({
+						channelPreferences: newChannelPreferences
+					}),
+					headers: firebaseFunctionsHeader(connectedWallet.address),
+					method: 'POST'
+				}
+			);
+			const { data: updateNotificationChannelData, error: updateNotificationChannelError } =
+				(await updateNotificationChannelRes.json()) as {
+					data: string;
+					error: string;
+				};
 
-			if (updateNotificationTriggerError) {
+			if (updateNotificationChannelError) {
 				queueNotification({
 					header: 'Failed!',
-					message: updateNotificationTriggerError,
+					message: updateNotificationChannelError,
 					status: NotificationStatus.ERROR
 				});
 				setChannelPreferencesLoading(false);
 				return;
 			}
 
-			if (updateNotificationTriggerData) {
+			if (updateNotificationChannelData) {
 				queueNotification({
 					header: 'Success!',
 					message: 'Your Notification Preferences has been Updated.',
@@ -308,60 +326,59 @@ const Notifications = () => {
 
 	const verifyEmail = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			if (!userID) return;
 
-			if (!userAddress || !signature) {
-				console.log('ERROR');
-			} else {
-				setVerificationLoading(true);
+			setVerificationLoading(true);
 
-				const { data: verifyEmailUpdate, error: verifyTokenError } = await nextApiClientFetch<string>(
-					`${EVM_API_URL}/notify`,
-					{
-						args: {
-							address,
-							email
-						},
-						trigger: 'verifyEmail'
-					}
-				);
+			const verifyEmailRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/notify`, {
+				body: JSON.stringify({
+					args: {
+						address,
+						email
+					},
+					trigger: 'verifyEmail'
+				}),
+				headers: firebaseFunctionsHeader(connectedWallet.address),
+				method: 'POST'
+			});
+			const { data: verifyEmailUpdate, error: verifyTokenError } = (await verifyEmailRes.json()) as {
+				data: string;
+				error: string;
+			};
+			if (verifyTokenError) {
+				queueNotification({
+					header: 'Failed!',
+					message: verifyTokenError,
+					status: NotificationStatus.ERROR
+				});
+				setVerificationLoading(false);
+				return;
+			}
 
-				if (verifyTokenError) {
-					queueNotification({
-						header: 'Failed!',
-						message: verifyTokenError,
-						status: NotificationStatus.ERROR
-					});
-					setVerificationLoading(false);
-					return;
-				}
-
-				if (verifyEmailUpdate) {
-					queueNotification({
-						header: 'Success!',
-						message: 'Verification Email Sent.',
-						status: NotificationStatus.SUCCESS
-					});
-					setResendEmail(false);
-					setTimeout(() => setResendEmail(true), 60000);
-					setUserDetailsContextState((prev) => ({
-						...prev,
-						notification_preferences: {
-							...prev.notification_preferences,
-							channelPreferences: {
-								...prev.notification_preferences.channelPreferences,
-								[CHANNEL.EMAIL]: {
-									enabled: false,
-									handle: email,
-									name: CHANNEL.EMAIL,
-									verified: false
-								}
+			if (verifyEmailUpdate) {
+				queueNotification({
+					header: 'Success!',
+					message: 'Verification Email Sent.',
+					status: NotificationStatus.SUCCESS
+				});
+				setResendEmail(false);
+				setTimeout(() => setResendEmail(true), 60000);
+				setUserDetailsContextState((prev) => ({
+					...prev,
+					notification_preferences: {
+						...prev.notification_preferences,
+						channelPreferences: {
+							...prev.notification_preferences.channelPreferences,
+							[CHANNEL.EMAIL]: {
+								enabled: false,
+								handle: email,
+								name: CHANNEL.EMAIL,
+								verified: false
 							}
 						}
-					}));
-					setVerificationLoading(false);
-				}
+					}
+				}));
+				setVerificationLoading(false);
 			}
 		} catch (error) {
 			console.log('ERROR', error);

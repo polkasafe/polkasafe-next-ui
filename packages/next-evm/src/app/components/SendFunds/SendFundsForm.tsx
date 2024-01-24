@@ -13,7 +13,6 @@ import React, { useEffect, useState } from 'react';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import ModalBtn from '@next-evm/app/components/Multisig/ModalBtn';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { EFieldType, IAsset, INFTAsset, NotificationStatus } from '@next-common/types';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
@@ -103,11 +102,12 @@ const SendFundsForm = ({
 	defaultNFT,
 	defaultToken // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
-	const { activeMultisig, addressBook, address, gnosisSafe, multisigAddresses, transactionFields, activeMultisigData } =
+	const { activeMultisig, address, multisigAddresses, transactionFields, activeMultisigData } =
 		useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
-	const [network, setNetwork] = useState<NETWORK>((activeMultisigData?.network as NETWORK) || NETWORK.POLYGON);
-	const { records } = useActiveMultisigContext();
+	const [network, setNetwork] = useState<NETWORK>(
+		(activeMultisigData?.network as NETWORK) || (activeOrg?.multisigs?.[0]?.network as NETWORK) || NETWORK.POLYGON
+	);
 	const { allAssets, allNfts } = useMultisigAssetsContext();
 	const { superfluidFramework } = useSuperfluidContext();
 	const { wallets } = useWallets();
@@ -260,15 +260,13 @@ const SendFundsForm = ({
 
 	// Set address options for recipient
 	useEffect(() => {
+		if (!activeOrg) return;
+		const { addressBook } = activeOrg;
+
 		const allAddresses: string[] = [];
-		if (records) {
-			Object.keys(records).forEach((a) => {
-				allAddresses.push(a);
-			});
-		}
-		addressBook.forEach((item) => {
-			if (!allAddresses.includes(item.address)) {
-				allAddresses.push(item.address);
+		addressBook?.forEach((item) => {
+			if (!allAddresses.includes(item?.address)) {
+				allAddresses.push(item?.address);
 			}
 		});
 		setAutoCompleteAddresses(
@@ -282,7 +280,7 @@ const SendFundsForm = ({
 				value: a
 			}))
 		);
-	}, [address, addressBook, network, records]);
+	}, [activeOrg, address, network]);
 
 	useEffect(() => {
 		setTransactionFieldsObject({ category, subfields: {} });
@@ -343,17 +341,26 @@ const SendFundsForm = ({
 	}, [recipientAndAmount, streamRecipient, transactionType]);
 
 	const handleSimulate = async () => {
+		const txUrl = returnTxUrl(network as NETWORK);
+		const wallet = wallets?.[0];
+		await wallet.switchChain(chainProperties[network].chainId);
+		const provider = await wallet.getEthersProvider();
+		const web3Adapter = new EthersAdapter({
+			ethers,
+			signerOrProvider: provider.getSigner(wallet.address)
+		});
+		const gnosisService = new GnosisSafeService(web3Adapter, web3Adapter.getSigner(), txUrl);
 		const recipients = recipientAndAmount.map((r) => r.recipient);
 		const amounts = recipientAndAmount.map((a) =>
 			ethers.utils.parseUnits(a.amount, a.token?.token_decimals || 'ether').toString()
 		);
 		const selectedTokens = recipientAndAmount.map((r) => r.token);
 		setSimulationLoading(true);
-		const simulationData = await gnosisSafe.getTxSimulationData(
+		const simulationData = await gnosisService.getTxSimulationData(
 			selectedMultisig,
 			recipients,
 			amounts,
-			address,
+			wallet.address || address,
 			selectedTokens,
 			chainProperties[network].chainId
 		);
@@ -406,7 +413,7 @@ const SendFundsForm = ({
 						selectedMultisig,
 						streamRecipient,
 						weiAmount,
-						address,
+						wallet.address || address,
 						tokenAddress,
 						note,
 						defaultTxNonce,
@@ -428,7 +435,7 @@ const SendFundsForm = ({
 				safeTxHash = await gnosisService.createTxnBuilderTx(
 					selectedMultisig,
 					txnBuilderToAddress,
-					wallet.address,
+					wallet.address || address,
 					txnBuilderData,
 					note,
 					defaultTxNonce,
@@ -438,7 +445,7 @@ const SendFundsForm = ({
 				safeTxHash = await gnosisService.createNftTx(
 					selectedMultisig,
 					nftRecipient,
-					address,
+					wallet.address || address,
 					selectedNFT.tokenId,
 					selectedNFT.tokenAddress,
 					note,
@@ -450,7 +457,7 @@ const SendFundsForm = ({
 					selectedMultisig,
 					recipients,
 					amounts,
-					address,
+					wallet.address || address,
 					note,
 					selectedTokens,
 					defaultTxNonce,
@@ -738,6 +745,7 @@ const SendFundsForm = ({
 						/>
 					) : transactionType === ETransactionTypeEVM.SEND_NFT ? (
 						<SendNFT
+							multisigAddress={selectedMultisig}
 							setNftRecipient={setNftRecipient}
 							setSelectedNft={setSelectedNFT}
 							selectedNft={selectedNFT}

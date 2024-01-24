@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import TransactionQueue from './TransactionQueue';
 import TransactionHistory from './TransactionHistory';
+import MembersTable from './Members';
 
 enum ETab {
 	QUEUE,
@@ -45,20 +46,14 @@ const OrgInfoTable = () => {
 					// icon={<HistoryIcon />}
 					size='large'
 					className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
-						tab === ETab.ASSETS && 'text-primary bg-highlight'
+						tab === ETab.MEMBERS && 'text-primary bg-highlight'
 					}`}
 				>
 					Members
 				</Button>
 			</div>
 			<div className='overflow-y-auto pr-2 flex-1'>
-				{tab === ETab.ASSETS ? (
-					<TransactionQueue />
-				) : tab === ETab.HISTORY ? (
-					<TransactionHistory />
-				) : (
-					<TransactionQueue />
-				)}
+				{tab === ETab.MEMBERS ? <MembersTable /> : tab === ETab.HISTORY ? <TransactionHistory /> : <TransactionQueue />}
 			</div>
 		</div>
 	);

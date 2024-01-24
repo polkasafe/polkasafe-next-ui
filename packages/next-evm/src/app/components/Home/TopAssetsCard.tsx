@@ -35,17 +35,22 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 	console.log('data array', sortedData);
 	const data = {
 		labels: sortedData?.map((item) => item.tokenSymbol),
+		config: {
+			cutout: 70
+		},
 		datasets: [
 			{
+				config: {
+					cutout: 70
+				},
 				label: '# of Tokens',
 				data: sortedData?.map((item) => item.balance),
-				backgroundColor: [
-					'rgba(255, 99, 132, 0.2)',
-					'rgba(54, 162, 235, 0.2)',
-					'rgba(255, 206, 86, 0.2)',
-					'rgba(75, 192, 192, 0.2)',
-					'rgba(153, 102, 255, 0.2)'
-				]
+				backgroundColor: ['#392A74', '#58409B', '#9F69C9', '#DDB4FC'],
+				borderWidth: 0,
+				cutout: 50,
+				legend: {
+					position: 'right'
+				}
 			}
 		]
 	};
@@ -71,6 +76,18 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 					width={100}
 					height={100}
 					data={data}
+					options={{
+						plugins: {
+							legend: {
+								position: 'right',
+								labels: {
+									usePointStyle: true,
+									boxHeight: 5,
+									boxWidth: 5
+								}
+							}
+						}
+					}}
 				/>
 			</div>
 		</div>

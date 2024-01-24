@@ -202,6 +202,7 @@ const SingleTxn = ({
 										Send Multiple Tokens
 										{tokenDetailsArray.map((item) => (
 											<ParachainIcon
+												size={15}
 												tooltip={item.tokenSymbol}
 												src={item.tokenLogo}
 											/>
@@ -211,6 +212,7 @@ const SingleTxn = ({
 									<p className='flex items-center gap-x-2'>
 										Send
 										<ParachainIcon
+											size={15}
 											src={
 												decodedCallData?.method === 'multiSend'
 													? tokenDetailsArray[0]?.tokenLogo
@@ -253,7 +255,11 @@ const SingleTxn = ({
 												item.value
 											) : item.type === 'tokenValue' ? (
 												<>
-													<ParachainIcon src={item?.logoUri} /> {formatBalance(item?.value)} {item?.symbol}
+													<ParachainIcon
+														size={15}
+														src={item?.logoUri}
+													/>{' '}
+													{formatBalance(item?.value)} {item?.symbol}
 												</>
 											) : null}
 										</span>
@@ -272,7 +278,11 @@ const SingleTxn = ({
 						/>
 					</p>
 					<p className='text-white text-sm flex items-center gap-x-2 col-span-2 capitalize'>
-						<ParachainIcon src={chainProperties[network].logo} /> {network}
+						<ParachainIcon
+							size={15}
+							src={chainProperties[network].logo}
+						/>{' '}
+						{network}
 					</p>
 				</>
 			)}

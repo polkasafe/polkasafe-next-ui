@@ -12,8 +12,6 @@ import AddAdress from '@next-evm/app/components/AddressBook/AddAddress';
 import AddressTable from '@next-evm/app/components/AddressBook/AddressTable';
 import ExportAdress from '@next-evm/app/components/AddressBook/ExportAddress';
 import ImportAdress from '@next-evm/app/components/AddressBook/ImportAddress';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
-import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { IAllAddresses } from '@next-common/types';
 import {
 	ExternalLinkIcon,
@@ -23,38 +21,28 @@ import {
 	ImportArrowIcon
 } from '@next-common/ui-components/CustomIcons';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import AddMultisigModal from '../components/Multisig/AddMultisigModal';
+import { usePrivy } from '@privy-io/react-auth';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 
 const AddressBook = ({ className }: { className?: string }) => {
 	const [searchTerm, setSearchTerm] = useState('');
-	const { addressBook } = useGlobalUserDetailsContext();
-	const { records } = useActiveMultisigContext();
+	const { activeOrg } = useActiveOrgContext();
 	const [addresses, setAddresses] = useState<IAllAddresses>({} as any);
+	const { authenticated } = usePrivy();
 
 	useEffect(() => {
 		setAddresses({});
+		if (!activeOrg) return;
+		const { addressBook } = activeOrg;
 		const allAddresses: IAllAddresses = {};
-		if (records) {
-			Object.keys(records).forEach((address) => {
-				allAddresses[address] = {
-					address,
-					discord: records[address].discord,
-					email: records[address].email,
-					name: records[address].name,
-					nickName: '',
-					roles: records[address].roles,
-					shared: true,
-					telegram: records[address].telegram
-				};
-			});
-		}
 		addressBook.forEach((item) => {
 			const { address } = item;
 			if (Object.keys(allAddresses).includes(address)) {
 				if (item.nickName) {
 					allAddresses[address].nickName = item.nickName;
 				}
-				if (!allAddresses[address].name) {
+				if (!allAddresses[address]?.name) {
 					allAddresses[address].name = item.name;
 				}
 			} else {
@@ -74,10 +62,9 @@ const AddressBook = ({ className }: { className?: string }) => {
 		Object.keys(allAddresses)
 			?.filter(
 				(address) =>
-					allAddresses[address]?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+					allAddresses[address]?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
 					allAddresses[address]?.nickName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					allAddresses[address]?.address.toLowerCase().includes(searchTerm.toLowerCase()) ||
-					records?.[address]?.roles?.includes(searchTerm)
+					allAddresses[address]?.address.toLowerCase().includes(searchTerm.toLowerCase())
 			)
 			.forEach((address) => {
 				setAddresses((prev) => {
@@ -96,13 +83,12 @@ const AddressBook = ({ className }: { className?: string }) => {
 					};
 				});
 			});
-	}, [addressBook, records, searchTerm]);
+	}, [activeOrg, searchTerm]);
 
 	const [openAddAddressModal, setOpenAddAddressModal] = useState<boolean>(false);
 	const [openImportAddressModal, setOpenImportAddressModal] = useState<boolean>(false);
 	const [openExportAddressModal, setOpenExportAddressModal] = useState<boolean>(false);
 
-	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	return (
 		<div className='scale-[80%] w-[125%] h-[125%] p-5 origin-top-left bg-bg-main rounded-lg'>
 			<ModalComponent
@@ -133,7 +119,7 @@ const AddressBook = ({ className }: { className?: string }) => {
 				/>
 			</ModalComponent>
 			<AddMultisigModal />
-			{userAddress ? (
+			{authenticated ? (
 				<div>
 					<div className='flex items-center justify-between'>
 						<div className='rounded-lg bg-bg-secondary flex items-center mb-4 p-1 text-xs gap-x-2 md:gap-x-4 md:text-sm'>

@@ -12,22 +12,29 @@ import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-evm/app/components/Settings/RemoveBtn';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import addNewTransaction from '@next-evm/utils/addNewTransaction';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { ethers } from 'ethers';
+import { useWallets } from '@privy-io/react-auth';
 
 const RemoveOwner = ({
 	addressToRemove,
 	oldThreshold,
 	oldSignatoriesLength,
-	onCancel
+	onCancel,
+	multisig
 }: {
 	addressToRemove: string;
 	oldThreshold: number;
 	oldSignatoriesLength: number;
 	onCancel: () => void;
+	multisig: IMultisigAddress;
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const [newThreshold, setNewThreshold] = useState(
@@ -36,19 +43,28 @@ const RemoveOwner = ({
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState<boolean>(false);
 	const [failure, setFailure] = useState<boolean>(false);
-	const { multisigAddresses, activeMultisig, address, gnosisSafe } = useGlobalUserDetailsContext();
+	const { address } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const [txnHash] = useState<string>('');
 
-	const multisig = multisigAddresses.find(
-		(item: any) => item.address === activeMultisig || item.proxy === activeMultisig
-	);
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+
 	const handleRemoveOwner = async () => {
+		if (!connectedWallet || !connectedWallet.address) return;
 		setLoading(true);
 		try {
-			const safeTxHash = await gnosisSafe.createRemoveOwner(
-				activeMultisig,
-				address,
+			const txUrl = returnTxUrl(multisig.network as NETWORK);
+			await connectedWallet.switchChain(chainProperties[multisig.network].chainId);
+			const provider = await connectedWallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider.getSigner(connectedWallet.address)
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, web3Adapter.getSigner(), txUrl);
+			const safeTxHash = await gnosisService.createRemoveOwner(
+				multisig.address,
+				connectedWallet.address,
 				addressToRemove,
 				newThreshold,
 				chainProperties[network].contractNetworks
@@ -61,7 +77,7 @@ const RemoveOwner = ({
 					executed: false,
 					network,
 					note: 'Removing Owner',
-					safeAddress: activeMultisig,
+					safeAddress: multisig.address,
 					to: '',
 					type: 'sent'
 				});
@@ -95,7 +111,7 @@ const RemoveOwner = ({
 
 	return success ? (
 		<AddProxySuccessScreen
-			createdBy={address}
+			createdBy={connectedWallet.address || address}
 			signatories={multisig?.signatories || []}
 			threshold={multisig?.threshold || 2}
 			txnHash={txnHash}

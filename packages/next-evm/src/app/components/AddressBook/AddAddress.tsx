@@ -3,21 +3,18 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { Button, Checkbox, Form, Input, Modal, Select, Spin } from 'antd';
+import { Button, Form, Input, Select, Spin } from 'antd';
 import React, { useEffect, useState } from 'react';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import AddBtn from '@next-evm/app/components/Multisig/ModalBtn';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
-import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { EMAIL_REGEX } from '@next-common/global/default';
-import { IAddressBookItem, ISharedAddressBooks, NotificationStatus } from '@next-common/types';
-import { OutlineCloseIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 
 interface IMultisigProps {
 	className?: string;
@@ -26,55 +23,8 @@ interface IMultisigProps {
 	setAddAddress?: React.Dispatch<React.SetStateAction<string>>;
 }
 
-const EditAddressModal = ({
-	className,
-	confirm,
-	open,
-	onCancel
-}: {
-	open: boolean;
-	className?: string;
-	onCancel: () => void;
-	confirm: () => Promise<void>;
-}) => {
-	return (
-		<Modal
-			centered
-			footer={false}
-			closeIcon={
-				<button
-					className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center'
-					onClick={onCancel}
-				>
-					<OutlineCloseIcon className='text-primary w-2 h-2' />
-				</button>
-			}
-			title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Update</h3>}
-			open={open}
-			className={`${className} w-auto md:min-w-[500px] scale-90`}
-		>
-			<Form className='my-0 w-[560px]'>
-				<p className='text-white font-medium text-sm leading-[15px]'>
-					This will update the Address book for all Signatories of this Multisig, would you like to continue?
-				</p>
-				<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
-					<CancelBtn onClick={onCancel} />
-					<AddBtn
-						onClick={() => {
-							confirm();
-							onCancel();
-						}}
-						title='Yes'
-					/>
-				</div>
-			</Form>
-		</Modal>
-	);
-};
-
 const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddress, className }) => {
-	const { network } = useGlobalApiContext();
-	const { addressBook, activeMultisig, multisigAddresses, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 
 	const [address, setAddress] = useState<string>(addAddress || '');
 	const [addressValid, setAddressValid] = useState<boolean>(true);
@@ -86,15 +36,8 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 	const [roles, setRoles] = useState<string[]>([]);
 	const [discord, setDiscord] = useState<string>('');
 	const [telegram, setTelegram] = useState<string>('');
-	const [shared, setShared] = useState<boolean>(!!activeMultisig);
-
-	const [openConfirmationModal, setOpenConfirmationModal] = useState<boolean>(false);
 
 	const [loading, setLoading] = useState<boolean>(false);
-
-	const { setActiveMultisigContextState, records, roles: defaultRoles } = useActiveMultisigContext();
-
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	useEffect(() => {
 		if (isValidWeb3Address(address)) {
@@ -116,19 +59,11 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 	}, [email]);
 
 	const handlePersonalAddressBookUpdate = async () => {
-		if (!address || !name) return;
+		if (!address || !name || !activeOrg) return;
 
 		try {
 			setLoading(true);
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress || !signature) {
-				console.log('ERROR');
-				setLoading(false);
-				return;
-			}
-			if (addressBook.some((item) => item.address === address)) {
+			if (activeOrg.addressBook.some((item) => item.address === address)) {
 				queueNotification({
 					header: 'Address Exists',
 					message: 'Please try editing the address.',
@@ -138,19 +73,24 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 				return;
 			}
 
-			const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
-				`${EVM_API_URL}/addToAddressBookEth`,
-				{
+			const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBookEth`, {
+				body: JSON.stringify({
 					address,
 					discord,
 					email,
 					name,
 					nickName,
+					organizationId: activeOrg.id,
 					roles,
 					telegram
-				},
-				{ network }
-			);
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: addAddressData, error: addAddressError } = (await createOrgRes.json()) as {
+				data: IAddressBookItem[];
+				error: string;
+			};
 
 			if (addAddressError) {
 				queueNotification({
@@ -163,7 +103,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 			}
 
 			if (addAddressData) {
-				setUserDetailsContextState((prevState) => {
+				setActiveOrg((prevState) => {
 					return {
 						...prevState,
 						addressBook: addAddressData
@@ -189,102 +129,6 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 		}
 	};
 
-	// eslint-disable-next-line sonarjs/cognitive-complexity
-	const handleSharedAddressBookUpdate = async () => {
-		if (!address || !name) return;
-
-		try {
-			setLoading(true);
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress || !signature) {
-				console.log('ERROR');
-				setLoading(false);
-				return;
-			}
-			if (records && Object.keys(records).includes(address)) {
-				queueNotification({
-					header: 'Address Exists',
-					message: 'Please try editing the address.',
-					status: NotificationStatus.ERROR
-				});
-				setLoading(false);
-				return;
-			}
-
-			const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<ISharedAddressBooks>(
-				`${EVM_API_URL}/updateSharedAddressBookEth`,
-				{
-					address,
-					discord,
-					email,
-					multisigAddress: multisig?.proxy ? multisig.proxy : activeMultisig,
-					name,
-					nickName,
-					roles,
-					telegram
-				}
-			);
-
-			if (addAddressError) {
-				queueNotification({
-					header: 'Error!',
-					message: addAddressError,
-					status: NotificationStatus.ERROR
-				});
-				setLoading(false);
-				return;
-			}
-
-			if (addAddressData) {
-				setActiveMultisigContextState((prevState) => {
-					return {
-						...prevState,
-						...addAddressData
-					};
-				});
-
-				const copyAddressBook = [...addressBook];
-				const updateIndex = copyAddressBook.findIndex((item) => item.address === address);
-				if (updateIndex > -1) {
-					copyAddressBook[updateIndex].nickName = nickName;
-				} else {
-					copyAddressBook.push({
-						address,
-						discord,
-						email,
-						name,
-						nickName,
-						roles,
-						telegram
-					});
-				}
-				setUserDetailsContextState((prev) => {
-					return {
-						...prev,
-						addressBook: copyAddressBook
-					};
-				});
-
-				queueNotification({
-					header: 'Success!',
-					message: 'Your address has been added successfully!',
-					status: NotificationStatus.SUCCESS
-				});
-				setLoading(false);
-				if (onCancel) {
-					onCancel();
-				}
-				if (setAddAddress) {
-					setAddAddress('');
-				}
-			}
-		} catch (error) {
-			console.log('ERROR', error);
-			setLoading(false);
-		}
-	};
 	return (
 		<Spin
 			spinning={loading}
@@ -295,30 +139,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 				/>
 			}
 		>
-			<EditAddressModal
-				onCancel={() => setOpenConfirmationModal(false)}
-				open={openConfirmationModal}
-				confirm={handleSharedAddressBookUpdate}
-			/>
 			<Form className={`${className} add-address my-0 w-[560px] max-h-[75vh] px-2 overflow-y-auto`}>
-				{activeMultisig && (
-					<section className='mb-4 text-[13px] w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg font-normal flex items-center gap-x-2'>
-						<WarningCircleIcon />
-						<div>
-							<p className='mb-1'>
-								This will update the Address book for every signatory, if you want to add only in your personal Address
-								book, then deselect
-							</p>
-							<Checkbox
-								className='text-white m-0 [&>span>span]:border-primary'
-								checked={shared}
-								onChange={(e) => setShared(e.target.checked)}
-							>
-								Save for All
-							</Checkbox>
-						</div>
-					</section>
-				)}
 				<div className='flex flex-col gap-y-3'>
 					<label
 						className='text-primary text-xs leading-[13px] font-normal'
@@ -486,21 +307,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 						className='border-0 outline-0 my-0 p-0'
 					>
 						<Select
-							options={
-								defaultRoles
-									? defaultRoles.map((item, i) => ({
-											label: (
-												<span
-													key={i}
-													className='text-white bg-primary rounded-lg py-1 px-3'
-												>
-													{item}
-												</span>
-											),
-											value: item
-									  }))
-									: []
-							}
+							options={[]}
 							mode='tags'
 							className={className}
 							onChange={(value) => setRoles(value)}
@@ -520,7 +327,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 					loading={loading}
 					disabled={!name || !address || !addressValid || (!!email && !emailValid)}
 					title='Add'
-					onClick={shared ? () => setOpenConfirmationModal(true) : handlePersonalAddressBookUpdate}
+					onClick={handlePersonalAddressBookUpdate}
 				/>
 			</div>
 		</Spin>

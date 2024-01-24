@@ -5,7 +5,6 @@ import { Collapse, Divider, Spin, Timeline } from 'antd';
 import classNames from 'classnames';
 // import { ethers } from 'ethers';
 import React, { FC, useEffect, useState } from 'react';
-import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import {
@@ -79,10 +78,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 	isContractInteraction
 }) => {
 	const [showDetails, setShowDetails] = useState<boolean>(false);
-	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
-	const threshold =
-		multisigAddresses?.find((item: any) => item.address === activeMultisig || item.proxy === activeMultisig)
-			?.threshold || 0;
+	const threshold = approvals?.length || 0;
 
 	const [usdValue, setUsdValue] = useState<string | string[]>('0');
 	// eslint-disable-next-line sonarjs/cognitive-complexity

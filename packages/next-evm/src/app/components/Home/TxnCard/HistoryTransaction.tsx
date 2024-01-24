@@ -5,7 +5,6 @@
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ArrowDownLeftIcon, ArrowUpRightIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { getTransactionDetails, TransactionData } from '@safe-global/safe-gateway-typescript-sdk';
@@ -16,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from 'antd';
 import formatBalance from '@next-evm/utils/formatBalance';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
+import GnosisSafeService from '@next-evm/services/Gnosis';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 interface IHistoryTransactions {
@@ -25,6 +25,8 @@ interface IHistoryTransactions {
 	receivedTransfers?: any[];
 	amount_token: string;
 	to?: string;
+	network: NETWORK;
+	gnosisSafe: GnosisSafeService;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -34,18 +36,12 @@ const HistoryTransaction = ({
 	type,
 	receivedTransfers,
 	amount_token,
+	network,
+	gnosisSafe,
 	to // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IHistoryTransactions) => {
-	const { network: defaultNetwork } = useGlobalApiContext();
 	const { allAssets } = useMultisigAssetsContext();
-	const { gnosisSafe, isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } =
-		useGlobalUserDetailsContext();
-
-	const shared = sharedSafeAddress === activeMultisig;
-	const network =
-		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
-			? sharedSafeNetwork
-			: defaultNetwork;
+	const { activeMultisig } = useGlobalUserDetailsContext();
 
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
 

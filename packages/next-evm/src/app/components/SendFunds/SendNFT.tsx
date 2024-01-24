@@ -4,7 +4,7 @@
 
 import { INFTAsset } from '@next-common/types';
 import { CircleArrowDownIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
@@ -17,23 +17,26 @@ import { useEffect, useState } from 'react';
 
 const SendNFT = ({
 	className,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	setNftRecipient,
+	multisigAddress,
 	setSelectedNft,
 	selectedNft
 }: {
 	className?: string;
+	multisigAddress: string;
 	setSelectedNft: React.Dispatch<React.SetStateAction<INFTAsset>>;
 	setNftRecipient: React.Dispatch<React.SetStateAction<string>>;
 	selectedNft: INFTAsset;
 }) => {
-	const { address: userAddress, addressBook } = useGlobalUserDetailsContext();
-	const { records } = useActiveMultisigContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { allNfts } = useMultisigAssetsContext();
 	const [address, setAddress] = useState<string>(userAddress);
 	const [validAddress, setValidAddress] = useState<boolean>(true);
 
-	const nfts: ItemType[] = allNfts.map((item) => ({
+	console.log('nfts', allNfts[multisigAddress]);
+
+	const nfts: ItemType[] = allNfts[multisigAddress]?.map((item) => ({
 		key: JSON.stringify(item),
 		label: (
 			<span className='text-white text-sm flex items-center gap-x-2'>
@@ -63,13 +66,10 @@ const SendNFT = ({
 
 	// Set address options for recipient
 	useEffect(() => {
+		if (!activeOrg || !activeOrg.addressBook) return;
+
 		const allAddresses: string[] = [];
-		if (records) {
-			Object.keys(records).forEach((a) => {
-				allAddresses.push(a);
-			});
-		}
-		addressBook.forEach((item) => {
+		activeOrg?.addressBook.forEach((item) => {
 			if (!allAddresses.includes(item.address)) {
 				allAddresses.push(item.address);
 			}
@@ -85,7 +85,7 @@ const SendNFT = ({
 				value: a
 			}))
 		);
-	}, [address, addressBook, records]);
+	}, [activeOrg, address]);
 
 	return (
 		<div className={className}>
@@ -134,7 +134,7 @@ const SendNFT = ({
 			<section className='w-[500px]'>
 				<div>
 					<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px] py-2'>NFT</label>
-					{allNfts.length > 0 ? (
+					{allNfts[multisigAddress] && allNfts[multisigAddress]?.length > 0 ? (
 						<Dropdown
 							trigger={['click']}
 							className={`border border-primary rounded-lg p-3 bg-bg-secondary cursor-pointer ${className}`}
@@ -152,10 +152,10 @@ const SendNFT = ({
 										height={40}
 										width={40}
 										className='rounded-md'
-										src={selectedNft.imageUri}
-										alt={selectedNft.tokenNameWithID}
+										src={selectedNft?.imageUri}
+										alt={selectedNft?.tokenNameWithID}
 									/>
-									<p>{selectedNft.tokenNameWithID}</p>
+									<p>{selectedNft?.tokenNameWithID}</p>
 								</span>
 								<CircleArrowDownIcon className='text-primary' />
 							</div>

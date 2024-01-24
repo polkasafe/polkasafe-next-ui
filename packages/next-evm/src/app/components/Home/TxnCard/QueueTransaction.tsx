@@ -5,7 +5,6 @@
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ArrowUpRightIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { getTransactionDetails, TransactionData } from '@safe-global/safe-gateway-typescript-sdk';
@@ -16,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from 'antd';
 import formatBalance from '@next-evm/utils/formatBalance';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
+import GnosisSafeService from '@next-evm/services/Gnosis';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 interface ITransactionProps {
@@ -24,20 +24,21 @@ interface ITransactionProps {
 	txType: string;
 	recipientAddress?: string;
 	value: string;
+	network: NETWORK;
+	gnosisSafe: GnosisSafeService;
 }
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const QueueTransaction = ({ callHash, callData, txType, recipientAddress, value }: ITransactionProps) => {
-	const { network: defaultNetwork } = useGlobalApiContext();
+const QueueTransaction = ({
+	callHash,
+	callData,
+	txType,
+	recipientAddress,
+	value,
+	network,
+	gnosisSafe // eslint-disable-next-line sonarjs/cognitive-complexity
+}: ITransactionProps) => {
 	const { allAssets } = useMultisigAssetsContext();
-	const { gnosisSafe, isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } =
-		useGlobalUserDetailsContext();
-
-	const shared = sharedSafeAddress === activeMultisig;
-	const network =
-		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
-			? sharedSafeNetwork
-			: defaultNetwork;
+	const { activeMultisig } = useGlobalUserDetailsContext();
 
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
 	const [txInfo, setTxInfo] = useState<any>({} as any);

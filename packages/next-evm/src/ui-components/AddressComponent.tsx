@@ -4,7 +4,6 @@
 import { Badge } from 'antd';
 import React from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import copyText from '@next-evm/utils/copyText';
@@ -13,6 +12,7 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 interface IAddressComponent {
 	address: string;
@@ -41,16 +41,18 @@ const AddressComponent = ({
 	network,
 	fullAddress
 }: IAddressComponent) => {
-	const { addressBook, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
-	const { records } = useActiveMultisigContext();
+	const { multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const addressBook = activeOrg?.addressBook || [];
 
-	const addressObj = addressBook?.find((item) => item.address === address);
+	const multisig = multisigAddresses?.find((item) => item.address === address);
+
+	const addressObj = addressBook?.find((item) => item?.address === address);
 
 	return (
 		<div className=' flex items-center gap-x-3'>
-			{multisig?.address === address || isMultisig ? (
+			{multisig?.address || isMultisig ? (
 				withBadge ? (
 					<Badge
 						count='Multisig'
@@ -90,7 +92,7 @@ const AddressComponent = ({
 						{addressObj?.nickName ||
 							addressObj?.name ||
 							multisigAddresses.find((item) => item.address === address)?.name ||
-							records?.[address]?.name ||
+							multisigSettings[`${address}_${network}`]?.name ||
 							shortenAddress(address || '', addressLength || 10)}
 					</span>
 					<span className='flex items-center gap-x-2'>
@@ -98,7 +100,7 @@ const AddressComponent = ({
 							<CopyIcon className='hover:text-primary' />
 						</button>
 						<a
-							href={`${chainProperties[network].blockExplorer}/address/${address}`}
+							href={`${chainProperties[network || NETWORK.POLYGON].blockExplorer}/address/${address}`}
 							target='_blank'
 							rel='noreferrer'
 						>
@@ -113,7 +115,7 @@ const AddressComponent = ({
 							addressObj?.nickName ||
 							addressObj?.name ||
 							multisigAddresses.find((item) => item.address === address)?.name ||
-							records?.[address]?.name ||
+							multisigSettings[`${address}_${network}`]?.name ||
 							DEFAULT_ADDRESS_NAME}
 						{network && (
 							<div className='rounded-[4px] py-[0px] px-1 text-[9px] text-white flex items-center gap-x-1 bg-[#5065E4] capitalize'>

@@ -16,7 +16,7 @@ const AddMultisigModal = () => {
 		<ModalComponent
 			onCancel={() => setOpenAddMultisigModal(false)}
 			open={openAddMultisigModal}
-			title=''
+			title='Add MultiSigs'
 		>
 			<AddMultisig
 				onCancel={() => setOpenAddMultisigModal(false)}

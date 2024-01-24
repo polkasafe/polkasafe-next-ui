@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 /* eslint-disable sort-keys */
 
-import { Form, Input, InputNumber, Spin, Switch } from 'antd';
+import { Dropdown, Form, Input, InputNumber, Spin, Switch } from 'antd';
 import React, { useState } from 'react';
 import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedTransaction';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
@@ -11,46 +11,49 @@ import SuccessTransactionLottie from '@next-common/assets/lottie-graphics/Succes
 import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import AddBtn from '@next-evm/app/components/Multisig/ModalBtn';
 import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { IMultisigAddress, ISharedAddressBookRecord, NotificationStatus } from '@next-common/types';
-import { DashDotIcon } from '@next-common/ui-components/CustomIcons';
+import { CircleArrowDownIcon, DashDotIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import isValidWeb3Address from '@next-evm/utils/isValidWeb3Address';
 
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import AddAddress from '@next-evm/app/components/AddressBook/AddAddress';
-import { chainProperties } from '@next-common/global/evm-network-constants';
-import DragDrop from './DragDrop';
-import Search from './Search';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { useWallets } from '@privy-io/react-auth';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import { ethers } from 'ethers';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import Signatory from './Signatory';
+import Search from './Search';
+import DragDrop from './DragDrop';
+import NetworkCard, { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IMultisigProps {
 	onCancel?: () => void;
 	homepage?: boolean;
+	onComplete?: (multisig: IMultisigAddress) => void;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }) => {
-	const {
-		setUserDetailsContextState,
-		address: userAddress,
-		multisigAddresses,
-		addressBook
-	} = useGlobalUserDetailsContext();
+const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, onComplete }) => {
+	const { setUserDetailsContextState, address: userAddress, multisigAddresses } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { records, setActiveMultisigContextState } = useActiveMultisigContext();
-	const { network } = useGlobalApiContext();
+	const [selectedNetwork, setSelectedNetwork] = useState<NETWORK>(NETWORK.ETHEREUM);
 
 	const [uploadSignatoriesJson, setUploadSignatoriesJson] = useState(false);
 
 	const [multisigName, setMultisigName] = useState<string>('');
 	const [threshold, setThreshold] = useState<number>(2);
 	const [signatories, setSignatories] = useState<string[]>([userAddress]);
-	const { gnosisSafe } = useGlobalUserDetailsContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
 	const [success, setSuccess] = useState<boolean>(false);
@@ -60,20 +63,38 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 	const [showAddressModal, setShowAddressModal] = useState<boolean>(false);
 	const [form] = Form.useForm();
 
+	const { wallets } = useWallets();
+	const connectedWallet = wallets[0];
+
+	const networkOptions: ItemType[] = Object.values(NETWORK).map((item) => ({
+		key: item,
+		label: (
+			<NetworkCard
+				selectedNetwork={selectedNetwork}
+				key={item}
+				network={item}
+			/>
+		)
+	}));
+
 	const handleMultisigCreate = async () => {
 		setLoading(true);
 		try {
-			const address = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			if (!connectedWallet) return;
+			setLoading(true);
+			await connectedWallet.switchChain(chainProperties[selectedNetwork].chainId);
+			const txUrl = returnTxUrl(selectedNetwork);
+			const provider = await connectedWallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider.getSigner(connectedWallet.address)
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
 
-			if (!address || !signature || Boolean(!Object.keys(gnosisSafe).length)) {
-				return;
-			}
-
-			const safeAddress = await gnosisSafe.createSafe(
+			const safeAddress = await gnosisService.createSafe(
 				signatories as [string],
 				threshold,
-				chainProperties[network].contractNetworks
+				chainProperties[selectedNetwork].contractNetworks
 			);
 
 			if (!safeAddress) {
@@ -87,17 +108,21 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				return;
 			}
 
-			const { data: multisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
-				`${EVM_API_URL}/createMultisigEth`,
-				{
+			const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisigEth_v1`, {
+				body: JSON.stringify({
 					signatories,
 					threshold,
 					multisigName,
 					safeAddress,
-					addressBook
-				},
-				{ address, network, signature }
-			);
+					network: selectedNetwork
+				}),
+				headers: firebaseFunctionsHeader(connectedWallet.address),
+				method: 'POST'
+			});
+			const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
+				data: IMultisigAddress;
+				error: string;
+			};
 
 			if (multisigError) {
 				queueNotification({
@@ -127,11 +152,17 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 					message: `Your Multisig ${multisigName} has been created successfully!`,
 					status: NotificationStatus.SUCCESS
 				});
+				onComplete?.({
+					address: safeAddress,
+					network: selectedNetwork,
+					name: multisigName,
+					signatories,
+					threshold
+				});
 				onCancel?.();
 				setUserDetailsContextState((prevState) => {
 					return {
 						...prevState,
-						activeMultisig: multisigData.address,
 						multisigAddresses: [...(prevState?.multisigAddresses || []), multisigData],
 						multisigSettings: {
 							...prevState.multisigSettings,
@@ -144,7 +175,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				});
 				const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
 				multisigData.signatories.forEach((signatory) => {
-					const data = addressBook.find((a) => a.address === signatory);
+					const data = activeOrg?.addressBook?.find((a) => a?.address === signatory);
 					newRecords[signatory] = {
 						address: signatory,
 						name: data?.name || DEFAULT_ADDRESS_NAME,
@@ -219,7 +250,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 												!addAddress ||
 												!isValidWeb3Address(addAddress) ||
 												(records && Object.keys(records).includes(addAddress)) ||
-												addressBook.some((item) => item.address === addAddress)
+												activeOrg.addressBook?.some((item) => item?.address === addAddress)
 											}
 											onClick={() => setShowAddressModal(true)}
 										>
@@ -274,6 +305,28 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 									</div>
 								</div>
 							</Form.Item>
+							<div className='w-[45vw] mb-2'>
+								<p className='text-primary mb-2'>Select Network</p>
+								<Dropdown
+									trigger={['click']}
+									className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer min-w-[150px]'
+									menu={{
+										items: networkOptions,
+										onClick: (e) => setSelectedNetwork(e.key as NETWORK)
+									}}
+								>
+									<div className='flex justify-between items-center text-white gap-x-2'>
+										<div className='capitalize flex items-center gap-x-2 text-sm'>
+											<ParachainIcon
+												size={20}
+												src={chainProperties[selectedNetwork].logo}
+											/>
+											{selectedNetwork}
+										</div>
+										<CircleArrowDownIcon className='text-primary' />
+									</div>
+								</Dropdown>
+							</div>
 							<div className='flex items-start justify-between'>
 								<Form.Item
 									name='threshold'

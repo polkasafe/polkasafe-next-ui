@@ -17,29 +17,28 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import Loader from '@next-common/ui-components/Loader';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { IMultisigAddress, IOrganisation } from '@next-common/types';
+import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
+import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import NetworkCard, { ParachainIcon } from '../NetworksDropdown/NetworkCard';
+// eslint-disable-next-line import/no-cycle
 import CreateMultisig from '../Multisig/CreateMultisig';
-
-export interface ILinkedMultisig {
-	address: string;
-	network: string;
-	name?: string;
-	signatories: string[];
-	threshold: number;
-}
 
 const LinkMultisigStep = ({
 	linkedMultisigs,
-	setLinkedMultisigs
+	setLinkedMultisigs,
+	selectedOrg
 }: {
-	linkedMultisigs: ILinkedMultisig[];
-	setLinkedMultisigs: React.Dispatch<React.SetStateAction<ILinkedMultisig[]>>;
+	linkedMultisigs: IMultisigAddress[];
+	setLinkedMultisigs: React.Dispatch<React.SetStateAction<IMultisigAddress[]>>;
+	selectedOrg?: IOrganisation;
 }) => {
+	const { multisigSettings } = useGlobalUserDetailsContext();
 	const [selectedNetwork, setSelectedNetwork] = useState(NETWORK.ETHEREUM);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [loading, setLoading] = useState<boolean>(false);
 	const [openCreateMultisigModal, setOpenCreateMultisigModal] = useState<boolean>(false);
-	const [multisigs, setMultisigs] = useState<ILinkedMultisig[]>([]);
+	const [multisigs, setMultisigs] = useState<IMultisigAddress[]>([]);
 	const { wallets } = useWallets();
 	const connectedWallet = wallets[0];
 
@@ -55,12 +54,13 @@ const LinkMultisigStep = ({
 		const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
 		const multisigDataFromSafe = await gnosisService.getAllSafeByOwner(connectedWallet.address);
 		// eslint-disable-next-line sonarjs/no-unused-collection
-		const fetchedMultisigs: ILinkedMultisig[] = [];
+		const fetchedMultisigs: IMultisigAddress[] = [];
 		await Promise.all(
 			multisigDataFromSafe.safes.map(async (a) => {
 				const multisigInfo = await gnosisService.getMultisigData(a);
 				fetchedMultisigs.push({
 					address: a,
+					name: multisigSettings?.[`${a}_${selectedNetwork}`]?.name || DEFAULT_ADDRESS_NAME,
 					network: selectedNetwork,
 					signatories: multisigInfo?.owners,
 					threshold: multisigInfo?.threshold
@@ -69,7 +69,7 @@ const LinkMultisigStep = ({
 		);
 		setMultisigs(fetchedMultisigs);
 		setLoading(false);
-	}, [connectedWallet, selectedNetwork, wallets]);
+	}, [connectedWallet, multisigSettings, selectedNetwork, wallets]);
 
 	useEffect(() => {
 		fetchMultisigs();
@@ -95,7 +95,22 @@ const LinkMultisigStep = ({
 				open={openCreateMultisigModal}
 				onCancel={() => setOpenCreateMultisigModal(false)}
 			>
-				<CreateMultisig onCancel={() => setOpenCreateMultisigModal(false)} />
+				<CreateMultisig
+					onComplete={(multisig) =>
+						setLinkedMultisigs((prev) => [
+							...prev,
+							{
+								address: multisig.address,
+								disabled: false,
+								name: multisig.name || DEFAULT_ADDRESS_NAME,
+								network: multisig.network,
+								signatories: multisig.signatories,
+								threshold: multisig.threshold
+							}
+						])
+					}
+					onCancel={() => setOpenCreateMultisigModal(false)}
+				/>
 			</ModalComponent>
 			<div className='rounded-xl p-6 bg-bg-main'>
 				<p className='text-sm font-bold mb-2 text-white flex justify-between w-full items-center'>
@@ -156,6 +171,9 @@ const LinkMultisigStep = ({
 						<Loader />
 					) : multisigs && multisigs.length > 0 ? (
 						multisigs
+							.filter((multisig) =>
+								selectedOrg ? !selectedOrg?.multisigs?.some((item) => multisig.address === item.address) : true
+							)
 							.filter((multisig) => !linkedMultisigs.some((item) => multisig.address === item.address))
 							.map((multisig) => (
 								<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center'>
@@ -173,7 +191,8 @@ const LinkMultisigStep = ({
 												...prev,
 												{
 													address: multisig.address,
-													name: multisig.name,
+													disabled: false,
+													name: multisig.name || DEFAULT_ADDRESS_NAME,
 													network: multisig.network,
 													signatories: multisig.signatories,
 													threshold: multisig.threshold

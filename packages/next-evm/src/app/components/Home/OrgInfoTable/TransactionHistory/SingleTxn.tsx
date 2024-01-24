@@ -239,6 +239,7 @@ const SingleTxn = ({
 										Received Multiple Tokens
 										{tokenDetailsArray.map((item) => (
 											<ParachainIcon
+												size={15}
 												tooltip={item.tokenSymbol}
 												src={item.tokenLogo}
 											/>
@@ -248,7 +249,10 @@ const SingleTxn = ({
 									<p className='flex items-center grid grid-cols-8'>
 										<span className='col-span-1'>Received</span>
 										<div className='flex items-center col-span-7 gap-x-2'>
-											<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
+											<ParachainIcon
+												size={15}
+												src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo}
+											/>
 											<span className='font-normal text-xs leading-[13px] text-success'>
 												{formatBalance(
 													ethers?.utils?.formatUnits(
@@ -275,6 +279,7 @@ const SingleTxn = ({
 										Sent Multiple Tokens
 										{tokenDetailsArray.map((item) => (
 											<ParachainIcon
+												size={15}
 												tooltip={item.tokenSymbol}
 												src={item.tokenLogo}
 											/>
@@ -287,6 +292,7 @@ const SingleTxn = ({
 										<span className='col-span-1'>Sent</span>
 										<div className='flex items-center col-span-7 gap-x-2'>
 											<ParachainIcon
+												size={15}
 												src={
 													decodedCallData?.method === 'multiSend'
 														? tokenDetailsArray[0]?.tokenLogo
@@ -332,7 +338,11 @@ const SingleTxn = ({
 												item.value
 											) : item.type === 'tokenValue' ? (
 												<>
-													<ParachainIcon src={item?.logoUri || ''} /> {formatBalance(item?.value)} {item?.symbol}
+													<ParachainIcon
+														size={15}
+														src={item?.logoUri || ''}
+													/>{' '}
+													{formatBalance(item?.value)} {item?.symbol}
 												</>
 											) : null}
 										</span>
@@ -355,7 +365,11 @@ const SingleTxn = ({
 						/>
 					</p>
 					<p className='text-white text-sm flex items-center gap-x-2 col-span-2 capitalize'>
-						<ParachainIcon src={chainProperties[network].logo} /> {network}
+						<ParachainIcon
+							size={15}
+							src={chainProperties[network].logo}
+						/>{' '}
+						{network}
 					</p>
 				</>
 			)}

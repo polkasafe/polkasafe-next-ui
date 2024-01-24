@@ -6,29 +6,31 @@
 
 import React, { useEffect } from 'react';
 import { redirect, useSearchParams } from 'next/navigation';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { NotificationStatus } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 
 const VerifyEmailToken = () => {
 	const searchParams = useSearchParams();
-	const { network } = useGlobalApiContext();
 
 	useEffect(() => {
 		const email = searchParams.get('email');
 		const token = searchParams.get('token');
 		const verifyEmail = async () => {
-			const { data: verifyEmailData, error: verifyEmailError } = await nextApiClientFetch<string>(
-				`${EVM_API_URL}/verifyEmail`,
-				{
+			const verifyEmailRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/verifyEmail`, {
+				body: JSON.stringify({
 					email,
 					token
-				},
-				{ network }
-			);
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: verifyEmailData, error: verifyEmailError } = (await verifyEmailRes.json()) as {
+				data: string;
+				error: string;
+			};
 
 			if (verifyEmailError) {
 				console.log(verifyEmailData);

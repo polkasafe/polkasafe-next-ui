@@ -27,6 +27,7 @@ import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { EAssetType } from '@next-common/types';
+import { useWallets } from '@privy-io/react-auth';
 import EditNote from './EditNote';
 // eslint-disable-next-line import/no-cycle
 import { ITokenDetails } from './Transaction';
@@ -59,11 +60,13 @@ interface ISentInfoProps {
 	isContractInteraction?: boolean;
 	setOpenReplaceTxnModal: React.Dispatch<React.SetStateAction<boolean>>;
 	network: NETWORK;
+	// multisig: IMultisigAddress;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
 	handleExecuteTransaction,
 	amount,
+	// multisig,
 	addressAddOrRemove,
 	transactionFields,
 	className,
@@ -90,19 +93,21 @@ const SentInfo: FC<ISentInfoProps> = ({
 	isContractInteraction
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { address: userAddress, multisigAddresses, activeMultisig, notOwnerOfSafe } = useGlobalUserDetailsContext();
+	const { address: a, notOwnerOfSafe } = useGlobalUserDetailsContext();
 	const { tokenFiatConversions } = useMultisigAssetsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const [updatedNote, setUpdatedNote] = useState(note);
 	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+	const userAddress = connectedWallet.address || a;
 
 	useEffect(() => {
 		setUpdatedNote(note);
 	}, [note]);
 
 	const depositor = approvals[0];
-
-	const activeMultisigObject = multisigAddresses?.find((item: any) => item.address === activeMultisig);
 
 	return (
 		<div className={classNames('flex gap-x-4', className)}>
@@ -421,9 +426,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 											</Timeline.Item>
 										))}
 
-										{activeMultisigObject?.signatories
-											.filter((item: any) => !approvals.includes(item))
-											.map((address: any, i: any) => {
+										{/* {multisig?.signatories
+											?.filter((item: any) => !approvals.includes(item))
+											?.map((address: any, i: any) => {
 												return (
 													<Timeline.Item
 														key={i}
@@ -439,7 +444,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 														</div>
 													</Timeline.Item>
 												);
-											})}
+											})} */}
 									</Timeline>
 								</Collapse.Panel>
 							</Collapse>

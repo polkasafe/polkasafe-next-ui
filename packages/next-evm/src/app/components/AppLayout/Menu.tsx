@@ -31,7 +31,7 @@ import {
 import { useAddMultisigContext } from '@next-evm/context/AddMultisigContext';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
-import { IOrganisation } from '@next-common/types';
+import { IMultisigAndNetwork, IOrganisation } from '@next-common/types';
 import Image from 'next/image';
 import { ActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
@@ -55,6 +55,7 @@ const Menu: FC<Props> = ({ className }) => {
 	// const router = useRouter();
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(activeMultisig || '');
+	const [multisigs, setMultisigs] = useState<IMultisigAndNetwork[]>();
 	const pathname = usePathname();
 	// const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	const { network } = useGlobalApiContext();
@@ -64,6 +65,11 @@ const Menu: FC<Props> = ({ className }) => {
 		}
 	}, [activeMultisig]);
 
+	useEffect(() => {
+		if (!activeOrg) return;
+		setMultisigs(activeOrg.multisigs);
+	}, [activeOrg]);
+
 	const { setOpenAddMultisigModal } = useAddMultisigContext();
 
 	const getPath = (basePath: string) => {
@@ -72,8 +78,6 @@ const Menu: FC<Props> = ({ className }) => {
 		}
 		return basePath;
 	};
-
-	const multisigs = activeOrg?.multisigs;
 
 	const menuItems = [
 		{
@@ -174,7 +178,11 @@ const Menu: FC<Props> = ({ className }) => {
 							className='p-2 org_dropdown cursor-pointer'
 							menu={{
 								items: orgOptions,
-								onClick: (e) => setActiveOrg(JSON.parse(e.key) as IOrganisation)
+								onClick: (e) => {
+									setActiveOrg(JSON.parse(e.key) as IOrganisation);
+									setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: '' }));
+									setSelectedMultisigAddress('');
+								}
 							}}
 						>
 							<div className='flex justify-between items-center text-white gap-x-2'>
@@ -185,7 +193,10 @@ const Menu: FC<Props> = ({ className }) => {
 										src={emptyImage}
 										alt='empty profile image'
 									/>
-									<span className='text-sm text-white capitalize'>{activeOrg?.name}</span>
+									<div className='flex flex-col gap-y-[1px]'>
+										<span className='text-sm text-white capitalize truncate max-w-[100px]'>{activeOrg?.name}</span>
+										<span className='text-xs text-text_secondary'>{activeOrg?.members?.length} Members</span>
+									</div>
 								</div>
 								<CircleArrowDownIcon className='text-white' />
 							</div>
@@ -263,7 +274,9 @@ const Menu: FC<Props> = ({ className }) => {
 											size={23}
 										/>
 										<span className='truncate'>
-											{multisigSettings[multisig.address]?.name || multisig.name || DEFAULT_ADDRESS_NAME}
+											{multisigSettings[`${multisig.address}_${multisig.network}`]?.name ||
+												multisig.name ||
+												DEFAULT_ADDRESS_NAME}
 										</span>
 									</button>
 								</li>

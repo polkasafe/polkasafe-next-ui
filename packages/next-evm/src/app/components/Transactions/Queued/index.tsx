@@ -3,15 +3,22 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import dayjs from 'dayjs';
-import React, { FC, useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import Loader from '@next-common/ui-components/Loader';
 import { IQueuedTransactions, convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
 
-import NoTransactionsQueued from './NoTransactionsQueued';
+import { ethers } from 'ethers';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { useWallets } from '@privy-io/react-auth';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { NETWORK } from '@next-common/global/evm-network-constants';
+import { IMultisigAddress } from '@next-common/types';
 import Transaction from './Transaction';
+import NoTransactionsQueued from './NoTransactionsQueued';
 
 interface IQueued {
 	loading: boolean;
@@ -21,10 +28,14 @@ interface IQueued {
 }
 
 const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
-	const { address, activeMultisig, setActiveMultisigData, activeMultisigData, gnosisSafe } =
-		useGlobalUserDetailsContext();
+	const { address, activeMultisig, setActiveMultisigData, activeMultisigData } = useGlobalUserDetailsContext();
+
+	const { activeOrg } = useActiveOrgContext();
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueuedTransactions[]>([]);
-	const { network } = useGlobalApiContext();
 
 	const [canCancelTx, setCanCancelTx] = useState<boolean>(true);
 
@@ -35,7 +46,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 		setQueuedTransactions(payload as any);
 	};
 
-	const handleAfterExecute = (callHash: string) => {
+	const handleAfterExecute = (callHash: string, multisig: IMultisigAddress) => {
 		let transaction: any = null;
 		const payload = queuedTransactions.filter((queue) => {
 			if (queue.txHash === callHash) {
@@ -47,21 +58,21 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 			if (transaction.type === 'addOwnerWithThreshold') {
 				const [addedAddress, newThreshold] = transaction.dataDecoded.parameters;
 				const payloads = {
-					...activeMultisigData,
-					signatories: [...activeMultisigData.signatories, addedAddress.value],
+					...multisig,
+					signatories: [...multisig.signatories, addedAddress.value],
 					threshold: newThreshold.value
 				};
 				setActiveMultisigData(payloads);
-				updateDB(UpdateDB.Update_Multisig, { multisig: payload }, address, network);
+				updateDB(UpdateDB.Update_Multisig, { multisig: payload }, address, multisig.network);
 			} else if (transaction.type === 'removeOwner') {
 				const [, removedAddress, newThreshold] = transaction.dataDecoded.parameters;
 				const payloads = {
-					...activeMultisigData,
-					signatories: activeMultisigData.signatories.filter((a: string) => a !== removedAddress.value),
+					...multisig,
+					signatories: multisig.signatories.filter((a: string) => a !== removedAddress.value),
 					threshold: newThreshold.value
 				};
 				setActiveMultisigData(payloads);
-				updateDB(UpdateDB.Update_Multisig, { multisig: payload }, address, network);
+				updateDB(UpdateDB.Update_Multisig, { multisig: payload }, address, multisig.network);
 			}
 		}
 		setQueuedTransactions(payload);
@@ -75,27 +86,75 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 		}
 	}, []);
 
+	const fetchAllTransactions = useCallback(async () => {
+		if (activeMultisig || !activeOrg || !connectedWallet || !activeOrg.multisigs || activeOrg.multisigs?.length === 0)
+			return;
+		const allTxns = [];
+		setLoading(true);
+		await Promise.all(
+			activeOrg.multisigs.map(async (multisig) => {
+				const txUrl = returnTxUrl(multisig.network as NETWORK);
+				const provider = await connectedWallet?.getEthersProvider();
+				const web3Adapter = new EthersAdapter({
+					ethers,
+					signerOrProvider: provider
+				});
+				const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+				const completedSafeData = await gnosisService.getPendingTx(multisig.address);
+				const convertedCompletedData = completedSafeData.results.map((safe: any) =>
+					convertSafePendingData({ ...safe, network: multisig.network })
+				);
+				allTxns.push(...convertedCompletedData);
+			})
+		);
+		setLoading(false);
+		const sorted = [...allTxns].sort((a, b) => {
+			const date1 = new Date(a?.created_at);
+			const date2 = new Date(b?.created_at);
+			return Number(date1) - Number(date2);
+		});
+		setQueuedTransactions(sorted.reverse());
+		console.log('all txns', sorted.reverse());
+	}, [activeMultisig, activeOrg, connectedWallet, setLoading]);
+
 	useEffect(() => {
-		if (!gnosisSafe) {
+		fetchAllTransactions();
+	}, [fetchAllTransactions, refetch]);
+
+	useEffect(() => {
+		if (!activeMultisig || !activeMultisigData) {
 			console.log('retiring');
 			return;
 		}
 		(async () => {
 			setLoading(true);
 			try {
-				const safeData = await gnosisSafe.getPendingTx(activeMultisig);
-				const convertedData = safeData.results.map((safe: any) => convertSafePendingData({ ...safe, network }));
+				const txUrl = returnTxUrl(activeMultisigData.network as NETWORK);
+				const provider = await connectedWallet?.getEthersProvider();
+				const web3Adapter = new EthersAdapter({
+					ethers,
+					signerOrProvider: provider
+				});
+				const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+				const safeData = await gnosisService.getPendingTx(activeMultisig);
+				const convertedData = safeData.results.map((safe: any) =>
+					convertSafePendingData({ ...safe, network: activeMultisigData?.network })
+				);
 				setQueuedTransactions(convertedData);
 				if (convertedData?.length > 0)
-					updateDB(UpdateDB.Update_Pending_Transaction, { transactions: convertedData }, address, network);
+					updateDB(
+						UpdateDB.Update_Pending_Transaction,
+						{ transactions: convertedData },
+						address,
+						activeMultisigData?.network
+					);
 			} catch (error) {
 				console.log(error);
 			} finally {
 				setLoading(false);
 			}
 		})();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig, address, network, refetch, gnosisSafe]);
+	}, [activeMultisig, activeMultisigData, address, connectedWallet, refetch, setLoading]);
 
 	if (loading) {
 		return (
@@ -116,10 +175,11 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 							key={transaction.txHash}
 						>
 							<Transaction
+								multisigAddress={transaction.safeAddress}
 								value={transaction.amount_token}
+								threshold={transaction.threshold || 0}
 								date={transaction.created_at}
 								approvals={transaction.signatures ? transaction.signatures.map((item: any) => item.address) : []}
-								threshold={activeMultisigData?.threshold || 0}
 								callData={transaction.data}
 								callHash={transaction.txHash}
 								onAfterApprove={handleAfterApprove}

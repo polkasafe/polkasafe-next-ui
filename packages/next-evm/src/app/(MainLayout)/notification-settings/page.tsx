@@ -4,7 +4,7 @@
 
 'use client';
 
-import Notification from '../components/Settings/Notifications';
+import Notification from '../../components/Settings/Notifications';
 
 const NotificationSettings = () => {
 	return <Notification />;

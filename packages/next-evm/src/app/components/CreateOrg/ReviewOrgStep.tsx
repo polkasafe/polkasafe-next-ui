@@ -7,16 +7,18 @@ import { EditIcon } from '@next-common/ui-components/CustomIcons';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { useCreateOrgStepsContext } from '@next-evm/context/CreateOrgStepsContext';
 import { NETWORK } from '@next-common/global/evm-network-constants';
-import { ILinkedMultisig } from './LinkMultisigStep';
+import { IMultisigAddress } from '@next-common/types';
 
 const ReviewOrgStep = ({
 	orgName,
 	linkedMultisigs,
-	loading
+	loading,
+	notCreateOrg
 }: {
 	orgName: string;
-	linkedMultisigs: ILinkedMultisig[];
+	linkedMultisigs: IMultisigAddress[];
 	loading: boolean;
+	notCreateOrg?: boolean;
 }) => {
 	const { setStep } = useCreateOrgStepsContext();
 	return (
@@ -33,13 +35,15 @@ const ReviewOrgStep = ({
 					/>
 					<span className='font-bold text-sm text-white'>{orgName}</span>
 				</div>
-				<PrimaryButton
-					onClick={() => setStep(0)}
-					icon={<EditIcon />}
-					disabled={loading}
-				>
-					Edit
-				</PrimaryButton>
+				{notCreateOrg ? null : (
+					<PrimaryButton
+						onClick={() => setStep(0)}
+						icon={<EditIcon />}
+						disabled={loading}
+					>
+						Edit
+					</PrimaryButton>
+				)}
 			</div>
 			<h2 className='text-text_secondary text-[10px] font-primary flex items-center gap-x-2 mb-2'>
 				<span>MULTISIGS</span>

@@ -8,7 +8,6 @@ import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ITransaction } from '@next-common/types';
@@ -22,15 +21,20 @@ import {
 import { IHistoryTransactions } from '@next-evm/utils/convertSafeData/convertSafeHistory';
 
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { StaticImageData } from 'next/image';
 import formatBalance from '@next-evm/utils/formatBalance';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
-import SentInfo from './SentInfo';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { useWallets } from '@privy-io/react-auth';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import ReceivedInfo from './ReceivedInfo';
+import SentInfo from './SentInfo';
 
 dayjs.extend(LocalizedFormat);
 
@@ -45,19 +49,18 @@ const Transaction: FC<IHistoryTransactions> = ({
 	decodedData,
 	data: callData,
 	advancedDetails,
-	receivedTransfers
+	receivedTransfers,
+	safeAddress
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { network: defaultNetwork } = useGlobalApiContext();
-	const { gnosisSafe, isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } =
-		useGlobalUserDetailsContext();
+	const { isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { allAssets } = useMultisigAssetsContext();
 
 	const shared = sharedSafeAddress === activeMultisig;
-	const network =
-		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
-			? sharedSafeNetwork
-			: defaultNetwork;
+	const multisig = activeOrg?.multisigs?.find((item) => item.address === safeAddress);
+	console.log('multi', multisig);
+	const [network, setNetwork] = useState<NETWORK>(NETWORK.ETHEREUM);
 
 	const token = chainProperties[network].tokenSymbol;
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
@@ -93,13 +96,35 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
 
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+
+	useEffect(() => {
+		if (!multisig?.network) return;
+		const n =
+			isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
+				? sharedSafeNetwork
+				: multisig?.network || NETWORK.ETHEREUM;
+		setNetwork(n as NETWORK);
+	}, [isSharedSafe, multisig?.network, shared, sharedSafeNetwork]);
+
 	useEffect(() => {
 		if (!callData) return;
-		gnosisSafe.safeService
-			.decodeData(callData)
-			.then((res) => setDecodedCallData(res))
-			.catch((e) => console.log(e));
-	}, [callData, gnosisSafe.safeService]);
+		const decodeData = async () => {
+			const txUrl = returnTxUrl(network as NETWORK);
+			const provider = await connectedWallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+			gnosisService.safeService
+				.decodeData(callData)
+				.then((res) => setDecodedCallData(res))
+				.catch((e) => console.log(e));
+		};
+		decodeData();
+	}, [callData, connectedWallet, network]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
@@ -119,7 +144,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 			const tokenDetails = [];
 			tokenContractAddressArray.forEach((item) => {
 				if (realContractAddresses.includes(item)) {
-					const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
+					const assetDetails = allAssets[safeAddress]?.find((asset) => asset.tokenAddress === item);
 					tokenDetails.push({
 						tokenAddress: assetDetails?.tokenAddress || '',
 						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -140,7 +165,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
-					const isFakeToken = !allAssets.some((asset) => asset.tokenAddress === item?.tokenInfo?.address);
+					const isFakeToken = !allAssets[safeAddress]?.some((asset) => asset.tokenAddress === item?.tokenInfo?.address);
 					tokenDetails.push({
 						isFakeToken,
 						tokenAddress: item?.tokenInfo?.address || '',
@@ -177,7 +202,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 			return sum + Number(a);
 		}, 0);
 		setTotalAmount(total);
-	}, [allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, txData]);
+	}, [allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, safeAddress, txData]);
 
 	useEffect(() => {
 		if (tokenDetailsArray.length > 1) {
@@ -222,11 +247,17 @@ const Transaction: FC<IHistoryTransactions> = ({
 				console.log('ERROR');
 			} else {
 				setLoading(true);
-				const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
-					`${EVM_API_URL}/getTransactionDetailsEth`,
-					{ callHash: txHash },
-					{ network }
-				);
+				const getTransactionRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getTransactionDetailsEth`, {
+					body: JSON.stringify({
+						callHash: txHash
+					}),
+					headers: firebaseFunctionsHeader(connectedWallet.address),
+					method: 'POST'
+				});
+				const { data: getTransactionData, error: getTransactionErr } = (await getTransactionRes.json()) as {
+					data: ITransaction;
+					error: string;
+				};
 
 				if (getTransactionErr) {
 					console.log('error', getTransactionErr);
@@ -242,7 +273,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 		}
 	};
 
-	return tokenDetailsArray?.[0]?.isFakeToken && isFundType ? null : (
+	return (
 		<Collapse
 			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left mb-[10px]'
 			bordered={false}
@@ -416,7 +447,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							note={transactionDetails?.note || ''}
 							loading={loading}
 							tokenDetialsArray={tokenDetailsArray}
-							network={network}
+							network={multisig?.network as NETWORK}
 						/>
 					) : (
 						<SentInfo
@@ -455,7 +486,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							advancedDetails={advancedDetails}
 							isCustomTxn={isCustomTxn}
 							isRejectionTxn={isRejectionTxn}
-							network={network}
+							network={multisig?.network as NETWORK}
 							isContractInteraction={isContractInteraction}
 						/>
 					)}

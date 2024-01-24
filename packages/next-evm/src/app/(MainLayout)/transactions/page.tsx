@@ -15,8 +15,8 @@ import Queued from '@next-evm/app/components/Transactions/Queued';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { ExternalLinkIcon, HistoryIcon, QueueIcon } from '@next-common/ui-components/CustomIcons';
-import AddMultisigModal from '../components/Multisig/AddMultisigModal';
-import Streamed from '../components/Transactions/Streamed';
+import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
+import Streamed from '../../components/Transactions/Streamed';
 
 enum ETab {
 	QUEUE,
@@ -27,7 +27,7 @@ enum ETab {
 const Transactions = () => {
 	const [tab, setTab] = useState(ETab.QUEUE);
 	const searchParams = useSearchParams();
-	const { address, activeMultisig, isSharedSafe } = useGlobalUserDetailsContext();
+	const { userID, activeMultisig, isSharedSafe } = useGlobalUserDetailsContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
 	const [refetch, setRefetch] = useState<boolean>(false);
@@ -45,7 +45,7 @@ const Transactions = () => {
 	return (
 		<div className='bg-bg-main rounded-xl p-[20.5px] h-full relative'>
 			<AddMultisigModal />
-			{address || (activeMultisig && isSharedSafe) ? (
+			{userID || (activeMultisig && isSharedSafe) ? (
 				<>
 					<div className='flex items-center mb-4 scale-90 w-[111%] origin-top-left'>
 						<Button

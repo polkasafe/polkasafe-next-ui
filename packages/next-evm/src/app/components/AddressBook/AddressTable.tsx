@@ -6,13 +6,11 @@ import { Badge, Dropdown, Modal, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { FC, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-import { IAllAddresses, IMultisigAddress } from '@next-common/types';
+import { IAllAddresses } from '@next-common/types';
 import {
-	AddIcon,
 	CopyIcon,
 	DeleteIcon,
 	EditIcon,
@@ -26,6 +24,7 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 import styled from 'styled-components';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import EditAddress from './Edit';
 import RemoveAddress from './Remove';
 import SendFundsForm from '../SendFunds/SendFundsForm';
@@ -76,7 +75,7 @@ const TransactionModal = ({ className, defaultAddress }: { className?: string; d
 	);
 };
 
-const EditAddressModal = ({
+export const EditAddressModal = ({
 	className,
 	addressToEdit,
 	nameToEdit,
@@ -84,12 +83,8 @@ const EditAddressModal = ({
 	discordToEdit,
 	emailToEdit,
 	telegramToEdit,
-	rolesToEdit,
-	shared,
-	personalToShared
+	rolesToEdit
 }: {
-	personalToShared?: boolean;
-	shared: boolean;
 	className?: string;
 	addressToEdit: string;
 	nameToEdit?: string;
@@ -102,20 +97,12 @@ const EditAddressModal = ({
 	const [openEditModal, setOpenEditModal] = useState<boolean>(false);
 	return (
 		<>
-			{personalToShared ? (
-				<Tooltip title='Add To Shared Address Book'>
-					<button onClick={() => setOpenEditModal(true)}>
-						<AddIcon className='text-primary' />
-					</button>
-				</Tooltip>
-			) : (
-				<button
-					onClick={() => setOpenEditModal(true)}
-					className='text-primary bg-highlight flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
-				>
-					<EditIcon />
-				</button>
-			)}
+			<button
+				onClick={() => setOpenEditModal(true)}
+				className='text-primary bg-highlight flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
+			>
+				<EditIcon />
+			</button>
 			<Modal
 				centered
 				footer={false}
@@ -127,11 +114,7 @@ const EditAddressModal = ({
 						<OutlineCloseIcon className='text-primary w-2 h-2' />
 					</button>
 				}
-				title={
-					<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>
-						{personalToShared ? 'Add to Shared Address Book' : 'Edit Address'}
-					</h3>
-				}
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Edit Address</h3>}
 				open={openEditModal}
 				className={`${className} w-auto md:min-w-[500px] scale-90`}
 			>
@@ -145,29 +128,27 @@ const EditAddressModal = ({
 					emailToEdit={emailToEdit}
 					rolesToEdit={rolesToEdit}
 					telegramToEdit={telegramToEdit}
-					shared={shared}
-					personalToShared={personalToShared}
 				/>
 			</Modal>
 		</>
 	);
 };
 
-const RemoveAddressModal = ({
+export const RemoveAddressModal = ({
 	addresses,
 	address,
 	userAddress,
-	multisig
+	members
 }: {
 	addresses: IAllAddresses;
 	address: string;
 	userAddress: string;
-	multisig: IMultisigAddress;
+	members: string[];
 }) => {
 	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
 	return (
 		<>
-			{address !== userAddress && !multisig?.signatories.includes(address) && (
+			{address !== userAddress && !members?.includes(address) && (
 				<button
 					onClick={() => setOpenRemoveModal(true)}
 					className='text-failure bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
@@ -181,7 +162,6 @@ const RemoveAddressModal = ({
 				onCancel={() => setOpenRemoveModal(false)}
 			>
 				<RemoveAddress
-					shared={addresses[address].shared}
 					addressToRemove={address}
 					name={addresses[address]?.name}
 					onCancel={() => setOpenRemoveModal(false)}
@@ -193,10 +173,8 @@ const RemoveAddressModal = ({
 
 const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 	const { network } = useGlobalApiContext();
-	const { address: userAddress, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
-	const { records } = useActiveMultisigContext();
-
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig);
+	const { activeOrg } = useActiveOrgContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
 
 	interface DataType {
 		key: React.Key;
@@ -262,7 +240,6 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 			actions: (
 				<div className=' flex items-center justify-right gap-x-[10px]'>
 					<EditAddressModal
-						shared={!!addresses[address].shared}
 						className={className}
 						nickNameToEdit={addresses[address]?.nickName}
 						addressToEdit={address}
@@ -276,7 +253,7 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 						addresses={addresses}
 						address={address}
 						userAddress={userAddress}
-						multisig={multisig}
+						members={activeOrg && activeOrg.members ? activeOrg.members : []}
 					/>
 
 					<TransactionModal
@@ -344,20 +321,6 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 						</div>
 						{addresses?.[address]?.nickName && <div className='text-sm'>({addresses?.[address]?.nickName})</div>}
 					</div>
-					{records && Object.keys(records)?.length > 0 && !Object.keys(records).includes(address) && (
-						<EditAddressModal
-							className={className}
-							nickNameToEdit={addresses[address]?.nickName}
-							addressToEdit={address}
-							nameToEdit={addresses[address]?.name}
-							discordToEdit={addresses[address]?.discord}
-							emailToEdit={addresses[address]?.email}
-							rolesToEdit={addresses[address]?.roles}
-							telegramToEdit={addresses[address]?.telegram}
-							personalToShared
-							shared={false}
-						/>
-					)}
 				</p>
 			),
 			roles: (

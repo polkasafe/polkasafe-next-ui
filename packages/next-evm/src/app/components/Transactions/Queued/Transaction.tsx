@@ -10,7 +10,6 @@ import { ethers } from 'ethers';
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { EAssetType, ITransaction, NotificationStatus } from '@next-common/types';
@@ -22,9 +21,6 @@ import {
 } from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
 import updateMultisigTransactions from '@next-evm/utils/updateHistoryTransaction';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
@@ -32,14 +28,22 @@ import { StaticImageData } from 'next/image';
 import formatBalance from '@next-evm/utils/formatBalance';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { useWallets } from '@privy-io/react-auth';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import ReplaceTxnModal from './ReplaceTxnModal';
 // eslint-disable-next-line import/no-cycle
 import SentInfo from './SentInfo';
-import ReplaceTxnModal from './ReplaceTxnModal';
 
 export interface ITransactionProps {
 	date: Date;
 	approvals: string[];
 	threshold: number;
+	multisigAddress: string;
 	callData: string;
 	callHash: string;
 	value: string;
@@ -67,6 +71,7 @@ const Transaction: FC<ITransactionProps> = ({
 	callData,
 	callHash,
 	date,
+	multisigAddress,
 	threshold,
 	value,
 	onAfterApprove,
@@ -78,21 +83,16 @@ const Transaction: FC<ITransactionProps> = ({
 	setCanCancelTx
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { activeMultisig, address, gnosisSafe, isSharedSafe, sharedSafeNetwork, sharedSafeAddress } =
-		useGlobalUserDetailsContext();
+	const { activeMultisig, address, isSharedSafe, sharedSafeNetwork, sharedSafeAddress } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { allAssets, tokenFiatConversions } = useMultisigAssetsContext();
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [getMultiDataLoading] = useState(false);
 	const [loadingMessages, setLoadingMessage] = useState('');
 	const [openLoadingModal, setOpenLoadingModal] = useState(false);
-	const { network: defaultNetwork } = useGlobalApiContext();
 
 	const shared = sharedSafeAddress === activeMultisig;
-	const network =
-		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
-			? sharedSafeNetwork
-			: defaultNetwork;
 
 	const [decodedCallData, setDecodedCallData] = useState<any>({});
 
@@ -100,7 +100,15 @@ const Transaction: FC<ITransactionProps> = ({
 
 	const router = useRouter();
 
+	const multisig = activeOrg?.multisigs?.find((item) => item.address === multisigAddress);
+
+	const network =
+		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
+			? sharedSafeNetwork
+			: multisig?.network || NETWORK.ETHEREUM;
+
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [transactionDetails, setTransactionDetails] = useState<ITransaction>({} as any);
 
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
@@ -120,6 +128,9 @@ const Transaction: FC<ITransactionProps> = ({
 	const [isContractInteraction, setIsContractInteraction] = useState<boolean>(false);
 
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 
 	const getTxDetails = useCallback(async () => {
 		try {
@@ -150,11 +161,17 @@ const Transaction: FC<ITransactionProps> = ({
 				setIsContractInteraction(true);
 			}
 
-			const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
-				`${EVM_API_URL}/getTransactionDetailsEth`,
-				{ callHash },
-				{ network }
-			);
+			const getTransactionRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getTransactionDetailsEth`, {
+				body: JSON.stringify({
+					callHash
+				}),
+				headers: firebaseFunctionsHeader(connectedWallet.address),
+				method: 'POST'
+			});
+			const { data: getTransactionData, error: getTransactionErr } = (await getTransactionRes.json()) as {
+				data: ITransaction;
+				error: string;
+			};
 
 			if (!getTransactionErr && getTransactionData) {
 				setTransactionDetails(getTransactionData);
@@ -172,11 +189,21 @@ const Transaction: FC<ITransactionProps> = ({
 
 	useEffect(() => {
 		if (!callData) return;
-		gnosisSafe.safeService
-			.decodeData(callData)
-			.then((res) => setDecodedCallData(res))
-			.catch((e) => console.log(e));
-	}, [callData, gnosisSafe]);
+		const decodeData = async () => {
+			const txUrl = returnTxUrl(network as NETWORK);
+			const provider = await connectedWallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+			gnosisService.safeService
+				.decodeData(callData)
+				.then((res) => setDecodedCallData(res))
+				.catch((e) => console.log(e));
+		};
+		decodeData();
+	}, [callData, connectedWallet, network]);
 
 	useEffect(() => {
 		if (decodedCallData && decodedCallData?.method === 'multiSend') {
@@ -189,7 +216,7 @@ const Transaction: FC<ITransactionProps> = ({
 				const tokenDetails: ITokenDetails[] = [];
 				tokenContractAddressArray.forEach((item) => {
 					if (realContractAddresses.includes(item)) {
-						const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
+						const assetDetails = allAssets[multisigAddress]?.find((asset) => asset.tokenAddress === item);
 						tokenDetails.push({
 							fiatConversion: assetDetails?.fiat_conversion,
 							tokenAddress: assetDetails?.tokenAddress || '',
@@ -228,7 +255,7 @@ const Transaction: FC<ITransactionProps> = ({
 			}, 0);
 			setAmount(totalAmount);
 		}
-	}, [allAssets, decodedCallData, network, tokenFiatConversions, txData]);
+	}, [allAssets, decodedCallData, multisigAddress, network, tokenFiatConversions, txData]);
 
 	useEffect(() => {
 		if (tokenDetailsArray.length > 1) {
@@ -239,11 +266,19 @@ const Transaction: FC<ITransactionProps> = ({
 	}, [tokenDetailsArray]);
 
 	const handleApproveTransaction = async () => {
+		if (!multisigAddress) return;
 		setLoading(true);
 		try {
-			const response = await gnosisSafe.signAndConfirmTx(
+			const txUrl = returnTxUrl(network as NETWORK);
+			const provider = await connectedWallet?.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider.getSigner(connectedWallet?.address)
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+			const response = await gnosisService.signAndConfirmTx(
 				callHash,
-				activeMultisig,
+				multisigAddress,
 				chainProperties[network].contractNetworks
 			);
 			if (response) {
@@ -276,11 +311,22 @@ const Transaction: FC<ITransactionProps> = ({
 	};
 
 	const handleExecuteTransaction = async () => {
+		if (!multisigAddress || !connectedWallet?.address) {
+			console.log('no multisig');
+			return;
+		}
 		setLoading(true);
 		try {
-			const { data: response, error } = await gnosisSafe.executeTx(
+			const txUrl = returnTxUrl(network as NETWORK);
+			const provider = await connectedWallet?.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider.getSigner(connectedWallet?.address)
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+			const { data: response, error } = await gnosisService.executeTx(
 				callHash,
-				activeMultisig,
+				multisigAddress,
 				chainProperties[network].contractNetworks
 			);
 			if (error) {
@@ -297,12 +343,12 @@ const Transaction: FC<ITransactionProps> = ({
 					status: NotificationStatus.INFO
 				});
 				await response.transactionResponse?.wait();
-				const completeTx = {
-					// eslint-disable-next-line sonarjs/no-gratuitous-expressions
-					receipt: response || {},
-					txHash: callHash
-				};
-				await nextApiClientFetch(`${EVM_API_URL}/completeTransactionEth`, completeTx, { network });
+				// const completeTx = {
+				// // eslint-disable-next-line sonarjs/no-gratuitous-expressions
+				// receipt: response || {},
+				// txHash: callHash
+				// };
+				// await nextApiClientFetch(`${EVM_API_URL}/completeTransactionEth`, completeTx, { network });
 				onAfterExecute(callHash);
 				queueNotification({
 					header: 'Transaction Executed',
@@ -527,7 +573,7 @@ const Transaction: FC<ITransactionProps> = ({
 						isCustomTxn={isCustomTxnWithHumanDesc}
 						isContractInteraction={isContractInteraction}
 						setOpenReplaceTxnModal={setOpenReplaceTxnModal}
-						network={network}
+						network={network as NETWORK}
 					/>
 				</div>
 			</Collapse.Panel>

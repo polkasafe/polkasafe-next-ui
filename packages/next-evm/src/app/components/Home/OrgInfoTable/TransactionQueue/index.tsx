@@ -3,21 +3,19 @@ import returnTxUrl from '@next-common/global/gnosisService';
 import NoTransactionsHistory from '@next-evm/app/components/Transactions/History/NoTransactionsHistory';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import GnosisSafeService from '@next-evm/services/Gnosis';
-import { IHistoryTransactions } from '@next-evm/utils/convertSafeData/convertSafeHistory';
 import { useWallets } from '@privy-io/react-auth';
 import { EthersAdapter } from '@safe-global/protocol-kit';
 // import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
-import { convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
+import { IQueuedTransactions, convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
 import Loader from '@next-common/ui-components/Loader';
 import SingleTxn from './SingleTxn';
 
 const TransactionHistory = () => {
 	const { activeOrg } = useActiveOrgContext();
 	const { wallets } = useWallets();
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const [completedTransactions, setCompletedTransactions] = useState<IHistoryTransactions[]>([]);
+	const [pendingTxns, setPendingTxns] = useState<IQueuedTransactions[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const fetchAllTransactions = useCallback(async () => {
@@ -34,11 +32,12 @@ const TransactionHistory = () => {
 					signerOrProvider: provider
 				});
 				const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
-				const completedSafeData = await gnosisService.getPendingTx(multisig.address);
-				const convertedCompletedData = completedSafeData.results.map((safe: any) =>
+				const pendingSafeData = await gnosisService.getPendingTx(multisig.address);
+				console.log('pending', pendingSafeData);
+				const convertedPendingData = pendingSafeData.results.map((safe: any) =>
 					convertSafePendingData({ ...safe, network: multisig.network })
 				);
-				allTxns.push(...convertedCompletedData);
+				allTxns.push(...convertedPendingData);
 			})
 		);
 		setLoading(false);
@@ -47,7 +46,7 @@ const TransactionHistory = () => {
 			const date2 = new Date(b?.created_at);
 			return Number(date1) - Number(date2);
 		});
-		setCompletedTransactions(sorted.reverse());
+		setPendingTxns(sorted.reverse());
 		console.log('all txns', sorted.reverse());
 	}, [activeOrg, wallets]);
 
@@ -64,8 +63,8 @@ const TransactionHistory = () => {
 			</div>
 			{loading ? (
 				<Loader size='large' />
-			) : completedTransactions && completedTransactions.length > 0 ? (
-				completedTransactions.map((item) => (
+			) : pendingTxns && pendingTxns.length > 0 ? (
+				pendingTxns.map((item) => (
 					<SingleTxn
 						callHash={item.txHash}
 						callData={item.data}
