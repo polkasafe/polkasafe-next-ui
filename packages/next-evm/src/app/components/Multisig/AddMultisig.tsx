@@ -96,6 +96,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 					<section>
 						<Link href='/create-org'>
 							<PrimaryButton
+								onClick={onCancel}
 								size='large'
 								className='w-full flex justify-center'
 								icon={<CreateMultisigIcon />}

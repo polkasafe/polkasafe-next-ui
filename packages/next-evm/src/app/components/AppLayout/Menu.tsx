@@ -35,7 +35,6 @@ import { IMultisigAndNetwork, IOrganisation } from '@next-common/types';
 import Image from 'next/image';
 import { ActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-// import { IMultisigAddress } from '@next-common/types';
 
 interface Props {
 	className?: string;
@@ -52,7 +51,6 @@ const Menu: FC<Props> = ({ className }) => {
 		isSharedSafe,
 		sharedSafeNetwork
 	} = useGlobalUserDetailsContext();
-	// const router = useRouter();
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(activeMultisig || '');
 	const [multisigs, setMultisigs] = useState<IMultisigAndNetwork[]>();
@@ -179,7 +177,9 @@ const Menu: FC<Props> = ({ className }) => {
 							menu={{
 								items: orgOptions,
 								onClick: (e) => {
-									setActiveOrg(JSON.parse(e.key) as IOrganisation);
+									const org = JSON.parse(e.key) as IOrganisation;
+									setActiveOrg(org);
+									if (typeof window !== 'undefined') localStorage.setItem('active-org', org.id);
 									setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: '' }));
 									setSelectedMultisigAddress('');
 								}

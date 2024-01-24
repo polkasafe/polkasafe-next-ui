@@ -101,6 +101,7 @@ const CreateOrg = () => {
 				organisations: [...prev.organisations, createOrgData]
 			}));
 			setActiveOrg(createOrgData);
+			if (typeof window !== 'undefined') localStorage.setItem('active-org', createOrgData.id);
 			router.push('/');
 		}
 		// const { data: orgData, error: orgErr } = await nextApiClientFetch<string>(

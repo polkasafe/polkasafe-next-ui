@@ -28,13 +28,19 @@ export function useActiveOrgContext() {
 }
 
 export const ActiveOrgProvider = ({ children }: { children?: ReactNode }): ReactNode => {
-	const [activeOrg, setActiveOrg] = useState<IOrganisation>();
 	const { organisations } = useGlobalUserDetailsContext();
+	const [activeOrg, setActiveOrg] = useState<IOrganisation>();
+	const currentOrgId = typeof window !== 'undefined' && localStorage.getItem('active-org');
 
 	useEffect(() => {
-		if (!organisations || organisations.length === 0) return;
-		setActiveOrg(organisations?.[0]);
-	}, [organisations]);
+		if (!organisations || !organisations.length) return;
+		if (currentOrgId) {
+			const org = organisations.find((item) => item.id === currentOrgId);
+			setActiveOrg(org);
+		} else {
+			setActiveOrg(organisations?.[0]);
+		}
+	}, [currentOrgId, organisations]);
 
 	const value = useMemo(
 		() => ({
