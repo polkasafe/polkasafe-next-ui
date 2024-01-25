@@ -160,7 +160,7 @@ const SingleTxn = ({
 
 	return (
 		<Link
-			href={`/transactions?tab=History#${callHash || ''}`}
+			href={`/transactions?tab=Queue#${callHash || ''}`}
 			className='flex items-center px-2 pb-2 mb-2 gap-x-3 text-white grid grid-cols-9'
 			onClick={(e) => e.stopPropagation()}
 		>

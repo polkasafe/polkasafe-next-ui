@@ -9,8 +9,8 @@ import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
-import formatBalance from '@next-evm/utils/formatBalance';
 import { ethers } from 'ethers';
+import NoAssetsSVG from '@next-common/assets/icons/no-transaction-home.svg';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -26,7 +26,7 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 			const { name } = organisationBalance.tokens[item];
 			const { tokenSymbol } = organisationBalance.tokens[item];
 			return {
-				balance: Number(formatBalance(ethers.utils.formatUnits(BigInt(balance), decimals))),
+				balance: Number(ethers.utils.formatUnits(BigInt(balance), decimals)),
 				tokenName: name,
 				tokenSymbol
 			};
@@ -72,23 +72,30 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 			<div
 				className={`${className} bg-bg-main flex flex-col justify-around rounded-xl p-8 shadow-lg h-[17rem] scale-90 w-[111%] origin-top-left`}
 			>
-				<Doughnut
-					width={100}
-					height={100}
-					data={data}
-					options={{
-						plugins: {
-							legend: {
-								position: 'right',
-								labels: {
-									usePointStyle: true,
-									boxHeight: 5,
-									boxWidth: 5
+				{sortedData[0]?.balance === 0 ? (
+					<div className='flex flex-col gap-y-2 items-center justify-center'>
+						<NoAssetsSVG />
+						<p className='font-normal text-xs leading-[15px] text-text_secondary'>No Assets Found.</p>
+					</div>
+				) : (
+					<Doughnut
+						width={100}
+						height={100}
+						data={data}
+						options={{
+							plugins: {
+								legend: {
+									position: 'right',
+									labels: {
+										usePointStyle: true,
+										boxHeight: 5,
+										boxWidth: 5
+									}
 								}
 							}
-						}
-					}}
-				/>
+						}}
+					/>
+				)}
 			</div>
 		</div>
 	);
