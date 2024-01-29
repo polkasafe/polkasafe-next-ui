@@ -2,18 +2,17 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Divider } from 'antd';
-import React, { FC } from 'react';
+import React, { FC, useState } from 'react';
 import { IAsset } from '@next-common/types';
-// import PrimaryButton from '@next-common/ui-components/PrimaryButton';
+import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 
-// import ModalComponent from '@next-common/ui-components/ModalComponent';
-// import { chainProperties } from 'next-common/global/evm-network-constants';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
-// import SendFundsForm from '../SendFunds/SendFundsForm';
+import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
@@ -22,16 +21,16 @@ interface IAssetsProps {
 	currency: string;
 }
 const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
-	// const [openTransactionModal, setOpenTransactionModal] = useState(false);
+	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 	const { activeMultisig } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 	const { organisationBalance } = useMultisigAssetsContext();
-	// const [selectedToken, setSeletedToken] = useState<IAsset>(assets[0]);
+	const [selectedToken, setSeletedToken] = useState<IAsset>(assets[activeOrg?.multisigs[0]?.address]?.[0]);
 	const { allCurrencyPrices } = useGlobalCurrencyContext();
 
 	return (
 		<div className='text-sm font-medium leading-[15px]'>
-			{/* <ModalComponent
+			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
 				open={openTransactionModal}
 				onCancel={() => setOpenTransactionModal(false)}
@@ -40,7 +39,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 					defaultToken={selectedToken}
 					onCancel={() => setOpenTransactionModal(false)}
 				/>
-			</ModalComponent> */}
+			</ModalComponent>
 			<article className='grid grid-cols-4 gap-x-5 bg-bg-secondary text-text_secondary py-5 px-4 rounded-lg'>
 				<span className='col-span-1'>Asset</span>
 				<span className='col-span-1'>Balance</span>
@@ -89,18 +88,16 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 													.replace(/\d(?=(\d{3})+\.)/g, '$&,')
 											: '-'}
 									</p>
-									{/* <PrimaryButton
-									onClick={() => {
-										setOpenTransactionModal(true);
-										setSeletedToken(asset);
-									}}
-									className={` text-white w-fit ${
-										chainProperties[network].tokenSymbol !== name ? 'bg-secondary' : 'bg-primary'
-									}`}
-									disabled={notOwnerOfSafe}
-								>
-									<p className='font-normal text-sm'>Send</p>
-								</PrimaryButton> */}
+									<PrimaryButton
+										onClick={() => {
+											setOpenTransactionModal(true);
+											setSeletedToken(asset);
+										}}
+										className='text-white w-fit'
+										// disabled={notOwnerOfSafe}
+									>
+										<p className='font-normal text-sm'>Send</p>
+									</PrimaryButton>
 								</article>
 								{assets[activeMultisig].length - 1 !== index ? <Divider className='bg-text_secondary my-0' /> : null}
 							</>
@@ -151,18 +148,16 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 												.replace(/\d(?=(\d{3})+\.)/g, '$&,')
 										: '-'}
 								</p>
-								{/* <PrimaryButton
-					onClick={() => {
-						setOpenTransactionModal(true);
-						setSeletedToken(asset);
-					}}
-					className={` text-white w-fit ${
-						chainProperties[network].tokenSymbol !== name ? 'bg-secondary' : 'bg-primary'
-					}`}
-					disabled={notOwnerOfSafe}
-				>
-					<p className='font-normal text-sm'>Send</p>
-				</PrimaryButton> */}
+								<PrimaryButton
+									onClick={() => {
+										setOpenTransactionModal(true);
+										setSeletedToken({ ...tokens[item], logoURI: tokens[item].logo, symbol: tokens[item].tokenSymbol });
+									}}
+									className='text-white w-fit'
+									// disabled={notOwnerOfSafe}
+								>
+									<p className='font-normal text-sm'>Send</p>
+								</PrimaryButton>
 							</article>
 							{Object.keys(tokens).length - 1 !== index ? <Divider className='bg-text_secondary my-0' /> : null}
 						</>

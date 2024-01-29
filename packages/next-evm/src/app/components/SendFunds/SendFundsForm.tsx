@@ -178,7 +178,14 @@ const SendFundsForm = ({
 
 	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
 		key: JSON.stringify(item),
-		label: <AddressComponent address={item.address} />
+		label: (
+			<AddressComponent
+				isMultisig
+				network={item.network as NETWORK}
+				withBadge={false}
+				address={item.address}
+			/>
+		)
 	}));
 
 	const flowRates: ItemType[] = Object.keys(EFlowRates).map((item) => ({
@@ -204,8 +211,15 @@ const SendFundsForm = ({
 	useEffect(() => {
 		if (allAssets && allAssets[selectedMultisig]) {
 			setStreamToken(allAssets[selectedMultisig][0]);
+			setRecipientAndAmount([
+				{
+					amount: '0',
+					recipient: defaultSelectedAddress ? defaultSelectedAddress || '' : address || '',
+					token: defaultToken || allAssets[selectedMultisig][0]
+				}
+			]);
 		}
-	}, [allAssets, selectedMultisig]);
+	}, [address, allAssets, defaultSelectedAddress, defaultToken, selectedMultisig]);
 
 	useEffect(() => {
 		if (!streamAmount) return;
@@ -594,7 +608,10 @@ const SendFundsForm = ({
 						<article className='w-[500px]'>
 							<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
 								Sending from
-								<Balance address={selectedMultisig} />
+								<Balance
+									network={network}
+									address={selectedMultisig}
+								/>
 							</p>
 							<Dropdown
 								trigger={['click']}
@@ -609,7 +626,12 @@ const SendFundsForm = ({
 								}}
 							>
 								<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
-									<AddressComponent address={selectedMultisig} />
+									<AddressComponent
+										isMultisig
+										network={network}
+										withBadge={false}
+										address={selectedMultisig}
+									/>
 									<CircleArrowDownIcon className='text-primary' />
 								</div>
 							</Dropdown>

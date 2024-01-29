@@ -14,6 +14,7 @@ import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import { useLogout, useWallets, usePrivy } from '@privy-io/react-auth';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface IAddress {
@@ -122,6 +123,7 @@ const AddressDropdown = () => {
 							</button>
 						</p>
 						<Balance
+							network={NETWORK.POLYGON}
 							className='ml-0'
 							address={address}
 						/>

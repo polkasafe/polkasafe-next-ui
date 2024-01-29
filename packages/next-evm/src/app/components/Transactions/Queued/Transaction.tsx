@@ -382,6 +382,7 @@ const Transaction: FC<ITransactionProps> = ({
 				open={openReplaceTxnModal}
 			>
 				<ReplaceTxnModal
+					multisigAddress={multisigAddress}
 					onCancel={() => setOpenReplaceTxnModal(false)}
 					txNonce={advancedDetails?.nonce || 0}
 					refetchTxns={refetchTxns}
@@ -501,11 +502,7 @@ const Transaction: FC<ITransactionProps> = ({
 								</span>
 							</p>
 							<p className='col-span-2'>{dayjs(date).format('lll')}</p>
-							<p
-								className={`${
-									txType === 'addOwnerWithThreshold' || txType === 'removeOwner' ? 'col-span-4' : 'col-span-2'
-								} flex items-center justify-end gap-x-4`}
-							>
+							<p className='col-span-2 flex items-center justify-end gap-x-4'>
 								<span className='text-waiting'>
 									{!approvals.includes(address)
 										? 'Needs Your Confirmation'
@@ -533,6 +530,7 @@ const Transaction: FC<ITransactionProps> = ({
 				<div>
 					<Divider className='bg-text_secondary my-5' />
 					<SentInfo
+						multisig={multisig}
 						amount={
 							decodedCallData.method === 'multiSend'
 								? decodedCallData?.parameters?.[0]?.valueDecoded?.map(

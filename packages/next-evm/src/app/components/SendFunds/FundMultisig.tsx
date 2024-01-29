@@ -134,7 +134,10 @@ const FundMultisig = ({
 			<div className={className}>
 				<p className='text-primary font-normal text-xs leading-[13px] mb-2 flex justify-between items-center'>
 					Recipient
-					<Balance address={selectedMultisig.address || activeMultisig} />
+					<Balance
+						network={selectedMultisig.network as NETWORK}
+						address={selectedMultisig.address || activeMultisig}
+					/>
 				</p>
 				{/* TODO: Make into reusable component */}
 				<Dropdown
@@ -158,7 +161,10 @@ const FundMultisig = ({
 					<section className='mt-6'>
 						<div className='flex items-center justify-between mb-2'>
 							<label className='text-primary font-normal text-xs leading-[13px] block'>Sending from</label>
-							<Balance address={connectedWallet.address || address} />
+							<Balance
+								network={selectedMultisig.network as NETWORK}
+								address={connectedWallet.address || address}
+							/>
 						</div>
 						<div className='flex items-center gap-x-[10px] border border-text_placeholder rounded-lg p-2'>
 							<div className='w-full'>

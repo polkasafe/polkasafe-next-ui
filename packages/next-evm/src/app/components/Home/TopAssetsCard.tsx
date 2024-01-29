@@ -9,7 +9,6 @@ import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
-import { ethers } from 'ethers';
 import NoAssetsSVG from '@next-common/assets/icons/no-transaction-home.svg';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -22,11 +21,10 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 		Object.keys(organisationBalance.tokens)?.length > 0 &&
 		Object.keys(organisationBalance.tokens)?.map((item) => {
 			const balance = organisationBalance.tokens[item].balance_token;
-			const decimals = organisationBalance.tokens[item].tokenDecimals;
 			const { name } = organisationBalance.tokens[item];
 			const { tokenSymbol } = organisationBalance.tokens[item];
 			return {
-				balance: Number(ethers.utils.formatUnits(BigInt(balance), decimals)),
+				balance: Number(balance),
 				tokenName: name,
 				tokenSymbol
 			};

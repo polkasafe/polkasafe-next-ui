@@ -26,7 +26,7 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
-import { EAssetType } from '@next-common/types';
+import { EAssetType, IMultisigAddress } from '@next-common/types';
 import { useWallets } from '@privy-io/react-auth';
 import EditNote from './EditNote';
 // eslint-disable-next-line import/no-cycle
@@ -34,6 +34,7 @@ import { ITokenDetails } from './Transaction';
 
 interface ISentInfoProps {
 	amount: string | string[];
+	multisig: IMultisigAddress;
 	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
 	date: Date;
 	// time: string;
@@ -66,7 +67,7 @@ interface ISentInfoProps {
 const SentInfo: FC<ISentInfoProps> = ({
 	handleExecuteTransaction,
 	amount,
-	// multisig,
+	multisig,
 	addressAddOrRemove,
 	transactionFields,
 	className,
@@ -385,7 +386,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							className='success'
 						>
 							<div className='text-white font-normal text-sm leading-[15px]'>
-								Confirmations
+								Confirmations{' '}
 								<span className='text-text_secondary'>
 									{approvals.length} of {threshold}
 								</span>
@@ -426,7 +427,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 											</Timeline.Item>
 										))}
 
-										{/* {multisig?.signatories
+										{multisig?.signatories
 											?.filter((item: any) => !approvals.includes(item))
 											?.map((address: any, i: any) => {
 												return (
@@ -444,7 +445,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 														</div>
 													</Timeline.Item>
 												);
-											})} */}
+											})}
 									</Timeline>
 								</Collapse.Panel>
 							</Collapse>

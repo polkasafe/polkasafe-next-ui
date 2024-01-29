@@ -8,34 +8,51 @@ import React, { useState } from 'react';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { useWallets } from '@privy-io/react-auth';
+import { ethers } from 'ethers';
 import SendFundsForm from '../../SendFunds/SendFundsForm';
 
 const ReplaceTxnModal = ({
 	txNonce,
 	onCancel,
 	refetchTxns,
-	canCancelTx
+	canCancelTx,
+	multisigAddress
 }: {
 	txNonce: number;
 	onCancel: () => void;
 	refetchTxns: () => void;
 	canCancelTx: boolean;
+	multisigAddress: string;
 }) => {
 	const [sendTokens, setSendTokens] = useState<boolean>(false);
 	const [loading, setLoading] = useState<boolean>(false);
 
-	const { address, activeMultisig, gnosisSafe } = useGlobalUserDetailsContext();
+	const { address } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 
 	const onRejectTxn = async () => {
 		try {
 			setLoading(true);
-			const data = await gnosisSafe.createRejectTransactionByNonce(
+			const txUrl = returnTxUrl(network as NETWORK);
+			const provider = await connectedWallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider.getSigner(connectedWallet?.address)
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+			const data = await gnosisService.createRejectTransactionByNonce(
 				txNonce,
-				activeMultisig,
-				address,
+				multisigAddress,
+				connectedWallet?.address || address,
 				chainProperties[network].contractNetworks
 			);
 			if (data) {

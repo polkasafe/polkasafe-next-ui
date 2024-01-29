@@ -2,8 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { chainProperties } from '@next-common/global/evm-network-constants';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
 import { useWallets } from '@privy-io/react-auth';
@@ -11,11 +10,10 @@ import { useWallets } from '@privy-io/react-auth';
 interface Props {
 	className?: string;
 	address: string;
+	network: NETWORK;
 }
 
-const Balance = ({ address, className }: Props) => {
-	const { network } = useGlobalApiContext();
-
+const Balance = ({ address, className, network = NETWORK.POLYGON }: Props) => {
 	const { wallets } = useWallets();
 
 	const [balance, setBalance] = useState<string>('0');

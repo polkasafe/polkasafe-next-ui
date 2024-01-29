@@ -147,7 +147,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 							balanceToken += Number(item.balance);
 						}
 						totalOrgBalance.tokens[item.tokenInfo.symbol] = {
-							balance_token: balanceToken.toString(),
+							balance_token: ethers.utils.formatUnits(balanceToken, item.tokenInfo.decimals).toString(),
 							balance_usd: item.fiatBalance,
 							logo: item.tokenInfo.logoUri,
 							name: item.tokenInfo.name,

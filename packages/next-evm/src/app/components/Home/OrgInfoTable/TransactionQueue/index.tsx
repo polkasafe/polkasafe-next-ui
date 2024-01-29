@@ -10,6 +10,7 @@ import { ethers } from 'ethers';
 import React, { useCallback, useEffect, useState } from 'react';
 import { IQueuedTransactions, convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
 import Loader from '@next-common/ui-components/Loader';
+import dayjs from 'dayjs';
 import SingleTxn from './SingleTxn';
 
 const TransactionHistory = () => {
@@ -41,11 +42,7 @@ const TransactionHistory = () => {
 			})
 		);
 		setLoading(false);
-		const sorted = [...allTxns].sort((a, b) => {
-			const date1 = new Date(a?.created_at);
-			const date2 = new Date(b?.created_at);
-			return Number(date1) - Number(date2);
-		});
+		const sorted = [...allTxns].sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1));
 		setPendingTxns(sorted.reverse());
 		console.log('all txns', sorted.reverse());
 	}, [activeOrg, wallets]);
