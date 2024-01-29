@@ -37,7 +37,7 @@ const ImportAdress = ({ onCancel }: { onCancel: () => void }) => {
 					discord: discord || '',
 					email: email || '',
 					name,
-					organizationId: activeOrg.id,
+					organisationId: activeOrg.id,
 					roles: roles || [],
 					telegram: telegram || ''
 				}),

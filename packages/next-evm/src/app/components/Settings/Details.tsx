@@ -6,18 +6,17 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Button } from 'antd';
 import React, { useState } from 'react';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import { DeleteIcon, EditIcon } from '@next-common/ui-components/CustomIcons';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { IMultisigAddress } from '@next-common/types';
 import RemoveMultisigAddress from './RemoveMultisig';
 import RenameMultisig from './RenameMultisig';
 
-const Details = () => {
-	const { activeMultisig, multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
+const Details = ({ multisig }: { multisig: IMultisigAddress }) => {
+	const { multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
 	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
 	const [openRenameModal, setOpenRenameModal] = useState<boolean>(false);
 
@@ -36,9 +35,10 @@ const Details = () => {
 				open={openRenameModal}
 			>
 				<RenameMultisig
+					multisig={multisig}
 					name={
-						multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
-						multisigAddresses.find((item) => item.address === activeMultisig)?.name ||
+						multisigSettings?.[`${multisig.address}_${multisig.network}`]?.name ||
+						multisigAddresses.find((item) => item.address === multisig.address)?.name ||
 						DEFAULT_MULTISIG_NAME
 					}
 					onCancel={() => setOpenRenameModal(false)}
@@ -55,14 +55,14 @@ const Details = () => {
 				</div>
 				<div className='flex items-center justify-between gap-x-5 mt-5'>
 					<span>Blockchain:</span>
-					<span className='text-white capitalize'>{network}</span>
+					<span className='text-white capitalize'>{multisig.network}</span>
 				</div>
-				{activeMultisig && (
+				{multisig && multisig.address && (
 					<div className='flex items-center justify-between gap-x-5 mt-7'>
 						<span>Safe Name:</span>
 						<span className='text-white flex items-center gap-x-3'>
-							{multisigSettings?.[activeMultisig]?.name ||
-								multisigAddresses?.find((item) => item.address === activeMultisig)?.name ||
+							{multisigSettings?.[`${multisig.address}_${multisig.network}`]?.name ||
+								multisigAddresses?.find((item) => item.address === multisig.address)?.name ||
 								DEFAULT_MULTISIG_NAME}
 							<button onClick={() => setOpenRenameModal(true)}>
 								<EditIcon className='text-primary cursor-pointer' />
@@ -72,7 +72,7 @@ const Details = () => {
 				)}
 				<div className='flex-1' />
 				<Button
-					disabled={!activeMultisig}
+					disabled={!multisig.address}
 					size='large'
 					onClick={() => setOpenRemoveModal(true)}
 					className='border-none outline-none text-failure bg-failure bg-opacity-10 flex items-center gap-x-3 justify-center rounded-lg p-[10px] w-full mt-7'

@@ -33,7 +33,6 @@ import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import { IMultisigAndNetwork, IOrganisation } from '@next-common/types';
 import Image from 'next/image';
-import { ActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 
 interface Props {
@@ -169,7 +168,7 @@ const Menu: FC<Props> = ({ className }) => {
 						</Badge>
 					</Link>
 				</section>
-				{orgOptions && orgOptions.length > 0 && ActiveMultisigContext && (
+				{orgOptions && orgOptions.length > 0 && activeOrg && (
 					<section className='w-full mb-2'>
 						<Dropdown
 							trigger={['click']}

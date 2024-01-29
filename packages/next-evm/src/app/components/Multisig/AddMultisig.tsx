@@ -107,7 +107,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 					</section>
 				</>
 			),
-			description: 'Choose an existing organization or create new to associate with the multisig account'
+			description: 'Choose an existing organisation or create new to associate with the multisig account'
 		},
 		{
 			component: (
@@ -173,6 +173,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 					message: 'MultiSigs Added to Organisation',
 					status: NotificationStatus.SUCCESS
 				});
+				onCancel();
 			}
 			setLoading(false);
 		} catch (error) {
@@ -184,7 +185,12 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 	return (
 		<Spin
 			spinning={loading}
-			indicator={<LoadingLottie width={300} />}
+			indicator={
+				<LoadingLottie
+					message='Adding MultiSigs to Organisation'
+					width={300}
+				/>
+			}
 		>
 			<div className={`relative w-[600px] ${className}`}>
 				<ModalComponent
@@ -215,7 +221,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 					i === step ? (
 						<>
 							<p className='text-text_secondary text-xs absolute top-[-35px]'>
-								Choose an existing organization or create new to associate with the multisig account
+								Choose an existing organisation or create new to associate with the multisig account
 							</p>
 							<div className='mt-10'>{item.component}</div>
 						</>

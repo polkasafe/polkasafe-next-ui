@@ -16,7 +16,7 @@ import { Dropdown } from 'antd';
 import { IMultisigAddress } from '@next-common/types';
 
 const ManageMultisig = () => {
-	const { multisigAddresses, activeMultisig, userID } = useGlobalUserDetailsContext();
+	const { activeMultisig, userID } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
 	const activeMultisigData = activeMultisig && activeOrg?.multisigs.find((item) => item.address === activeMultisig);
@@ -76,9 +76,9 @@ const ManageMultisig = () => {
 			)}
 			{userID && (
 				<div className='mt-[30px] flex gap-x-[30px]'>
-					{multisigAddresses && activeMultisig && (
+					{selectedMultisig && (
 						<section className='w-full'>
-							<Details />
+							<Details multisig={selectedMultisig} />
 						</section>
 					)}
 					<section className='w-full max-w-[50%]'>

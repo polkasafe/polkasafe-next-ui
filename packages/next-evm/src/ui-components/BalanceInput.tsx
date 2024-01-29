@@ -89,7 +89,7 @@ const BalanceInput = ({
 				<label className='text-primary font-normal text-xs leading-[13px] block'>{label}</label>
 				{token && (
 					<span className='text-xs font-normal leading-[13px] text-white'>
-						<span className='text-primary'>MAX: </span> {formatBalance(token?.balance_token)} {token?.name}
+						<span className='text-primary'>MAX: </span> {formatBalance(token?.balance_token)} {token?.symbol}
 					</span>
 				)}
 			</div>

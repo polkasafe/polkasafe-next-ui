@@ -80,7 +80,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 					email,
 					name,
 					nickName,
-					organizationId: activeOrg.id,
+					organisationId: activeOrg.id,
 					roles,
 					telegram
 				}),

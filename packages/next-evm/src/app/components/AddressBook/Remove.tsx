@@ -40,7 +40,7 @@ const RemoveAddress = ({
 			const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromAddressBookEth`, {
 				body: JSON.stringify({
 					address: addressToRemove,
-					organizationId: activeOrg.id
+					organisationId: activeOrg.id
 				}),
 				headers: firebaseFunctionsHeader(),
 				method: 'POST'

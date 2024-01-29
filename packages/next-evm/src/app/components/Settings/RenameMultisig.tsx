@@ -6,32 +6,44 @@ import React, { useState } from 'react';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-evm/app/components/Settings/ModalBtn';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import { useWallets } from '@privy-io/react-auth';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
-const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void }) => {
+const RenameMultisig = ({
+	name,
+	onCancel,
+	multisig
+}: {
+	name: string;
+	onCancel: () => void;
+	multisig: IMultisigAddress;
+}) => {
 	const { wallets } = useWallets();
 	const connectedWallet = wallets?.[0];
 
 	const [multisigName, setMultisigName] = useState<string>(name);
 	const [loading, setLoading] = useState<boolean>(false);
-	const { activeMultisig, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 
 	const handleMultisigNameChange = async () => {
 		try {
 			setLoading(true);
 
-			if (!activeMultisig) {
+			if (!multisig.address) {
 				console.log('ERROR');
 				setLoading(false);
 			} else {
 				const changeSafeNameres = await fetch(`${FIREBASE_FUNCTIONS_URL}/renameMultisigEth`, {
 					body: JSON.stringify({
-						address: activeMultisig,
-						name: multisigName
+						address: multisig.address,
+						name: multisigName,
+						network: multisig.network,
+						organisationId: activeOrg.id
 					}),
 					headers: firebaseFunctionsHeader(connectedWallet.address),
 					method: 'POST'
@@ -57,8 +69,8 @@ const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void
 							...prev,
 							multisigSettings: {
 								...prev.multisigSettings,
-								[activeMultisig]: {
-									...prev.multisigSettings[activeMultisig],
+								[`${multisig.address}_${multisig.network}`]: {
+									...prev.multisigSettings[`${multisig.address}_${multisig.network}`],
 									name: multisigName
 								}
 							}

@@ -5,7 +5,6 @@ import { Button } from 'antd';
 import React, { useRef, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
 import { useRouter } from 'next/navigation';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import Balance from '@next-evm/ui-components/Balance';
@@ -23,7 +22,6 @@ interface IAddress {
 }
 const AddressDropdown = () => {
 	const { address, addressBook, loggedInWallet, setUserDetailsContextState } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
 	const router = useRouter();
 	const { logout } = useLogout();
 	const { wallets } = useWallets();
@@ -132,10 +130,6 @@ const AddressDropdown = () => {
 						<p className='border-t border-text_secondary flex items-center text-normal text-sm justify-between w-full p-2'>
 							<span className='text-text_secondary'>Wallet</span>
 							<span className='text-white capitalize'>{loggedInWallet}</span>
-						</p>
-						<p className='border-t border-b border-text_secondary flex items-center text-normal text-sm justify-between w-full p-2'>
-							<span className='text-text_secondary'>Network</span>
-							<span className='text-white capitalize'>{network}</span>
 						</p>
 					</div>
 					<Button

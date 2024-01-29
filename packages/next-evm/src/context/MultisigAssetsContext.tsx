@@ -105,9 +105,10 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 						} else {
 							fiatConversions = { ...fiatConversions, [token?.tokenInfo?.address || '']: token?.fiatConversion };
 						}
+						const balance = ethers.BigNumber.from(token?.balance);
 						return {
 							balance_token: ethers.utils.formatUnits(
-								token?.balance,
+								balance.toString(),
 								token?.tokenInfo?.decimals || chainProperties[account.network].decimals
 							),
 							balance_usd: token?.fiatBalance,
@@ -140,14 +141,21 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 
 					const total = Number(totalOrgBalance.total) + Number(tokenInfo.fiatTotal);
 					tokenInfo?.items?.forEach((item) => {
-						let balanceToken = 0;
+						let balanceToken = ethers.BigNumber.from('0');
 						if (totalOrgBalance.tokens[item.tokenInfo.symbol]) {
-							balanceToken = Number(totalOrgBalance.tokens[item.tokenInfo.symbol].balance_token) + Number(item.balance);
+							const weiValue = ethers.utils.parseUnits(
+								totalOrgBalance.tokens[item.tokenInfo.symbol].balance_token,
+								totalOrgBalance.tokens[item.tokenInfo.symbol].tokenDecimals
+							);
+							const prevValue = ethers.BigNumber.from(weiValue || 0);
+							const currValue = ethers.BigNumber.from(item.balance);
+							balanceToken = prevValue.add(currValue);
 						} else {
-							balanceToken += Number(item.balance);
+							balanceToken = balanceToken.add(ethers.BigNumber.from(item.balance));
 						}
+						const formattedBalance = ethers.utils.formatUnits(balanceToken.toString(), item?.tokenInfo?.decimals);
 						totalOrgBalance.tokens[item.tokenInfo.symbol] = {
-							balance_token: ethers.utils.formatUnits(balanceToken, item.tokenInfo.decimals).toString(),
+							balance_token: formattedBalance,
 							balance_usd: item.fiatBalance,
 							logo: item.tokenInfo.logoUri,
 							name: item.tokenInfo.name,
