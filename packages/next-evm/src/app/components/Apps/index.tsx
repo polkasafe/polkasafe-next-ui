@@ -4,7 +4,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Details from '@next-evm/app/components/Settings/Details';
+// import Details from '@next-evm/app/components/Settings/Details';
 import Feedback from '@next-evm/app/components/Settings/Feedback';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
@@ -68,11 +68,7 @@ const AllApps = () => {
 			)}
 			{userAddress && (
 				<div className='mt-[30px] flex gap-x-[30px]'>
-					{multisigAddresses && activeMultisig && multisig && (
-						<section className='w-full'>
-							<Details />
-						</section>
-					)}
+					{multisigAddresses && activeMultisig && multisig && <section className='w-full'>{/* <Details /> */}</section>}
 					<section className='w-full max-w-[50%]'>
 						<Feedback />
 					</section>
