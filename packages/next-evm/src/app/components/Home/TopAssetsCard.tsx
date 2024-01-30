@@ -32,14 +32,14 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 	const sortedData = dataArray?.sort((a, b) => a.balance - b.balance)?.reverse();
 	console.log('data array', sortedData);
 	const data = {
-		labels: sortedData?.map((item) => item?.tokenSymbol),
+		labels: sortedData?.map((item) => item?.tokenName),
 		datasets: [
 			{
-				label: '# of Tokens',
+				label: 'No. of Tokens',
 				data: sortedData?.map((item) => item?.balance),
 				backgroundColor: ['#392A74', '#58409B', '#9F69C9', '#DDB4FC'],
 				borderWidth: 0,
-				cutout: 60,
+				cutout: 62,
 				legend: {
 					position: 'right'
 				}
@@ -62,7 +62,7 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 				</div>
 			</div>
 			<div
-				className={`${className} bg-bg-main flex flex-col justify-around rounded-xl px-8 shadow-lg scale-90 w-[111%] origin-top-left`}
+				className={`${className} bg-bg-main relative flex flex-col justify-around rounded-xl px-8 shadow-lg scale-90 w-[111%] origin-top-left`}
 			>
 				{sortedData?.[0]?.balance === 0 ? (
 					<div className='flex flex-col gap-y-2 items-center justify-center'>
@@ -70,22 +70,29 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 						<p className='font-normal text-xs leading-[15px] text-text_secondary'>No Assets Found.</p>
 					</div>
 				) : (
-					<div className='h-[250px] w-full'>
-						<Doughnut
-							data={data}
-							options={{
-								plugins: {
-									legend: {
-										position: 'right',
-										labels: {
-											usePointStyle: true,
-											boxHeight: 5,
-											boxWidth: 5
+					<div>
+						<div className='h-[250px] w-[320px]'>
+							<Doughnut
+								data={data}
+								options={{
+									maintainAspectRatio: false,
+									plugins: {
+										legend: {
+											position: 'right',
+											labels: {
+												usePointStyle: true,
+												boxHeight: 5,
+												boxWidth: 5,
+												color: '#ffffff',
+												font: {
+													size: 14
+												}
+											}
 										}
 									}
-								}
-							}}
-						/>
+								}}
+							/>
+						</div>
 					</div>
 				)}
 			</div>
