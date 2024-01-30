@@ -33,19 +33,13 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 	console.log('data array', sortedData);
 	const data = {
 		labels: sortedData?.map((item) => item?.tokenSymbol),
-		config: {
-			cutout: 70
-		},
 		datasets: [
 			{
-				config: {
-					cutout: 70
-				},
 				label: '# of Tokens',
 				data: sortedData?.map((item) => item?.balance),
 				backgroundColor: ['#392A74', '#58409B', '#9F69C9', '#DDB4FC'],
 				borderWidth: 0,
-				cutout: 50,
+				cutout: 60,
 				legend: {
 					position: 'right'
 				}
@@ -68,7 +62,7 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 				</div>
 			</div>
 			<div
-				className={`${className} bg-bg-main flex flex-col justify-around rounded-xl p-8 shadow-lg h-[17rem] scale-90 w-[111%] origin-top-left`}
+				className={`${className} bg-bg-main flex flex-col justify-around rounded-xl px-8 shadow-lg scale-90 w-[111%] origin-top-left`}
 			>
 				{sortedData?.[0]?.balance === 0 ? (
 					<div className='flex flex-col gap-y-2 items-center justify-center'>
@@ -76,23 +70,23 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 						<p className='font-normal text-xs leading-[15px] text-text_secondary'>No Assets Found.</p>
 					</div>
 				) : (
-					<Doughnut
-						width={100}
-						height={100}
-						data={data}
-						options={{
-							plugins: {
-								legend: {
-									position: 'right',
-									labels: {
-										usePointStyle: true,
-										boxHeight: 5,
-										boxWidth: 5
+					<div className='h-[250px] w-full'>
+						<Doughnut
+							data={data}
+							options={{
+								plugins: {
+									legend: {
+										position: 'right',
+										labels: {
+											usePointStyle: true,
+											boxHeight: 5,
+											boxWidth: 5
+										}
 									}
 								}
-							}
-						}}
-					/>
+							}}
+						/>
+					</div>
 				)}
 			</div>
 		</div>

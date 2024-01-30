@@ -2,7 +2,6 @@
 import { useCreateOrgStepsContext } from '@next-evm/context/CreateOrgStepsContext';
 import React, { ReactNode, useState } from 'react';
 import { usePrivy, useWallets } from '@privy-io/react-auth';
-// import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { useRouter } from 'next/navigation';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
@@ -104,20 +103,6 @@ const CreateOrg = () => {
 			if (typeof window !== 'undefined') localStorage.setItem('active-org', createOrgData.id);
 			router.push('/');
 		}
-		// const { data: orgData, error: orgErr } = await nextApiClientFetch<string>(
-		// 	`${EVM_API_URL}/createOrg`,
-		// 	{
-		// 		org: {
-		// 			desc: orgDesc,
-		// 			multisigs: linkedMultisigs,
-		// 			name: orgName
-		// 		}
-		// 	},
-		// 	{ userID: user.id }
-		// );
-		// if (orgData && !orgErr) {
-		// 	router.push('/');
-		// }
 	};
 
 	return (

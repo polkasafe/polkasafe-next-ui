@@ -57,9 +57,7 @@ const Menu: FC<Props> = ({ className }) => {
 	// const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	const { network } = useGlobalApiContext();
 	useEffect(() => {
-		if (activeMultisig) {
-			setSelectedMultisigAddress(activeMultisig);
-		}
+		setSelectedMultisigAddress(activeMultisig);
 	}, [activeMultisig]);
 
 	useEffect(() => {

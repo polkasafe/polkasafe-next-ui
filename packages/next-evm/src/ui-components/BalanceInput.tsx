@@ -57,7 +57,7 @@ const BalanceInput = ({
 		setInsufficientBalance(false);
 	};
 
-	const tokenOptions: ItemType[] = allAssets[multisigAddress]?.map((item) => ({
+	const tokenOptions: ItemType[] = allAssets[multisigAddress]?.assets?.map((item) => ({
 		key: item.name,
 		label: (
 			<span className='flex items-center gap-x-2 text-white'>
@@ -79,7 +79,7 @@ const BalanceInput = ({
 	}));
 
 	const onTokenOptionChange = (e: any) => {
-		const selectedToken = allAssets[multisigAddress]?.find((item) => item.name === e.key);
+		const selectedToken = allAssets[multisigAddress]?.assets?.find((item) => item.name === e.key);
 		if (selectedToken) onTokenChange?.(selectedToken);
 	};
 
@@ -117,7 +117,7 @@ const BalanceInput = ({
 								defaultValue={defaultValue}
 								className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white pr-24'
 							/>
-							{allAssets[multisigAddress]?.length > 0 && token ? (
+							{allAssets[multisigAddress]?.assets?.length > 0 && token ? (
 								<Dropdown
 									trigger={['click']}
 									className={className}

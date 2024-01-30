@@ -51,7 +51,7 @@ const Transaction: FC<IStreamedData> = ({
 	const monthlyAmount = ethers.utils.formatEther(amountInWei.toString());
 	const flowRatePerMonth = Number(monthlyAmount) * 3600 * 24 * (365 / 12);
 
-	const token = allAssets[multisigAddress]?.find((item) => item.name === tokenSymbol);
+	const token = allAssets[multisigAddress]?.assets?.find((item) => item.name === tokenSymbol);
 
 	return (
 		<div className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'>

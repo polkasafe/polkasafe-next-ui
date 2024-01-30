@@ -27,13 +27,20 @@ interface IOrganisationBalance {
 	};
 }
 
+export interface IMultisigAssets {
+	[multisigAddress: string]: {
+		fiatTotal: string;
+		assets: IAsset[];
+	};
+}
+
 export interface IMultisigAssetsContext {
 	organisationBalance: IOrganisationBalance;
-	allAssets: { [multisigAddress: string]: IAsset[] };
+	allAssets: IMultisigAssets;
 	allNfts: { [multisigAddress: string]: INFTAsset[] };
 	tokenFiatConversions: { [tokenAddress: string]: string };
 	loadingAssets: boolean;
-	setMultisigAssetsContextState: React.Dispatch<React.SetStateAction<{ [multisigAddress: string]: IAsset[] }>>;
+	setMultisigAssetsContextState: React.Dispatch<React.SetStateAction<IMultisigAssets>>;
 }
 
 export const initialMultisigAssetsContext: IMultisigAssetsContext = {
@@ -57,7 +64,7 @@ export function useMultisigAssetsContext() {
 }
 
 export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): ReactNode => {
-	const [allAssets, setAllAssets] = useState<{ [multisigAddress: string]: IAsset[] }>({});
+	const [allAssets, setAllAssets] = useState<IMultisigAssets>({});
 	const [organisationBalance, setOrgBalance] = useState<IOrganisationBalance>();
 	const [allNfts, setAllNfts] = useState<{ [multisigAddress: string]: INFTAsset[] }>({});
 	const [tokenFiatConversions, setTokenFiatConversions] = useState<{ [tokenAddress: string]: string }>({});
@@ -92,6 +99,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 						account.network as NETWORK,
 						account.address
 					);
+					console.log('info', tokenInfo);
 					const nftInfo = await getCollectiblesPage(
 						chainProperties[account.network].chainId.toString(),
 						account.address
@@ -135,7 +143,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 							  }))
 							: [];
 
-					setAllAssets((prev) => ({ ...prev, [account.address]: assets }));
+					setAllAssets((prev) => ({ ...prev, [account.address]: { assets, fiatTotal: tokenInfo.fiatTotal || '0' } }));
 					setAllNfts((prev) => ({ ...prev, [account.address]: nfts }));
 					setTokenFiatConversions(fiatConversions);
 

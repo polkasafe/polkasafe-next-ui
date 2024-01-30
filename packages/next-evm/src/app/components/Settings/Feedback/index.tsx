@@ -3,19 +3,19 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Button } from 'antd';
 import React, { useState } from 'react';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import Review from './Review';
 
 const emojis = ['😍', '🙂', '😐', '🙁', '😢'];
 
 const Feedback = () => {
-	const { network } = useGlobalApiContext();
+	const { userID } = useGlobalUserDetailsContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
 	const [review, setReview] = useState<string>('');
@@ -26,10 +26,8 @@ const Feedback = () => {
 	const handleSubmitFeedback = async () => {
 		try {
 			setLoading(true);
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userID) {
 				console.log('ERROR');
 				setLoading(false);
 			} else {
@@ -42,14 +40,18 @@ const Feedback = () => {
 					setLoading(false);
 					return;
 				}
-				const { data: feedbackData, error: feedbackError } = await nextApiClientFetch<any>(
-					`${EVM_API_URL}/addFeedbackEth`,
-					{
+				const addfeedbackRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addFeedbackEth`, {
+					body: JSON.stringify({
 						rating,
 						review
-					},
-					{ network }
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: feedbackData, error: feedbackError } = (await addfeedbackRes.json()) as {
+					data: string;
+					error: string;
+				};
 
 				if (feedbackError) {
 					queueNotification({

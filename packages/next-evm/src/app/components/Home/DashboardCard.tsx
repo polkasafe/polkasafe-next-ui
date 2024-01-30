@@ -68,8 +68,8 @@ const DashboardCard = ({
 		}));
 
 	useEffect(() => {
-		if (allAssets && allAssets[activeMultisig].length > 0) {
-			const total = allAssets[activeMultisig].reduce((sum, asset) => sum + Number(asset.balance_usd), 0);
+		if (allAssets && allAssets[activeMultisig]?.assets?.length > 0) {
+			const total = allAssets[activeMultisig]?.assets.reduce((sum, asset) => sum + Number(asset.balance_usd), 0);
 			setTotalAssetValue(total.toString());
 		}
 	}, [activeMultisig, allAssets]);
@@ -158,7 +158,9 @@ const DashboardCard = ({
 						</div>
 						<div>
 							<div className='text-base font-bold text-white flex items-center gap-x-2'>
-								{multisigSettings[activeMultisig]?.name || currentMultisig?.name || activeMultisigData?.name}
+								{multisigSettings[`${activeMultisig}_${network}`]?.name ||
+									currentMultisig?.name ||
+									activeMultisigData?.name}
 							</div>
 							<div className='flex text-xs'>
 								<div
@@ -219,7 +221,7 @@ const DashboardCard = ({
 							</div>
 							<div>
 								<div className='text-white'>Tokens</div>
-								<div className='font-bold text-lg text-primary'>{allAssets[activeMultisig]?.length || 0}</div>
+								<div className='font-bold text-lg text-primary'>{allAssets[activeMultisig]?.assets?.length || 0}</div>
 							</div>
 							<div>
 								<div className='text-white'>Total Asset Value</div>

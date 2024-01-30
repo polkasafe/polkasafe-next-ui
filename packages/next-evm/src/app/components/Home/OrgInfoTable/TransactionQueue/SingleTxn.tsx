@@ -112,7 +112,7 @@ const SingleTxn = ({
 				const tokenDetails = [];
 				tokenContractAddressArray.forEach((item) => {
 					if (realContractAddresses.includes(item)) {
-						const assetDetails = allAssets[multisigAddress].find((asset) => asset.tokenAddress === item);
+						const assetDetails = allAssets[multisigAddress]?.assets?.find((asset) => asset.tokenAddress === item);
 						tokenDetails.push({
 							tokenAddress: assetDetails?.tokenAddress || '',
 							tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -273,6 +273,8 @@ const SingleTxn = ({
 					<p className='text-white flex items-center gap-x-2 col-span-2 text-sm'>
 						<AddressComponent
 							iconSize={25}
+							isMultisig
+							network={network}
 							withBadge={false}
 							address={multisigAddress}
 						/>

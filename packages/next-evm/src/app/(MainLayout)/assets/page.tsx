@@ -48,7 +48,9 @@ const Assets = () => {
 					</div>
 					<div className='mb-4'>
 						<p className='text-sm text-text_secondary mb-3'>Total Balance</p>
-						<p className='text-[30px] font-bold text-white'>$ {formatBalance(organisationBalance?.total)}</p>
+						<p className='text-[30px] font-bold text-white'>
+							$ {formatBalance(activeMultisig ? allAssets[activeMultisig]?.fiatTotal : organisationBalance?.total)}
+						</p>
 					</div>
 					<div className='flex items-center mb-4'>
 						<Button

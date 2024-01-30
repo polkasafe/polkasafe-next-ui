@@ -17,7 +17,6 @@ import transakLogo from '@next-common/assets/icons/transak-logo.png';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import Image from 'next/image';
 import { NETWORK } from '@next-common/global/evm-network-constants';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
@@ -31,10 +30,13 @@ enum EOnramp {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const Exchange = ({ className }: { className?: string }) => {
-	const { address: userAddress, activeMultisig } = useGlobalUserDetailsContext();
+	const { address: userAddress, activeMultisig, activeMultisigData } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 	const { allAssets } = useMultisigAssetsContext();
-	const { network } = useGlobalApiContext();
+
+	const [network, setNetwork] = useState<NETWORK>(
+		(activeMultisigData?.network as NETWORK) || (activeOrg?.multisigs?.[0]?.network as NETWORK) || NETWORK.POLYGON
+	);
 
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
 		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
@@ -47,24 +49,31 @@ const Exchange = ({ className }: { className?: string }) => {
 	// const [defaultMax, setDefaultMax] = useState<boolean>(false);
 
 	useEffect(() => {
-		if (!allAssets || allAssets[selectedMultisig]?.length === 0) return;
+		if (!allAssets || allAssets[selectedMultisig]?.assets?.length === 0) return;
 		setCoinCode(allAssets[selectedMultisig]?.[0]?.name);
 	}, [allAssets, selectedMultisig]);
 
 	useEffect(() => {
-		if (!allAssets || allAssets[selectedMultisig]?.length === 0) return;
-		const max = allAssets[selectedMultisig].find((item) => item.name === coinCode)?.balance_token;
+		if (!allAssets || allAssets[selectedMultisig]?.assets?.length === 0) return;
+		const max = allAssets[selectedMultisig]?.assets.find((item) => item.name === coinCode)?.balance_token;
 		setMaxAmount(max);
 	}, [allAssets, coinCode, selectedMultisig]);
 
 	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
 		key: JSON.stringify(item),
-		label: <AddressComponent address={item.address} />
+		label: (
+			<AddressComponent
+				isMultisig
+				withBadge={false}
+				network={item.network as NETWORK}
+				address={item.address}
+			/>
+		)
 	}));
 
 	const currencyOptions: ItemType[] =
-		allAssets && allAssets[selectedMultisig]?.length > 0
-			? allAssets[selectedMultisig]?.map((token) => ({
+		allAssets && allAssets[selectedMultisig]?.assets?.length > 0
+			? allAssets[selectedMultisig]?.assets?.map((token) => ({
 					key: token.name,
 					label: (
 						<span className='text-white flex items-center gap-x-2'>
@@ -129,13 +138,18 @@ const Exchange = ({ className }: { className?: string }) => {
 								menu={{
 									items: multisigOptions,
 									onClick: (e) => {
-										console.log(JSON.parse(e.key));
 										setSelectedMultisig(JSON.parse(e.key)?.address);
+										setNetwork(JSON.parse(e.key)?.network as NETWORK);
 									}
 								}}
 							>
 								<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
-									<AddressComponent address={selectedMultisig} />
+									<AddressComponent
+										isMultisig
+										withBadge={false}
+										network={network}
+										address={selectedMultisig}
+									/>
 									<CircleArrowDownIcon className='text-primary' />
 								</div>
 							</Dropdown>
@@ -196,7 +210,9 @@ const Exchange = ({ className }: { className?: string }) => {
 									>
 										<div className='absolute cursor-pointer right-0 text-white pr-3 flex items-center gap-x-1 justify-center'>
 											<ParachainIcon
-												src={allAssets[selectedMultisig]?.find((item) => item.name === coinCode)?.logoURI || ''}
+												src={
+													allAssets[selectedMultisig]?.assets?.find((item) => item?.name === coinCode)?.logoURI || ''
+												}
 											/>
 											<span>{coinCode}</span>
 											<CircleArrowDownIcon className='text-primary ml-1' />

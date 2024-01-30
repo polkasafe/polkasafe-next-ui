@@ -132,7 +132,7 @@ const SingleTxn = ({
 			const tokenDetails = [];
 			tokenContractAddressArray.forEach((item) => {
 				if (realContractAddresses.includes(item)) {
-					const assetDetails = allAssets[multisigAddress]?.find((asset) => asset.tokenAddress === item);
+					const assetDetails = allAssets[multisigAddress]?.assets?.find((asset) => asset.tokenAddress === item);
 					tokenDetails.push({
 						tokenAddress: assetDetails?.tokenAddress || '',
 						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -153,7 +153,7 @@ const SingleTxn = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
-					const isFakeToken = !allAssets[multisigAddress]?.some(
+					const isFakeToken = !allAssets[multisigAddress]?.assets?.some(
 						(asset) => asset.tokenAddress === item?.tokenInfo?.address
 					);
 					tokenDetails.push({
@@ -361,6 +361,8 @@ const SingleTxn = ({
 						<AddressComponent
 							iconSize={25}
 							withBadge={false}
+							network={network}
+							isMultisig
 							address={multisigAddress}
 						/>
 					</p>

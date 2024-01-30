@@ -2,10 +2,12 @@ import Loader from '@next-common/ui-components/Loader';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import React, { useCallback, useEffect, useState } from 'react';
 import dayjs from 'dayjs';
-import { useSuperfluidContext } from '@next-evm/context/SuperfluidContext';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
-import Transaction, { IStreamedData } from './Transaction';
+import { chainProperties } from '@next-common/global/evm-network-constants';
+import { Framework } from '@superfluid-finance/sdk-core';
+import { ethers } from 'ethers';
 import NoTransactionsQueued from '../Queued/NoTransactionsQueued';
+import Transaction, { IStreamedData } from './Transaction';
 
 const Streamed = ({
 	refetch,
@@ -16,8 +18,7 @@ const Streamed = ({
 	loading: boolean;
 	setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
-	const { activeMultisig } = useGlobalUserDetailsContext();
-	const { superfluidFramework } = useSuperfluidContext();
+	const { activeMultisig, activeMultisigData } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
 	const [streamsData, setStreamsData] = useState<IStreamedData[]>([]);
@@ -28,7 +29,16 @@ const Streamed = ({
 		setLoading(true);
 		await Promise.all(
 			activeOrg.multisigs.map(async (multi) => {
-				const res = await superfluidFramework.query.listStreams({
+				const provider = typeof window !== 'undefined' && new ethers.providers.Web3Provider(window.ethereum);
+				await provider.send('eth_requestAccounts', []);
+
+				const { chainId } = chainProperties[multi.network];
+
+				const sf = await Framework.create({
+					chainId: Number(chainId),
+					provider
+				});
+				const res = await sf.query.listStreams({
 					sender: multi.address
 				});
 				if (res && res.data && res.data.length > 0) {
@@ -53,17 +63,26 @@ const Streamed = ({
 		setLoading(false);
 		setStreamsData(txns);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig, activeOrg, superfluidFramework]);
+	}, [activeMultisig, activeOrg]);
 
 	useEffect(() => {
 		getStreamedPaymentsForOrg();
 	}, [getStreamedPaymentsForOrg, refetch]);
 
 	const getStreamedPayments = useCallback(async () => {
-		if (!activeMultisig) return;
+		if (!activeMultisig || !activeMultisigData.network) return;
 		setLoading(true);
 		try {
-			const txns = await superfluidFramework.query.listStreams({
+			const provider = typeof window !== 'undefined' && new ethers.providers.Web3Provider(window.ethereum);
+			await provider.send('eth_requestAccounts', []);
+
+			const { chainId } = chainProperties[activeMultisigData.network];
+
+			const sf = await Framework.create({
+				chainId: Number(chainId),
+				provider
+			});
+			const txns = await sf.query.listStreams({
 				sender: activeMultisig
 			});
 			setLoading(false);
@@ -90,7 +109,7 @@ const Streamed = ({
 			console.log(err);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig, superfluidFramework]);
+	}, [activeMultisig, activeMultisigData.network]);
 
 	useEffect(() => {
 		getStreamedPayments();

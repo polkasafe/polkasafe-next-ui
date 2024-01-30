@@ -125,7 +125,7 @@ const HistoryTransaction = ({
 			const tokenDetails = [];
 			tokenContractAddressArray.forEach((item) => {
 				if (realContractAddresses.includes(item)) {
-					const assetDetails = allAssets[activeMultisig].find((asset) => asset.tokenAddress === item);
+					const assetDetails = allAssets[activeMultisig]?.assets?.find((asset) => asset.tokenAddress === item);
 					tokenDetails.push({
 						tokenAddress: assetDetails?.tokenAddress || '',
 						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -146,7 +146,7 @@ const HistoryTransaction = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
-					const isFakeToken = !allAssets[activeMultisig].some(
+					const isFakeToken = !allAssets[activeMultisig]?.assets?.some(
 						(asset) => asset.tokenAddress === item?.tokenInfo?.address
 					);
 					tokenDetails.push({

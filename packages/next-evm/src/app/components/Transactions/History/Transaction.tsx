@@ -144,7 +144,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 			const tokenDetails = [];
 			tokenContractAddressArray.forEach((item) => {
 				if (realContractAddresses.includes(item)) {
-					const assetDetails = allAssets[safeAddress]?.find((asset) => asset.tokenAddress === item);
+					const assetDetails = allAssets[safeAddress]?.assets?.find((asset) => asset.tokenAddress === item);
 					tokenDetails.push({
 						tokenAddress: assetDetails?.tokenAddress || '',
 						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -165,7 +165,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
-					const isFakeToken = !allAssets[safeAddress]?.some((asset) => asset.tokenAddress === item?.tokenInfo?.address);
+					const isFakeToken = !allAssets[safeAddress]?.assets?.some(
+						(asset) => asset.tokenAddress === item?.tokenInfo?.address
+					);
 					tokenDetails.push({
 						isFakeToken,
 						tokenAddress: item?.tokenInfo?.address || '',

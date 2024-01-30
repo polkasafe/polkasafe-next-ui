@@ -10,8 +10,8 @@ import { EFieldType, IDropdownOptions } from '@next-common/types';
 import { DeleteIcon, EditIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import AddSubfield from './AddSubfield';
 import DeleteField from './DeleteField';
 import EditField from './EditField';
@@ -133,9 +133,8 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 			} else {
 				setLoading(true);
 
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } = await nextApiClientFetch(
-					`${EVM_API_URL}/updateTransactionFieldsEth`,
-					{
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFieldsEth`, {
+					body: JSON.stringify({
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -149,8 +148,15 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 								}
 							}
 						}
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
 
 				if (updateTransactionFieldsError) {
 					console.log(updateTransactionFieldsError);

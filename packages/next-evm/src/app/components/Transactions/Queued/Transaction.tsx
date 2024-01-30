@@ -216,7 +216,7 @@ const Transaction: FC<ITransactionProps> = ({
 				const tokenDetails: ITokenDetails[] = [];
 				tokenContractAddressArray.forEach((item) => {
 					if (realContractAddresses.includes(item)) {
-						const assetDetails = allAssets[multisigAddress]?.find((asset) => asset.tokenAddress === item);
+						const assetDetails = allAssets[multisigAddress]?.assets?.find((asset) => asset.tokenAddress === item);
 						tokenDetails.push({
 							fiatConversion: assetDetails?.fiat_conversion,
 							tokenAddress: assetDetails?.tokenAddress || '',

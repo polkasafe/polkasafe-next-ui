@@ -30,7 +30,16 @@ const ManageMultisig = () => {
 
 	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
 		key: JSON.stringify(item),
-		label: <AddressComponent address={item.address} />
+		label: (
+			<div className='scale-90 origin-top-left'>
+				<AddressComponent
+					isMultisig
+					network={network}
+					withBadge={false}
+					address={item.address}
+				/>
+			</div>
+		)
 	}));
 
 	return (
@@ -48,7 +57,7 @@ const ManageMultisig = () => {
 						<section className='flex items-center justify-between flex-col gap-5 md:flex-row mb-6'>
 							<Dropdown
 								trigger={['click']}
-								className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer min-w-[250px]'
+								className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer min-w-[260px]'
 								menu={{
 									items: multisigOptions,
 									onClick: (e) => {
@@ -59,7 +68,12 @@ const ManageMultisig = () => {
 								}}
 							>
 								<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
-									<AddressComponent address={selectedMultisig.address} />
+									<AddressComponent
+										isMultisig
+										network={network}
+										withBadge={false}
+										address={selectedMultisig.address}
+									/>
 									<CircleArrowDownIcon className='text-primary' />
 								</div>
 							</Dropdown>

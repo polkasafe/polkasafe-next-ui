@@ -10,14 +10,14 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
+import { IMultisigAssets, useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IAssetsProps {
-	assets: { [multisigAddress: string]: IAsset[] };
+	assets: IMultisigAssets;
 	currency: string;
 }
 const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
@@ -47,8 +47,8 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 				<span className='col-span-1'>Action</span>
 			</article>
 			{activeMultisig ? (
-				assets && assets[activeMultisig]?.length > 0 ? (
-					assets[activeMultisig].map((asset, index) => {
+				assets && assets[activeMultisig]?.assets?.length > 0 ? (
+					assets[activeMultisig]?.assets.map((asset, index) => {
 						const { balance_token, balance_usd, logoURI, name, symbol } = asset;
 						return (
 							<>
@@ -99,7 +99,9 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 										<p className='font-normal text-sm'>Send</p>
 									</PrimaryButton>
 								</article>
-								{assets[activeMultisig].length - 1 !== index ? <Divider className='bg-text_secondary my-0' /> : null}
+								{assets[activeMultisig].assets.length - 1 !== index ? (
+									<Divider className='bg-text_secondary my-0' />
+								) : null}
 							</>
 						);
 					})

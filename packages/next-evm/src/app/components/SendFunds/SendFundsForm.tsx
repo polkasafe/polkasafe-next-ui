@@ -39,12 +39,12 @@ import Image from 'next/image';
 import { getSimulationLink, setSimulationSharing } from '@next-evm/utils/simulation';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
-import { useSuperfluidContext } from '@next-evm/context/SuperfluidContext';
 import returnTxUrl from '@next-common/global/gnosisService';
 import { EthersAdapter } from '@safe-global/protocol-kit';
 import GnosisSafeService from '@next-evm/services/Gnosis';
 import { useWallets } from '@privy-io/react-auth';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { Framework } from '@superfluid-finance/sdk-core';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -109,7 +109,6 @@ const SendFundsForm = ({
 		(activeMultisigData?.network as NETWORK) || (activeOrg?.multisigs?.[0]?.network as NETWORK) || NETWORK.POLYGON
 	);
 	const { allAssets, allNfts } = useMultisigAssetsContext();
-	const { superfluidFramework } = useSuperfluidContext();
 	const { wallets } = useWallets();
 
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
@@ -123,7 +122,7 @@ const SendFundsForm = ({
 		{
 			amount: '0',
 			recipient: defaultSelectedAddress ? defaultSelectedAddress || '' : address || '',
-			token: defaultToken || allAssets[selectedMultisig][0]
+			token: defaultToken || allAssets[selectedMultisig]?.assets?.[0]
 		}
 	]);
 	const [autocompleteAddresses, setAutoCompleteAddresses] = useState<DefaultOptionType[]>([]);
@@ -209,13 +208,13 @@ const SendFundsForm = ({
 	}, [allNfts, selectedMultisig]);
 
 	useEffect(() => {
-		if (allAssets && allAssets[selectedMultisig]) {
-			setStreamToken(allAssets[selectedMultisig][0]);
+		if (allAssets && allAssets[selectedMultisig]?.assets) {
+			setStreamToken(allAssets[selectedMultisig]?.assets?.[0]);
 			setRecipientAndAmount([
 				{
 					amount: '0',
 					recipient: defaultSelectedAddress ? defaultSelectedAddress || '' : address || '',
-					token: defaultToken || allAssets[selectedMultisig][0]
+					token: defaultToken || allAssets[selectedMultisig]?.assets?.[0]
 				}
 			]);
 		}
@@ -411,6 +410,15 @@ const SendFundsForm = ({
 			);
 			const selectedTokens = recipientAndAmount.map((r) => r.token);
 			if (transactionType === ETransactionTypeEVM.STREAM_PAYMENTS) {
+				const sfProvider = typeof window !== 'undefined' && new ethers.providers.Web3Provider(window.ethereum);
+				await provider.send('eth_requestAccounts', []);
+
+				const { chainId } = chainProperties[network];
+
+				const superfluidFramework = await Framework.create({
+					chainId: Number(chainId),
+					provider: sfProvider
+				});
 				const superToken = await superfluidFramework.loadSuperToken(`${streamToken.name}x`);
 				const tokenAddress = superToken.address;
 				if (!tokenAddress) {

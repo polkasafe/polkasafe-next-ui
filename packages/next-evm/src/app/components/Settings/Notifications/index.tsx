@@ -25,8 +25,7 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL, FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import { useWallets } from '@privy-io/react-auth';
 import DiscordInfoModal from './DiscordInfoModal';
@@ -393,19 +392,21 @@ const Notifications = () => {
 
 	const getVerifyToken = async (channel: CHANNEL) => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress || !signature) {
+			if (!userID) {
 				console.log('ERROR');
 				return undefined;
 			}
-			const { data: verifyToken, error: verifyTokenError } = await nextApiClientFetch<string>(
-				`${EVM_API_URL}/getChannelVerifyToken`,
-				{
+			const getVerifyTokenRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getChannelVerifyToken`, {
+				body: JSON.stringify({
 					channel
-				}
-			);
+				}),
+				headers: firebaseFunctionsHeader(connectedWallet.address),
+				method: 'POST'
+			});
+			const { data: verifyToken, error: verifyTokenError } = (await getVerifyTokenRes.json()) as {
+				data: string;
+				error: string;
+			};
 
 			if (verifyTokenError) {
 				queueNotification({

@@ -73,7 +73,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 				return;
 			}
 
-			const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBookEth`, {
+			const addToAddressBookRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBookEth`, {
 				body: JSON.stringify({
 					address,
 					discord,
@@ -87,7 +87,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 				headers: firebaseFunctionsHeader(),
 				method: 'POST'
 			});
-			const { data: addAddressData, error: addAddressError } = (await createOrgRes.json()) as {
+			const { data: addAddressData, error: addAddressError } = (await addToAddressBookRes.json()) as {
 				data: IAddressBookItem[];
 				error: string;
 			};

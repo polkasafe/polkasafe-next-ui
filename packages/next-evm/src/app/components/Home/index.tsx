@@ -60,7 +60,7 @@ const Home = () => {
 							setNewTxn={() => {}}
 						/>
 					</div>
-					<div className='col-start-1 col-end-13 lg:col-start-8 h-full'>
+					<div className='col-start-1 col-end-13 lg:col-start-8'>
 						<TopAssetsCard />
 					</div>
 				</div>
