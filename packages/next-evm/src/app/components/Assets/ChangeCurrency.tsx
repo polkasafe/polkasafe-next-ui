@@ -27,11 +27,13 @@ export const CurrencyFlag = ({ src, className }: { src: string; className?: stri
 const ChangeCurrency = ({
 	className,
 	currency,
-	setCurrency
+	setCurrency,
+	small
 }: {
 	className?: string;
 	currency?: string;
 	setCurrency?: React.Dispatch<React.SetStateAction<string>>;
+	small?: boolean;
 }) => {
 	const [openCurrencyChangedModal, setOpenCurrencyChangedModal] = useState<boolean>(false);
 	const { currency: globalCurrency, setCurrency: setGlobalCurrency } = useGlobalCurrencyContext();
@@ -41,7 +43,7 @@ const ChangeCurrency = ({
 		label: (
 			<span className='text-white flex items-center gap-x-2'>
 				<CurrencyFlag src={currencyProperties[c].logo} />
-				{c} ({currencyProperties[c].symbol})
+				{small ? currencyProperties[c].symbol : `${c} (${currencyProperties[c].symbol})`}
 			</span>
 		)
 	}));
@@ -51,7 +53,9 @@ const ChangeCurrency = ({
 			setCurrency(e.key);
 		} else {
 			setGlobalCurrency(e.key);
-			setOpenCurrencyChangedModal(true);
+			if (!small) {
+				setOpenCurrencyChangedModal(true);
+			}
 			if (typeof window !== 'undefined') {
 				localStorage.setItem('currency', e.key);
 			}
@@ -79,16 +83,22 @@ const ChangeCurrency = ({
 			</ModalComponent>
 			<Dropdown
 				trigger={['click']}
-				className={`border border-primary rounded-lg p-2.5 bg-bg-secondary cursor-pointer ${className}`}
+				className={`${
+					small ? 'bg-transparent' : 'border border-primary rounded-lg p-2.5 bg-bg-secondary'
+				} cursor-pointer ${className}`}
 				menu={{
 					items: currencyOptions,
 					onClick: onCurrencyChange
 				}}
 			>
-				<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+				<div
+					className={`flex justify-between gap-x-4 items-center ${small ? 'text-primary' : 'text-white'} text-[16px]`}
+				>
 					<span className='flex items-center gap-x-2'>
 						<CurrencyFlag src={currencyProperties[currency || globalCurrency].logo} />
-						{currency || globalCurrency} ({currencyProperties[currency || globalCurrency].symbol})
+						{small
+							? currencyProperties[currency || globalCurrency].symbol
+							: `${currency || globalCurrency} (${currencyProperties[currency || globalCurrency].symbol})`}
 					</span>
 					<CircleArrowDownIcon className='text-primary' />
 				</div>

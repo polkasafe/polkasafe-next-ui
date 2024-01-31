@@ -7,8 +7,11 @@ import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContex
 import { AssetsIcon } from '@next-common/ui-components/CustomIcons';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import formatBalance from '@next-evm/utils/formatBalance';
+import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
+import { currencyProperties } from '@next-common/global/currencyConstants';
 import SendFundsForm, { ETransactionTypeEVM } from '../SendFunds/SendFundsForm';
 import FundMultisig from '../SendFunds/FundMultisig';
+import ChangeCurrency from '../Assets/ChangeCurrency';
 
 interface IOrganisationAssetsCard {
 	setNewTxn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -26,6 +29,7 @@ const OrganisationAssetsCard = ({
 	const [transactionType, setTransactionType] = useState<ETransactionTypeEVM>(ETransactionTypeEVM.SEND_TOKEN);
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
 	const { organisationBalance, loadingAssets } = useMultisigAssetsContext();
+	const { allCurrencyPrices, currency } = useGlobalCurrencyContext();
 
 	const transactionTypes: ItemType[] = Object.values(ETransactionTypeEVM)
 		// .filter((item) => {
@@ -36,6 +40,7 @@ const OrganisationAssetsCard = ({
 			label: <span className='text-white flex items-center gap-x-2'>{item}</span>
 		}));
 
+	const fiatBalanceInUSD = formatBalance(organisationBalance?.total);
 	return (
 		<>
 			<ModalComponent
@@ -69,14 +74,24 @@ const OrganisationAssetsCard = ({
 				<div className='circle_2 absolute' />
 				<div className='circle_3 absolute' />
 				<div>
-					<p className='text-sm text-text_secondary mb-3'>Total Balance</p>
+					<p className='text-sm text-text_secondary mb-3 flex items-center justify-between'>
+						Total Balance
+						<ChangeCurrency small />
+					</p>
 					{loadingAssets ? (
 						<Skeleton
 							paragraph={{ rows: 0, width: 150 }}
 							active
 						/>
 					) : (
-						<p className='text-[30px] font-bold text-white'>$ {formatBalance(organisationBalance?.total)}</p>
+						<p className='text-[30px] font-bold text-white'>
+							${' '}
+							{allCurrencyPrices[currencyProperties[currency]?.symbol]
+								? formatBalance(
+										Number(fiatBalanceInUSD) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+								  )
+								: fiatBalanceInUSD}
+						</p>
 					)}
 				</div>
 				<div className='flex justify-between w-full mt-5'>
