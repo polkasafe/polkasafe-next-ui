@@ -617,6 +617,8 @@ const SendFundsForm = ({
 							<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
 								Sending from
 								<Balance
+									isMultisig
+									allAssets={allAssets}
 									network={network}
 									address={selectedMultisig}
 								/>

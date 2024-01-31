@@ -50,7 +50,7 @@ const Exchange = ({ className }: { className?: string }) => {
 
 	useEffect(() => {
 		if (!allAssets || allAssets[selectedMultisig]?.assets?.length === 0) return;
-		setCoinCode(allAssets[selectedMultisig]?.[0]?.name);
+		setCoinCode(allAssets[selectedMultisig]?.assets?.[0]?.name);
 	}, [allAssets, selectedMultisig]);
 
 	useEffect(() => {
@@ -85,7 +85,7 @@ const Exchange = ({ className }: { className?: string }) => {
 			: [];
 
 	const onConfirm = () => {
-		if (!activeMultisig || !coinAmount || Number.isNaN(coinAmount)) return;
+		if (!selectedMultisig || !coinAmount || Number.isNaN(coinAmount)) return;
 
 		const transakConfig: TransakConfig = {
 			apiKey: process.env.NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY,
@@ -95,7 +95,7 @@ const Exchange = ({ className }: { className?: string }) => {
 			cryptoAmount: Number(coinAmount),
 			defaultCryptoCurrency: coinCode,
 			cryptoCurrencyCode: onrampFlowType === EOnramp.SELL && coinCode,
-			walletAddress: activeMultisig,
+			walletAddress: selectedMultisig,
 			productsAvailed: onrampFlowType
 		};
 

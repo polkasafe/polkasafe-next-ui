@@ -5,6 +5,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 import './styles.css';
+import { RandomAvatar } from 'react-random-avatars';
 import { Badge, Dropdown } from 'antd';
 import classNames from 'classnames';
 import React, { FC, useEffect, useState } from 'react';
@@ -14,7 +15,6 @@ import { usePathname } from 'next/navigation';
 import PolkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import emptyImage from '@next-common/assets/icons/empty-image.png';
 import {
 	AddressBookIcon,
 	AppsIcon,
@@ -32,7 +32,6 @@ import { useAddMultisigContext } from '@next-evm/context/AddMultisigContext';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import { IMultisigAndNetwork, IOrganisation } from '@next-common/types';
-import Image from 'next/image';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 
 interface Props {
@@ -184,11 +183,15 @@ const Menu: FC<Props> = ({ className }) => {
 						>
 							<div className='flex justify-between items-center text-white gap-x-2'>
 								<div className='flex items-center gap-x-3'>
-									<Image
+									{/* <Image
 										width={30}
 										height={30}
 										src={emptyImage}
 										alt='empty profile image'
+									/> */}
+									<RandomAvatar
+										name={activeOrg?.id}
+										size={30}
 									/>
 									<div className='flex flex-col gap-y-[1px]'>
 										<span className='text-sm text-white capitalize truncate max-w-[100px]'>{activeOrg?.name}</span>

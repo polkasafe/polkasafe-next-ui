@@ -23,6 +23,7 @@ import { NETWORK } from '@next-common/global/evm-network-constants';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import { CircleArrowDownIcon, CopyIcon } from '@next-common/ui-components/CustomIcons';
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
 const FundMultisig = ({
@@ -37,6 +38,7 @@ const FundMultisig = ({
 }) => {
 	const { activeMultisig, address } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
+	const { allAssets } = useMultisigAssetsContext();
 
 	const activeMultisigData = activeMultisig && activeOrg?.multisigs.find((item) => item.address === activeMultisig);
 
@@ -135,6 +137,8 @@ const FundMultisig = ({
 				<p className='text-primary font-normal text-xs leading-[13px] mb-2 flex justify-between items-center'>
 					Recipient
 					<Balance
+						isMultisig
+						allAssets={allAssets}
 						network={selectedMultisig.network as NETWORK}
 						address={selectedMultisig.address || activeMultisig}
 					/>
