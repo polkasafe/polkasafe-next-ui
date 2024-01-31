@@ -3,7 +3,9 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { Divider, Dropdown, Spin } from 'antd';
-import { RandomAvatar } from 'react-random-avatars';
+// import { RandomAvatar } from 'react-random-avatars';
+import emptyImage from '@next-common/assets/icons/empty-image.png';
+import Image from 'next/image';
 import React, { useState } from 'react';
 import CreateMultisig from '@next-evm/app/components/Multisig/CreateMultisig';
 import {
@@ -77,16 +79,16 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 						>
 							<div className='flex justify-between items-center text-white gap-x-2'>
 								<div className='flex items-center gap-x-3'>
-									{/* <Image
+									<Image
 										width={30}
 										height={30}
 										src={emptyImage}
 										alt='empty profile image'
-									/> */}
-									<RandomAvatar
+									/>
+									{/* <RandomAvatar
 										name={activeOrg?.id}
 										size={30}
-									/>
+									/> */}
 									<div className='flex flex-col gap-y-[1px]'>
 										<span className='text-sm text-white capitalize truncate'>{selectedOrg?.name}</span>
 										<span className='text-xs text-text_secondary'>{activeOrg?.members?.length} Members</span>

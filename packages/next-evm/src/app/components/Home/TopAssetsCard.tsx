@@ -10,21 +10,27 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
 import { Doughnut } from 'react-chartjs-2';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import NoAssetsSVG from '@next-common/assets/icons/no-transaction-home.svg';
+import formatBalance from '@next-evm/utils/formatBalance';
+import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
+import { currencyProperties } from '@next-common/global/currencyConstants';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const TopAssetsCard = ({ className }: { className?: string }) => {
 	const { organisationBalance } = useMultisigAssetsContext();
+	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
 	const dataArray =
 		organisationBalance &&
 		organisationBalance?.tokens &&
 		Object.keys(organisationBalance.tokens)?.length > 0 &&
 		Object.keys(organisationBalance.tokens)?.map((item) => {
 			const balance = organisationBalance.tokens[item].balance_token;
+			const balanceUSD = organisationBalance.tokens[item].balance_usd;
 			const { name } = organisationBalance.tokens[item];
 			const { tokenSymbol } = organisationBalance.tokens[item];
 			return {
 				balance: Number(balance),
+				balance_usd: Number(balanceUSD),
 				tokenName: name,
 				tokenSymbol
 			};
@@ -32,7 +38,12 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 	const sortedData = dataArray?.sort((a, b) => a.balance - b.balance)?.reverse();
 	console.log('data array', sortedData);
 	const data = {
-		labels: sortedData?.map((item) => item?.tokenName),
+		labels: sortedData?.map(
+			(item) =>
+				`${item?.tokenSymbol} (${formatBalance(
+					Number(item?.balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+				)} ${allCurrencyPrices[currencyProperties[currency].symbol]?.code})`
+		),
 		datasets: [
 			{
 				label: 'No. of Tokens',
@@ -61,15 +72,19 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 					<RightArrowOutlined />
 				</div>
 			</div>
-			<div
-				className={`${className} bg-bg-main relative flex flex-col justify-around rounded-xl px-8 shadow-lg scale-90 w-[111%] origin-top-left`}
-			>
-				{sortedData?.[0]?.balance === 0 ? (
+			{sortedData?.[0]?.balance === 0 ? (
+				<div
+					className={`${className} bg-bg-main relative flex flex-col justify-around rounded-xl p-8 h-[17rem] shadow-lg scale-90 w-[111%] origin-top-left`}
+				>
 					<div className='flex flex-col gap-y-2 items-center justify-center'>
 						<NoAssetsSVG />
 						<p className='font-normal text-xs leading-[15px] text-text_secondary'>No Assets Found.</p>
 					</div>
-				) : (
+				</div>
+			) : (
+				<div
+					className={`${className} bg-bg-main relative flex flex-col justify-around rounded-xl px-8 shadow-lg scale-90 w-[111%] origin-top-left`}
+				>
 					<div>
 						<div className='h-[250px] w-[320px]'>
 							<Doughnut
@@ -94,8 +109,8 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 							/>
 						</div>
 					</div>
-				)}
-			</div>
+				</div>
+			)}
 		</div>
 	);
 };
