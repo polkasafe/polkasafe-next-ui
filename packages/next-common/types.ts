@@ -251,6 +251,7 @@ export interface IAsset {
 }
 
 export interface INFTAsset {
+	network: string;
 	name: string;
 	tokenNameWithID: string;
 	logoURI?: string;

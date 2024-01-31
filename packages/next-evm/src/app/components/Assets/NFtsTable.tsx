@@ -2,12 +2,11 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Divider } from 'antd';
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { INFTAsset } from '@next-common/types';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { chainProperties } from 'next-common/global/evm-network-constants';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import shortenAddress from '@next-evm/utils/shortenAddress';
@@ -16,6 +15,7 @@ import copyText from '@next-evm/utils/copyText';
 import openseaLogo from '@next-common/assets/icons/opensea-logo.png';
 import zerionLogo from '@next-common/assets/icons/zerion-logo.png';
 import Image from 'next/image';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import SendFundsForm, { ETransactionTypeEVM } from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
@@ -25,11 +25,30 @@ interface IAssetsProps {
 }
 const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
-	const { network } = useGlobalApiContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { notOwnerOfSafe, activeMultisig } = useGlobalUserDetailsContext();
 	const [selectedNFT, setSeletedNFT] = useState<INFTAsset>();
 
 	const [viewNFT, setViewNFT] = useState<boolean>(false);
+
+	const [allOrgNFTs, setAllOrgNFTs] = useState<INFTAsset[]>([]);
+
+	useEffect(() => {
+		// eslint-disable-next-line sonarjs/no-unused-collection
+		const allNfts: INFTAsset[] = [];
+		if (!activeOrg || !activeOrg.multisigs || activeOrg.multisigs.length === 0) return;
+
+		activeOrg.multisigs.forEach((item) => {
+			if (nfts[item.address]) {
+				nfts[item.address].forEach((n) => {
+					allNfts.push(n);
+				});
+			}
+		});
+		setAllOrgNFTs(allNfts);
+	}, [activeOrg, nfts]);
+
+	const nftsArray = activeMultisig ? nfts[activeMultisig] : allOrgNFTs;
 
 	return (
 		<div className='text-sm font-medium leading-[15px]'>
@@ -68,10 +87,10 @@ const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 				<span className='col-span-1'>Links</span>
 				<span className='col-span-1'>Action</span>
 			</article>
-			{nfts && nfts[activeMultisig]?.length > 0 ? (
-				nfts[activeMultisig]?.map((nft, index) => {
+			{nfts && nftsArray.length > 0 ? (
+				nftsArray?.map((nft, index) => {
 					// eslint-disable-next-line @typescript-eslint/no-unused-vars
-					const { tokenAddress, tokenNameWithID, name, imageUri, tokenId, logoURI } = nft;
+					const { tokenAddress, tokenNameWithID, name, imageUri, tokenId, logoURI, network } = nft;
 					return (
 						<>
 							<article
@@ -179,7 +198,7 @@ const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 									</PrimaryButton>
 								</p>
 							</article>
-							{nfts[activeMultisig].length !== index ? <Divider className='bg-text_secondary my-0' /> : null}
+							{nftsArray.length !== index ? <Divider className='bg-text_secondary my-0' /> : null}
 						</>
 					);
 				})

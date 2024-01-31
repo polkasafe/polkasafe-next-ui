@@ -14,6 +14,7 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 import { useLogout, useWallets, usePrivy } from '@privy-io/react-auth';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import { NETWORK } from '@next-common/global/evm-network-constants';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface IAddress {
@@ -21,7 +22,8 @@ interface IAddress {
 	imgSrc: string;
 }
 const AddressDropdown = () => {
-	const { address, addressBook, loggedInWallet, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { address, loggedInWallet, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const router = useRouter();
 	const { logout } = useLogout();
 	const { wallets } = useWallets();
@@ -88,7 +90,7 @@ const AddressDropdown = () => {
 						title={address}
 						className='hidden md:inline-flex w-20 overflow-hidden truncate'
 					>
-						{addressBook?.find((item: any) => item.address === address)?.name || DEFAULT_ADDRESS_NAME}
+						{activeOrg?.addressBook?.find((item: any) => item.address === address)?.name || DEFAULT_ADDRESS_NAME}
 					</span>
 				</p>
 				<CircleArrowDownIcon className={`hidden md:inline-flex text-sm ${address ? 'text-primary' : 'text-white'}`} />
@@ -112,7 +114,7 @@ const AddressDropdown = () => {
 							size={50}
 						/>
 						<p className='text-white font-normal text-sm'>
-							{addressBook?.find((item: any) => item.address === address)?.name}
+							{activeOrg?.addressBook?.find((item: any) => item.address === address)?.name}
 						</p>
 						<p className='bg-bg-secondary mb-1 w-[300px] font-normal gap-x-2 text-sm p-2 rounded-lg flex items-center justify-center'>
 							<span className='text-text_secondary'>{shortenAddress(address)}</span>

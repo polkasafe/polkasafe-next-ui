@@ -175,7 +175,7 @@ const ListOwners = ({
 								<CopyIcon />
 							</button>
 							<a
-								href={`${chainProperties[multisig.network].blockExplorer}/address/${userAddress}`}
+								href={`${chainProperties[multisig?.network]?.blockExplorer}/address/${userAddress}`}
 								target='_blank'
 								rel='noreferrer'
 							>
@@ -228,7 +228,7 @@ const ListOwners = ({
 											<CopyIcon />
 										</button>
 										<a
-											href={`${chainProperties[multisig.network].blockExplorer}/address/${encodedAddress}`}
+											href={`${chainProperties[multisig?.network]?.blockExplorer}/address/${encodedAddress}`}
 											target='_blank'
 											rel='noreferrer'
 										>

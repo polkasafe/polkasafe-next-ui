@@ -72,7 +72,7 @@ const ManageMultisig = () => {
 										isMultisig
 										network={network}
 										withBadge={false}
-										address={selectedMultisig.address}
+										address={selectedMultisig?.address}
 									/>
 									<CircleArrowDownIcon className='text-primary' />
 								</div>

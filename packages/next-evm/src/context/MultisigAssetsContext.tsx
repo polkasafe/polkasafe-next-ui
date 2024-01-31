@@ -136,6 +136,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 									imageUri: nft.imageUri,
 									logoURI: nft.logoUri,
 									name: nft.tokenName,
+									network: account.network,
 									symbol: nft.tokenSymbol,
 									tokenAddress: nft.address,
 									tokenId: nft.id,

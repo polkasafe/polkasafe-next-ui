@@ -15,6 +15,7 @@ import Loader from '@next-common/ui-components/Loader';
 import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import { Button } from 'antd';
 import formatBalance from '@next-evm/utils/formatBalance';
+import { currencyProperties } from '@next-common/global/currencyConstants';
 import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 import ChangeCurrency from '../../components/Assets/ChangeCurrency';
 import NFTsTable from '../../components/Assets/NFtsTable';
@@ -27,13 +28,13 @@ enum ETab {
 const Assets = () => {
 	const { address: userAddress, activeMultisig, isSharedSafe } = useGlobalUserDetailsContext();
 	const { allAssets, allNfts, loadingAssets, organisationBalance } = useMultisigAssetsContext();
-	const { currency: globalCurrency } = useGlobalCurrencyContext();
+	const { currency: globalCurrency, allCurrencyPrices } = useGlobalCurrencyContext();
 	const [currency, setCurrency] = useState<string>(globalCurrency);
 
 	const [tab, setTab] = useState(ETab.Tokens);
 
 	return (
-		<div className='h-[70vh] bg-bg-main rounded-lg px-5 py-3'>
+		<div className='h-[80vh] bg-bg-main rounded-lg px-5 py-3'>
 			<AddMultisigModal />
 			{userAddress || (activeMultisig && isSharedSafe) ? (
 				<div className='scale-[80%] w-[125%] h-[125%] origin-top-left'>
@@ -49,7 +50,16 @@ const Assets = () => {
 					<div className='mb-4'>
 						<p className='text-sm text-text_secondary mb-3'>Total Balance</p>
 						<p className='text-[30px] font-bold text-white'>
-							$ {formatBalance(activeMultisig ? allAssets[activeMultisig]?.fiatTotal : organisationBalance?.total)}
+							{formatBalance(
+								activeMultisig
+									? Number(allAssets[activeMultisig]?.fiatTotal) *
+											Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value) ||
+											allAssets[activeMultisig]?.fiatTotal
+									: Number(organisationBalance?.total) *
+											Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value) ||
+											organisationBalance?.total
+							)}{' '}
+							{currencyProperties[currency].symbol}
 						</p>
 					</div>
 					<div className='flex items-center mb-4'>
@@ -64,18 +74,16 @@ const Assets = () => {
 						>
 							Tokens
 						</Button>
-						{activeMultisig && (
-							<Button
-								onClick={() => setTab(ETab.NFTs)}
-								// icon={<HistoryIcon />}
-								size='large'
-								className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
-									tab === ETab.NFTs && 'text-primary bg-highlight'
-								}`}
-							>
-								NFTs
-							</Button>
-						)}
+						<Button
+							onClick={() => setTab(ETab.NFTs)}
+							// icon={<HistoryIcon />}
+							size='large'
+							className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
+								tab === ETab.NFTs && 'text-primary bg-highlight'
+							}`}
+						>
+							NFTs
+						</Button>
 					</div>
 					<div className='h-full'>
 						{loadingAssets ? (
