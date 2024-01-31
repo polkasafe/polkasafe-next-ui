@@ -85,12 +85,12 @@ const OrganisationAssetsCard = ({
 						/>
 					) : (
 						<p className='text-[30px] font-bold text-white'>
-							${' '}
 							{allCurrencyPrices[currencyProperties[currency]?.symbol]
 								? formatBalance(
 										Number(fiatBalanceInUSD) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
 								  )
-								: fiatBalanceInUSD}
+								: fiatBalanceInUSD}{' '}
+							{allCurrencyPrices[currencyProperties[currency]?.symbol]?.code}
 						</p>
 					)}
 				</div>
