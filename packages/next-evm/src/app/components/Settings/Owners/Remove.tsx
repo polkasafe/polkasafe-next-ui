@@ -71,6 +71,7 @@ const RemoveOwner = ({
 			);
 			if (safeTxHash) {
 				addNewTransaction({
+					address: connectedWallet.address,
 					amount: '0',
 					callData: safeTxHash,
 					callHash: safeTxHash,

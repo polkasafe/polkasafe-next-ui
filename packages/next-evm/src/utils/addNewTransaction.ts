@@ -3,13 +3,14 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { ITransaction } from '@next-common/types';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from './nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from './firebaseFunctionHeaders';
 
 type Args = Omit<
 	ITransaction,
 	'created_at' | 'amount_usd' | 'amount_token' | 'id' | 'token' | 'block_number' | 'from'
 > & {
+	address: string;
 	amount: string;
 	safeAddress: string;
 	executed: boolean;
@@ -18,6 +19,7 @@ type Args = Omit<
 };
 
 export default async function addNewTransaction({
+	address,
 	amount,
 	executed,
 	transactionFields,
@@ -30,6 +32,7 @@ export default async function addNewTransaction({
 	safeAddress
 }: Args): Promise<{ data?: ITransaction; error: string } | any> {
 	const newTransactionData: Omit<Args, 'amount'> & { amount_token: string } = {
+		address,
 		amount_token: amount.toString(),
 		callData,
 		callHash,
@@ -42,5 +45,14 @@ export default async function addNewTransaction({
 		type
 	};
 
-	return nextApiClientFetch<ITransaction>(`${EVM_API_URL}/addTransactionEth`, newTransactionData);
+	const addToAddressBookRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addTransactionEth`, {
+		body: JSON.stringify(newTransactionData),
+		headers: firebaseFunctionsHeader(address),
+		method: 'POST'
+	});
+
+	return (await addToAddressBookRes.json()) as {
+		data: string;
+		error: string;
+	};
 }

@@ -115,6 +115,7 @@ const AddOwner = ({
 			);
 			if (safeTxHash) {
 				addNewTransaction({
+					address: connectedWallet?.address || address,
 					amount: '0',
 					callData: safeTxHash,
 					callHash: safeTxHash,

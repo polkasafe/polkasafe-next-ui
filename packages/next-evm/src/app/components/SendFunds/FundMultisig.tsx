@@ -78,6 +78,7 @@ const FundMultisig = ({
 			});
 			const { transactionHash, to } = await tx.wait();
 			await addNewTransaction({
+				address: connectedWallet?.address || address,
 				amount: ethers.utils.parseUnits(amount.toString(), 'ether').toString(),
 				callData: '',
 				callHash: transactionHash,

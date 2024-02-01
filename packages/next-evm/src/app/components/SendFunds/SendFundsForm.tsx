@@ -490,6 +490,7 @@ const SendFundsForm = ({
 
 			if (safeTxHash) {
 				addNewTransaction({
+					address: wallet?.address || address,
 					amount,
 					callData: safeTxHash,
 					callHash: safeTxHash,
