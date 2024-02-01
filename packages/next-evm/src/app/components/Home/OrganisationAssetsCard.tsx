@@ -40,7 +40,7 @@ const OrganisationAssetsCard = ({
 			label: <span className='text-white flex items-center gap-x-2'>{item}</span>
 		}));
 
-	const fiatBalanceInUSD = formatBalance(organisationBalance?.total);
+	const fiatBalanceInUSD = Number(organisationBalance?.total).toFixed(4);
 	return (
 		<>
 			<ModalComponent

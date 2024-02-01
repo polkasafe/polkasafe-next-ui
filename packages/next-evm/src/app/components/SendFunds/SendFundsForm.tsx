@@ -286,6 +286,7 @@ const SendFundsForm = ({
 			allAddresses.map((a) => ({
 				label: (
 					<AddressComponent
+						network={network}
 						withBadge={false}
 						address={a}
 					/>

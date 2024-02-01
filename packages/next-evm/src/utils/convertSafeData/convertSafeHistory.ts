@@ -21,7 +21,7 @@ export interface IHistoryTransactions {
 	advancedDetails?: any;
 	receivedTransfers?: any[];
 }
-export const convertSafeHistoryData = (data: any) => {
+export const convertSafeHistoryData = (data: any, multisigAddress?: string) => {
 	const advancedDetails = {
 		operation: data?.operation,
 		nonce: data?.nonce,
@@ -42,7 +42,7 @@ export const convertSafeHistoryData = (data: any) => {
 		executor: data?.executor || data?.from,
 		from: data?.from || '',
 		network: data?.network,
-		safeAddress: data?.safe,
+		safeAddress: data?.safe || multisigAddress || '',
 		signatures:
 			data?.confirmations?.map((user: any) => ({ address: user?.owner || '', signature: user?.signature || '' })) || [],
 		to: data?.to,

@@ -159,7 +159,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 								<span>To:</span>
 							</p>
 							<div className='mt-3'>
-								<AddressComponent address={recipientAddress} />
+								<AddressComponent
+									network={network}
+									address={recipientAddress}
+								/>
 							</div>
 						</>
 					) : (
@@ -199,7 +202,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 											<span>To:</span>
 										</p>
 										<div className='mt-3'>
-											<AddressComponent address={item} />
+											<AddressComponent
+												network={network}
+												address={item}
+											/>
 										</div>
 										{recipientAddress.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
 									</>
@@ -219,13 +225,19 @@ const SentInfo: FC<ISentInfoProps> = ({
 				{isContractInteraction && recipientAddress && typeof recipientAddress === 'string' && (
 					<div className='mt-3 flex flex-col gap-y-2 text-white font-medium text-sm'>
 						<span>Interact with: </span>
-						<AddressComponent address={recipientAddress} />
+						<AddressComponent
+							network={network}
+							address={recipientAddress}
+						/>
 					</div>
 				)}
 				<Divider className='bg-text_secondary my-5' />
 				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Executed By:</span>
-					<AddressComponent address={from} />
+					<AddressComponent
+						network={network}
+						address={from}
+					/>
 				</div>
 				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
@@ -251,7 +263,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 							{txType === 'addOwnerWithThreshold' ? 'Added Owner' : 'Removed Owner'}:
 						</span>
 						<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-							<AddressComponent address={addressAddOrRemove} />
+							<AddressComponent
+								network={network}
+								address={addressAddOrRemove}
+							/>
 						</p>
 					</div>
 				)}
@@ -393,7 +408,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 													className={`${i === 0 && 'mt-4'} success bg-transaparent`}
 												>
 													<div className='mb-3 flex items-center gap-x-4'>
-														<AddressComponent address={address} />
+														<AddressComponent
+															network={network}
+															address={address}
+														/>
 													</div>
 												</Timeline.Item>
 											))}

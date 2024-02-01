@@ -404,10 +404,10 @@ const Transaction: FC<ITransactionProps> = ({
 								toggleTransactionVisible(!transactionInfoVisible);
 							}}
 							className={classNames(
-								'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
+								'grid items-center grid-cols-11 cursor-pointer text-white font-normal text-sm leading-[15px]'
 							)}
 						>
-							<p className='col-span-5 flex items-center gap-x-3'>
+							<p className='col-span-4 flex items-center gap-x-3'>
 								<span
 									className={`flex items-center justify-center w-9 h-9 ${
 										txType === 'addOwnerWithThreshold' || txType === 'removeOwner'
@@ -473,6 +473,7 @@ const Transaction: FC<ITransactionProps> = ({
 												) : (
 													<AddressComponent
 														onlyAddress
+														network={network as NETWORK}
 														iconSize={25}
 														withBadge={false}
 														address={txInfo?.recipient?.value || recipientAddress || ''}
@@ -500,6 +501,14 @@ const Transaction: FC<ITransactionProps> = ({
 										'Custom Transaction'
 									)}
 								</span>
+							</p>
+							<p className='col-span-3'>
+								<AddressComponent
+									address={multisigAddress}
+									isMultisig
+									withBadge={false}
+									network={multisig?.network as NETWORK}
+								/>
 							</p>
 							<p className='col-span-2'>{dayjs(date).format('lll')}</p>
 							<p className='col-span-2 flex items-center justify-end gap-x-4'>

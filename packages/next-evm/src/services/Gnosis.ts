@@ -174,15 +174,16 @@ export default class GnosisSafeService {
 				isL1SafeMasterCopy: true,
 				safeAddress: multisigAddress
 			});
-			console.log('after safe', this.ethAdapter.getSigner);
+			console.log('to, tokens', to, tokens);
 			const signer = await this.ethAdapter.getSignerAddress();
-			console.log('signer', signer);
 
 			const safeTransactionData: MetaTransactionData | MetaTransactionData[] = createTokenTransferParams(
 				to,
 				value,
 				tokens
 			);
+
+			console.log('safe data', safeTransactionData);
 
 			if (note) console.log(note);
 

@@ -65,19 +65,13 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 					trusted: true
 				});
 				const convertedCompletedData = completedSafeData.results.map((safe: any) =>
-					convertSafeHistoryData({ ...safe, network: multisig.network })
+					convertSafeHistoryData({ ...safe, network: multisig.network }, multisig?.address)
 				);
 				allTxns.push(...convertedCompletedData);
 			})
 		);
 		setLoading(false);
-		const sorted = [...allTxns].sort((a, b) => {
-			const date1 = new Date(a?.created_at);
-			const date2 = new Date(b?.created_at);
-			return Number(date1) - Number(date2);
-		});
-		setTransactions(sorted.reverse());
-		console.log('all txns', sorted.reverse());
+		setTransactions(allTxns);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [activeMultisig, activeOrg, connectedWallet]);
 
@@ -103,7 +97,9 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 					executed: true,
 					trusted: true
 				});
-				const convertedData = safeData.results.map((safe: any) => convertSafeHistoryData({ ...safe, network }));
+				const convertedData = safeData.results.map((safe: any) =>
+					convertSafeHistoryData({ ...safe, network }, activeMultisig)
+				);
 				setTransactions(convertedData);
 				updateDB(UpdateDB.Update_History_Transaction, { transactions: convertedData }, address, network);
 			} catch (error) {

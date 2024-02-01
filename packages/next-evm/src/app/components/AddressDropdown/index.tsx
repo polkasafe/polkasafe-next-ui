@@ -7,13 +7,11 @@ import { MetaMaskAvatar } from 'react-metamask-avatar';
 import { useRouter } from 'next/navigation';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-import Balance from '@next-evm/ui-components/Balance';
 import { CircleArrowDownIcon, CopyIcon, WarningRoundedIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import { useLogout, useWallets, usePrivy } from '@privy-io/react-auth';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
-import { NETWORK } from '@next-common/global/evm-network-constants';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -122,11 +120,6 @@ const AddressDropdown = () => {
 								<CopyIcon className='text-base text-primary cursor-pointer' />
 							</button>
 						</p>
-						<Balance
-							network={NETWORK.POLYGON}
-							className='ml-0'
-							address={address}
-						/>
 					</div>
 					<div className='w-full'>
 						<p className='border-t border-text_secondary flex items-center text-normal text-sm justify-between w-full p-2'>

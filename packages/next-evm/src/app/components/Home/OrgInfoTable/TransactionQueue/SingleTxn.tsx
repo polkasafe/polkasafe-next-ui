@@ -10,6 +10,7 @@ import { useWallets } from '@privy-io/react-auth';
 import { EthersAdapter } from '@safe-global/protocol-kit';
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import { Skeleton } from 'antd';
+import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import { StaticImageData } from 'next/image';
 import Link from 'next/link';
@@ -22,6 +23,7 @@ interface ITransactionProps {
 	recipientAddress?: string;
 	value: string;
 	network: NETWORK;
+	createdAt: Date;
 	multisigAddress: string;
 }
 const SingleTxn = ({
@@ -31,6 +33,7 @@ const SingleTxn = ({
 	recipientAddress,
 	value,
 	network,
+	createdAt,
 	multisigAddress // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ITransactionProps) => {
 	const { allAssets } = useMultisigAssetsContext();
@@ -240,6 +243,7 @@ const SingleTxn = ({
 										) : (
 											<AddressComponent
 												onlyAddress
+												network={network}
 												iconSize={25}
 												withBadge={false}
 												address={txInfo?.recipient?.value || recipientAddress || ''}
@@ -280,11 +284,7 @@ const SingleTxn = ({
 						/>
 					</p>
 					<p className='text-white text-sm flex items-center gap-x-2 col-span-2 capitalize'>
-						<ParachainIcon
-							size={15}
-							src={chainProperties[network].logo}
-						/>{' '}
-						{network}
+						{dayjs(createdAt).format('lll')}
 					</p>
 				</>
 			)}

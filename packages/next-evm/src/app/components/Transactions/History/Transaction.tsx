@@ -296,7 +296,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
 						)}
 					>
-						<p className={`${isFundType || isSentType ? 'col-span-5' : 'col-span-3'} flex items-center gap-x-3`}>
+						<p className='col-span-4 flex items-center gap-x-3'>
 							{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
 								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
 									{isRejectionTxn ? (
@@ -341,7 +341,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 												</span>
 												from{' '}
 												<AddressComponent
+													network={network}
 													onlyAddress
+													addressLength={5}
 													iconSize={25}
 													withBadge={false}
 													address={receivedTransfers?.[0]?.from}
@@ -394,7 +396,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 													'Multiple Addresses'
 												) : (
 													<AddressComponent
+														network={network}
 														iconSize={25}
+														addressLength={5}
 														onlyAddress
 														withBadge={false}
 														address={txInfo?.recipient?.value || to.toString() || ''}
@@ -428,9 +432,16 @@ const Transaction: FC<IHistoryTransactions> = ({
 								)}
 							</span>
 						</p>
-						{!isSentType && !isFundType && <p className='col-span-2'>-</p>}
+						<p className='col-span-2'>
+							<AddressComponent
+								address={safeAddress}
+								withBadge={false}
+								isMultisig
+								network={multisig?.network as NETWORK}
+							/>
+						</p>
 						{created_at && <p className='col-span-2'>{new Date(created_at).toLocaleString()}</p>}
-						<p className='col-span-2 flex items-center justify-end gap-x-4'>
+						<p className='col-span-1 flex items-center justify-end gap-x-4'>
 							<span className='text-success'>Success</span>
 							<span className='text-white text-sm'>
 								{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}

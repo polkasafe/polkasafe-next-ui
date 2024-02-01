@@ -42,7 +42,7 @@ export const convertSafePendingData = (data: any) => {
 			data?.confirmations?.map((user: any) => ({ address: user?.owner || '', signature: user?.signature || '' })) || [],
 		to: data?.to,
 		txHash: data?.safeTxHash,
-		type: data?.dataDecoded?.method || 'Custom'
+		type: data?.dataDecoded?.method || data?.value !== '0' ? 'Sent' : 'Custom'
 	};
 	return convertedData;
 };

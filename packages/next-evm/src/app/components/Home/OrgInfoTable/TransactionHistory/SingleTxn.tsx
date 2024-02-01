@@ -10,6 +10,7 @@ import { useWallets } from '@privy-io/react-auth';
 import { EthersAdapter } from '@safe-global/protocol-kit';
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import { Skeleton } from 'antd';
+import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import { StaticImageData } from 'next/image';
 import Link from 'next/link';
@@ -23,6 +24,7 @@ interface IHistoryTransactions {
 	network: NETWORK;
 	receivedTransfers?: any[];
 	amount_token: string;
+	executedAt: Date;
 	to?: string;
 }
 const SingleTxn = ({
@@ -33,6 +35,7 @@ const SingleTxn = ({
 	network,
 	receivedTransfers,
 	amount_token,
+	executedAt,
 	to // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IHistoryTransactions) => {
 	const { allAssets } = useMultisigAssetsContext();
@@ -265,6 +268,7 @@ const SingleTxn = ({
 											from{' '}
 											<AddressComponent
 												onlyAddress
+												network={network}
 												iconSize={25}
 												withBadge={false}
 												address={receivedTransfers?.[0]?.from}
@@ -321,6 +325,7 @@ const SingleTxn = ({
 											) : (
 												<AddressComponent
 													iconSize={25}
+													network={network}
 													onlyAddress
 													withBadge={false}
 													address={txInfo?.recipient?.value || to.toString() || ''}
@@ -367,11 +372,7 @@ const SingleTxn = ({
 						/>
 					</p>
 					<p className='text-white text-sm flex items-center gap-x-2 col-span-2 capitalize'>
-						<ParachainIcon
-							size={15}
-							src={chainProperties[network].logo}
-						/>{' '}
-						{network}
+						{dayjs(executedAt).format('lll')}
 					</p>
 				</>
 			)}

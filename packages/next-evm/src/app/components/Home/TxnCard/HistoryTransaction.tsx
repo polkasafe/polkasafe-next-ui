@@ -249,6 +249,7 @@ const HistoryTransaction = ({
 								</span>
 								from{' '}
 								<AddressComponent
+									network={network}
 									onlyAddress
 									addressLength={6}
 									iconSize={25}
@@ -303,6 +304,7 @@ const HistoryTransaction = ({
 									'Multiple Addresses'
 								) : (
 									<AddressComponent
+										network={network}
 										iconSize={25}
 										addressLength={6}
 										onlyAddress

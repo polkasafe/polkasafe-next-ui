@@ -225,6 +225,7 @@ const QueueTransaction = ({
 									'Multiple Addresses'
 								) : (
 									<AddressComponent
+										network={network}
 										onlyAddress
 										addressLength={6}
 										iconSize={25}

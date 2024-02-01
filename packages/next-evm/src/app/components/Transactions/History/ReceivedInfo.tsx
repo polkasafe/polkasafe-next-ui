@@ -101,7 +101,10 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 								<span>From:</span>
 							</p>
 							<div className='mt-3'>
-								<AddressComponent address={item.from} />
+								<AddressComponent
+									network={network}
+									address={item.from}
+								/>
 							</div>
 							{transfers.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
 						</>
@@ -110,7 +113,10 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 			<Divider className='bg-text_secondary my-5' />
 			<div className=' flex items-center gap-x-7 mb-3'>
 				<span className='text-text_secondary font-normal text-sm leading-[15px]'>To:</span>
-				<AddressComponent address={transfers?.[0]?.to?.toString()} />
+				<AddressComponent
+					network={network}
+					address={transfers?.[0]?.to?.toString()}
+				/>
 			</div>
 			<div className='w-full max-w-[418px] flex items-center gap-x-5'>
 				<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
@@ -136,7 +142,10 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 				<div className='w-full max-w-[418px] flex items-center  gap-x-5 mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Added Owner:</span>
 					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-						<AddressComponent address={addedOwner} />
+						<AddressComponent
+							network={network}
+							address={addedOwner}
+						/>
 					</p>
 				</div>
 			)}

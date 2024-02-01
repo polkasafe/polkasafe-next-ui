@@ -99,7 +99,6 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 						account.network as NETWORK,
 						account.address
 					);
-					console.log('info', tokenInfo);
 					const nftInfo = await getCollectiblesPage(
 						chainProperties[account.network].chainId.toString(),
 						account.address

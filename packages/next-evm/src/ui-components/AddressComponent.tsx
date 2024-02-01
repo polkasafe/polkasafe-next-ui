@@ -100,7 +100,7 @@ const AddressComponent = ({
 							<CopyIcon className='hover:text-primary' />
 						</button>
 						<a
-							href={`${chainProperties[network || NETWORK.POLYGON].blockExplorer}/address/${address}`}
+							href={`${chainProperties[network || NETWORK.ETHEREUM].blockExplorer}/address/${address}`}
 							target='_blank'
 							rel='noreferrer'
 						>
@@ -134,7 +134,7 @@ const AddressComponent = ({
 								<CopyIcon className='hover:text-primary' />
 							</button>
 							<a
-								href={`${chainProperties[network || NETWORK.POLYGON].blockExplorer}/address/${address}`}
+								href={`${chainProperties[network || NETWORK.ETHEREUM].blockExplorer}/address/${address}`}
 								target='_blank'
 								rel='noreferrer'
 							>

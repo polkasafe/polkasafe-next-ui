@@ -101,6 +101,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 				});
 				const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
 				const completedSafeData = await gnosisService.getPendingTx(multisig.address);
+				console.log('queue', completedSafeData);
 				const convertedCompletedData = completedSafeData.results.map((safe: any) =>
 					convertSafePendingData({ ...safe, network: multisig.network })
 				);

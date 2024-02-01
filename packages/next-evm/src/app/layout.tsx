@@ -8,8 +8,9 @@ import LayoutWrapper from './components/LayoutWrapper';
 // const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-	description: 'Enterprise asset management solution for EVM chains',
-	title: 'Polkasafe',
+	description:
+		'TreasurEase equips web3 teams and users with advanced, secure tools for fast on-chain execution, automation, saving you 20+ hours every month.',
+	title: 'TreasurEase',
 	viewport: {
 		height: 'device-height',
 		initialScale: 1,
