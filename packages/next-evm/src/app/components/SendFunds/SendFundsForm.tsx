@@ -180,6 +180,7 @@ const SendFundsForm = ({
 		label: (
 			<AddressComponent
 				isMultisig
+				showNetworkBadge
 				network={item.network as NETWORK}
 				withBadge={false}
 				address={item.address}
@@ -640,6 +641,7 @@ const SendFundsForm = ({
 								<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
 									<AddressComponent
 										isMultisig
+										showNetworkBadge
 										network={network}
 										withBadge={false}
 										address={selectedMultisig}

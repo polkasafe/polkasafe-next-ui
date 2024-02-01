@@ -58,7 +58,15 @@ const FundMultisig = ({
 
 	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
 		key: JSON.stringify(item),
-		label: <AddressComponent address={item.address} />
+		label: (
+			<AddressComponent
+				isMultisig
+				showNetworkBadge
+				withBadge={false}
+				network={item.network as NETWORK}
+				address={item.address}
+			/>
+		)
 	}));
 
 	const handleSubmit = async () => {
@@ -157,7 +165,13 @@ const FundMultisig = ({
 					}}
 				>
 					<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
-						<AddressComponent address={selectedMultisig.address} />
+						<AddressComponent
+							isMultisig
+							showNetworkBadge
+							withBadge={false}
+							network={selectedMultisig.network as NETWORK}
+							address={selectedMultisig.address}
+						/>
 						<CircleArrowDownIcon className='text-primary' />
 					</div>
 				</Dropdown>

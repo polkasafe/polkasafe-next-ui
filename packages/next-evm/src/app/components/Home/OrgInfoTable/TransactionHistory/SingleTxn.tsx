@@ -368,6 +368,7 @@ const SingleTxn = ({
 							withBadge={false}
 							network={network}
 							isMultisig
+							showNetworkBadge
 							address={multisigAddress}
 						/>
 					</p>

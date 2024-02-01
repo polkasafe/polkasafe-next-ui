@@ -64,6 +64,7 @@ const Exchange = ({ className }: { className?: string }) => {
 		label: (
 			<AddressComponent
 				isMultisig
+				showNetworkBadge
 				withBadge={false}
 				network={item.network as NETWORK}
 				address={item.address}
@@ -146,6 +147,7 @@ const Exchange = ({ className }: { className?: string }) => {
 								<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
 									<AddressComponent
 										isMultisig
+										showNetworkBadge
 										withBadge={false}
 										network={network}
 										address={selectedMultisig}

@@ -50,7 +50,7 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 				data: sortedData?.map((item) => item?.balance),
 				backgroundColor: ['#392A74', '#58409B', '#9F69C9', '#DDB4FC'],
 				borderWidth: 0,
-				cutout: 62,
+				cutout: 67,
 				legend: {
 					position: 'right'
 				}
@@ -83,31 +83,29 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 				</div>
 			) : (
 				<div
-					className={`${className} bg-bg-main relative flex flex-col justify-around rounded-xl px-8 shadow-lg scale-90 w-[111%] origin-top-left`}
+					className={`${className} bg-bg-main relative flex flex-col justify-around rounded-xl p-8 shadow-lg scale-90 w-[111%] origin-top-left`}
 				>
-					<div>
-						<div className='h-[250px] w-[320px]'>
-							<Doughnut
-								data={data}
-								options={{
-									maintainAspectRatio: false,
-									plugins: {
-										legend: {
-											position: 'right',
-											labels: {
-												usePointStyle: true,
-												boxHeight: 5,
-												boxWidth: 5,
-												color: '#ffffff',
-												font: {
-													size: 14
-												}
+					<div className='h-[190px] w-[400px]'>
+						<Doughnut
+							data={data}
+							options={{
+								maintainAspectRatio: false,
+								plugins: {
+									legend: {
+										position: 'right',
+										labels: {
+											usePointStyle: true,
+											boxHeight: 5,
+											boxWidth: 5,
+											color: '#ffffff',
+											font: {
+												size: 14
 											}
 										}
 									}
-								}}
-							/>
-						</div>
+								}
+							}}
+						/>
 					</div>
 				</div>
 			)}

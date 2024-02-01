@@ -52,7 +52,7 @@ const AddAddressModal = ({
 			);
 			setActiveOrg((prev) => ({
 				...prev,
-				addressBook: [...prev.addressBook, ...newAddresses]
+				addressBook: newAddresses
 			}));
 		}
 		setShowAddressModal(false);

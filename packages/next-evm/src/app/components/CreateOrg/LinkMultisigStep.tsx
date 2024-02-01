@@ -145,6 +145,7 @@ const LinkMultisigStep = ({
 								<AddressComponent
 									address={item?.address}
 									isMultisig
+									showNetworkBadge
 									withBadge={false}
 									signatories={item?.signatories?.length}
 									threshold={item?.threshold}
@@ -180,6 +181,7 @@ const LinkMultisigStep = ({
 									<AddressComponent
 										address={multisig?.address}
 										isMultisig
+										showNetworkBadge
 										withBadge={false}
 										signatories={multisig?.signatories?.length}
 										threshold={multisig?.threshold}

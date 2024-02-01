@@ -34,7 +34,7 @@ const Assets = () => {
 	const [tab, setTab] = useState(ETab.Tokens);
 
 	return (
-		<div className='h-[80vh] bg-bg-main rounded-lg px-5 py-3'>
+		<div className='h-full bg-bg-main rounded-lg px-5 py-3'>
 			<AddMultisigModal />
 			{userAddress || (activeMultisig && isSharedSafe) ? (
 				<div className='scale-[80%] w-[125%] h-[125%] origin-top-left'>

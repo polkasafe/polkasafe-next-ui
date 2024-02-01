@@ -22,7 +22,7 @@ enum ETab {
 	MEMBERS
 }
 
-const OrgInfoTable = () => {
+const OrgInfoTable = ({ className }: { className?: string }) => {
 	const [tab, setTab] = useState(ETab.HISTORY);
 
 	const { allAssets } = useMultisigAssetsContext();
@@ -101,7 +101,7 @@ const OrgInfoTable = () => {
 
 	console.log('allAssets', allAssets);
 	return (
-		<div className='w-full bg-bg-main rounded-xl p-8 h-[400px] flex flex-col ='>
+		<div className={`w-full h-[400px] bg-bg-main rounded-xl p-8 flex flex-col ${className}`}>
 			<div className='flex items-center mb-4 scale-90 w-[111%] origin-top-left'>
 				<Button
 					onClick={() => setTab(ETab.HISTORY)}

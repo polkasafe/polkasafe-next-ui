@@ -242,10 +242,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 	const handleGetHistoryNote = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress || !signature) {
+			if (!connectedWallet.address) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
@@ -437,6 +434,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								address={safeAddress}
 								withBadge={false}
 								isMultisig
+								showNetworkBadge
 								network={multisig?.network as NETWORK}
 							/>
 						</p>
@@ -482,6 +480,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							}
 							callHash={txHash || ''}
 							note={transactionDetails?.note || ''}
+							transactionFields={transactionDetails?.transactionFields}
 							from={executor || ''}
 							loading={loading}
 							txType={type}

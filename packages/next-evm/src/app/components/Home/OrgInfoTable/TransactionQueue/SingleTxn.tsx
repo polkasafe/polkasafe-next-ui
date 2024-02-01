@@ -276,6 +276,7 @@ const SingleTxn = ({
 					</p>
 					<p className='text-white flex items-center gap-x-2 col-span-2 text-sm'>
 						<AddressComponent
+							showNetworkBadge
 							iconSize={25}
 							isMultisig
 							network={network}

@@ -506,6 +506,7 @@ const Transaction: FC<ITransactionProps> = ({
 								<AddressComponent
 									address={multisigAddress}
 									isMultisig
+									showNetworkBadge
 									withBadge={false}
 									network={multisig?.network as NETWORK}
 								/>

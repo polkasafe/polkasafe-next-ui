@@ -58,6 +58,7 @@ const ReviewOrgStep = ({
 							<AddressComponent
 								address={item?.address}
 								isMultisig
+								showNetworkBadge
 								withBadge={false}
 								signatories={item?.signatories?.length}
 								threshold={item?.threshold}

@@ -26,6 +26,7 @@ interface IAddressComponent {
 	threshold?: number;
 	network?: NETWORK;
 	fullAddress?: boolean;
+	showNetworkBadge?: boolean;
 }
 
 const AddressComponent = ({
@@ -39,7 +40,8 @@ const AddressComponent = ({
 	signatories,
 	threshold,
 	network,
-	fullAddress
+	fullAddress,
+	showNetworkBadge
 }: IAddressComponent) => {
 	const { multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
@@ -117,7 +119,7 @@ const AddressComponent = ({
 							multisigAddresses.find((item) => item.address === address)?.name ||
 							multisigSettings[`${address}_${network}`]?.name ||
 							DEFAULT_ADDRESS_NAME}
-						{network && (
+						{network && showNetworkBadge && (
 							<div className='rounded-[4px] py-[0px] px-1 text-[9px] text-white flex items-center gap-x-1 bg-[#5065E4] capitalize'>
 								<ParachainIcon
 									size={6}
