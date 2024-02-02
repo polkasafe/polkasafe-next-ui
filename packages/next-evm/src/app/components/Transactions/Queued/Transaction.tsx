@@ -472,6 +472,7 @@ const Transaction: FC<ITransactionProps> = ({
 													'Multiple Addresses'
 												) : (
 													<AddressComponent
+														addressLength={5}
 														onlyAddress
 														network={network as NETWORK}
 														iconSize={25}

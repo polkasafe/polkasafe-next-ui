@@ -83,7 +83,8 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 									<Image
 										width={30}
 										height={30}
-										src={emptyImage}
+										className='rounded-full w-[30px] h-[30px]'
+										src={selectedOrg?.imageURI || emptyImage}
 										alt='empty profile image'
 									/>
 									{/* <RandomAvatar
@@ -131,6 +132,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 		{
 			component: (
 				<ReviewOrgStep
+					orgImageUrl={selectedOrg?.imageURI}
 					notCreateOrg
 					loading={loading}
 					orgName={selectedOrg?.name}

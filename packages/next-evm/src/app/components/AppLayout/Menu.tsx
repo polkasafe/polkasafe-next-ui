@@ -188,7 +188,8 @@ const Menu: FC<Props> = ({ className }) => {
 									<Image
 										width={30}
 										height={30}
-										src={emptyImage}
+										className='rounded-full h-[30px] w-[30px]'
+										src={activeOrg?.imageURI || emptyImage}
 										alt='empty profile image'
 									/>
 									{/* <RandomAvatar

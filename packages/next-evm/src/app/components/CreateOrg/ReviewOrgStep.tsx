@@ -13,11 +13,13 @@ const ReviewOrgStep = ({
 	orgName,
 	linkedMultisigs,
 	loading,
+	orgImageUrl,
 	notCreateOrg
 }: {
 	orgName: string;
 	linkedMultisigs: IMultisigAddress[];
 	loading: boolean;
+	orgImageUrl: string;
 	notCreateOrg?: boolean;
 }) => {
 	const { setStep } = useCreateOrgStepsContext();
@@ -30,7 +32,8 @@ const ReviewOrgStep = ({
 					<Image
 						width={50}
 						height={50}
-						src={emptyImage}
+						className='rounded-full h-[50px] w-[50px]'
+						src={orgImageUrl || emptyImage}
 						alt='empty profile image'
 					/>
 					<span className='font-bold text-sm text-white'>{orgName}</span>

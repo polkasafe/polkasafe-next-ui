@@ -28,6 +28,7 @@ const CreateOrg = () => {
 	const router = useRouter();
 	console.log('wallets', wallets[0]?.isConnected());
 	console.log('user', user);
+	const [orgImageUrl, setOrgImageUrl] = useState<string>('');
 	const [orgName, setOrgName] = useState<string>('');
 	const [orgDesc, setOrgDesc] = useState<string>('');
 	const [linkedMultisigs, setLinkedMultisigs] = useState<IMultisigAddress[]>([]);
@@ -40,6 +41,8 @@ const CreateOrg = () => {
 		{
 			component: (
 				<OrgNameAndImageStep
+					orgImageUrl={orgImageUrl}
+					setOrgImageUrl={setOrgImageUrl}
 					orgName={orgName}
 					setOrgName={setOrgName}
 					orgDesc={orgDesc}
@@ -62,6 +65,7 @@ const CreateOrg = () => {
 		{
 			component: (
 				<ReviewOrgStep
+					orgImageUrl={orgImageUrl}
 					loading={loading}
 					orgName={orgName}
 					linkedMultisigs={linkedMultisigs}
@@ -83,7 +87,8 @@ const CreateOrg = () => {
 		const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createOrganization_v1`, {
 			body: JSON.stringify({
 				multisigs: linkedMultisigs,
-				name: orgName
+				name: orgName,
+				imageURI: orgImageUrl
 			}),
 			headers: firebaseFunctionsHeader(wallets?.[0].address),
 			method: 'POST'

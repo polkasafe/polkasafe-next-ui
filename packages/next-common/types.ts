@@ -24,6 +24,7 @@ export interface IMultisigAndNetwork {
 
 export interface IOrganisation {
 	id: string;
+	imageURI?: string;
 	name: string;
 	desc?: string;
 	multisigs: IMultisigAddress[];

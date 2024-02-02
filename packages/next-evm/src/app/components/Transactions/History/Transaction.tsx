@@ -59,7 +59,6 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 	const shared = sharedSafeAddress === activeMultisig;
 	const multisig = activeOrg?.multisigs?.find((item) => item.address === safeAddress);
-	console.log('multi', multisig);
 	const [network, setNetwork] = useState<NETWORK>(NETWORK.ETHEREUM);
 
 	const token = chainProperties[network].tokenSymbol;
