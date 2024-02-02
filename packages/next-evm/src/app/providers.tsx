@@ -32,7 +32,7 @@ export default function Providers({ children }: { children?: ReactNode }) {
 							config={{
 								appearance: {
 									accentColor: '#38A1FF',
-									logo: '/polkasafe.svg',
+									logo: '/TreasurEase-logo.svg',
 									theme: '#1B2028',
 									walletList: ['metamask', 'detected_wallets']
 								},

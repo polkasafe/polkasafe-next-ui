@@ -12,7 +12,7 @@ const TermsAndCondition = () => {
 			<div className='w-fit text-sm m-5 overflow-auto [&::-webkit-scrollbar]:hidden'>
 				<p className='text-white'>
 					<p>
-						Welcome to <span className='font-bold'>PolkaSafe!</span>
+						Welcome to <span className='font-bold'>TreasurEase!</span>
 					</p>
 					<p className='my-2'>
 						These terms and conditions outline the rules and regulations for the use of Company Name&apos;s Website,

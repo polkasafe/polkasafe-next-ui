@@ -14,7 +14,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import PolkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
+import TreasurEaseLogo from '@next-common/assets/TreasurEase-logo.svg';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import {
@@ -161,8 +161,8 @@ const Menu: FC<Props> = ({ className }) => {
 							count='Beta'
 							color='#1573FE'
 						>
-							<div className=''>
-								<PolkasafeLogo />
+							<div className='h-[30px] w-[160px]'>
+								<TreasurEaseLogo />
 							</div>
 						</Badge>
 					</Link>

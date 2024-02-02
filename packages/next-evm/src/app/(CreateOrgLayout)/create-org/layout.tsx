@@ -2,7 +2,7 @@
 
 import '@next-evm/styles/globals.css';
 import NextTopLoader from 'nextjs-toploader';
-import PolkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
+import TreasurEaseLogo from '@next-common/assets/TreasurEase-logo.svg';
 import { Layout, Steps } from 'antd';
 import { OutlineCheckIcon } from '@next-common/ui-components/CustomIcons';
 import './style.css';
@@ -19,8 +19,8 @@ export default function CreateOrgLayout({ children }: { children: React.ReactNod
 				className='min-h-[100vh]'
 			>
 				<div className='w-[260px] p-[30px] bg-bg-main top-0 bottom-0 left-0 h-screen fixed'>
-					<div className='mb-12'>
-						<PolkasafeLogo />
+					<div className='mb-12 h-[30px] w-[180px]'>
+						<TreasurEaseLogo />
 					</div>
 					<div className='h-[300px]'>
 						<Steps

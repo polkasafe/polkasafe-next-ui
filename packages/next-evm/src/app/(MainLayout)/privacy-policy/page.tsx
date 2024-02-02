@@ -11,9 +11,9 @@ const PrivacyPolicy = () => {
 		<div className='h-[70vh] bg-bg-main rounded-lg m-auto flex'>
 			<div className='w-fit text-sm m-5 overflow-auto [&::-webkit-scrollbar]:hidden'>
 				<p className='text-white text-sm'>
-					At <span className='font-bold'>PolkaSafe</span>, accessible at polkasafe.com, one of our main priorities is
-					the privacy of our visitors. This Privacy Policy document contains types of information that is collected and
-					recorded by Website Name and how we use it.
+					At <span className='font-bold'>TreasurEase</span>, accessible at treasurease.xyz, one of our main priorities
+					is the privacy of our visitors. This Privacy Policy document contains types of information that is collected
+					and recorded by Website Name and how we use it.
 					<p className='my-2'>
 						If you have additional questions or require more information about our Privacy Policy, do not hesitate to
 						contact us through email at Email@Website.com
