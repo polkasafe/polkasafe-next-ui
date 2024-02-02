@@ -86,9 +86,9 @@ const CreateOrg = () => {
 		setLoading(true);
 		const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createOrganization_v1`, {
 			body: JSON.stringify({
+				imageURI: orgImageUrl,
 				multisigs: linkedMultisigs,
-				name: orgName,
-				imageURI: orgImageUrl
+				name: orgName
 			}),
 			headers: firebaseFunctionsHeader(wallets?.[0].address),
 			method: 'POST'

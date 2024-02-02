@@ -24,7 +24,7 @@ const OrgNameAndImageStep = ({
 	setOrgImageUrl: React.Dispatch<React.SetStateAction<string>>;
 }) => {
 	const [loading, setLoading] = useState<boolean>(false);
-	const IMGBB_KEY = '8ce9959fc4824951a0236e753775328d'
+	const IMGBB_KEY = '8ce9959fc4824951a0236e753775328d';
 	const props: UploadProps = {
 		name: 'file',
 		// eslint-disable-next-line sort-keys
@@ -51,8 +51,7 @@ const OrgNameAndImageStep = ({
 						message: 'Organisation Image Uploaded.',
 						status: NotificationStatus.SUCCESS
 					});
-				}
-				else {
+				} else {
 					queueNotification({
 						header: 'Error!',
 						message: 'There was an issue uploading Image.',
