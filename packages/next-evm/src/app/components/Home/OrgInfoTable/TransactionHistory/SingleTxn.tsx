@@ -205,7 +205,7 @@ const SingleTxn = ({
 		}
 	}, [tokenDetailsArray]);
 
-	return tokenDetailsArray?.[0]?.isFakeToken && isFundType ? null : (
+	return (
 		<Link
 			href={`/transactions?tab=History#${callHash || ''}`}
 			className='flex items-center px-2 pb-2 mb-2 gap-x-3 text-white grid grid-cols-9'

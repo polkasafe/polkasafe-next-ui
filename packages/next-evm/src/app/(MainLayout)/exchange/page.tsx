@@ -30,7 +30,7 @@ enum EOnramp {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const Exchange = ({ className }: { className?: string }) => {
-	const { address: userAddress, activeMultisig, activeMultisigData } = useGlobalUserDetailsContext();
+	const { userID, activeMultisig, activeMultisigData } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 	const { allAssets } = useMultisigAssetsContext();
 
@@ -108,7 +108,7 @@ const Exchange = ({ className }: { className?: string }) => {
 		<div
 			className={`scale-[80%] w-[125%] h-[125%] p-5 origin-top-left bg-bg-main rounded-lg flex justify-center ${className}`}
 		>
-			{userAddress ? (
+			{userID ? (
 				<div className='flex flex-col gap-y-2'>
 					<Form className='h-full flex flex-col gap-y-5 bg-bg-secondary rounded-lg p-5'>
 						<AddMultisigModal />
@@ -249,7 +249,7 @@ const Exchange = ({ className }: { className?: string }) => {
 				</div>
 			) : (
 				<div className='h-full w-full flex items-center justify-center text-primary font-bold text-lg'>
-					<Link href='/'>
+					<Link href='/login'>
 						<span>Please Login</span> <ExternalLinkIcon />
 					</Link>
 				</div>

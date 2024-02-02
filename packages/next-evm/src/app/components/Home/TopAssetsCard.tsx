@@ -54,6 +54,7 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 				legend: {
 					position: 'right'
 				}
+				// rotation: -180
 			}
 		]
 	};

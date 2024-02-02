@@ -26,7 +26,7 @@ enum ETab {
 }
 
 const Assets = () => {
-	const { address: userAddress, activeMultisig, isSharedSafe } = useGlobalUserDetailsContext();
+	const { activeMultisig, isSharedSafe, userID } = useGlobalUserDetailsContext();
 	const { allAssets, allNfts, loadingAssets, organisationBalance } = useMultisigAssetsContext();
 	const { currency: globalCurrency, allCurrencyPrices } = useGlobalCurrencyContext();
 	const [currency, setCurrency] = useState<string>(globalCurrency);
@@ -36,7 +36,7 @@ const Assets = () => {
 	return (
 		<div className='h-full bg-bg-main rounded-lg px-5 py-3'>
 			<AddMultisigModal />
-			{userAddress || (activeMultisig && isSharedSafe) ? (
+			{userID || (activeMultisig && isSharedSafe) ? (
 				<div className='scale-[80%] w-[125%] h-[125%] origin-top-left'>
 					<div className='flex items-center justify-between mb-4'>
 						<div className='flex items-end gap-x-4'>
@@ -100,7 +100,7 @@ const Assets = () => {
 				</div>
 			) : (
 				<div className='h-full w-full flex items-center justify-center text-primary font-bold text-lg'>
-					<Link href='/'>
+					<Link href='/login'>
 						<span>Please Login</span> <ExternalLinkIcon />
 					</Link>
 				</div>

@@ -20,6 +20,7 @@ interface IOrganisationBalance {
 			name: string;
 			tokenSymbol: string;
 			balance_token: string;
+			tokenAddress?: string;
 			tokenDecimals: number;
 			logo: string;
 			balance_usd: string;
@@ -167,6 +168,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 							balance_usd: item.fiatBalance,
 							logo: item.tokenInfo.logoUri,
 							name: item.tokenInfo.name,
+							tokenAddress: item.tokenInfo.address,
 							tokenDecimals: item.tokenInfo.decimals,
 							tokenSymbol: item.tokenInfo.symbol
 						};

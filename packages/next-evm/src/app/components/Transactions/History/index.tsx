@@ -118,7 +118,6 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 			</div>
 		);
 	}
-
 	return (
 		<>
 			{transactions && transactions.length > 0 ? (
