@@ -34,10 +34,10 @@ const Assets = () => {
 	const [tab, setTab] = useState(ETab.Tokens);
 
 	return (
-		<div className='h-full bg-bg-main rounded-lg px-5 py-3'>
+		<div className='h-[75vh] bg-bg-main rounded-lg px-5 py-3'>
 			<AddMultisigModal />
 			{userID || (activeMultisig && isSharedSafe) ? (
-				<div className='scale-[80%] w-[125%] h-[125%] origin-top-left'>
+				<div className='scale-[80%] w-[125%] h-[125%] origin-top-left flex flex-col'>
 					<div className='flex items-center justify-between mb-4'>
 						<div className='flex items-end gap-x-4'>
 							<h2 className='text-lg font-bold text-white'>Assets</h2>
@@ -85,7 +85,7 @@ const Assets = () => {
 							NFTs
 						</Button>
 					</div>
-					<div className='h-full'>
+					<div className='h-full overflow-y-auto'>
 						{loadingAssets ? (
 							<Loader size='large' />
 						) : tab === ETab.Tokens ? (

@@ -35,7 +35,10 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 				tokenSymbol
 			};
 		});
-	const sortedData = dataArray?.sort((a, b) => a.balance - b.balance)?.reverse();
+	const sortedData = dataArray
+		?.sort((a, b) => a.balance - b.balance)
+		?.reverse()
+		?.filter((_, i) => i < 4);
 	console.log('data array', sortedData);
 	const data = {
 		labels: sortedData?.map(

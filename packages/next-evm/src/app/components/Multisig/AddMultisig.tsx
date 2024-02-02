@@ -46,6 +46,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 	const [openLinkMultisig, setOpenLinkMultisig] = useState(false);
 	const [openCreateMultisig, setOpenCreateMultisig] = useState(false);
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const { organisations, userID, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [selectedOrg, setSelectedOrg] = useState<IOrganisation>(activeOrg);
@@ -167,10 +168,11 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 				return;
 			}
 			if (addMultisigToOrgData) {
-				setUserDetailsContextState((prev) => ({
-					...prev,
-					organisations: addMultisigToOrgData
-				}));
+				console.log('add multsig data', addMultisigToOrgData);
+				// setUserDetailsContextState((prev) => ({
+				// ...prev,
+				// organisations: addMultisigToOrgData
+				// }));
 				setActiveOrg((prev) => ({
 					...prev,
 					multisigs: [...prev.multisigs, ...linkedMultisigs]

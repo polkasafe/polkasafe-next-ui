@@ -29,7 +29,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 	const { allCurrencyPrices } = useGlobalCurrencyContext();
 
 	return (
-		<div className='text-sm font-medium leading-[15px]'>
+		<div className='text-sm font-medium leading-[15px] overflow-y-auto'>
 			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
 				open={openTransactionModal}
