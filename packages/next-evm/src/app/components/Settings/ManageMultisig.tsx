@@ -35,7 +35,7 @@ const ManageMultisig = () => {
 				<AddressComponent
 					isMultisig
 					showNetworkBadge
-					network={network}
+					network={item.network as NETWORK}
 					withBadge={false}
 					address={item.address}
 				/>
