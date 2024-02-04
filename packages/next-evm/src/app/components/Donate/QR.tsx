@@ -2,7 +2,6 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 import React from 'react';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import AddressQr from '@next-common/ui-components/AddressQr';
 import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
@@ -21,16 +20,16 @@ const QR = () => {
 			<div className='flex items-center gap-x-3 justify-center bg-highlight rounded-lg p-2'>
 				<p className='text-xs md:text-sm leading-[15px]'>
 					<span className='text-primary font-medium'>ETH:</span>
-					<span className='font-normal ml-[6px]'>
-						{shortenAddress('0xa6f1f10E2d415366ED1912869CF14a1E29Df0c09')}
-					</span>
+					<span className='font-normal ml-[6px]'>{shortenAddress('0xa6f1f10E2d415366ED1912869CF14a1E29Df0c09')}</span>
 				</p>
 				<p className='text-sm md:text-base text-text_secondary flex items-center gap-x-[9px]'>
 					<button onClick={() => copyText('0xa6f1f10E2d415366ED1912869CF14a1E29Df0c09')}>
 						<CopyIcon className='hover:text-primary' />
 					</button>
 					<a
-						href={`${chainProperties[NETWORK.ETHEREUM].blockExplorer}/address/0xa6f1f10E2d415366ED1912869CF14a1E29Df0c09`}
+						href={`${
+							chainProperties[NETWORK.ETHEREUM].blockExplorer
+						}/address/0xa6f1f10E2d415366ED1912869CF14a1E29Df0c09`}
 						target='_blank'
 						rel='noreferrer'
 					>
