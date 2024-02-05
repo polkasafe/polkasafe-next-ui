@@ -74,7 +74,7 @@ const ConnectWallet = () => {
 				setLoading(false);
 			} else {
 				let signature = '';
-				if (address !== '1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm') {
+				if (getSubstrateAddress(address) !== getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm')) {
 					const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 					const wallet = injectedWindow.injectedWeb3[selectedWallet];
