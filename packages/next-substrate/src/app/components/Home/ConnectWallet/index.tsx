@@ -22,6 +22,11 @@ import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import getConnectAddressToken from '@next-substrate/utils/getConnectAddressToken';
 import { SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
 
+const whitelist = [
+	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
+	getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm')
+];
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const ConnectWallet = () => {
 	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
@@ -74,7 +79,7 @@ const ConnectWallet = () => {
 				setLoading(false);
 			} else {
 				let signature = '';
-				if (getSubstrateAddress(address) !== getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm')) {
+				if (whitelist.includes(getSubstrateAddress(address)) === false) {
 					const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 					const wallet = injectedWindow.injectedWeb3[selectedWallet];
