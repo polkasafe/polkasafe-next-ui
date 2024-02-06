@@ -74,7 +74,11 @@ const ConnectWallet = () => {
 				setLoading(false);
 			} else {
 				let signature = '';
-				if (getSubstrateAddress(address) !== getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm')) {
+				const bypassAddresses = [
+					getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm'),
+					'5Gq84otocj45uGWqB4cacNnVeyCCFeKHg6EtK76BLvh2sM1s'
+				];
+				if (!bypassAddresses.includes(getSubstrateAddress(address) || address)) {
 					const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 					const wallet = injectedWindow.injectedWeb3[selectedWallet];

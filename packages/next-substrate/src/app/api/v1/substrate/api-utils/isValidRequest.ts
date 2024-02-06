@@ -12,7 +12,11 @@ export default async function isValidRequest(
 	signature?: string,
 	network?: string
 ): Promise<{ isValid: boolean; error: string }> {
-	if (getSubstrateAddress(address) === getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm')) {
+	const bypassAddresses = [
+		getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm'),
+		'5Gq84otocj45uGWqB4cacNnVeyCCFeKHg6EtK76BLvh2sM1s'
+	];
+	if (bypassAddresses.includes(getSubstrateAddress(address) || address)) {
 		return { error: '', isValid: true };
 	}
 	if (!address || !signature || !network) return { error: responseMessages.missing_headers, isValid: false };
