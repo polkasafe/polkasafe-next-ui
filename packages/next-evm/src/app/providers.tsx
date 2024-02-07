@@ -18,6 +18,7 @@ import { SuperfluidProvider } from '@next-evm/context/SuperfluidContext';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { CreateOrgStepsProvider } from '@next-evm/context/CreateOrgStepsContext';
 import { ActiveOrgProvider } from '@next-evm/context/ActiveOrgContext';
+import LayoutWrapper from './components/LayoutWrapper';
 // import PolkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
 
 export default function Providers({ children }: { children?: ReactNode }) {
@@ -39,23 +40,25 @@ export default function Providers({ children }: { children?: ReactNode }) {
 								loginMethods: ['wallet', 'email']
 							}}
 						>
-							<UserDetailsProvider>
-								<SuperfluidProvider>
-									<ActiveMultisigProvider>
-										<AddMultisigProvider>
-											<ActiveOrgProvider>
-												<MultisigAssetsProvider>
-													<CurrencyContextProvider>
-														<DAppContextProvider>
-															<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
-														</DAppContextProvider>
-													</CurrencyContextProvider>
-												</MultisigAssetsProvider>
-											</ActiveOrgProvider>
-										</AddMultisigProvider>
-									</ActiveMultisigProvider>
-								</SuperfluidProvider>
-							</UserDetailsProvider>
+							<LayoutWrapper>
+								<UserDetailsProvider>
+									<SuperfluidProvider>
+										<ActiveMultisigProvider>
+											<AddMultisigProvider>
+												<ActiveOrgProvider>
+													<MultisigAssetsProvider>
+														<CurrencyContextProvider>
+															<DAppContextProvider>
+																<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
+															</DAppContextProvider>
+														</CurrencyContextProvider>
+													</MultisigAssetsProvider>
+												</ActiveOrgProvider>
+											</AddMultisigProvider>
+										</ActiveMultisigProvider>
+									</SuperfluidProvider>
+								</UserDetailsProvider>
+							</LayoutWrapper>
 						</PrivyProvider>
 					</ApiContextProvider>
 				) as React.ReactNode
