@@ -28,12 +28,14 @@ interface IQueued {
 }
 
 const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
-	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig, multisigAddresses } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueueItem[]>([]);
 	const pathname = usePathname();
 	const [amountUSD, setAmountUSD] = useState<string>('');
+
+	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	useEffect(() => {
 		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
@@ -82,7 +84,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 					`${SUBSTRATE_API_URL}/getMultisigQueue`,
 					{
 						limit: 10,
-						multisigAddress: activeMultisig,
+						multisigAddress: multisig?.address || activeMultisig,
 						network,
 						page: 1
 					}
@@ -127,7 +129,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 							date={dayjs(transaction.created_at).format('llll')}
 							status={transaction.status}
 							approvals={transaction.approvals}
-							threshold={transaction?.threshold || 0}
+							threshold={transaction?.threshold || multisig?.threshold || 0}
 							callData={transaction.callData}
 							callHash={transaction.callHash}
 							note={transaction.note || ''}

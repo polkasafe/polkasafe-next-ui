@@ -37,7 +37,8 @@ const TxnCard = ({
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, addressBook, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, addressBook, isSharedMultisig, notOwnerOfMultisig, multisigAddresses } =
+		useGlobalUserDetailsContext();
 	const { api, apiReady, network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
@@ -48,6 +49,8 @@ const TxnCard = ({
 	const [queueLoading, setQueueLoading] = useState<boolean>(false);
 
 	const [amountUSD, setAmountUSD] = useState<string>('');
+
+	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	useEffect(() => {
 		if (!api || !apiReady) return;
@@ -151,7 +154,7 @@ const TxnCard = ({
 						`${SUBSTRATE_API_URL}/getMultisigQueue`,
 						{
 							limit: 10,
-							multisigAddress: activeMultisig,
+							multisigAddress: multisig?.address || activeMultisig,
 							network,
 							page: 1
 						}
@@ -174,7 +177,7 @@ const TxnCard = ({
 		};
 
 		getQueue();
-	}, [activeMultisig, isSharedMultisig, network, newTxn, notOwnerOfMultisig, signature, userAddress]);
+	}, [activeMultisig, isSharedMultisig, multisig, network, newTxn, notOwnerOfMultisig, signature, userAddress]);
 
 	useEffect(() => {
 		if (!userAddress || !signature || !activeMultisig) return;
