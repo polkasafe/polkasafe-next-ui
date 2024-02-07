@@ -225,7 +225,7 @@ const DashboardCard = ({
 								className={`border-2 rounded-full bg-transparent ${
 									hasProxy && isProxy ? 'border-[#FF79F2]' : 'border-primary'
 								} p-1.5`}
-								value={currentMultisig?.address}
+								value={activeMultisig}
 								size={50}
 								theme='polkadot'
 							/>
@@ -262,15 +262,14 @@ const DashboardCard = ({
 							</div>
 							<div className='flex text-xs'>
 								<div
-									title={(currentMultisig?.address && getEncodedAddress(currentMultisig?.address, network)) || ''}
+									title={(activeMultisig && getEncodedAddress(activeMultisig, network)) || ''}
 									className=' font-normal text-text_secondary'
 								>
-									{currentMultisig?.address &&
-										shortenAddress(getEncodedAddress(currentMultisig?.address, network) || '')}
+									{activeMultisig && shortenAddress(getEncodedAddress(activeMultisig, network) || '')}
 								</div>
 								<button
 									className='ml-2 mr-1'
-									onClick={() => copyText(currentMultisig?.address, true, network)}
+									onClick={() => copyText(activeMultisig, true, network)}
 								>
 									<CopyIcon className='text-primary' />
 								</button>
@@ -281,7 +280,7 @@ const DashboardCard = ({
 										<div className='p-2'>
 											<AddressQr
 												size={100}
-												address={currentMultisig?.address}
+												address={activeMultisig}
 											/>
 										</div>
 									}
