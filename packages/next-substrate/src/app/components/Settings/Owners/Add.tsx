@@ -99,9 +99,9 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 
 	const handleMultisigCreate = async (newSignatories: string[], threshold: number) => {
 		try {
-			const signature = localStorage.getItem('signature');
+			// const signature = localStorage.getItem('signature');
 
-			if (!address || !signature || !newSignatories || !threshold) {
+			if (!address || !newSignatories || !threshold) {
 				console.log('ERROR');
 			} else {
 				setLoadingMessages('Creating Your Proxy.');

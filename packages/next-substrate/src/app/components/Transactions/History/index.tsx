@@ -43,7 +43,7 @@ const History: FC<IHistory> = ({
 	setHistoryTxnLength
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-	const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+	// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 	const { activeMultisig, multisigAddresses, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 	const { currencyPrice } = useGlobalCurrencyContext();
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
@@ -54,12 +54,12 @@ const History: FC<IHistory> = ({
 	const [amountUSD, setAmountUSD] = useState<string>('');
 
 	useEffect(() => {
-		if (!userAddress || !signature || !activeMultisig) return;
+		if (!userAddress || !activeMultisig) return;
 
 		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
 			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
 		});
-	}, [activeMultisig, network, signature, userAddress]);
+	}, [activeMultisig, network, userAddress]);
 
 	useEffect(() => {
 		const hash = pathname.slice(1);
@@ -73,7 +73,7 @@ const History: FC<IHistory> = ({
 	useEffect(() => {
 		const getTransactions = async () => {
 			setLoading(true);
-			if (!userAddress || !signature || !multisig) {
+			if (!userAddress || !multisig) {
 				if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
 					const {
 						data: { transactions: multisigTransactions },
@@ -144,7 +144,7 @@ const History: FC<IHistory> = ({
 		};
 		getTransactions();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig, multisig, network, signature, userAddress, refetch, currentPage]);
+	}, [activeMultisig, multisig, network, userAddress, refetch, currentPage]);
 
 	useEffect(() => {
 		if (transactions && transactions?.length > 0) {

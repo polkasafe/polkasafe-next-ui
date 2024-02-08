@@ -25,9 +25,9 @@ const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void
 		try {
 			setLoading(true);
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature || !multisigAddresses || !multisig?.address) {
+			if (!userAddress || !multisigAddresses || !multisig?.address) {
 				console.log('ERROR');
 				setLoading(false);
 			} else {

@@ -133,9 +133,9 @@ const Notifications = () => {
 	const updateNotificationPreferences = async () => {
 		try {
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 			} else {
 				const newPreferences: { [index: string]: IUserNotificationTriggerPreferences } = {
@@ -229,9 +229,9 @@ const Notifications = () => {
 	}) => {
 		try {
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 				return;
 			}
@@ -308,9 +308,9 @@ const Notifications = () => {
 	const verifyEmail = async () => {
 		try {
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 			} else {
 				setVerificationLoading(true);
@@ -376,9 +376,9 @@ const Notifications = () => {
 	const getVerifyToken = async (channel: CHANNEL) => {
 		try {
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 				return undefined;
 			}

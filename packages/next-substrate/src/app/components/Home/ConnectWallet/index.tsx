@@ -24,7 +24,8 @@ import { SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
 
 const whitelist = [
 	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
-	getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm')
+	getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm'),
+	getSubstrateAddress('5Gq84otocj45uGWqB4cacNnVeyCCFeKHg6EtK76BLvh2sM1s')
 ];
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
