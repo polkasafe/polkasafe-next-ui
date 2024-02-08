@@ -77,7 +77,6 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 	const [createMultisigData, setCreateMultisigData] = useState<IMultisigAddress>({} as any);
 
 	const createProxy = (multisigData: IMultisigAddress, create: boolean) => {
-		console.log('create proxy cll', create);
 		const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
 		multisigData.signatories.forEach((signatory) => {
 			const data = addressBook.find((a) => getSubstrateAddress(a.address) === getSubstrateAddress(signatory));
@@ -95,7 +94,6 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 			setOpenProxyModal(true);
 		}
 		onCancel?.();
-		console.log('after onCancel');
 		setUserDetailsContextState((prevState) => {
 			return {
 				...prevState,
@@ -115,7 +113,6 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 		// records: newRecords,
 		// multisig: multisigData.address
 		// }));
-		console.log('after set activeMul');
 	};
 
 	const addExistentialDeposit = async (multisigData: IMultisigAddress) => {
