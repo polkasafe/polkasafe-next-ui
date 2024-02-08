@@ -140,9 +140,9 @@ const Notifications = () => {
 	const updateNotificationPreferences = async () => {
 		try {
 			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			// const signature = localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 			} else {
 				const newPreferences: { [index: string]: IUserNotificationTriggerPreferences } = {
@@ -240,9 +240,9 @@ const Notifications = () => {
 	}) => {
 		try {
 			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			// const signature = localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 				return;
 			}
@@ -323,9 +323,9 @@ const Notifications = () => {
 	const verifyEmail = async () => {
 		try {
 			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			// const signature = localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 			} else {
 				setVerificationLoading(true);
@@ -392,9 +392,9 @@ const Notifications = () => {
 	const getVerifyToken = async (channel: CHANNEL) => {
 		try {
 			const userAddress = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			// const signature = localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 			} else {
 				const { data: verifyToken, error: verifyTokenError } = await nextApiClientFetch<string>(

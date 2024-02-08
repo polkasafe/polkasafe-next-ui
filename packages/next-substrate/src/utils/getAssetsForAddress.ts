@@ -30,7 +30,7 @@ export default async function getAssetsForAddress(address: string, network: stri
 
 		const assets: IAsset[] = [];
 
-		if (response.native) {
+		if (response?.native) {
 			await Promise.all(
 				response.native.map(async (asset) => {
 					const usdValue = await fetchTokenUSDValue(1, network);

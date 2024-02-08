@@ -380,8 +380,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const connectAddress = useCallback(async () => {
-		if (typeof window !== 'undefined' && (!localStorage.getItem('signature') || !localStorage.getItem('address')))
-			return;
+		if (typeof window !== 'undefined' && !localStorage.getItem('address')) return;
 
 		setLoading(true);
 		const connectAddressRes = await nextApiClientFetch('api/v1/substrate/auth/connectAddress');
@@ -439,7 +438,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	}, [sharedMultisigAddress, sharedMultisigInfo]);
 
 	useEffect(() => {
-		if (typeof window !== 'undefined' && localStorage.getItem('signature')) {
+		if (typeof window !== 'undefined' && localStorage.getItem('address')) {
 			connectAddress();
 		} else {
 			logout();

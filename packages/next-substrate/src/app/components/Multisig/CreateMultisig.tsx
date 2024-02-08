@@ -150,9 +150,9 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 	const handleMultisigCreate = async () => {
 		try {
 			const address = localStorage.getItem('address');
-			const signature = localStorage.getItem('signature');
+			// const signature = localStorage.getItem('signature');
 
-			if (!address || !signature) {
+			if (!address) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);

@@ -71,9 +71,9 @@ const EditField = ({
 	const handleSave = async () => {
 		try {
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);

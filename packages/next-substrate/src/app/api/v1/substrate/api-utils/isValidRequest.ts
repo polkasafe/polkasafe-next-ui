@@ -9,7 +9,8 @@ import isValidSignature from './isValidSignature';
 
 const whitelist = [
 	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
-	getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm')
+	getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm'),
+	getSubstrateAddress('5Gq84otocj45uGWqB4cacNnVeyCCFeKHg6EtK76BLvh2sM1s')
 ];
 
 export default async function isValidRequest(

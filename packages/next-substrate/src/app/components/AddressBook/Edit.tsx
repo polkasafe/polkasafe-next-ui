@@ -154,9 +154,9 @@ const EditAddress = ({
 		try {
 			setLoading(true);
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 				setLoading(false);
 				return;
@@ -210,9 +210,9 @@ const EditAddress = ({
 		try {
 			setLoading(true);
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				console.log('ERROR');
 				setLoading(false);
 				return;
