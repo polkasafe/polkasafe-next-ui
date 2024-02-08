@@ -6,13 +6,13 @@
 'use client';
 
 import Home from '@next-substrate/app/components/Home';
-import AddMultisigModal from './components/Multisig/AddMultisigModal';
+// import AddMultisigModal from './components/Multisig/AddMultisigModal';
 
 const HomePage: React.FC = () => {
 	return (
 		<>
 			<Home />
-			<AddMultisigModal />
+			{/* <AddMultisigModal /> */}
 		</>
 	);
 };
