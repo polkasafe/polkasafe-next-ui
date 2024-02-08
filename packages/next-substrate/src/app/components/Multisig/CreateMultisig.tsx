@@ -52,7 +52,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 		loggedInWallet
 	} = useGlobalUserDetailsContext();
 	const { network, api, apiReady } = useGlobalApiContext();
-	const { records, setActiveMultisigContextState } = useActiveMultisigContext();
+	const { records } = useActiveMultisigContext();
 	const { setOpenProxyModal } = useAddMultisigContext();
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -108,11 +108,11 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				}
 			};
 		});
-		setActiveMultisigContextState((prev) => ({
-			...prev,
-			records: newRecords,
-			multisig: multisigData.address
-		}));
+		// setActiveMultisigContextState((prev) => ({
+		// ...prev,
+		// records: newRecords,
+		// multisig: multisigData.address
+		// }));
 	};
 
 	const addExistentialDeposit = async (multisigData: IMultisigAddress) => {
