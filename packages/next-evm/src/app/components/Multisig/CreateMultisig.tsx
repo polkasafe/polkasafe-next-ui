@@ -46,7 +46,7 @@ interface IMultisigProps {
 const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, onComplete }) => {
 	const { setUserDetailsContextState, address: userAddress, multisigAddresses } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
-	const { records, setActiveMultisigContextState } = useActiveMultisigContext();
+	const { setActiveMultisigContextState } = useActiveMultisigContext();
 	const [selectedNetwork, setSelectedNetwork] = useState<NETWORK>(NETWORK.ETHEREUM);
 
 	const [uploadSignatoriesJson, setUploadSignatoriesJson] = useState(false);
@@ -228,6 +228,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 					onCancel={() => setShowAddressModal(false)}
 					addAddress={addAddress}
 					setAddAddress={setAddAddress}
+					setSignatories={setSignatories}
 				/>
 			</ModalComponent>
 			<Form
@@ -249,8 +250,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 											disabled={
 												!addAddress ||
 												!isValidWeb3Address(addAddress) ||
-												(records && Object.keys(records).includes(addAddress)) ||
-												activeOrg.addressBook?.some((item) => item?.address === addAddress)
+												activeOrg?.addressBook?.some((item) => item?.address === addAddress)
 											}
 											onClick={() => setShowAddressModal(true)}
 										>

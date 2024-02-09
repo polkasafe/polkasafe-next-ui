@@ -21,9 +21,10 @@ interface IMultisigProps {
 	addAddress?: string;
 	onCancel?: () => void;
 	setAddAddress?: React.Dispatch<React.SetStateAction<string>>;
+	setSignatories?: React.Dispatch<React.SetStateAction<string[]>>;
 }
 
-const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddress, className }) => {
+const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddress, setSignatories, className }) => {
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 
 	const [address, setAddress] = useState<string>(addAddress || '');
@@ -59,7 +60,19 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 	}, [email]);
 
 	const handlePersonalAddressBookUpdate = async () => {
-		if (!address || !name || !activeOrg) return;
+		if (!address || !name) return;
+
+		if (!activeOrg || !activeOrg?.id) {
+			setSignatories((prevState) => {
+				if (prevState.includes(address)) {
+					return prevState;
+				}
+
+				return [...prevState, address];
+			});
+			onCancel?.();
+			return;
+		}
 
 		try {
 			setLoading(true);
