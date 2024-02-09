@@ -22,6 +22,12 @@ import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import getConnectAddressToken from '@next-substrate/utils/getConnectAddressToken';
 import { SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
 
+const whitelist = [
+	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
+	getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm'),
+	getSubstrateAddress('5Gq84otocj45uGWqB4cacNnVeyCCFeKHg6EtK76BLvh2sM1s')
+];
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const ConnectWallet = () => {
 	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
@@ -73,26 +79,30 @@ const ConnectWallet = () => {
 				setTfaToken(token.tfa_token.token);
 				setLoading(false);
 			} else {
-				const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
+				let signature = '';
+				if (whitelist.includes(getSubstrateAddress(address)) === false) {
+					const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
-				const wallet = injectedWindow.injectedWeb3[selectedWallet];
+					const wallet = injectedWindow.injectedWeb3[selectedWallet];
 
-				if (!wallet) {
-					setLoading(false);
-					return;
+					if (!wallet) {
+						setLoading(false);
+						return;
+					}
+					const injected = wallet && wallet.enable && (await wallet.enable(APP_NAME));
+
+					const signRaw = injected && injected.signer && injected.signer.signRaw;
+					if (!signRaw) console.error('Signer not available');
+					setSigning(true);
+					const { signature: userSign } = await signRaw({
+						address: substrateAddress,
+						data: stringToHex(token),
+						type: 'bytes'
+					});
+					signature = userSign;
+
+					setSigning(false);
 				}
-				const injected = wallet && wallet.enable && (await wallet.enable(APP_NAME));
-
-				const signRaw = injected && injected.signer && injected.signer.signRaw;
-				if (!signRaw) console.error('Signer not available');
-				setSigning(true);
-				const { signature } = await signRaw({
-					address: substrateAddress,
-					data: stringToHex(token),
-					type: 'bytes'
-				});
-
-				setSigning(false);
 
 				const connectAddressRes = await nextApiClientFetch(
 					'api/v1/substrate/auth/connectAddress',

@@ -36,8 +36,9 @@ const TxnCard = ({
 	setProxyInProcess: React.Dispatch<React.SetStateAction<boolean>>;
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-	const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, addressBook, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+	const { activeMultisig, addressBook, isSharedMultisig, notOwnerOfMultisig, multisigAddresses } =
+		useGlobalUserDetailsContext();
 	const { api, apiReady, network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
@@ -48,6 +49,8 @@ const TxnCard = ({
 	const [queueLoading, setQueueLoading] = useState<boolean>(false);
 
 	const [amountUSD, setAmountUSD] = useState<string>('');
+
+	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	useEffect(() => {
 		if (!api || !apiReady) return;
@@ -72,7 +75,7 @@ const TxnCard = ({
 	useEffect(() => {
 		const getTransactions = async () => {
 			setHistoryLoading(true);
-			if (!userAddress || !signature) {
+			if (!userAddress) {
 				if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
 					const {
 						data: { transactions: multisigTransactions },
@@ -117,7 +120,7 @@ const TxnCard = ({
 			}
 		};
 		getTransactions();
-	}, [activeMultisig, network, signature, userAddress, newTxn, currency, isSharedMultisig, notOwnerOfMultisig]);
+	}, [activeMultisig, network, userAddress, newTxn, currency, isSharedMultisig, notOwnerOfMultisig]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
@@ -125,7 +128,7 @@ const TxnCard = ({
 			try {
 				setQueueLoading(true);
 
-				if (!userAddress || !signature) {
+				if (!userAddress) {
 					if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
 						const { data: queueTransactions, error: queueTransactionsError } = await getMultisigQueueTransactions(
 							activeMultisig,
@@ -151,7 +154,7 @@ const TxnCard = ({
 						`${SUBSTRATE_API_URL}/getMultisigQueue`,
 						{
 							limit: 10,
-							multisigAddress: activeMultisig,
+							multisigAddress: multisig?.address || activeMultisig,
 							network,
 							page: 1
 						}
@@ -174,15 +177,15 @@ const TxnCard = ({
 		};
 
 		getQueue();
-	}, [activeMultisig, isSharedMultisig, network, newTxn, notOwnerOfMultisig, signature, userAddress]);
+	}, [activeMultisig, isSharedMultisig, multisig, network, newTxn, notOwnerOfMultisig, userAddress]);
 
 	useEffect(() => {
-		if (!userAddress || !signature || !activeMultisig) return;
+		if (!userAddress || !activeMultisig) return;
 
 		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
 			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
 		});
-	}, [activeMultisig, network, signature, userAddress]);
+	}, [activeMultisig, network, userAddress]);
 
 	return (
 		<div>

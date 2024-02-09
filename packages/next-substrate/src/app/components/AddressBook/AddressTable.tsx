@@ -26,6 +26,7 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import EditAddress from './Edit';
 import RemoveAddress from './Remove';
@@ -168,21 +169,22 @@ const RemoveAddressModal = ({
 	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
 	return (
 		<>
-			{address !== userAddress && !multisig?.signatories.includes(address) && (
-				<button
-					onClick={() => setOpenRemoveModal(true)}
-					className='text-failure bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
-				>
-					<DeleteIcon />
-				</button>
-			)}
+			{address !== userAddress &&
+				!multisig?.signatories.some((a) => getSubstrateAddress(a) === getSubstrateAddress(address)) && (
+					<button
+						onClick={() => setOpenRemoveModal(true)}
+						className='text-failure bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
+					>
+						<DeleteIcon />
+					</button>
+				)}
 			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Remove Address</h3>}
 				open={openRemoveModal}
 				onCancel={() => setOpenRemoveModal(false)}
 			>
 				<RemoveAddress
-					shared={addresses[address].shared}
+					shared={addresses[address]?.shared}
 					addressToRemove={address}
 					name={addresses[address]?.name}
 					onCancel={() => setOpenRemoveModal(false)}

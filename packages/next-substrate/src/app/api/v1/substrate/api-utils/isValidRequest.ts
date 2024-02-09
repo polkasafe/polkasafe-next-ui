@@ -7,11 +7,20 @@ import { networks } from '@next-common/global/networkConstants';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import isValidSignature from './isValidSignature';
 
+const whitelist = [
+	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
+	getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm'),
+	getSubstrateAddress('5Gq84otocj45uGWqB4cacNnVeyCCFeKHg6EtK76BLvh2sM1s')
+];
+
 export default async function isValidRequest(
 	address?: string,
 	signature?: string,
 	network?: string
 ): Promise<{ isValid: boolean; error: string }> {
+	if (whitelist.includes(getSubstrateAddress(address))) {
+		return { error: '', isValid: true };
+	}
 	if (!address || !signature || !network) return { error: responseMessages.missing_headers, isValid: false };
 	if (!getSubstrateAddress(address)) return { error: responseMessages.invalid_headers, isValid: false };
 	if (!Object.values(networks).includes(network)) return { error: responseMessages.invalid_network, isValid: false };

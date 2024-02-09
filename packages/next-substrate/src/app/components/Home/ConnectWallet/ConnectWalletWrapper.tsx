@@ -10,12 +10,12 @@ interface IConnectWalletWrapperProps extends PropsWithChildren {}
 const ConnectWalletWrapper: FC<IConnectWalletWrapperProps> = (props) => {
 	const { children } = props;
 	return (
-		<div className='min-h-[70vh] bg-bg-main flex flex-col rounded-xl p-5'>
+		<div className='min-h-[70vh] h-full bg-bg-main flex flex-col rounded-xl p-5'>
 			<section className='grid grid-cols-2 gap-x-5'>
 				<Loader className='bg-primary col-span-1' />
 				<Loader className='bg-highlight col-span-1' />
 			</section>
-			{children}
+			<div className='flex-1 flex flex-col justify-center'>{children}</div>
 		</div>
 	);
 };

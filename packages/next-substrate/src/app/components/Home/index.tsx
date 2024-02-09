@@ -30,6 +30,7 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import hasExistentialDeposit from '@next-substrate/utils/hasExistentialDeposit';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
+import AddMultisigModal from '../Multisig/AddMultisigModal';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, sonarjs/cognitive-complexity
 const Home = ({ className }: { className?: string }) => {
@@ -167,6 +168,7 @@ const Home = ({ className }: { className?: string }) => {
 					onCancel={() => setOpenProxyModal(false)}
 				/>
 			</ModalComponent>
+			<AddMultisigModal />
 			{(multisigAddresses &&
 				multisigAddresses.filter(
 					(m) => m.network === network && !multisigSettings?.[`${m.address}_${m.network}`]?.deleted && !m.disabled

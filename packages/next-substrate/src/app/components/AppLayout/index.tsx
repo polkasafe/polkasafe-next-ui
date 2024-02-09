@@ -64,12 +64,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 	}, [activeMultisig, multisigAddresses]);
 
 	const getSharedAddressBook = useCallback(async () => {
-		if (
-			(typeof window !== 'undefined' && !localStorage.getItem('signature')) ||
-			!localStorage.getItem('address') ||
-			!multisig
-		)
-			return;
+		if ((typeof window !== 'undefined' && !localStorage.getItem('address')) || !multisig) return;
 
 		setMultisigChanged(true);
 		const { data: sharedAddressBookData, error: sharedAddressBookError } =
@@ -89,7 +84,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 
 	useEffect(() => {
 		getSharedAddressBook();
-	}, [getSharedAddressBook]);
+	}, [getSharedAddressBook, activeMultisig]);
 
 	useEffect(() => {
 		if (isAppsPage) setLoading(true);

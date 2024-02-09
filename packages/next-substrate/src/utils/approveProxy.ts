@@ -100,9 +100,9 @@ export default async function approveProxy({
 	const handleMultisigCreate = async (proxyAddress: string) => {
 		try {
 			const address = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!address || !signature || !proxyAddress) {
+			if (!address || !proxyAddress) {
 				console.log('ERROR');
 				return;
 			}
