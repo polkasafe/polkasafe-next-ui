@@ -14,6 +14,7 @@ import polymeshLogo from '~assets/parachains-logos/polymesh-logo.png';
 import westendLogo from '~assets/parachains-logos/westend-logo.png';
 import { StaticImageData } from 'next/image';
 import rococoLogo from '~assets/parachains-logos/rococo-logo.jpeg';
+import paseoLogo from '~assets/parachains-logos/paseo-logo.png';
 
 export type Network = (typeof networks)[keyof typeof networks];
 export type TokenSymbol = (typeof tokenSymbol)[keyof typeof tokenSymbol];
@@ -37,6 +38,7 @@ export const networks = {
 	ALEPHZERO: 'alephzero',
 	ASTAR: 'astar',
 	KUSAMA: 'kusama',
+	PASEO: 'paseo',
 	POLKADOT: 'polkadot',
 	ROCOCO: 'rococo',
 	STATEMINE: 'assethub-kusama',
@@ -49,6 +51,7 @@ export const tokenSymbol = {
 	AZERO: 'AZERO',
 	DOT: 'DOT',
 	KSM: 'KSM',
+	PAS: 'PAS',
 	ROC: 'ROC',
 	WND: 'WND'
 };
@@ -133,6 +136,16 @@ export const chainProperties: ChainPropType = {
 		ss58Format: 42,
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.AZERO
+	},
+	[networks.PASEO]: {
+		blockTime: 1000,
+		chainId: 0,
+		existentialDeposit: '1.0000',
+		logo: paseoLogo,
+		rpcEndpoint: 'wss://rpc.dotters.network/paseo/',
+		ss58Format: 42,
+		tokenDecimals: 10,
+		tokenSymbol: tokenSymbol.PAS
 	}
 };
 
