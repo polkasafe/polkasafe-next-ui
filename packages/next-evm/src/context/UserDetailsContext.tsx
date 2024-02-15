@@ -355,7 +355,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			}
 			setLoading(true);
 			const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/loginEth`, {
-				headers: firebaseFunctionsHeader(wallets?.[0]?.address),
+				headers: firebaseFunctionsHeader(wallets?.[0]?.address || address),
 				method: 'POST'
 			});
 			const { data: userData, error: loginError } = (await loginRes.json()) as {
