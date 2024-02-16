@@ -4,6 +4,7 @@
 
 import { ApiPromise } from '@polkadot/api';
 import { formatBalance } from '@polkadot/util/format';
+import { sortAddresses } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { NotificationStatus } from '@next-common/types';
@@ -52,6 +53,8 @@ export default async function removeOldMultiFromProxy({
 	});
 
 	const otherSignatories = encodedSignatories.filter((sig) => sig !== encodedInitiatorAddress);
+	const otherSignatoriesSorted = sortAddresses(otherSignatories, chainProperties[network].ss58Format);
+
 	const removeProxyTx = api.tx.proxy.removeProxy(multisigAddress, 'Any', 0);
 	const proxyTx = api.tx.proxy.proxy(proxyAddress, null, removeProxyTx);
 
@@ -63,7 +66,7 @@ export default async function removeOldMultiFromProxy({
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	return new Promise<IMultiTransferResponse>((resolve, reject) => {
 		api.tx.multisig
-			.asMulti(newThreshold, otherSignatories, null, proxyTx, MAX_WEIGHT as any)
+			.asMulti(newThreshold, otherSignatoriesSorted, null, proxyTx, MAX_WEIGHT as any)
 			.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
 				if (status.isInvalid) {
 					console.log('Transaction invalid');
@@ -110,7 +113,7 @@ export default async function removeOldMultiFromProxy({
 							});
 
 							sendNotificationToAddresses({
-								addresses: otherSignatories,
+								addresses: otherSignatoriesSorted,
 								link: `/transactions?tab=Queue#${proxyTx.method.hash.toHex()}`,
 								message: 'New transaction to sign',
 								network,

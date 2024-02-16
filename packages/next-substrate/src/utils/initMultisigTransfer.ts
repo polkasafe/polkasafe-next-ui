@@ -5,6 +5,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { formatBalance } from '@polkadot/util/format';
+import { sortAddresses } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, NotificationStatus } from '@next-common/types';
@@ -84,6 +85,7 @@ export default async function initMultisigTransfer({
 
 	// remove initator address from signatories
 	const otherSignatories = encodedSignatories.filter((signatory) => signatory !== encodedInitiatorAddress);
+	const otherSignatoriesSorted = sortAddresses(otherSignatories, chainProperties[network].ss58Format);
 
 	// 3. API calls - info is necessary for the timepoint
 	const transferCalls: any[] = recipientAndAmount.map((item) => {
@@ -113,7 +115,7 @@ export default async function initMultisigTransfer({
 		// 5. for transaction from proxy address
 		if (isProxy && multisig.proxy) {
 			api.tx.multisig
-				.asMulti(multisig.threshold, otherSignatories, TIME_POINT, tx, 0 as any)
+				.asMulti(multisig.threshold, otherSignatoriesSorted, TIME_POINT, tx, 0 as any)
 				.signAndSend(encodedInitiatorAddress, { tip }, async ({ status, txHash, events, dispatchError }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
@@ -177,7 +179,7 @@ export default async function initMultisigTransfer({
 								notify({
 									args: {
 										address: initiatorAddress,
-										addresses: otherSignatories,
+										addresses: otherSignatoriesSorted,
 										callHash: tx.method.hash.toHex(),
 										multisigAddress: multisig.address,
 										network
@@ -207,7 +209,7 @@ export default async function initMultisigTransfer({
 								});
 
 								sendNotificationToAddresses({
-									addresses: otherSignatories,
+									addresses: otherSignatoriesSorted,
 									link: `/transactions?tab=Queue#${tx.method.hash.toHex()}`,
 									message: 'New transaction to sign',
 									network,
@@ -276,7 +278,7 @@ export default async function initMultisigTransfer({
 			api.tx.multisig
 				.approveAsMulti(
 					multisig.threshold,
-					otherSignatories,
+					otherSignatoriesSorted,
 					TIME_POINT,
 					transferBatchCall.method.hash,
 					MAX_WEIGHT as any
@@ -344,7 +346,7 @@ export default async function initMultisigTransfer({
 								notify({
 									args: {
 										address: initiatorAddress,
-										addresses: otherSignatories,
+										addresses: otherSignatoriesSorted,
 										callHash: txHash,
 										multisigAddress: multisig.address,
 										network
@@ -374,7 +376,7 @@ export default async function initMultisigTransfer({
 								});
 
 								sendNotificationToAddresses({
-									addresses: otherSignatories,
+									addresses: otherSignatoriesSorted,
 									link: `/transactions?tab=Queue#${transferBatchCall.method.hash.toHex()}`,
 									message: 'New transaction to sign',
 									network,

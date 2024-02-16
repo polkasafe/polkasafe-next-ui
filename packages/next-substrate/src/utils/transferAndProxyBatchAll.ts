@@ -3,6 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import { ApiPromise } from '@polkadot/api';
+import { sortAddresses } from '@polkadot/util-crypto';
 import { formatBalance } from '@polkadot/util/format';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
@@ -52,18 +53,23 @@ export default async function transferAndProxyBatchAll({
 	const displayAmount = formatBalance(AMOUNT_TO_SEND); // 2.0000 WND
 
 	// remove approving address address from signatories
-	const encodedSignatories = signatories.sort().map((signatory) => {
+	const encodedSignatories = signatories.map((signatory) => {
 		const encodedSignatory = getEncodedAddress(signatory, network);
 		if (!encodedSignatory) throw new Error('Invalid signatory address');
 		return encodedSignatory;
 	});
 
 	const otherSignatories = encodedSignatories.filter((signatory) => signatory !== encodedInitiatorAddress);
+
+	const otherSignatoriesSorted = sortAddresses(otherSignatories, chainProperties[network].ss58Format);
+
+	console.log('signatories', signatories, otherSignatoriesSorted, encodedSignatories);
+
 	const proxyTx = api.tx.proxy.createPure('Any', 0, new Date().getMilliseconds());
 	const transferTxn = api.tx.balances.transferKeepAlive(recepientAddress, AMOUNT_TO_SEND);
 
 	const ZERO_WEIGHT = new Uint8Array(0);
-	const multisigProxyTxn = api.tx.multisig.asMulti(threshold, otherSignatories, null, proxyTx, ZERO_WEIGHT);
+	const multisigProxyTxn = api.tx.multisig.asMulti(threshold, otherSignatoriesSorted, null, proxyTx, ZERO_WEIGHT);
 
 	let blockHash = '';
 
@@ -101,7 +107,7 @@ export default async function transferAndProxyBatchAll({
 							notify({
 								args: {
 									address: senderAddress,
-									addresses: otherSignatories,
+									addresses: otherSignatoriesSorted,
 									callHash: proxyTx.method.hash.toHex(),
 									multisigAddress,
 									network
@@ -135,7 +141,7 @@ export default async function transferAndProxyBatchAll({
 							});
 
 							sendNotificationToAddresses({
-								addresses: otherSignatories,
+								addresses: otherSignatoriesSorted,
 								link: `/transactions?tab=Queue#${proxyTx.method.hash.toHex()}`,
 								message: 'New transaction to sign',
 								network,
