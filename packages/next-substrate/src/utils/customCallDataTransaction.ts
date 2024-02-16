@@ -4,6 +4,7 @@
 import { ApiPromise } from '@polkadot/api';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { formatBalance } from '@polkadot/util/format';
+import { sortAddresses } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, NotificationStatus } from '@next-common/types';
@@ -71,6 +72,7 @@ export default async function customCallDataTransaction({
 
 	// remove initator address from signatories
 	const otherSignatories = encodedSignatories.filter((signatory) => signatory !== encodedInitiatorAddress);
+	const otherSignatoriesSorted = sortAddresses(otherSignatories, chainProperties[network].ss58Format);
 
 	// 4. Set the timepoint
 	// null for transaction initiation
@@ -92,7 +94,7 @@ export default async function customCallDataTransaction({
 	return new Promise<IMultiTransferResponse>((resolve, reject) => {
 		// 5. for transaction from proxy address
 		api.tx.multisig
-			.asMulti(multisig.threshold, otherSignatories, TIME_POINT, tx, 0 as any)
+			.asMulti(multisig.threshold, otherSignatoriesSorted, TIME_POINT, tx, 0 as any)
 			.signAndSend(encodedInitiatorAddress, { tip }, async ({ status, txHash, events, dispatchError }) => {
 				if (status.isInvalid) {
 					console.log('Transaction invalid');
@@ -156,7 +158,7 @@ export default async function customCallDataTransaction({
 							notify({
 								args: {
 									address: initiatorAddress,
-									addresses: otherSignatories,
+									addresses: otherSignatoriesSorted,
 									callHash: tx.method.hash.toHex(),
 									multisigAddress: multisig.address,
 									network
@@ -186,7 +188,7 @@ export default async function customCallDataTransaction({
 							});
 
 							sendNotificationToAddresses({
-								addresses: otherSignatories,
+								addresses: otherSignatoriesSorted,
 								link: `/transactions?tab=Queue#${tx.method.hash.toHex()}`,
 								message: 'New transaction to sign',
 								network,
