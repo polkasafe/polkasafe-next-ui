@@ -14,7 +14,7 @@ import polymeshLogo from '~assets/parachains-logos/polymesh-logo.png';
 import westendLogo from '~assets/parachains-logos/westend-logo.png';
 import { StaticImageData } from 'next/image';
 import rococoLogo from '~assets/parachains-logos/rococo-logo.jpeg';
-// import paseoLogo from '~assets/parachains-logos/paseo-logo.png';
+import phalaLogo from '~assets/parachains-logos/phala-logo.png';
 
 export type Network = (typeof networks)[keyof typeof networks];
 export type TokenSymbol = (typeof tokenSymbol)[keyof typeof tokenSymbol];
@@ -39,6 +39,7 @@ export const networks = {
 	ASTAR: 'astar',
 	KUSAMA: 'kusama',
 	// PASEO: 'paseo',
+	PHALA: 'phala',
 	POLKADOT: 'polkadot',
 	ROCOCO: 'rococo',
 	STATEMINE: 'assethub-kusama',
@@ -51,6 +52,7 @@ export const tokenSymbol = {
 	AZERO: 'AZERO',
 	DOT: 'DOT',
 	KSM: 'KSM',
+	PHA: 'PHA',
 	// PAS: 'PAS',
 	ROC: 'ROC',
 	WND: 'WND'
@@ -136,6 +138,16 @@ export const chainProperties: ChainPropType = {
 		ss58Format: 42,
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.AZERO
+	},
+	[networks.PHALA]: {
+		blockTime: 1000,
+		chainId: 0,
+		existentialDeposit: '0.0100',
+		logo: phalaLogo,
+		rpcEndpoint: 'wss://phala.api.onfinality.io/public-ws/',
+		ss58Format: 30,
+		tokenDecimals: 12,
+		tokenSymbol: tokenSymbol.PHA
 	}
 	// [networks.PASEO]: {
 	// blockTime: 1000,
