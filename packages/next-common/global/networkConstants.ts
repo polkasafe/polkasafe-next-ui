@@ -15,6 +15,7 @@ import westendLogo from '~assets/parachains-logos/westend-logo.png';
 import { StaticImageData } from 'next/image';
 import rococoLogo from '~assets/parachains-logos/rococo-logo.jpeg';
 import phalaLogo from '~assets/parachains-logos/phala-logo.png';
+import khalaLogo from '~assets/parachains-logos/khala-logo.png';
 
 export type Network = (typeof networks)[keyof typeof networks];
 export type TokenSymbol = (typeof tokenSymbol)[keyof typeof tokenSymbol];
@@ -37,6 +38,7 @@ export type ChainPropType = {
 export const networks = {
 	ALEPHZERO: 'alephzero',
 	ASTAR: 'astar',
+	KHALA: 'khala',
 	KUSAMA: 'kusama',
 	// PASEO: 'paseo',
 	PHALA: 'phala',
@@ -145,6 +147,16 @@ export const chainProperties: ChainPropType = {
 		existentialDeposit: '0.0100',
 		logo: phalaLogo,
 		rpcEndpoint: 'wss://phala.api.onfinality.io/public-ws/',
+		ss58Format: 30,
+		tokenDecimals: 12,
+		tokenSymbol: tokenSymbol.PHA
+	},
+	[networks.KHALA]: {
+		blockTime: 1000,
+		chainId: 0,
+		existentialDeposit: '0.0100',
+		logo: khalaLogo,
+		rpcEndpoint: 'wss://khala.public.curie.radiumblock.co/ws/',
 		ss58Format: 30,
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.PHA
