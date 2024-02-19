@@ -4,6 +4,7 @@
 
 import { ApiPromise } from '@polkadot/api';
 import { formatBalance } from '@polkadot/util/format';
+import { sortAddresses } from '@polkadot/util-crypto';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
@@ -43,6 +44,7 @@ export default async function cancelProxy({
 		return encodedSignatory;
 	});
 	const otherSignatories = encodedSignatories.filter((signatory) => signatory !== encodedInitiatorAddress);
+	const otherSignatoriesSorted = sortAddresses(otherSignatories, chainProperties[network].ss58Format);
 
 	// 3. Retrieve and unwrap the timepoint
 	const info = await api.query.multisig.multisigs(multisig.address, callHash);
@@ -54,7 +56,7 @@ export default async function cancelProxy({
 		// 4. Send cancelAsMulti if last approval call
 
 		api.tx.multisig
-			.cancelAsMulti(multisig.threshold, otherSignatories, TIME_POINT, callHash)
+			.cancelAsMulti(multisig.threshold, otherSignatoriesSorted, TIME_POINT, callHash)
 			.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
 				if (status.isInvalid) {
 					console.log('Transaction invalid');
@@ -81,7 +83,7 @@ export default async function cancelProxy({
 							});
 
 							sendNotificationToAddresses({
-								addresses: otherSignatories,
+								addresses: otherSignatoriesSorted,
 								link: '',
 								message: 'Transaction cancelled.',
 								network,
@@ -127,7 +129,7 @@ export default async function cancelProxy({
 			});
 		console.log(
 			`Submitted values: cancelAsMulti(${multisig.threshold}, otherSignatories: ${JSON.stringify(
-				otherSignatories,
+				otherSignatoriesSorted,
 				null,
 				2
 			)}, ${TIME_POINT}, ${callHash})\n`

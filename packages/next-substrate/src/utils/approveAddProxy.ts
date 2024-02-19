@@ -6,6 +6,7 @@
 
 import { ApiPromise } from '@polkadot/api';
 import { formatBalance } from '@polkadot/util/format';
+import { sortAddresses } from '@polkadot/util-crypto';
 import dayjs from 'dayjs';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, UserDetailsContextType, NotificationStatus } from '@next-common/types';
@@ -70,6 +71,8 @@ export default async function approveAddProxy({
 		return encodedSignatory;
 	});
 	const otherSignatories = encodedSignatories.filter((signatory) => signatory !== encodedInitiatorAddress);
+
+	const otherSignatoriesSorted = sortAddresses(otherSignatories, chainProperties[network].ss58Format);
 
 	if (callDataHex) {
 		const callData = api.createType('Call', callDataHex);
@@ -198,7 +201,7 @@ export default async function approveAddProxy({
 		// 5. Send asMulti if last approval call
 		if (numApprovals < multisig.threshold - 1) {
 			api.tx.multisig
-				.approveAsMulti(multisig.threshold, otherSignatories, multisigInfo.when, callHash, ZERO_WEIGHT)
+				.approveAsMulti(multisig.threshold, otherSignatoriesSorted, multisigInfo.when, callHash, ZERO_WEIGHT)
 				.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
@@ -251,7 +254,7 @@ export default async function approveAddProxy({
 				return;
 			}
 			api.tx.multisig
-				.asMulti(multisig.threshold, otherSignatories, multisigInfo.when, callDataHex, WEIGHT as any)
+				.asMulti(multisig.threshold, otherSignatoriesSorted, multisigInfo.when, callDataHex, WEIGHT as any)
 				.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
@@ -281,7 +284,7 @@ export default async function approveAddProxy({
 									notify({
 										args: {
 											address: approvingAddress,
-											addresses: otherSignatories,
+											addresses: otherSignatoriesSorted,
 											callHash,
 											multisigAddress: multisig.address,
 											network
@@ -298,7 +301,7 @@ export default async function approveAddProxy({
 									updateTransactionNote({ callHash: txHash.toHex(), multisigAddress: multisig.address, network, note });
 
 									sendNotificationToAddresses({
-										addresses: otherSignatories,
+										addresses: otherSignatoriesSorted,
 										link: `/transactions?tab=History#${txHash.toHex()}`,
 										message: 'Transaction Executed!',
 										network,
@@ -345,7 +348,7 @@ export default async function approveAddProxy({
 
 		console.log(
 			`Submitted values: asMulti(${multisig.threshold}, otherSignatories: ${JSON.stringify(
-				otherSignatories,
+				otherSignatoriesSorted,
 				null,
 				2
 			)}, ${multisigInfo?.when}, ${callDataHex}, ${WEIGHT})\n`

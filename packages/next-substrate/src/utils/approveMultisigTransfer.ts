@@ -5,6 +5,7 @@
 /* eslint-disable sonarjs/no-duplicate-string */
 import { ApiPromise } from '@polkadot/api';
 import { formatBalance } from '@polkadot/util/format';
+import { sortAddresses } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, NotificationStatus } from '@next-common/types';
@@ -65,6 +66,8 @@ export default async function approveMultisigTransfer({
 		return encodedSignatory;
 	});
 	const otherSignatories = encodedSignatories.filter((signatory) => signatory !== encodedInitiatorAddress);
+	const otherSignatoriesSorted = sortAddresses(otherSignatories, chainProperties[network].ss58Format);
+
 	if (!callDataHex) return undefined;
 
 	const callData = api.createType('Call', callDataHex);
@@ -90,7 +93,7 @@ export default async function approveMultisigTransfer({
 		// 5. Send asMulti if last approval call
 		if (numApprovals < multisig.threshold - 1) {
 			api.tx.multisig
-				.approveAsMulti(multisig.threshold, otherSignatories, multisigInfo.when, callHash, ZERO_WEIGHT)
+				.approveAsMulti(multisig.threshold, otherSignatoriesSorted, multisigInfo.when, callHash, ZERO_WEIGHT)
 				.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
@@ -139,7 +142,7 @@ export default async function approveMultisigTransfer({
 				});
 		} else {
 			api.tx.multisig
-				.asMulti(multisig.threshold, otherSignatories, multisigInfo.when, callDataHex, WEIGHT as any)
+				.asMulti(multisig.threshold, otherSignatoriesSorted, multisigInfo.when, callDataHex, WEIGHT as any)
 				.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
@@ -172,7 +175,7 @@ export default async function approveMultisigTransfer({
 								notify({
 									args: {
 										address: approvingAddress,
-										addresses: otherSignatories,
+										addresses: otherSignatoriesSorted,
 										callHash,
 										multisigAddress: multisig.address,
 										network
@@ -200,7 +203,7 @@ export default async function approveMultisigTransfer({
 								});
 
 								sendNotificationToAddresses({
-									addresses: otherSignatories,
+									addresses: otherSignatoriesSorted,
 									link: `/transactions?tab=History#${txHash.toHex()}`,
 									message: 'Transaction Executed!',
 									network,
@@ -247,7 +250,7 @@ export default async function approveMultisigTransfer({
 		// console.log(`Sending ${displayAmount} from ${multisig.address} to ${recipientAddress}`);
 		console.log(
 			`Submitted values: asMulti(${multisig.threshold}, otherSignatories: ${JSON.stringify(
-				otherSignatories,
+				otherSignatoriesSorted,
 				null,
 				2
 			)}, ${multisigInfo?.when}, ${callHash}, ${WEIGHT})\n`
