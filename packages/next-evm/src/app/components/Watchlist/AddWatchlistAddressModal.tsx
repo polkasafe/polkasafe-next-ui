@@ -47,7 +47,7 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 		if (!address || !selectedNetwork || !validMultisig) return;
 
 		setLoading(true);
-		const watchlistRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addAddressToWatchlist`, {
+		const watchlistRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addAddressToWatchlist_eth`, {
 			body: JSON.stringify({
 				address,
 				name,

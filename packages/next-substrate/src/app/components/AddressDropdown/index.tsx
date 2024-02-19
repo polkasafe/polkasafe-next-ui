@@ -41,7 +41,8 @@ const AddressDropdown = () => {
 				isSharedMultisig: false,
 				loggedInWallet: Wallet.POLKADOT,
 				multisigAddresses: [],
-				sharedMultisigInfo: undefined
+				sharedMultisigInfo: undefined,
+				userID: ''
 			};
 		});
 		setActiveMultisigContextState((prev) => ({
@@ -50,13 +51,13 @@ const AddressDropdown = () => {
 			records: {} as any
 		}));
 		toggleVisibility(false);
-		return router.replace('/');
+		router.replace('/login');
 	};
 
 	if (!address) {
 		return (
 			<Link
-				href='/'
+				href='/login'
 				onClick={() =>
 					setUserDetailsContextState((prevState) => {
 						return {

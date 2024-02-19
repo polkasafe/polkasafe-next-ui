@@ -55,7 +55,8 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 
 	const displayAddress = network ? getEncodedAddress(address, network) : getSubstrateAddress(address);
 
-	const encodedMultisigAddress = getEncodedAddress(address, multisig?.network || networks?.POLKADOT) || address;
+	const encodedMultisigAddress =
+		getEncodedAddress(address, network || multisig?.network || networks.POLKADOT) || address;
 
 	return (
 		<div className=' flex items-center gap-x-3'>

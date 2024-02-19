@@ -26,7 +26,7 @@ const ManageMultisig = () => {
 	const { activeOrg } = useActiveOrgContext();
 
 	const activeMultisigData = activeMultisig
-		? activeOrg?.multisigs.find((item) => item.address === activeMultisig)
+		? activeOrg?.multisigs.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
 		: undefined;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [network, setNetwork] = useState<string>(

@@ -4,7 +4,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import Details from '@next-substrate/app/components/Settings/Details';
+// import Details from '@next-substrate/app/components/Settings/Details';
 import Feedback from '@next-substrate/app/components/Settings/Feedback';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
@@ -26,7 +26,7 @@ const currentApps = [
 ];
 
 const AllApps = () => {
-	const { activeMultisig, address: userAddress } = useGlobalUserDetailsContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
 	return (
@@ -69,11 +69,11 @@ const AllApps = () => {
 			)}
 			{userAddress && (
 				<div className='mt-[30px] flex gap-x-[30px]'>
-					{activeMultisig && (
+					{/* {activeMultisig && (
 						<section className='w-full'>
 							<Details />
 						</section>
-					)}
+					)} */}
 					<section className='w-full max-w-[50%]'>
 						<Feedback />
 					</section>

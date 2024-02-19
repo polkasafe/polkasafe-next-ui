@@ -8,11 +8,11 @@ import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import Loader from '@next-common/ui-components/Loader';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { NotificationStatus } from '@next-common/types';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import ModalBtn from '../Settings/ModalBtn';
 import CancelBtn from '../Settings/CancelBtn';
@@ -45,14 +45,19 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 		if (!address || !selectedNetwork || !validMultisig) return;
 
 		setLoading(true);
-		const { data: watchlistData, error: watchlistError } = await nextApiClientFetch<string>(
-			`${SUBSTRATE_API_URL}/addAddressToWatchlist`,
-			{
+		const watchlistRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addAddressToWatchlist_substrate`, {
+			body: JSON.stringify({
 				address,
 				name,
 				network: selectedNetwork
-			}
-		);
+			}),
+			headers: firebaseFunctionsHeader(),
+			method: 'POST'
+		});
+		const { data: watchlistData, error: watchlistError } = (await watchlistRes.json()) as {
+			data: string;
+			error: string;
+		};
 
 		if (watchlistData && !watchlistError) {
 			setLoading(false);

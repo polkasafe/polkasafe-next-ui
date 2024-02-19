@@ -71,6 +71,7 @@ const RemoveOwner = ({
 					body: JSON.stringify({
 						disabled: true,
 						multisigName: multisig?.name,
+						network,
 						signatories: newSignatories,
 						threshold
 					}),

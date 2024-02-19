@@ -39,10 +39,9 @@ const Menu: FC<Props> = ({ className }) => {
 	const {
 		userID,
 		organisations,
-		multisigAddresses,
 		activeMultisig,
 		multisigSettings,
-		// isProxy,
+		isProxy,
 		setUserDetailsContextState,
 		isSharedMultisig,
 		notOwnerOfMultisig,
@@ -143,48 +142,24 @@ const Menu: FC<Props> = ({ className }) => {
 	}));
 
 	useEffect(() => {
-		const filteredMutisigs =
-			multisigAddresses?.filter(
-				(multisig) =>
-					multisig.network === network &&
-					!multisigSettings?.[`${multisig.address}_${multisig.network}`]?.deleted &&
-					!multisig.disabled
-			) || [];
-		const multi = filteredMutisigs?.find(
-			(multisig) => multisig.address === activeMultisig || multisig.proxy === activeMultisig
+		const active = activeOrg?.multisigs.find(
+			(item) => item.address === selectedMultisigAddress || item.proxy === selectedMultisigAddress
 		);
-		if (multi) {
-			if (!multi.proxy) {
-				setUserDetailsContextState((prev) => ({ ...prev, isProxy: false }));
-			} else {
-				setUserDetailsContextState((prev) => ({ ...prev, isProxy: true }));
-			}
-			setSelectedMultisigAddress(multi.address);
-		} else if (filteredMutisigs.length) setSelectedMultisigAddress(filteredMutisigs[0].address);
-		else setSelectedMultisigAddress('');
-
+		if (typeof window !== 'undefined')
+			localStorage.setItem('active_multisig', active?.proxy && isProxy ? active.proxy : selectedMultisigAddress);
+		setUserDetailsContextState((prevState) => {
+			return {
+				...prevState,
+				activeMultisig:
+					sharedMultisigInfo && isSharedMultisig
+						? sharedMultisigInfo.address
+						: active?.proxy && isProxy
+						? active.proxy
+						: selectedMultisigAddress
+			};
+		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [multisigAddresses, network]);
-
-	// useEffect(() => {
-	// const active = multisigAddresses.find(
-	// (item) => item.address === selectedMultisigAddress || item.proxy === selectedMultisigAddress
-	// );
-	// if (typeof window !== 'undefined')
-	// localStorage.setItem('active_multisig', active?.proxy && isProxy ? active.proxy : selectedMultisigAddress);
-	// setUserDetailsContextState((prevState) => {
-	// return {
-	// ...prevState,
-	// activeMultisig:
-	// sharedMultisigInfo && isSharedMultisig
-	// ? sharedMultisigInfo.address
-	// : active?.proxy && isProxy
-	// ? active.proxy
-	// : selectedMultisigAddress
-	// };
-	// });
-	// // eslint-disable-next-line react-hooks/exhaustive-deps
-	// }, [multisigAddresses, selectedMultisigAddress, isProxy, sharedMultisigInfo, isSharedMultisig]);
+	}, [selectedMultisigAddress, isProxy, sharedMultisigInfo, isSharedMultisig, activeOrg?.multisigs]);
 
 	return (
 		<div className={`bg-bg-main flex flex-col h-full py-[25px] px-3 ${className}`}>

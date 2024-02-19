@@ -19,7 +19,7 @@ import TxnCard from '@next-substrate/app/components/Home/TxnCard';
 import AddProxy from '@next-substrate/app/components/Multisig/Proxy/AddProxy';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
-import { CHANNEL, NotificationStatus } from '@next-common/types';
+import { CHANNEL, IMultisigAddress, NotificationStatus } from '@next-common/types';
 import { OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
@@ -29,6 +29,8 @@ import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContex
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
 import { ApiPromise, WsProvider } from '@polkadot/api';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import AddMultisigModal from '../Multisig/AddMultisigModal';
 import OrganisationAssets from './OrganisationAssetsCard';
 import OrgInfoTable from './OrgInfoTable';
@@ -41,7 +43,8 @@ const Home = ({ className }: { className?: string }) => {
 		notification_preferences,
 		activeMultisig,
 		isSharedMultisig,
-		sharedMultisigInfo
+		sharedMultisigInfo,
+		setUserDetailsContextState
 	} = useGlobalUserDetailsContext();
 	const [api, setApi] = useState<ApiPromise>();
 	const [apiReady, setApiReady] = useState(false);
@@ -49,14 +52,13 @@ const Home = ({ className }: { className?: string }) => {
 	const [newTxn, setNewTxn] = useState<boolean>(false);
 	const [openNewUserModal, setOpenNewUserModal] = useState(false);
 	const [hasProxy, setHasProxy] = useState<boolean>(true);
-	const [proxyNotInDb, setProxyNotInDb] = useState<boolean>(false);
 	const [proxyInProcess, setProxyInProcess] = useState<boolean>(false);
 
 	const [transactionLoading, setTransactionLoading] = useState(false);
 	const [isOnchain, setIsOnchain] = useState(true);
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 
-	const { activeOrg } = useActiveOrgContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 
 	const multisigs = activeOrg?.multisigs;
 	const multisig = multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
@@ -86,6 +88,70 @@ const Home = ({ className }: { className?: string }) => {
 		}
 	}, [api]);
 
+	const handleMultisigCreate = async (proxyAddress: string) => {
+		try {
+			if (!multisig || !multisig.address || !proxyAddress) {
+				console.log('ERROR');
+				return;
+			}
+			const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig_substrate`, {
+				body: JSON.stringify({
+					signatories: multisig.signatories,
+					threshold: multisig.threshold,
+					multisigName: multisig.name,
+					network,
+					proxyAddress
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
+				data: IMultisigAddress;
+				error: string;
+			};
+
+			if (multisigError) {
+				queueNotification({
+					header: 'Error!',
+					message: multisigError,
+					status: NotificationStatus.ERROR
+				});
+				return;
+			}
+
+			if (multisigData) {
+				queueNotification({
+					header: 'Success!',
+					message: 'Your Proxy has been created Successfully!',
+					status: NotificationStatus.SUCCESS
+				});
+				setActiveOrg((prevState) => {
+					const copyMultisigAddresses = [...prevState.multisigs];
+					const index = copyMultisigAddresses.findIndex((item) => item.address === multisig.address);
+					copyMultisigAddresses[index] = multisigData;
+					return {
+						...prevState,
+						multisigs: copyMultisigAddresses
+					};
+				});
+
+				setUserDetailsContextState((prevState) => {
+					const copyMultisigAddresses = [...prevState.multisigAddresses];
+					const index = copyMultisigAddresses.findIndex((item) => item.address === multisig.address);
+					copyMultisigAddresses[index] = multisigData;
+					return {
+						...prevState,
+						activeMultisig: multisigData.proxy || multisigData.address,
+						isProxy: true,
+						multisigAddresses: copyMultisigAddresses
+					};
+				});
+			}
+		} catch (error) {
+			console.log('ERROR', error);
+		}
+	};
+
 	useEffect(() => {
 		const fetchProxyData = async () => {
 			if (!multisig || ['alephzero'].includes(network)) return;
@@ -109,7 +175,7 @@ const Home = ({ className }: { className?: string }) => {
 			const proxyAddress = getEncodedAddress(params[0].value, network);
 			if (proxyAddress) {
 				console.log('proxy', proxyAddress);
-				setProxyNotInDb(true);
+				await handleMultisigCreate(proxyAddress);
 			}
 		};
 		if (multisig?.proxy) {
@@ -193,11 +259,7 @@ const Home = ({ className }: { className?: string }) => {
 			<AddMultisigModal />
 			{(multisigs && multisigs.length > 0 && activeMultisig) || sharedMultisigInfo ? (
 				<section>
-					{isSharedMultisig ? null : !['alephzero'].includes(network) &&
-					  !hasProxy &&
-					  !proxyNotInDb &&
-					  isOnchain &&
-					  !proxyInProcess ? (
+					{isSharedMultisig ? null : !['alephzero'].includes(network) && !hasProxy && isOnchain && !proxyInProcess ? (
 						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left border-2 border-solid border-waiting text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 							<p className='text-white'>Create a proxy to edit or backup your Multisig.</p>
 							<Button
@@ -218,19 +280,6 @@ const Home = ({ className }: { className?: string }) => {
 								className='border-none outline-none text-waiting bg-transparent'
 							>
 								Add Existential Deposit
-							</Button>
-						</section>
-					) : proxyNotInDb ? (
-						<section className='mb-2 text-sm scale-[80%] w-[125%] h-[125%] origin-top-left text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
-							<p className='text-white'>Your Proxy has been Created.</p>
-							<Button
-								onClick={() => {
-									if (typeof window !== 'undefined') window.location.reload();
-								}}
-								size='small'
-								className='border-none outline-none text-waiting bg-transparent'
-							>
-								Refresh
 							</Button>
 						</section>
 					) : proxyInProcess && !hasProxy ? (

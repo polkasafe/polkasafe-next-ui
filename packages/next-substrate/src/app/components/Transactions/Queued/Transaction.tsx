@@ -155,7 +155,7 @@ const Transaction: FC<ITransactionProps> = ({
 			});
 		})();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, callDataString, callHash, network]);
+	}, [api, apiReady, callData, callDataString, callHash, network]);
 
 	useEffect(() => {
 		const fetchMultisigData = async (newMultisigAddress: string) => {

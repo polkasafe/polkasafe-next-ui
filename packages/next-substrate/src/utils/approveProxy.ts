@@ -114,6 +114,7 @@ export default async function approveProxy({
 					signatories: multisig.signatories,
 					threshold: multisig.threshold,
 					multisigName: multisig.name,
+					network,
 					proxyAddress,
 					addressBook: records
 				}),

@@ -92,7 +92,7 @@ const Transaction: FC<ITransaction> = ({
 		setTxnParams({ method: `${callDataFunc?.method}`, section: `${callDataFunc?.section}` });
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, callData, callHash, network]);
+	}, [api, apiReady, callData, callHash, network]);
 
 	useEffect(() => {
 		if (decodedCallData && decodedCallData?.args?.proxy_type) {

@@ -104,6 +104,7 @@ export interface IWatchlist {
 export interface UserDetailsContextType {
 	organisations?: IOrganisation[];
 	userID: string;
+	loading?: boolean;
 	loggedInWallet: Wallet;
 	activeMultisig: string;
 	isProxy: boolean;

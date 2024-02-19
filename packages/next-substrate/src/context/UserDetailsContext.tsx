@@ -27,6 +27,7 @@ export const initialUserDetailsContext: UserDetailsContextType = {
 	createdAt: new Date(),
 	isProxy: false,
 	loggedInWallet: Wallet.POLKADOT,
+	loading: true,
 	multisigAddresses: [],
 	multisigSettings: {},
 	notification_preferences: {
@@ -404,6 +405,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					addressBook: userData?.addressBook || [],
 					createdAt: userData?.created_at,
 					loggedInWallet: (localStorage.getItem('logged_in_wallet') as Wallet) || Wallet.POLKADOT,
+					loading,
 					multisigAddresses: userData?.multisigAddresses,
 					multisigSettings: userData?.multisigSettings || {},
 					notification_preferences:
@@ -426,6 +428,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					address: '',
 					addressBook: [],
 					loggedInWallet: Wallet.POLKADOT,
+					loading,
 					multisigAddresses: [],
 					multisigSettings: {},
 					watchlists: {}

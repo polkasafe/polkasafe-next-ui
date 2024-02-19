@@ -21,7 +21,7 @@ const Watchlist = () => {
 				<WatchlistComponents />
 			) : (
 				<div className='h-full w-full flex items-center justify-center text-primary font-bold text-lg'>
-					<Link href='/'>
+					<Link href='/login'>
 						<span>Please Login</span> <ExternalLinkIcon />
 					</Link>
 				</div>

@@ -5,18 +5,16 @@
 import dayjs from 'dayjs';
 import React, { useEffect, useState, FC, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import usePagination from '@next-substrate/hooks/usePagination';
 import { ITransaction } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import Pagination from '@next-common/ui-components/Pagination';
 import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { FIREBASE_FUNCTIONS_URL, SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisigHistoricalTransactions';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
@@ -52,7 +50,9 @@ const History: FC<IHistory> = ({
 	const multisig = activeOrg?.multisigs?.find(
 		(item) => item.address === activeMultisig || item.proxy === activeMultisig
 	);
-	const { network } = useGlobalApiContext();
+
+	const network = multisig?.network || networks.POLKADOT;
+
 	const pathname = usePathname();
 	const { currentPage, setPage, totalDocs, setTotalDocs } = usePagination();
 	const [transactions, setTransactions] = useState<ITransaction[]>();
@@ -86,7 +86,7 @@ const History: FC<IHistory> = ({
 					body: JSON.stringify({
 						limit: multisig.proxy ? 5 : 10,
 						multisigAddress: multisig?.address,
-						network,
+						network: multisig?.network,
 						page: 1
 					}),
 					headers: firebaseFunctionsHeader(),
@@ -142,43 +142,49 @@ const History: FC<IHistory> = ({
 				let data: any = [];
 				let docs: number = 0;
 
-				const {
-					data: { transactions: multisigTransactions, count: multisigTransactionsCount },
-					error: multisigError
-				} = await nextApiClientFetch<{ transactions: ITransaction[]; count: number }>(
-					`${SUBSTRATE_API_URL}/getMultisigHistory`,
-					{
+				const multisigHistoryRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
+					body: JSON.stringify({
 						limit: multisig.proxy ? 5 : 10,
 						multisigAddress: isSharedMultisig ? activeMultisig : multisig?.address,
+						network,
 						page: currentPage
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: multisigTransactions, error: multisigError } = (await multisigHistoryRes.json()) as {
+					data: { count: number; transactions: ITransaction[] };
+					error: string;
+				};
 
 				if (multisig.proxy) {
-					const {
-						data: { transactions: proxyTransactions, count: proxyTransactionsCount },
-						error: proxyError
-					} = await nextApiClientFetch<{ transactions: ITransaction[]; count: number }>(
-						`${SUBSTRATE_API_URL}/getMultisigHistory`,
-						{
-							limit: 10 - multisigTransactions.length,
+					const proxyHistoryRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
+						body: JSON.stringify({
+							limit: 10 - multisigTransactions.transactions.length,
 							multisigAddress: multisig.proxy,
+							network,
 							page: currentPage
-						}
-					);
+						}),
+						headers: firebaseFunctionsHeader(),
+						method: 'POST'
+					});
+					const { data: proxyTransactions, error: proxyError } = (await proxyHistoryRes.json()) as {
+						data: { count: number; transactions: ITransaction[] };
+						error: string;
+					};
 
 					if (proxyTransactions && !proxyError) {
 						setLoading(false);
-						data = proxyTransactions;
-						docs = proxyTransactionsCount;
+						data = proxyTransactions.transactions;
+						docs = proxyTransactions.count;
 					}
 				}
 
 				if (multisigTransactions && !multisigError) {
 					setLoading(false);
-					data = [...data, ...multisigTransactions];
+					data = [...data, ...multisigTransactions.transactions];
 					setTransactions(data);
-					docs += multisigTransactionsCount;
+					docs += multisigTransactions.count;
 					setTotalDocs(docs);
 				}
 			} catch (error) {

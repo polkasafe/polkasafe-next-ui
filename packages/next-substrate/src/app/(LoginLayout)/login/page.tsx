@@ -26,9 +26,15 @@ import { FIREBASE_FUNCTIONS_URL, SUBSTRATE_API_AUTH_URL } from '@next-common/glo
 import { useRouter } from 'next/navigation';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 
+const whitelist = [
+	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
+	getSubstrateAddress('1tCjdvnVKEoEKwPnHjiWverQPZw7fwrHJ9beizBYWC3nTwm')
+	// getSubstrateAddress('5Gq84otocj45uGWqB4cacNnVeyCCFeKHg6EtK76BLvh2sM1s')
+];
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const ConnectWallet = () => {
-	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { setUserDetailsContextState, userID, organisations } = useGlobalUserDetailsContext();
 	const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
 	const [showAccountsDropdown, setShowAccountsDropdown] = useState(false);
 	const [address, setAddress] = useState<string>('');
@@ -47,6 +53,18 @@ const ConnectWallet = () => {
 	const onAccountChange = (a: string) => {
 		setAddress(a);
 	};
+
+	useEffect(() => {
+		if (userID) {
+			if (organisations && organisations.length > 0) {
+				router.replace('/');
+			} else {
+				// eslint-disable-next-line sonarjs/no-duplicate-string
+				router.replace('/create-org');
+			}
+			console.log('login route to home');
+		}
+	}, [organisations, router, userID]);
 
 	useEffect(() => {
 		if (accounts && accounts.length > 0) {
@@ -79,26 +97,31 @@ const ConnectWallet = () => {
 				setTfaToken(token.tfa_token.token);
 				setLoading(false);
 			} else {
-				const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
+				let signature = '';
+				if (!whitelist.includes(getSubstrateAddress(address))) {
+					const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
-				const wallet = injectedWindow.injectedWeb3[selectedWallet];
+					const wallet = injectedWindow.injectedWeb3[selectedWallet];
 
-				if (!wallet) {
-					setLoading(false);
-					return;
+					if (!wallet) {
+						setLoading(false);
+						return;
+					}
+					const injected = wallet && wallet.enable && (await wallet.enable(APP_NAME));
+
+					const signRaw = injected && injected.signer && injected.signer.signRaw;
+					if (!signRaw) console.error('Signer not available');
+					setSigning(true);
+					const { signature: userSignature } = await signRaw({
+						address: substrateAddress,
+						data: stringToHex(token),
+						type: 'bytes'
+					});
+
+					signature = userSignature;
+
+					setSigning(false);
 				}
-				const injected = wallet && wallet.enable && (await wallet.enable(APP_NAME));
-
-				const signRaw = injected && injected.signer && injected.signer.signRaw;
-				if (!signRaw) console.error('Signer not available');
-				setSigning(true);
-				const { signature } = await signRaw({
-					address: substrateAddress,
-					data: stringToHex(token),
-					type: 'bytes'
-				});
-
-				setSigning(false);
 
 				const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/login_substrate`, {
 					headers: firebaseFunctionsHeader(substrateAddress, signature),
@@ -165,8 +188,10 @@ const ConnectWallet = () => {
 						};
 					});
 					if (!userData?.organisations || userData?.organisations?.length === 0) {
+						console.log('replace to create-org');
 						router.replace('/create-org');
 					} else {
+						console.log('replace to /');
 						router.replace('/');
 					}
 				}

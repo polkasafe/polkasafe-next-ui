@@ -12,11 +12,11 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 
 const CreateOrganisation = () => {
 	const router = useRouter();
-	const { userID } = useGlobalUserDetailsContext();
+	const { userID, loading } = useGlobalUserDetailsContext();
 
 	useEffect(() => {
-		if (!userID) router.replace('login');
-	});
+		if (!userID && !loading) router.replace('/login');
+	}, [loading, router, userID]);
 
 	return (
 		<div className='flex flex-col'>

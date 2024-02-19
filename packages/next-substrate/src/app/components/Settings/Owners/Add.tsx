@@ -109,6 +109,7 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 					body: JSON.stringify({
 						disabled: true,
 						multisigName: multisig?.name,
+						network,
 						signatories: newSignatories,
 						threshold
 					}),

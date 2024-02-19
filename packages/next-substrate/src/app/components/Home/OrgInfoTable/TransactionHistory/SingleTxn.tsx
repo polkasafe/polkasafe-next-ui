@@ -161,7 +161,7 @@ const SingleTxn = ({
 					)}
 					{Number(transaction.amount_token) ? (
 						<p className='text-text_secondary text-right text-xs'>
-							{!Number.isNaN(transaction.amount_usd)
+							{!Number.isNaN(Number(transaction.amount_usd))
 								? (Number(transaction.amount_usd) * Number(currencyPrice)).toFixed(3)
 								: Number.isNaN(Number(amountUSD))
 								? '0.00'

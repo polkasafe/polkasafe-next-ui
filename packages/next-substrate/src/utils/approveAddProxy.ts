@@ -155,6 +155,7 @@ export default async function approveAddProxy({
 				body: JSON.stringify({
 					proxyAddress,
 					multisigName: multisig?.name,
+					network,
 					signatories: newMultisigData.signatories,
 					threshold: newMultisigData.threshold
 				}),

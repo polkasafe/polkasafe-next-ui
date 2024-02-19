@@ -211,6 +211,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 				const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig_substrate`, {
 					body: JSON.stringify({
 						addressBook: newRecords,
+						network,
 						signatories,
 						threshold,
 						multisigName
