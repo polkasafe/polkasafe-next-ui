@@ -16,11 +16,9 @@ import React, { useEffect, useState } from 'react';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
-import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
-import { EFieldType, NotificationStatus } from '@next-common/types';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { EFieldType, IMultisigAddress, NotificationStatus } from '@next-common/types';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import Balance from '@next-common/ui-components/Balance';
 import BalanceInput from '@next-common/ui-components/BalanceInput';
@@ -48,6 +46,8 @@ import initMultisigTransfer, {
 import inputToBn from '@next-substrate/utils/inputToBn';
 import setSigner from '@next-substrate/utils/setSigner';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 import ArgumentsTable from '../Transactions/Queued/ArgumentsTable';
@@ -86,13 +86,18 @@ const SendFundsForm = ({
 	transactionType = ETransactionType.SEND_TOKEN,
 	setTransactionType // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
-	const { activeMultisig, multisigAddresses, addressBook, address, isProxy, loggedInWallet, transactionFields } =
-		useGlobalUserDetailsContext();
-	const { api, apiReady, network } = useGlobalApiContext();
-	const { records } = useActiveMultisigContext();
+	const { activeMultisig, address, isProxy, loggedInWallet, transactionFields } = useGlobalUserDetailsContext();
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
 	const [note, setNote] = useState<string>('');
 	const [loading, setLoading] = useState(false);
 	const [amount, setAmount] = useState(new BN(0));
+	const { activeOrg } = useActiveOrgContext();
+
+	const [multisig, setMultisig] = useState<IMultisigAddress>(
+		activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+	);
+	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
 	const [recipientAndAmount, setRecipientAndAmount] = useState<IRecipientAndAmount[]>([
 		{
 			amount: new BN(0),
@@ -131,8 +136,6 @@ const SendFundsForm = ({
 		subfields: { [subfield: string]: { name: string; value: string } };
 	}>({ category: 'none', subfields: {} });
 
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
-
 	const [category, setCategory] = useState<string>('none');
 
 	const [subfieldAttachments, setSubfieldAttachments] = useState<ISubfieldAndAttachment>({});
@@ -142,6 +145,23 @@ const SendFundsForm = ({
 	const [txnParams, setTxnParams] = useState<{ method: string; section: string }>({} as any);
 
 	const [showDecodedCallData, setShowDecodedCallData] = useState<boolean>(false);
+
+	const [selectedMultisig, setSelectedMultisig] = useState<string>(
+		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
+	);
+
+	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
+		key: JSON.stringify(item),
+		label: (
+			<AddressComponent
+				isMultisig
+				showNetworkBadge
+				network={item.network}
+				withBadge={false}
+				address={item.address}
+			/>
+		)
+	}));
 
 	const transactionTypes: ItemType[] = Object.values(ETransactionType)
 		.filter(
@@ -190,6 +210,37 @@ const SendFundsForm = ({
 		setRecipientAndAmount(copyOptionsArray);
 	};
 
+	console.log('network and selected Multi', network, multisig, selectedMultisig);
+
+	useEffect(() => {
+		console.log('activeOrg', activeOrg);
+		if (!activeOrg || !activeOrg.multisigs) return;
+		const m = activeOrg?.multisigs?.find(
+			(item) => item.address === selectedMultisig || item.proxy === selectedMultisig
+		);
+		console.log('multisig', selectedMultisig, m);
+		setMultisig(m);
+		setNetwork(m?.network);
+	}, [activeOrg, selectedMultisig]);
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
+
 	useEffect(() => {
 		if (!api || !apiReady || transactionType === ETransactionType.SEND_TOKEN || !callData) return;
 
@@ -204,13 +255,9 @@ const SendFundsForm = ({
 
 	// Set address options for recipient
 	useEffect(() => {
+		if (!activeOrg || !activeOrg.addressBook || activeOrg.addressBook.length === 0) return;
 		const allAddresses: string[] = [];
-		if (records) {
-			Object.keys(records).forEach((a) => {
-				allAddresses.push(getEncodedAddress(a, network) || a);
-			});
-		}
-		addressBook.forEach((item) => {
+		activeOrg.addressBook.forEach((item) => {
 			if (!allAddresses.includes(getEncodedAddress(item.address, network) || item.address)) {
 				allAddresses.push(item.address);
 			}
@@ -221,7 +268,7 @@ const SendFundsForm = ({
 				value: a
 			}))
 		);
-	}, [address, addressBook, network, records]);
+	}, [activeOrg, address, network]);
 
 	useEffect(() => {
 		setTransactionFieldsObject({ category, subfields: {} });
@@ -380,6 +427,7 @@ const SendFundsForm = ({
 
 	return success ? (
 		<TransactionSuccessScreen
+			network={network}
 			successMessage='Transaction in Progress!'
 			waitMessage='All Threshold Signatories need to Approve the Transaction.'
 			amount={amount}
@@ -415,12 +463,11 @@ const SendFundsForm = ({
 		>
 			{
 				<>
-					{initiatorBalance.lte(totalDeposit.add(totalGas)) && !fetchBalancesLoading ? (
+					{initiatorBalance.lte(totalDeposit.add(totalGas)) && !fetchBalancesLoading && apiReady ? (
 						<section className='mb-4 text-[13px] w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg font-normal flex items-center gap-x-2'>
 							<WarningCircleIcon />
 							<p>
-								The Free Balance in your logged in account {addressBook.find((item) => item.address === address)?.name}{' '}
-								is less than the Minimum Deposit(
+								The Free Balance in your logged in account is less than the Minimum Deposit(
 								{formatBnBalance(totalDeposit.add(totalGas), { numberAfterComma: 3, withUnit: true }, network)})
 								required to create a Transaction.
 							</p>
@@ -473,17 +520,41 @@ const SendFundsForm = ({
 							</section>
 						)}
 						<section>
-							<p className='text-primary font-normal text-xs leading-[13px]'>From</p>
 							<div className='flex items-center gap-x-[10px] mt-[14px]'>
-								<article className='w-[500px] p-[10px] border-2 border-dashed border-bg-secondary rounded-lg flex items-center justify-between'>
-									<AddressComponent
-										withBadge={false}
-										address={activeMultisig}
-									/>
-									<Balance
-										address={activeMultisig}
-										onChange={setMultisigBalance}
-									/>
+								<article className='w-[500px]'>
+									<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
+										Sending from
+										<Balance
+											api={api}
+											apiReady={apiReady}
+											network={network}
+											onChange={setMultisigBalance}
+											address={selectedMultisig}
+										/>
+									</p>
+									<Dropdown
+										trigger={['click']}
+										className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-[500px]'
+										menu={{
+											items: multisigOptions,
+											onClick: (e) => {
+												console.log(JSON.parse(e.key));
+												setSelectedMultisig(JSON.parse(e.key)?.address);
+												setNetwork(JSON.parse(e.key)?.network);
+											}
+										}}
+									>
+										<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+											<AddressComponent
+												isMultisig
+												showNetworkBadge
+												network={network}
+												withBadge={false}
+												address={selectedMultisig}
+											/>
+											<CircleArrowDownIcon className='text-primary' />
+										</div>
+									</Dropdown>
 								</article>
 								<article className='w-[412px] flex items-center'>
 									<span className='-mr-1.5 z-0'>
@@ -524,19 +595,28 @@ const SendFundsForm = ({
 								</div>
 							</section>
 						) : transactionType === ETransactionType.MANUAL_EXTRINSIC ? (
-							<ManualExtrinsics setCallData={setCallData} />
+							<ManualExtrinsics
+								api={api}
+								network={network}
+								setCallData={setCallData}
+							/>
 						) : transactionType === ETransactionType.SUBMIT_PREIMAGE ? (
 							<SubmitPreimage
+								network={network}
+								api={api}
 								setCallData={setCallData}
 								className={className}
 							/>
 						) : transactionType === ETransactionType.SUBMIT_PROPOSAL ? (
 							<SubmitProposal
+								network={network}
+								api={api}
 								className={className}
 								setCallData={setCallData}
 							/>
 						) : transactionType === ETransactionType.SET_IDENTITY ? (
 							<SetIdentity
+								api={api}
 								className={className}
 								setCallData={setCallData}
 							/>
@@ -638,6 +718,7 @@ const SendFundsForm = ({
 													</div>
 													<div className='flex items-center gap-x-2 w-[45%]'>
 														<BalanceInput
+															network={network}
 															multipleCurrency
 															label='Amount*'
 															fromBalance={multisigBalance}
@@ -730,6 +811,9 @@ const SendFundsForm = ({
 											Decoded Call
 										</Divider>
 										<ArgumentsTable
+											api={api}
+											apiReady={apiReady}
+											network={network}
 											className='w-[500px]'
 											callData={callData}
 										/>
@@ -757,11 +841,8 @@ const SendFundsForm = ({
 												className='text-sm font-normal leading-[15px] outline-0 p-3 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white pr-24'
 												id='existential_deposit'
 											/>
-											<div className='absolute right-0 text-white px-3 flex items-center justify-center'>
-												<ParachainIcon
-													src={chainProperties[network].logo}
-													className='mr-2'
-												/>
+											<div className='absolute right-0 text-white px-3 flex gap-x-1 items-center justify-center'>
+												<ParachainIcon src={chainProperties[network].logo} />
 												<span>{chainProperties[network].tokenSymbol}</span>
 											</div>
 										</div>
@@ -774,6 +855,7 @@ const SendFundsForm = ({
 							<div className='flex items-center gap-x-[10px]'>
 								<div className='w-[500px]'>
 									<BalanceInput
+										network={network}
 										placeholder='1'
 										label='Tip'
 										fromBalance={initiatorBalance}

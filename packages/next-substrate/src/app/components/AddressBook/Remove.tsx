@@ -6,31 +6,31 @@ import { Form } from 'antd';
 import React, { useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
-import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { ISharedAddressBooks, NotificationStatus } from '@next-common/types';
+import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 
 const RemoveAddress = ({
 	addressToRemove,
 	name,
-	shared,
 	onCancel
 }: {
 	addressToRemove: string;
 	name: string;
-	shared?: boolean;
 	onCancel: () => void;
 }) => {
-	const { address, activeMultisig, addressBook, setUserDetailsContextState } = useGlobalUserDetailsContext();
-	const { setActiveMultisigContextState } = useActiveMultisigContext();
+	const { address } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const handleRemoveFromPersonalAddressBook = async () => {
+		if (!activeOrg || !activeOrg?.addressBook) return;
+
 		try {
+			const addressBook = activeOrg?.addressBook || [];
 			setLoading(true);
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
@@ -45,13 +45,18 @@ const RemoveAddress = ({
 				return;
 			}
 
-			const { data: removeAddressData, error: removeAddressError } = await nextApiClientFetch<any>(
-				`${SUBSTRATE_API_URL}/removeFromAddressBook`,
-				{
+			const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromAddressBook_substrate`, {
+				body: JSON.stringify({
 					address: addressToRemove,
-					name
-				}
-			);
+					organisationId: activeOrg.id
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: removeAddressData, error: removeAddressError } = (await createOrgRes.json()) as {
+				data: any;
+				error: string;
+			};
 
 			if (removeAddressError) {
 				queueNotification({
@@ -65,68 +70,7 @@ const RemoveAddress = ({
 
 			if (removeAddressData) {
 				const filteredAddresses = [...addressBook].filter((item) => item.address !== addressToRemove);
-				setUserDetailsContextState((prev) => {
-					return {
-						...prev,
-						addressBook: filteredAddresses
-					};
-				});
-
-				queueNotification({
-					header: 'Success!',
-					message: 'Your address has been removed successfully!',
-					status: NotificationStatus.SUCCESS
-				});
-				setLoading(false);
-				onCancel();
-			}
-		} catch (error) {
-			console.log('ERROR', error);
-			setLoading(false);
-		}
-	};
-
-	const handleRemoveFromSharedAddressBook = async () => {
-		try {
-			setLoading(true);
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress) {
-				console.log('ERROR');
-				setLoading(false);
-				return;
-			}
-			if (addressToRemove === address) {
-				setLoading(false);
-				return;
-			}
-
-			const { data: removeAddressData, error: removeAddressError } = await nextApiClientFetch<ISharedAddressBooks>(
-				`${SUBSTRATE_API_URL}/removeFromSharedAddressBook`,
-				{
-					address: addressToRemove,
-					multisigAddress: activeMultisig
-				}
-			);
-
-			if (removeAddressError) {
-				queueNotification({
-					header: 'Error!',
-					message: removeAddressError,
-					status: NotificationStatus.ERROR
-				});
-				setLoading(false);
-				return;
-			}
-
-			if (removeAddressData) {
-				setActiveMultisigContextState(removeAddressData as any);
-
-				const filteredAddresses = [...addressBook].filter(
-					(item) => getSubstrateAddress(item.address) !== getSubstrateAddress(addressToRemove)
-				);
-				setUserDetailsContextState((prev) => {
+				setActiveOrg((prev) => {
 					return {
 						...prev,
 						addressBook: filteredAddresses
@@ -149,19 +93,11 @@ const RemoveAddress = ({
 
 	return (
 		<Form className='my-0 w-[560px]'>
-			{shared ? (
-				<p className='text-white font-medium text-sm leading-[15px]'>
-					This will delete the address for everyone. Are you sure you want to permanently delete
-					<span className='text-primary mx-1.5'>{name}</span>
-					from your Multisig&apos;s Address Book?
-				</p>
-			) : (
-				<p className='text-white font-medium text-sm leading-[15px]'>
-					Are you sure you want to permanently delete
-					<span className='text-primary mx-1.5'>{name}</span>
-					from your Personal Address Book?
-				</p>
-			)}
+			<p className='text-white font-medium text-sm leading-[15px]'>
+				Are you sure you want to permanently delete
+				<span className='text-primary mx-1.5'>{name}</span>
+				from your Personal Address Book?
+			</p>
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
 				<CancelBtn
 					loading={loading}
@@ -169,7 +105,7 @@ const RemoveAddress = ({
 				/>
 				<RemoveBtn
 					loading={loading}
-					onClick={shared ? handleRemoveFromSharedAddressBook : handleRemoveFromPersonalAddressBook}
+					onClick={handleRemoveFromPersonalAddressBook}
 				/>
 			</div>
 		</Form>

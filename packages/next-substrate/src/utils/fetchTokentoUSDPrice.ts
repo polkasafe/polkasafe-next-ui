@@ -20,7 +20,7 @@ export default async function fetchTokenToUSDPrice(token: number, network: strin
 	const responseJSON = await response.json();
 
 	if (responseJSON.message === 'Success' && responseJSON.data) {
-		return formatUSDWithUnits(responseJSON.data.output);
+		return formatUSDWithUnits(responseJSON.data.output || '0');
 	}
-	return 'N/A';
+	return '0';
 }

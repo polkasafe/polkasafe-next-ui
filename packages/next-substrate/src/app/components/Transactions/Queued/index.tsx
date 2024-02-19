@@ -5,16 +5,15 @@
 import dayjs from 'dayjs';
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { IQueueItem } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
-import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import getMultisigQueueTransactions from '@next-substrate/utils/getMultisigQueueTransactions';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import NoTransactionsQueued from './NoTransactionsQueued';
 import Transaction from './Transaction';
 
@@ -28,20 +27,15 @@ interface IQueued {
 }
 
 const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
-	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig, multisigAddresses } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
+	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueueItem[]>([]);
 	const pathname = usePathname();
-	const [amountUSD, setAmountUSD] = useState<string>('');
 
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
-
-	useEffect(() => {
-		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
-			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
-		});
-	}, [network]);
+	const multisig = activeOrg?.multisigs?.find(
+		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+	);
 
 	useEffect(() => {
 		const hash = pathname.slice(1);
@@ -51,8 +45,57 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 		}
 	}, [queuedTransactions, pathname]);
 
+	const fetchAllTransactions = useCallback(async () => {
+		if (activeMultisig || !activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0) return;
+		const allTxns = [];
+		setLoading(true);
+		await Promise.all(
+			// eslint-disable-next-line @typescript-eslint/no-shadow
+			activeOrg.multisigs.map(async (multisig) => {
+				const queueTxnsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getQueueTransaction_substrate`, {
+					body: JSON.stringify({
+						limit: 10,
+						multisigAddress: multisig?.address,
+						network: multisig.network,
+						page: 1
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: queueTransactions, error: queueTransactionsError } = (await queueTxnsRes.json()) as {
+					data: IQueueItem[];
+					error: string;
+				};
+				if (queueTransactionsError) {
+					setLoading(false);
+					return;
+				}
+
+				if (queueTransactions) {
+					queueTransactions.forEach((item) =>
+						allTxns.push({ ...item, multisigAddress: multisig.address, network: multisig.network })
+					);
+					setLoading(false);
+				}
+			})
+		);
+		setLoading(false);
+		const sorted = [...allTxns].sort((a, b) => {
+			const date1 = new Date(a?.created_at);
+			const date2 = new Date(b?.created_at);
+			return Number(date1) - Number(date2);
+		});
+		setQueuedTransactions(sorted.reverse());
+		console.log('all txns', sorted.reverse());
+	}, [activeMultisig, activeOrg, setLoading]);
+
+	useEffect(() => {
+		fetchAllTransactions();
+	}, [fetchAllTransactions]);
+
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const fetchQueuedTransactions = useCallback(async () => {
+		if (!activeMultisig) return;
 		try {
 			setLoading(true);
 			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
@@ -62,7 +105,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 				if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
 					const { data: queueTransactions, error: queueTransactionsError } = await getMultisigQueueTransactions(
 						activeMultisig,
-						network,
+						multisig.network,
 						10,
 						1
 					);
@@ -80,15 +123,20 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 					setLoading(false);
 				}
 			} else {
-				const { data: queueTransactions, error: queueTransactionsError } = await nextApiClientFetch<IQueueItem[]>(
-					`${SUBSTRATE_API_URL}/getMultisigQueue`,
-					{
+				const queueTxnsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getQueueTransaction_substrate`, {
+					body: JSON.stringify({
 						limit: 10,
 						multisigAddress: multisig?.address || activeMultisig,
-						network,
+						network: multisig.network,
 						page: 1
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: queueTransactions, error: queueTransactionsError } = (await queueTxnsRes.json()) as {
+					data: IQueueItem[];
+					error: string;
+				};
 				if (queueTransactionsError) {
 					setLoading(false);
 					return;
@@ -104,7 +152,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 			setLoading(false);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig, network]);
+	}, [activeMultisig]);
 
 	useEffect(() => {
 		fetchQueuedTransactions();
@@ -124,6 +172,8 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 							{created_at}
 						</h4> */}
 						<Transaction
+							multisigAddress={transaction.multisigAddress}
+							network={transaction.network}
 							totalAmount={transaction.totalAmount}
 							setQueuedTransactions={setQueuedTransactions}
 							date={dayjs(transaction.created_at).format('llll')}
@@ -134,7 +184,6 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 							callHash={transaction.callHash}
 							note={transaction.note || ''}
 							refetch={() => setRefetch((prev) => !prev)}
-							amountUSD={amountUSD}
 							numberOfTransactions={queuedTransactions.length || 0}
 							notifications={transaction?.notifications}
 							transactionFields={transaction?.transactionFields}

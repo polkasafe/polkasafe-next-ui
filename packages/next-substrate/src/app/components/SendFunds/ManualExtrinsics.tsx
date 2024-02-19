@@ -6,11 +6,11 @@ import { TypeDef, TypeDefInfo } from '@polkadot/types/types';
 import { Dropdown, Input } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import AddressInput from '@next-common/ui-components/AddressInput';
 import BalanceInput from '@next-common/ui-components/BalanceInput';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import paramConversion from '@next-substrate/utils/paramConversion';
+import { ApiPromise } from '@polkadot/api';
 
 interface ParamField {
 	name: string;
@@ -79,12 +79,15 @@ const transformParams = (paramFields: ParamField[], inputParams: any[], opts = {
 
 const ManualExtrinsics = ({
 	className,
+	network,
+	api,
 	setCallData
 }: {
 	className?: string;
+	network: string;
+	api: ApiPromise;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-	const { api, apiReady } = useGlobalApiContext();
 	const [palletRPCs, setPalletRPCs] = useState<ItemType[]>([]);
 	const [callables, setCallables] = useState<ItemType[]>([]);
 	const [paramFields, setParamFields] = useState<ParamField[] | null>(null);
@@ -211,7 +214,7 @@ const ManualExtrinsics = ({
 	};
 
 	useEffect(() => {
-		if (!apiReady || !api) {
+		if (!api) {
 			return;
 		}
 
@@ -230,7 +233,7 @@ const ManualExtrinsics = ({
 			console.error(e);
 			console.error(e);
 		}
-	}, [api, areAllParamsFilled, callable, apiReady, palletRpc, transformedParams, setCallData]);
+	}, [api, areAllParamsFilled, callable, palletRpc, transformedParams, setCallData]);
 
 	return (
 		<section className='w-[500px]'>
@@ -289,7 +292,10 @@ const ManualExtrinsics = ({
 								? (paramField.raw.sub as any)?.type
 								: paramField.raw.type
 						) && ['Amount', 'Balance', 'BalanceOf'].includes(paramField.typeName) ? (
-							<BalanceInput onChange={(balance) => onParamChange(balance.toString(), { ind, paramField })} />
+							<BalanceInput
+								network={network}
+								onChange={(balance) => onParamChange(balance.toString(), { ind, paramField })}
+							/>
 						) : ['AccountId', 'Address', 'LookupSource', 'MultiAddress'].includes(paramField.type) ? (
 							<AddressInput
 								onChange={(address) => onParamChange(address, { ind, paramField })}

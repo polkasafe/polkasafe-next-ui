@@ -5,10 +5,7 @@
 import { SwapOutlined } from '@ant-design/icons';
 import { Badge, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { chainProperties } from '@next-common/global/networkConstants';
 import useGetWalletAccounts from '@next-substrate/hooks/useGetWalletAccounts';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
@@ -16,6 +13,9 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import inputToBn from '@next-substrate/utils/inputToBn';
 
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import shortenAddress from '@next-substrate/utils/shortenAddress';
+import { ApiPromise } from '@polkadot/api';
 import NewUserModal from '../Home/ConnectWallet/NewUserModal';
 
 interface ISignature {
@@ -30,34 +30,24 @@ interface ISignatoryProps {
 	signatories: string[];
 	filterAddress?: string;
 	homepage: boolean;
+	network: string;
+	api: ApiPromise;
 }
 
-const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISignatoryProps) => {
-	const { address: userAddress, addressBook } = useGlobalUserDetailsContext();
-	const { records } = useActiveMultisigContext();
-	const { network, api, apiReady } = useGlobalApiContext();
+const Signatory = ({ filterAddress, setSignatories, signatories, homepage, network, api }: ISignatoryProps) => {
+	const { address: userAddress } = useGlobalUserDetailsContext();
 	const { accounts } = useGetWalletAccounts();
 
 	const [addWalletAddress, setAddWalletAddress] = useState<boolean>(false);
+
+	const { activeOrg } = useActiveOrgContext();
 
 	const [addresses, setAddresses] = useState<ISignature[]>([]);
 	const [filteredAddresses, setFilteredAddresses] = useState<ISignature[]>([]);
 
 	useEffect(() => {
 		const allAddresses: ISignature[] = [];
-		if (records) {
-			Object.keys(records).forEach((address, i) => {
-				const personal = addressBook.find((item) => getSubstrateAddress(item.address) === getSubstrateAddress(address));
-				if (address !== getSubstrateAddress(userAddress)) {
-					allAddresses.push({
-						address: getEncodedAddress(address, network) || address,
-						key: i,
-						name: personal?.nickName || records[address]?.name || personal?.name || DEFAULT_ADDRESS_NAME
-					});
-				}
-			});
-		}
-		addressBook
+		activeOrg?.addressBook
 			.filter(
 				(item) =>
 					getSubstrateAddress(item.address) !== getSubstrateAddress(userAddress) &&
@@ -73,7 +63,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 
 		setAddresses(allAddresses);
 		setFilteredAddresses(allAddresses);
-	}, [addressBook, network, records, userAddress]);
+	}, [activeOrg, network, userAddress]);
 
 	useEffect(() => {
 		if (!addresses) {
@@ -90,7 +80,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 	}, [addresses, filterAddress, network]);
 
 	useEffect(() => {
-		if (!api || !apiReady || !addresses) {
+		if (!api || !addresses) {
 			return;
 		}
 		const fetchBalances = async () => {
@@ -110,7 +100,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 			});
 		};
 		fetchBalances();
-	}, [api, apiReady, addressBook, addresses]);
+	}, [api, addresses]);
 
 	const dragStart = (event: any) => {
 		event.dataTransfer.setData('text', event.target.id);
@@ -188,7 +178,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 		const data = event.target.id;
 		const address = `${data}`.split('-')[1];
 
-		if (!address || !api || !apiReady) return; // is invalid
+		if (!address || !api) return; // is invalid
 
 		setSignatories((prevState) => {
 			if (prevState.includes(address)) {
@@ -240,7 +230,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 										draggable
 										onDragStart={dragStart}
 									>
-										{address.name}
+										{address.name || shortenAddress(getEncodedAddress(address.address, network) || address.address)}
 										{lowBalance && signatories.includes(address.address) && (
 											<Tooltip
 												title={
@@ -308,7 +298,8 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 							key={`0-${signatories[0]}`}
 							className='bg-bg-main p-2 m-1 rounded-md text-white cursor-default flex items-center gap-x-2'
 						>
-							{addressBook[0]?.name}{' '}
+							{activeOrg?.addressBook?.find((item) => item.address === userAddress)?.name ||
+								shortenAddress(getEncodedAddress(userAddress, network) || userAddress)}{' '}
 							<Tooltip title={<span className='text-sm text-text_secondary'>Your Wallet Address</span>}>
 								<Badge status='success' />
 							</Tooltip>

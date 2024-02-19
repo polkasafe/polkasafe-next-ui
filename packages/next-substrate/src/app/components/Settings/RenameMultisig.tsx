@@ -5,40 +5,56 @@ import { Form, Input } from 'antd';
 import React, { useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import { networks } from '@next-common/global/networkConstants';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 
-const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void }) => {
-	const { network } = useGlobalApiContext();
-
+const RenameMultisig = ({
+	name,
+	onCancel,
+	multisig
+}: {
+	name: string;
+	onCancel: () => void;
+	multisig?: IMultisigAddress;
+}) => {
 	const [multisigName, setMultisigName] = useState<string>(name);
 	const [loading, setLoading] = useState<boolean>(false);
-	const { activeMultisig, setUserDetailsContextState, multisigAddresses } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { setUserDetailsContextState, userID } = useGlobalUserDetailsContext();
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const network = multisig.network || networks.POLKADOT;
+
+	const encodedMultisigAddress = getEncodedAddress(multisig.address || '', network);
 
 	const handleMultisigNameChange = async () => {
 		try {
 			setLoading(true);
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !multisigAddresses || !multisig?.address) {
+			if (!userID || !multisig?.address || !activeOrg) {
 				console.log('ERROR');
 				setLoading(false);
 			} else {
-				const { data: changeNameData, error: changeNameError } = await nextApiClientFetch<string>(
-					`${SUBSTRATE_API_URL}/renameMultisig`,
-					{
-						address: multisig?.address,
-						name: multisigName
-					},
-					{ network }
-				);
+				const changeSafeNameres = await fetch(`${FIREBASE_FUNCTIONS_URL}/renameMultisig_substrate`, {
+					body: JSON.stringify({
+						address: multisig.address,
+						name: multisigName,
+						network,
+						organisationId: activeOrg.id
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: changeNameData, error: changeNameError } = (await changeSafeNameres.json()) as {
+					data: string;
+					error: string;
+				};
 
 				if (changeNameError) {
 					queueNotification({
@@ -51,7 +67,7 @@ const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void
 				}
 
 				if (changeNameData) {
-					const copyMultisigAddresses = [...multisigAddresses];
+					const copyMultisigAddresses = [...activeOrg.multisigs];
 					const copyObject = copyMultisigAddresses?.find((item) => item.address === multisig.address);
 					if (copyObject) {
 						copyObject.name = multisigName;
@@ -61,8 +77,8 @@ const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void
 								multisigAddresses: copyMultisigAddresses,
 								multisigSettings: {
 									...prev.multisigSettings,
-									[`${multisig.address}_${multisig.network}`]: {
-										...prev.multisigSettings[`${multisig.address}_${multisig.network}`],
+									[`${encodedMultisigAddress}_${network}`]: {
+										...prev.multisigSettings[`${encodedMultisigAddress}_${network}`],
 										name: multisigName
 									}
 								}

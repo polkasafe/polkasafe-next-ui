@@ -3,21 +3,19 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 /* eslint-disable sort-keys */
 
-import { Form, Input, InputNumber, Spin, Switch } from 'antd';
+import { Dropdown, Form, Input, InputNumber, Spin, Switch } from 'antd';
 import classNames from 'classnames';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedTransaction';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import SuccessTransactionLottie from '@next-common/assets/lottie-graphics/SuccessTransaction';
 import CancelBtn from '@next-substrate/app/components/Multisig/CancelBtn';
 import AddBtn from '@next-substrate/app/components/Multisig/ModalBtn';
-import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import { IMultisigAddress, ISharedAddressBookRecord, NotificationStatus } from '@next-common/types';
-import { DashDotIcon } from '@next-common/ui-components/CustomIcons';
+import { CircleArrowDownIcon, DashDotIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import ProxyImpPoints from '@next-common/ui-components/ProxyImpPoints';
 import queueNotification from '@next-common/ui-components/QueueNotification';
@@ -28,32 +26,35 @@ import setSigner from '@next-substrate/utils/setSigner';
 import transferFunds from '@next-substrate/utils/transferFunds';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
 import { usePathname } from 'next/navigation';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import AddAddress from '../AddressBook/AddAddress';
 import DragDrop from './DragDrop';
 import Search from './Search';
 import Signatory from './Signatory';
+import NetworkCard, { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface IMultisigProps {
 	onCancel?: () => void;
 	homepage?: boolean;
+	onComplete?: (multisig: IMultisigAddress) => void;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }) => {
+const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, onComplete }) => {
 	const {
 		setUserDetailsContextState,
 		address: userAddress,
-		addressBook,
 		multisigAddresses,
 		loggedInWallet
 	} = useGlobalUserDetailsContext();
-	const { network, api, apiReady } = useGlobalApiContext();
-	const { records } = useActiveMultisigContext();
 	const { setOpenProxyModal } = useAddMultisigContext();
+	const { activeOrg } = useActiveOrgContext();
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [uploadSignatoriesJson, setUploadSignatoriesJson] = useState(false);
@@ -62,7 +63,12 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 	const [threshold, setThreshold] = useState<number | null>(2);
 	const [signatories, setSignatories] = useState<string[]>([userAddress]);
 
+	const [network, setNetwork] = useState<string>(networks.POLKADOT);
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState<boolean>(false);
+
 	const [loading, setLoading] = useState<boolean>(false);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [success, setSuccess] = useState<boolean>(false);
 	const [failure, setFailure] = useState<boolean>(false);
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
@@ -76,10 +82,41 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 
 	const [createMultisigData, setCreateMultisigData] = useState<IMultisigAddress>({} as any);
 
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
+
+	const networkOptions: ItemType[] = Object.values(networks).map((item) => ({
+		key: item,
+		label: (
+			<NetworkCard
+				selectedNetwork={network}
+				key={item}
+				network={item}
+			/>
+		)
+	}));
+
 	const createProxy = (multisigData: IMultisigAddress, create: boolean) => {
 		const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
 		multisigData.signatories.forEach((signatory) => {
-			const data = addressBook.find((a) => getSubstrateAddress(a.address) === getSubstrateAddress(signatory));
+			const data = activeOrg?.addressBook.find(
+				(a) => getSubstrateAddress(a.address) === getSubstrateAddress(signatory)
+			);
 			const substrateSignatory = getSubstrateAddress(signatory) || signatory;
 			newRecords[substrateSignatory] = {
 				address: signatory,
@@ -133,17 +170,17 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				senderAddress: getSubstrateAddress(userAddress) || userAddress,
 				setLoadingMessages
 			});
-			if (['alephzero'].includes(network) || pathname !== '/') {
-				createProxy(multisigData, false);
-			} else {
-				setSuccess(true);
-			}
+			// if (['alephzero'].includes(network) || pathname !== '/') {
+			// createProxy(multisigData, false);
+			// } else {
+			// setSuccess(true);
+			// }
 			setLoading(false);
 		} catch (error) {
 			console.log(error);
 			setFailure(true);
 			setLoading(false);
-			createProxy(multisigData, false);
+			// createProxy(multisigData, false);
 		}
 	};
 
@@ -160,7 +197,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 				const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
 				signatories.forEach((signatory) => {
 					const substrateSignatory = getSubstrateAddress(signatory) || signatory;
-					const data = addressBook.find((a) => getSubstrateAddress(a.address) === substrateSignatory);
+					const data = activeOrg?.addressBook.find((a) => getSubstrateAddress(a.address) === substrateSignatory);
 					newRecords[substrateSignatory] = {
 						address: signatory,
 						name: data?.name || DEFAULT_ADDRESS_NAME,
@@ -170,15 +207,21 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 						roles: data?.roles
 					};
 				});
-				const { data: multisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
-					`${SUBSTRATE_API_URL}/createMultisig`,
-					{
+
+				const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig_substrate`, {
+					body: JSON.stringify({
 						addressBook: newRecords,
 						signatories,
 						threshold,
 						multisigName
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
+					data: IMultisigAddress;
+					error: string;
+				};
 
 				if (multisigError) {
 					queueNotification({
@@ -212,6 +255,13 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 					});
 					setCreateMultisigData(multisigData);
 					await addExistentialDeposit(multisigData);
+					onComplete?.({
+						address: multisigData.address,
+						network,
+						name: multisigName,
+						signatories,
+						threshold
+					});
 				}
 			}
 		} catch (error) {
@@ -298,9 +348,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 											disabled={
 												!addAddress ||
 												!getSubstrateAddress(addAddress) ||
-												(records &&
-													Object.keys(records || {}).includes(getSubstrateAddress(addAddress) || addAddress)) ||
-												addressBook.some((item) => item.address === getEncodedAddress(addAddress, network))
+												activeOrg?.addressBook?.some((item) => item.address === getEncodedAddress(addAddress, network))
 											}
 											onClick={() => setShowAddressModal(true)}
 										>
@@ -328,10 +376,12 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 								<div className='w-full flex items-center justify-between'>
 									{!uploadSignatoriesJson ? (
 										<Signatory
+											network={network}
 											homepage={homepage}
 											filterAddress={addAddress}
 											setSignatories={setSignatories}
 											signatories={signatories}
+											api={api}
 										/>
 									) : (
 										<DragDrop setSignatories={setSignatories} />
@@ -355,6 +405,28 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false }
 									</div>
 								</div>
 							</Form.Item>
+							<div className='w-[45vw] mb-2'>
+								<p className='text-primary mb-2'>Select Network</p>
+								<Dropdown
+									trigger={['click']}
+									className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer min-w-[150px]'
+									menu={{
+										items: networkOptions,
+										onClick: (e) => setNetwork(e.key)
+									}}
+								>
+									<div className='flex justify-between items-center text-white gap-x-2'>
+										<div className='capitalize flex items-center gap-x-2 text-sm'>
+											<ParachainIcon
+												size={20}
+												src={chainProperties[network].logo}
+											/>
+											{network}
+										</div>
+										<CircleArrowDownIcon className='text-primary' />
+									</div>
+								</Dropdown>
+							</div>
 							<div className='flex items-start justify-between'>
 								<Form.Item
 									name='threshold'

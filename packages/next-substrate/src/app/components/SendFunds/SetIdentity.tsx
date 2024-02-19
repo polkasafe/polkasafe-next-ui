@@ -3,17 +3,18 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Form, Input } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
+import { ApiPromise } from '@polkadot/api';
 
 const SetIdentity = ({
 	className,
+	api,
 	setCallData
 }: {
 	className?: string;
+	api: ApiPromise;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-	const { api, apiReady } = useGlobalApiContext();
 	const { activeMultisig } = useGlobalUserDetailsContext();
 
 	const [displayName, setDisplayName] = useState<string | undefined>();
@@ -32,7 +33,7 @@ const SetIdentity = ({
 	};
 
 	const getMultisigAddressIdentityInfo = useCallback(async () => {
-		if (!api || !apiReady) return;
+		if (!api) return;
 
 		const info = await api.derive.accounts.info(activeMultisig);
 		if (info.identity) {
@@ -44,14 +45,14 @@ const SetIdentity = ({
 			setTwitterHandle(identity.twitter);
 			setWebsiteUrl(identity.web);
 		}
-	}, [activeMultisig, api, apiReady]);
+	}, [activeMultisig, api]);
 
 	useEffect(() => {
 		getMultisigAddressIdentityInfo();
 	}, [getMultisigAddressIdentityInfo]);
 
 	useEffect(() => {
-		if (!api || !apiReady) return;
+		if (!api) return;
 
 		const args = {
 			additional: [],
@@ -67,7 +68,7 @@ const SetIdentity = ({
 		const tx = api.tx.identity.setIdentity(args);
 		setCallData(tx.method.toHex());
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, displayName, elementHandle, email, legalName, twitterHandle, websiteUrl]);
+	}, [api, displayName, elementHandle, email, legalName, twitterHandle, websiteUrl]);
 
 	return (
 		<div className={`grid grid-cols-2 gap-4 ${className}`}>

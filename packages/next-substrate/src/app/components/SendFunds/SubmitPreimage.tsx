@@ -6,28 +6,31 @@ import { BN_ZERO } from '@polkadot/util';
 import { blake2AsHex } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import React, { useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { CopyIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-substrate/utils/copyText';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
+import { ApiPromise } from '@polkadot/api';
 import ManualExtrinsics from './ManualExtrinsics';
 
 const SubmitPreimage = ({
 	setCallData,
+	api,
+	network,
 	className
 }: {
 	className?: string;
+	api: ApiPromise;
+	network: string;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-	const { api, apiReady } = useGlobalApiContext();
 	const [preimageHash, setPreimageHash] = useState<string>('');
 	const [preimageLength, setPreimageLength] = useState<number>(0);
 
 	const [extrinsicCall, setExtrinsicCall] = useState<string>('');
 
 	useEffect(() => {
-		if (!api || !apiReady || !extrinsicCall || !api.tx.preimage || !api.tx.preimage.notePreimage) return;
+		if (!api || !extrinsicCall || !api.tx.preimage || !api.tx.preimage.notePreimage) return;
 
 		const encodedLength = Math.ceil((extrinsicCall.length - 2) / 2);
 		setPreimageLength(encodedLength);
@@ -43,12 +46,14 @@ const SubmitPreimage = ({
 			((api.consts.preimage?.byteDeposit || BN_ZERO) as unknown as BN).muln(encodedLength)
 		);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, extrinsicCall]);
+	}, [api, extrinsicCall]);
 
 	return (
 		<div>
 			<ManualExtrinsics
 				className={className}
+				api={api}
+				network={network}
 				setCallData={setExtrinsicCall}
 			/>
 			{preimageHash && (

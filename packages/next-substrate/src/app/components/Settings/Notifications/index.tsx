@@ -24,8 +24,8 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import DiscordInfoModal from './DiscordInfoModal';
 import SlackInfoModal from './SlackInfoModal';
 import TelegramInfoModal from './TelegramInfoModal';
@@ -33,7 +33,7 @@ import TelegramInfoModal from './TelegramInfoModal';
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const Notifications = () => {
 	const pathname = usePathname();
-	const { notification_preferences, address, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { notification_preferences, address, setUserDetailsContextState, userID } = useGlobalUserDetailsContext();
 	const [notifyAfter, setNotifyAfter] = useState<number>(8);
 	const emailPreference = notification_preferences?.channelPreferences?.[CHANNEL.EMAIL];
 	const [email, setEmail] = useState<string>(emailPreference?.handle || '');
@@ -132,10 +132,9 @@ const Notifications = () => {
 
 	const updateNotificationPreferences = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress) {
+			if (!userID) {
 				console.log('ERROR');
 			} else {
 				const newPreferences: { [index: string]: IUserNotificationTriggerPreferences } = {
@@ -179,10 +178,21 @@ const Notifications = () => {
 				};
 				setLoading(true);
 
+				const updateNotificationTriggerRes = await fetch(
+					`${FIREBASE_FUNCTIONS_URL}/updateNotificationTriggerPreferences_substrate`,
+					{
+						body: JSON.stringify({
+							triggerPreferences: newPreferences
+						}),
+						headers: firebaseFunctionsHeader(),
+						method: 'POST'
+					}
+				);
 				const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
-					await nextApiClientFetch<string>(`${SUBSTRATE_API_URL}/updateNotificationTriggerPreferences`, {
-						triggerPreferences: newPreferences
-					});
+					(await updateNotificationTriggerRes.json()) as {
+						data: string;
+						error: string;
+					};
 
 				if (updateNotificationTriggerError) {
 					queueNotification({
@@ -228,10 +238,9 @@ const Notifications = () => {
 		reset?: boolean;
 	}) => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress) {
+			if (!userID) {
 				console.log('ERROR');
 				return;
 			}
@@ -247,22 +256,33 @@ const Notifications = () => {
 						[channel]: { ...notification_preferences.channelPreferences?.[channel], enabled }
 				  };
 
-			const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
-				await nextApiClientFetch<string>(`${SUBSTRATE_API_URL}/updateNotificationChannelPreferences`, {
-					channelPreferences: newChannelPreferences
-				});
+			const updateNotificationChannelRes = await fetch(
+				`${FIREBASE_FUNCTIONS_URL}/updateNotificationChannelPreferences_substrate`,
+				{
+					body: JSON.stringify({
+						channelPreferences: newChannelPreferences
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				}
+			);
+			const { data: updateNotificationChannelData, error: updateNotificationChannelError } =
+				(await updateNotificationChannelRes.json()) as {
+					data: string;
+					error: string;
+				};
 
-			if (updateNotificationTriggerError) {
+			if (updateNotificationChannelError) {
 				queueNotification({
 					header: 'Failed!',
-					message: updateNotificationTriggerError,
+					message: updateNotificationChannelError,
 					status: NotificationStatus.ERROR
 				});
 				setChannelPreferencesLoading(false);
 				return;
 			}
 
-			if (updateNotificationTriggerData) {
+			if (updateNotificationChannelData) {
 				queueNotification({
 					header: 'Success!',
 					message: 'Your Notification Preferences has been Updated.',
@@ -307,24 +327,28 @@ const Notifications = () => {
 
 	const verifyEmail = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress) {
+			if (!userID) {
 				console.log('ERROR');
 			} else {
 				setVerificationLoading(true);
 
-				const { data: verifyEmailUpdate, error: verifyTokenError } = await nextApiClientFetch<string>(
-					`${SUBSTRATE_API_URL}/notify`,
-					{
+				const verifyEmailRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/notify`, {
+					body: JSON.stringify({
 						args: {
 							address,
 							email
 						},
 						trigger: 'verifyEmail'
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: verifyEmailUpdate, error: verifyTokenError } = (await verifyEmailRes.json()) as {
+					data: string;
+					error: string;
+				};
 
 				if (verifyTokenError) {
 					queueNotification({
@@ -375,19 +399,23 @@ const Notifications = () => {
 
 	const getVerifyToken = async (channel: CHANNEL) => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress) {
+			if (!userID) {
 				console.log('ERROR');
 				return undefined;
 			}
-			const { data: verifyToken, error: verifyTokenError } = await nextApiClientFetch<string>(
-				`${SUBSTRATE_API_URL}/getChannelVerifyToken`,
-				{
+			const getVerifyTokenRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getChannelVerifyToken`, {
+				body: JSON.stringify({
 					channel
-				}
-			);
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: verifyToken, error: verifyTokenError } = (await getVerifyTokenRes.json()) as {
+				data: string;
+				error: string;
+			};
 
 			if (verifyTokenError) {
 				queueNotification({

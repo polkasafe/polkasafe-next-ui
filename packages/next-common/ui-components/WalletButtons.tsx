@@ -9,12 +9,11 @@ import React, { useEffect, useState } from 'react';
 import PolkadotWalletIcon from '@next-common/assets/wallet/polkadotjs-icon.svg';
 import SubWalletIcon from '@next-common/assets/wallet/subwallet-icon.svg';
 import TalismanIcon from '@next-common/assets/wallet/talisman-icon.svg';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import APP_NAME from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
-import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 
+import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import WalletButton from './WalletButton';
 
 interface IWalletButtons {
@@ -23,6 +22,7 @@ interface IWalletButtons {
 	className?: string;
 	setNoExtenstion?: React.Dispatch<React.SetStateAction<boolean>>;
 	setNoAccounts?: React.Dispatch<React.SetStateAction<boolean>>;
+	setFetchAccountsLoading?: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const WalletButtons: React.FC<IWalletButtons> = ({
@@ -30,9 +30,9 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 	setWallet,
 	className,
 	setNoAccounts,
-	setNoExtenstion
+	setNoExtenstion,
+	setFetchAccountsLoading
 }: IWalletButtons) => {
-	const { api, apiReady, network } = useGlobalApiContext();
 	const { loggedInWallet } = useGlobalUserDetailsContext();
 
 	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.POLKADOT);
@@ -49,6 +49,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				return;
 			}
 
+			setFetchAccountsLoading?.(true);
 			let injected: Injected | undefined;
 			try {
 				injected = await new Promise((resolve, reject) => {
@@ -69,34 +70,38 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 					}
 				});
 			} catch (err) {
+				setFetchAccountsLoading?.(false);
 				console.log(err?.message);
 			}
 			if (!injected) {
+				setFetchAccountsLoading?.(false);
 				return;
 			}
 
 			const accounts = await injected.accounts.get();
 			if (accounts.length === 0) {
+				setFetchAccountsLoading?.(false);
 				setNoAccounts?.(true);
 				return;
 			}
+			setFetchAccountsLoading?.(false);
 
 			setAccounts(
 				accounts.map((account) => ({
 					...account,
-					address: getEncodedAddress(account.address, network) || account.address
+					address: getSubstrateAddress(account.address) || account.address
 				}))
 			);
-			if (accounts.length > 0 && api && apiReady) {
-				api.setSigner(injected.signer);
-			}
+			// if (accounts.length > 0 && api && apiReady) {
+			// api.setSigner(injected.signer);
+			// }
 		}
 	};
 
 	useEffect(() => {
 		getAccounts(loggedInWallet);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [network]);
+	}, [loggedInWallet]);
 
 	const handleWalletClick = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, wallet: Wallet) => {
 		setAccounts([]);
@@ -115,7 +120,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 					// eslint-disable-next-line sonarjs/no-duplicate-string
 					selectedWallet === Wallet.POLKADOT ? 'border-primary bg-highlight border border-solid' : 'border-none'
 				}`}
-				disabled={!apiReady}
+				// disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.POLKADOT)}
 				icon={<PolkadotWalletIcon />}
 			/>
@@ -123,7 +128,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				className={`${
 					selectedWallet === Wallet.SUBWALLET ? 'border-primary bg-highlight border border-solid' : 'border-none'
 				}`}
-				disabled={!apiReady}
+				// disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.SUBWALLET)}
 				icon={<SubWalletIcon />}
 			/>
@@ -131,7 +136,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				className={`${
 					selectedWallet === Wallet.TALISMAN ? 'border-primary bg-highlight border border-solid' : 'border-none'
 				}`}
-				disabled={!apiReady}
+				// disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.TALISMAN)}
 				icon={<TalismanIcon />}
 			/>

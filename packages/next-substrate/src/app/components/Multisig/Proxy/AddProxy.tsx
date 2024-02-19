@@ -10,7 +10,6 @@ import React, { useEffect, useState } from 'react';
 import LoadingLottie from '~assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Multisig/CancelBtn';
 import AddBtn from '@next-substrate/app/components/Multisig/ModalBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import Balance from '@next-common/ui-components/Balance';
 import { CheckOutlined, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
@@ -20,6 +19,9 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import setSigner from '@next-substrate/utils/setSigner';
 import transferAndProxyBatchAll from '@next-substrate/utils/transferAndProxyBatchAll';
 
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import Loader from '../../UserFlow/Loader';
 import AddProxySuccessScreen from './AddProxySuccessScreen';
 import AddProxyFailedScreen from './AddProxyFailedScreen';
@@ -34,26 +36,42 @@ interface IMultisigProps {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, homepage, setProxyInProcess }) => {
-	const {
-		address: userAddress,
-		multisigAddresses,
-		activeMultisig,
-		addressBook,
-		loggedInWallet
-	} = useGlobalUserDetailsContext();
-	const { network, api, apiReady } = useGlobalApiContext();
+	const { address: userAddress, activeMultisig, loggedInWallet } = useGlobalUserDetailsContext();
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
+	const { activeOrg } = useActiveOrgContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
 	const [success, setSuccess] = useState<boolean>(false);
 	const [failure, setFailure] = useState<boolean>(false);
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig);
+	const multisig = activeOrg?.multisigs?.find((item) => item.address === activeMultisig);
+
+	const network = multisig.network || networks.POLKADOT;
 
 	const [txnHash, setTxnHash] = useState<string>('');
 
 	const [multisigBalance, setMultisigBalance] = useState<BN>(new BN(0));
 	const [reservedProxyDeposit, setReservedProxyDeposit] = useState<BN>(new BN(0));
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
 
 	useEffect(() => {
 		if (!api || !apiReady || !activeMultisig) return;
@@ -165,11 +183,16 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 				</div>
 				<div className='flex flex-col gap-y-[6px]'>
 					<h4 className='font-medium text-sm leading-[15px] text-white'>
-						{addressBook?.find((a) => a.address === userAddress)?.name}
+						{activeOrg?.addressBook?.find((a) => a.address === userAddress)?.name}
 					</h4>
 					<p className='text-text_secondary font-normal text-xs leading-[13px]'>{userAddress}</p>
 				</div>
-				<Balance address={userAddress} />
+				<Balance
+					network={network}
+					api={api}
+					apiReady={apiReady}
+					address={userAddress}
+				/>
 			</div>
 
 			<section className='mb-4 w-full text-waiting bg-waiting bg-opacity-10 p-3 rounded-lg font-normal text-xs leading-[16px] flex items-center gap-x-[11px]'>

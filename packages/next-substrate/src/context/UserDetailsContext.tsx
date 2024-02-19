@@ -12,13 +12,15 @@ import { EFieldType, IUser, Triggers, UserDetailsContextType, Wallet } from '@ne
 import Loader from '@next-common/ui-components/Loader';
 import logout from '@next-substrate/utils/logout';
 
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import { networks } from '@next-common/global/networkConstants';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
-import { useGlobalApiContext } from './ApiContext';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 
 export const initialUserDetailsContext: UserDetailsContextType = {
+	userID: '',
+	organisations: [],
 	activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
 	address: '',
 	addressBook: [],
@@ -315,7 +317,6 @@ export function useGlobalUserDetailsContext() {
 
 export const UserDetailsProvider = ({ children }: { children?: ReactNode }): ReactNode => {
 	const router = useRouter();
-	const { network, api, apiReady, setNetwork } = useGlobalApiContext();
 
 	const [userDetailsContextState, setUserDetailsContextState] = useState(initialUserDetailsContext);
 	const [loading, setLoading] = useState(false);
@@ -330,14 +331,14 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	>();
 
 	const multisigInfo = useCallback(async () => {
-		if (!sharedMultisigAddress || !sharedMultisigNetwork || !api || !apiReady) return;
+		if (!sharedMultisigAddress || !sharedMultisigNetwork) return;
 
-		if (sharedMultisigNetwork && Object.values(networks).includes(sharedMultisigNetwork)) {
-			setNetwork(sharedMultisigNetwork);
+		if (!Object.values(networks).includes(sharedMultisigNetwork)) {
+			return;
 		}
 
 		setLoading(true);
-		const response = await fetch(`https://${network}.api.subscan.io/api/v2/scan/search`, {
+		const response = await fetch(`https://${sharedMultisigNetwork}.api.subscan.io/api/v2/scan/search`, {
 			body: JSON.stringify({
 				key: sharedMultisigAddress
 			}),
@@ -372,7 +373,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 		}
 		console.log(responseJSON);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, network, sharedMultisigAddress, sharedMultisigNetwork]);
+	}, [sharedMultisigAddress, sharedMultisigNetwork]);
 
 	useEffect(() => {
 		multisigInfo();
@@ -383,9 +384,11 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 		if (typeof window !== 'undefined' && !localStorage.getItem('address')) return;
 
 		setLoading(true);
-		const connectAddressRes = await nextApiClientFetch('api/v1/substrate/auth/connectAddress');
-
-		const { data: userData, error: connectAddressErr } = connectAddressRes as {
+		const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/login_substrate`, {
+			headers: firebaseFunctionsHeader(),
+			method: 'POST'
+		});
+		const { data: userData, error: connectAddressErr } = (await loginRes.json()) as {
 			data: IUser;
 			error: string;
 		};
@@ -394,11 +397,10 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			setUserDetailsContextState((prevState) => {
 				return {
 					...prevState,
-					activeMultisig:
-						sharedMultisigAddress && sharedMultisigInfo
-							? sharedMultisigInfo.address
-							: localStorage.getItem('active_multisig') || '',
-					address: userData?.address,
+					userID: userData?.userId,
+					organisations: userData?.organisations || [],
+					activeMultisig: sharedMultisigAddress && sharedMultisigInfo ? sharedMultisigInfo.address : '',
+					address: userData?.address?.[0],
 					addressBook: userData?.addressBook || [],
 					createdAt: userData?.created_at,
 					loggedInWallet: (localStorage.getItem('logged_in_wallet') as Wallet) || Wallet.POLKADOT,
@@ -412,15 +414,15 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					watchlists: userData?.watchlists
 				};
 			});
+			if (!userData?.organisations || userData.organisations?.length === 0) {
+				router.replace('/create-org');
+			}
 		} else {
 			logout();
 			setUserDetailsContextState((prevState) => {
 				return {
 					...prevState,
-					activeMultisig:
-						sharedMultisigAddress && sharedMultisigInfo
-							? sharedMultisigInfo.address
-							: localStorage.getItem('active_multisig') || '',
+					activeMultisig: sharedMultisigAddress && sharedMultisigInfo ? sharedMultisigInfo.address : '',
 					address: '',
 					addressBook: [],
 					loggedInWallet: Wallet.POLKADOT,
@@ -430,7 +432,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 				};
 			});
 			if (!sharedMultisigAddress) {
-				router.push('/');
+				router.push('/login');
 			}
 		}
 		setLoading(false);
@@ -444,7 +446,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			logout();
 			setLoading(false);
 			if (!sharedMultisigAddress) {
-				router.push('/');
+				router.push('/login');
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps

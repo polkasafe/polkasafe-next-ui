@@ -6,19 +6,21 @@ import { Dropdown, Form, Input, Radio } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import BN from 'bn.js';
 import React, { useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import networkTrackInfo from '@next-common/global/networkTrackInfo';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
+import { ApiPromise } from '@polkadot/api';
 
 const SubmitProposal = ({
 	className,
-	setCallData
+	setCallData,
+	api,
+	network
 }: {
 	className?: string;
+	api: ApiPromise;
+	network: string;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-	const { network, api, apiReady } = useGlobalApiContext();
-
 	const [preimageHash, setPreimageHash] = useState<string>('');
 	const [preimageLength, setPreimageLength] = useState<number>(0);
 	const [track, setTrack] = useState('');
@@ -43,7 +45,6 @@ const SubmitProposal = ({
 	useEffect(() => {
 		if (
 			!api ||
-			!apiReady ||
 			!api.tx.referenda ||
 			!api.tx.referenda.submit ||
 			!preimageHash ||
@@ -67,7 +68,7 @@ const SubmitProposal = ({
 		if (proposal) setCallData(proposal.method.toHex());
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, preimageHash, preimageLength, track, blockNumber, enactment]);
+	}, [api, preimageHash, preimageLength, track, blockNumber, enactment]);
 
 	return (
 		<div className={className}>

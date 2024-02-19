@@ -9,8 +9,8 @@ import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 
 const AddCustomField = ({
 	className,
@@ -25,20 +25,19 @@ const AddCustomField = ({
 
 	const [fieldName, setFieldName] = useState<string>('');
 	const [fieldDesc, setFieldDesc] = useState<string>('');
-	const { setUserDetailsContextState, transactionFields } = useGlobalUserDetailsContext();
+	const { setUserDetailsContextState, transactionFields, userID } = useGlobalUserDetailsContext();
 
 	const handleSave = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress) {
+			if (!userID) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
 
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
-					await nextApiClientFetch<string>(`${SUBSTRATE_API_URL}/updateTransactionFields`, {
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields_substrate`, {
+					body: JSON.stringify({
 						transactionFields: {
 							...transactionFields,
 							[fieldName.toLowerCase().split(' ').join('_')]: {
@@ -47,7 +46,15 @@ const AddCustomField = ({
 								subfields: {}
 							}
 						}
-					});
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
 
 				if (updateTransactionFieldsError) {
 					queueNotification({

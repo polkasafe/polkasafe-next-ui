@@ -19,7 +19,7 @@ export default async function hasExistentialDeposit(
 	if (!encodedAddress) return false;
 
 	try {
-		const balanceRes = await api.query.system.account(encodedAddress);
+		const balanceRes = await api?.query?.system?.account(encodedAddress);
 		const balance = Number(
 			formatBnBalance(
 				balanceRes?.data?.free?.toString() || '0',

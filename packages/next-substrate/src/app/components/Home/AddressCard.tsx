@@ -7,37 +7,30 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AddAddrIcon from '@next-common/assets/icons/add-addr-icon.svg';
 import AddAdress from '@next-substrate/app/components/AddressBook/AddAddress';
-import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
-import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
 const AddressCard = ({ className }: { className?: string }) => {
-	const { network } = useGlobalApiContext();
-	const { records } = useActiveMultisigContext();
-	const { addressBook, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { notOwnerOfMultisig } = useGlobalUserDetailsContext();
 
 	const [addresses, setAddresses] = useState<string[]>([]);
 	const [openAddressModal, setOpenAddressModal] = useState<boolean>(false);
 
 	useEffect(() => {
+		if (!activeOrg || !activeOrg.addressBook) return;
 		const allAddresses: string[] = [];
-		if (records) {
-			Object.keys(records).forEach((address) => {
-				allAddresses.push(getEncodedAddress(address, network) || address);
-			});
-		}
-		addressBook.forEach((item) => {
-			if (!allAddresses.includes(getEncodedAddress(item.address, network) || item.address)) {
+		activeOrg?.addressBook.forEach((item) => {
+			if (!allAddresses.includes(item.address)) {
 				allAddresses.push(item.address);
 			}
 		});
 		setAddresses(allAddresses);
-	}, [addressBook, network, records]);
+	}, [activeOrg]);
 
 	return (
 		<div>

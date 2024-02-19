@@ -5,7 +5,6 @@ import Identicon from '@polkadot/react-identicon';
 import { Collapse, Divider, Timeline } from 'antd';
 import classNames from 'classnames';
 import React, { FC, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
@@ -26,6 +25,7 @@ import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 import styled from 'styled-components';
 
+import { ApiPromise } from '@polkadot/api';
 import ArgumentsTable from '../Queued/ArgumentsTable';
 
 interface ISentInfoProps {
@@ -43,6 +43,9 @@ interface ISentInfoProps {
 	from: string;
 	txnParams?: { method: string; section: string };
 	customTx: boolean;
+	network: string;
+	api: ApiPromise;
+	apiReady: boolean;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -58,10 +61,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 	date,
 	callHash,
 	transactionFields,
-	note
+	note,
+	network,
+	api,
+	apiReady
 }) => {
 	const { addressBook, activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 	const threshold =
 		multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)?.threshold || 0;
@@ -297,7 +302,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 								>
 									Decoded Call
 								</Divider>
-								<ArgumentsTable callData={callData} />
+								<ArgumentsTable
+									api={api}
+									apiReady={apiReady}
+									network={network}
+									callData={callData}
+								/>
 							</>
 						)}
 					</>

@@ -10,7 +10,6 @@ import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, IQueueItem, ITxNotification } from '@next-common/types';
@@ -26,6 +25,9 @@ import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import setSigner from '@next-substrate/utils/setSigner';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -41,11 +43,12 @@ interface ITransactionProps {
 	callData: string;
 	callHash: string;
 	note: string;
-	amountUSD: string;
 	refetch?: () => void;
 	setQueuedTransactions?: React.Dispatch<React.SetStateAction<IQueueItem[]>>;
 	numberOfTransactions: number;
 	notifications?: ITxNotification;
+	multisigAddress: string;
+	network: string;
 }
 
 const Transaction: FC<ITransactionProps> = ({
@@ -54,22 +57,22 @@ const Transaction: FC<ITransactionProps> = ({
 	totalAmount,
 	approvals,
 	refetch,
-	amountUSD,
 	callData,
 	callHash,
 	date,
 	setQueuedTransactions,
 	numberOfTransactions,
 	threshold,
-	notifications
+	notifications,
+	multisigAddress,
+	network
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const [messageApi, contextHolder] = message.useMessage();
 	const router = useRouter();
 	const pathname = usePathname();
 
-	const { activeMultisig, multisigAddresses, address, setUserDetailsContextState, loggedInWallet } =
-		useGlobalUserDetailsContext();
+	const { multisigAddresses, address, setUserDetailsContextState, loggedInWallet } = useGlobalUserDetailsContext();
 	const { records } = useActiveMultisigContext();
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
@@ -78,8 +81,10 @@ const Transaction: FC<ITransactionProps> = ({
 	const [getMultiDataLoading, setGetMultisigDataLoading] = useState(false);
 	const [loadingMessages, setLoadingMessages] = useState('');
 	const [openLoadingModal, setOpenLoadingModal] = useState(false);
-	const { api, apiReady, network } = useGlobalApiContext();
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
 
+	const { activeOrg } = useActiveOrgContext();
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const [callDataString, setCallDataString] = useState<string>(callData || '');
 	const [decodedCallData, setDecodedCallData] = useState<any>(null);
@@ -93,7 +98,35 @@ const Transaction: FC<ITransactionProps> = ({
 	const token = chainProperties[network].tokenSymbol;
 	const hash = pathname.slice(1);
 
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = activeOrg?.multisigs?.find(
+		(item) => item.address === multisigAddress || item.proxy === multisigAddress
+	);
+
+	const [amountUSD, setAmountUSD] = useState<string>('');
+
+	useEffect(() => {
+		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
+			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
+		});
+	}, [network]);
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
 
 	useEffect(() => {
 		if (!api || !apiReady) return;
@@ -122,7 +155,7 @@ const Transaction: FC<ITransactionProps> = ({
 			});
 		})();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, callDataString, callHash, network]);
+	}, [api, callDataString, callHash, network]);
 
 	useEffect(() => {
 		const fetchMultisigData = async (newMultisigAddress: string) => {
@@ -473,6 +506,10 @@ const Transaction: FC<ITransactionProps> = ({
 							customTx={customTx}
 							decodedCallData={decodedCallData}
 							txnParams={txnParams}
+							multisig={multisig}
+							network={network}
+							api={api}
+							apiReady={apiReady}
 						/>
 					</div>
 				</Collapse.Panel>

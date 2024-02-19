@@ -1,15 +1,11 @@
-// Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
-// This software may be modified and distributed under the terms
-// of the Apache-2.0 license. See the LICENSE file for details.
-import '@next-substrate/styles/globals.css';
 import type { Metadata } from 'next';
-// import { Inter } from 'next/font/google';
-import AppLayout from '@next-substrate/app/components/AppLayout';
-import { ReactNode } from 'react';
+// import { Inter } from 'next/font/google'
+import '@next-substrate/styles/globals.css';
 import NextTopLoader from 'nextjs-toploader';
-import Providers from './providers';
+import Providers from '@next-substrate/app/providers';
+import LayoutWrapper from './components/LayoutWrapper';
 
-// const inter = Inter({ subsets: ['latin'] });
+// const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
 	description: 'User friendly Multisig for Polkadot & Kusama ecosystem',
@@ -23,21 +19,17 @@ export const metadata: Metadata = {
 	}
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang='en'>
 			<body>
-				<Providers>
-					{
-						(
-							<AppLayout>
-								<NextTopLoader />
-								{children}
-							</AppLayout>
-						) as ReactNode
-					}
-				</Providers>
+				<LayoutWrapper>
+					<Providers>
+						<NextTopLoader />
+						{children}
+					</Providers>
+				</LayoutWrapper>
 			</body>
 		</html>
-	) as ReactNode;
+	);
 }

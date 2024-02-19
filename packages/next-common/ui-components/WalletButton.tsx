@@ -7,7 +7,7 @@ import { Button } from 'antd';
 interface Props {
 	onClick: React.MouseEventHandler<HTMLAnchorElement> & React.MouseEventHandler<HTMLButtonElement>;
 	icon: any;
-	disabled: boolean;
+	disabled?: boolean;
 	className?: string;
 }
 

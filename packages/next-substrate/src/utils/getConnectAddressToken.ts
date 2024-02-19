@@ -2,11 +2,20 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import nextApiClientFetch from './nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { IUser } from '@next-common/types';
 
 // of the Apache-2.0 license. See the LICENSE file for details.
 const getConnectAddressToken = async (address: string) => {
-	return nextApiClientFetch('api/v1/substrate/auth/getConnectAddressToken', {}, { address });
+	const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/connectAddress_substrate`, {
+		headers: firebaseFunctionsHeader(address),
+		method: 'POST'
+	});
+	return (await loginRes.json()) as {
+		data: IUser;
+		error: string;
+	};
 };
 
 export default getConnectAddressToken;

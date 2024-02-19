@@ -102,6 +102,8 @@ export interface IWatchlist {
 }
 
 export interface UserDetailsContextType {
+	organisations?: IOrganisation[];
+	userID: string;
 	loggedInWallet: Wallet;
 	activeMultisig: string;
 	isProxy: boolean;
@@ -285,6 +287,7 @@ export interface IQueueItem {
 	threshold: number;
 	note?: string;
 	notifications?: ITxNotification;
+	multisigAddress?: string;
 }
 
 export interface ITransaction {
@@ -299,6 +302,7 @@ export interface ITransaction {
 	token: string;
 	amount_usd: number;
 	amount_token: string;
+	multisigAddress?: string;
 	network: string;
 	note?: string;
 	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };

@@ -8,7 +8,6 @@
 import './style.css';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { Button, notification } from 'antd';
-import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import AddressCard from '@next-substrate/app/components/Home/AddressCard';
 import ConnectWallet from '@next-substrate/app/components/Home/ConnectWallet';
@@ -17,10 +16,7 @@ import NewUserModal from '@next-substrate/app/components/Home/ConnectWallet/NewU
 import DashboardCard from '@next-substrate/app/components/Home/DashboardCard';
 import EmailBadge from '@next-substrate/app/components/Home/EmailBadge';
 import TxnCard from '@next-substrate/app/components/Home/TxnCard';
-import AddMultisig from '@next-substrate/app/components/Multisig/AddMultisig';
 import AddProxy from '@next-substrate/app/components/Multisig/Proxy/AddProxy';
-import Loader from '@next-substrate/app/components/UserFlow/Loader';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import { CHANNEL, NotificationStatus } from '@next-common/types';
@@ -30,22 +26,25 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import hasExistentialDeposit from '@next-substrate/utils/hasExistentialDeposit';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { ApiPromise, WsProvider } from '@polkadot/api';
 import AddMultisigModal from '../Multisig/AddMultisigModal';
+import OrganisationAssets from './OrganisationAssetsCard';
+import OrgInfoTable from './OrgInfoTable';
+import TopAssetsCard from './TopAssetsCard';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars, sonarjs/cognitive-complexity
 const Home = ({ className }: { className?: string }) => {
 	const {
 		address: userAddress,
 		notification_preferences,
-		multisigAddresses,
-		multisigSettings,
-		createdAt,
-		addressBook,
 		activeMultisig,
 		isSharedMultisig,
 		sharedMultisigInfo
 	} = useGlobalUserDetailsContext();
-	const { network, api, apiReady } = useGlobalApiContext();
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
 	const { openProxyModal, setOpenProxyModal } = useAddMultisigContext();
 	const [newTxn, setNewTxn] = useState<boolean>(false);
 	const [openNewUserModal, setOpenNewUserModal] = useState(false);
@@ -57,13 +56,35 @@ const Home = ({ className }: { className?: string }) => {
 	const [isOnchain, setIsOnchain] = useState(true);
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const { activeOrg } = useActiveOrgContext();
+
+	const multisigs = activeOrg?.multisigs;
+	const multisig = multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const [network, setNetwork] = useState<string>(multisig?.network || networks.POLKADOT);
+
 	useEffect(() => {
-		if (dayjs(createdAt) > dayjs().subtract(15, 'seconds') && addressBook?.length === 1) {
-			setOpenNewUserModal(true);
+		if (!activeMultisig || !activeOrg?.multisigs) return;
+		const m = activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+		setNetwork(m?.network || networks.POLKADOT);
+	}, [activeMultisig, activeOrg?.multisigs]);
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [createdAt]);
+	}, [api]);
 
 	useEffect(() => {
 		const fetchProxyData = async () => {
@@ -87,6 +108,7 @@ const Home = ({ className }: { className?: string }) => {
 			const params = JSON.parse(responseJSON.data?.events[0]?.params);
 			const proxyAddress = getEncodedAddress(params[0].value, network);
 			if (proxyAddress) {
+				console.log('proxy', proxyAddress);
 				setProxyNotInDb(true);
 			}
 		};
@@ -97,7 +119,7 @@ const Home = ({ className }: { className?: string }) => {
 			fetchProxyData();
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [multisig, network]);
+	}, [multisig, activeMultisig, network]);
 
 	useEffect(() => {
 		const handleNewTransaction = async () => {
@@ -169,11 +191,7 @@ const Home = ({ className }: { className?: string }) => {
 				/>
 			</ModalComponent>
 			<AddMultisigModal />
-			{(multisigAddresses &&
-				multisigAddresses.filter(
-					(m) => m.network === network && !multisigSettings?.[`${m.address}_${m.network}`]?.deleted && !m.disabled
-				).length > 0) ||
-			sharedMultisigInfo ? (
+			{(multisigs && multisigs.length > 0 && activeMultisig) || sharedMultisigInfo ? (
 				<section>
 					{isSharedMultisig ? null : !['alephzero'].includes(network) &&
 					  !hasProxy &&
@@ -246,15 +264,21 @@ const Home = ({ className }: { className?: string }) => {
 					</div>
 				</section>
 			) : (
-				<section className='bg-bg-main p-5 rounded-lg scale-90 w-[111%] h-[111%] origin-top-left'>
-					<section className='grid grid-cols-2 gap-x-5'>
-						<Loader className='bg-primary col-span-1' />
-						<Loader className='bg-primary col-span-1' />
-					</section>
-					<AddMultisig
-						className='mt-4'
-						homepage
-					/>
+				<section className='flex flex-col'>
+					<div className='mb-0 grid grid-cols-16 gap-4 grid-row-2 lg:grid-row-1 h-auto'>
+						<div className='col-start-1 col-end-13 lg:col-end-10'>
+							<OrganisationAssets
+								transactionLoading={transactionLoading}
+								setOpenTransactionModal={setOpenTransactionModal}
+								openTransactionModal={openTransactionModal}
+								setNewTxn={() => {}}
+							/>
+						</div>
+						<div className='col-start-1 col-end-13 lg:col-start-10'>
+							<TopAssetsCard />
+						</div>
+					</div>
+					<OrgInfoTable />
 				</section>
 			)}
 		</>

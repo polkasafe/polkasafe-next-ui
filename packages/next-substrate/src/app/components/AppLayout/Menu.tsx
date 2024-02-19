@@ -3,7 +3,8 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import Identicon from '@polkadot/react-identicon';
-import { Badge } from 'antd';
+import emptyImage from '@next-common/assets/icons/empty-image.png';
+import { Badge, Dropdown } from 'antd';
 import React, { FC, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -15,6 +16,7 @@ import {
 	AddressBookIcon,
 	AppsIcon,
 	AssetsIcon,
+	CircleArrowDownIcon,
 	ExchangeIcon,
 	HomeIcon,
 	NotificationIcon,
@@ -24,6 +26,10 @@ import {
 	UserPlusIcon
 } from '@next-common/ui-components/CustomIcons';
 import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
+import Image from 'next/image';
+import { IMultisigAndNetwork, IOrganisation } from '@next-common/types';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
 interface Props {
 	className?: string;
@@ -31,16 +37,20 @@ interface Props {
 
 const Menu: FC<Props> = ({ className }) => {
 	const {
+		userID,
+		organisations,
 		multisigAddresses,
 		activeMultisig,
 		multisigSettings,
-		isProxy,
+		// isProxy,
 		setUserDetailsContextState,
 		isSharedMultisig,
 		notOwnerOfMultisig,
 		sharedMultisigInfo
 	} = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const [multisigs, setMultisigs] = useState<IMultisigAndNetwork[]>();
 	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(
 		(typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || ''
 	);
@@ -55,6 +65,11 @@ const Menu: FC<Props> = ({ className }) => {
 		}
 		return basePath;
 	};
+
+	useEffect(() => {
+		if (!activeOrg) return;
+		setMultisigs(activeOrg.multisigs);
+	}, [activeOrg]);
 
 	const menuItems = [
 		{
@@ -105,7 +120,7 @@ const Menu: FC<Props> = ({ className }) => {
 		}
 	];
 
-	if (userAddress) {
+	if (userID) {
 		menuItems.push(
 			{
 				baseURL: '/notifications-settings',
@@ -121,6 +136,11 @@ const Menu: FC<Props> = ({ className }) => {
 			}
 		);
 	}
+
+	const orgOptions: ItemType[] = organisations?.map((item) => ({
+		key: JSON.stringify(item),
+		label: <span className='text-white truncate capitalize'>{item.name}</span>
+	}));
 
 	useEffect(() => {
 		const filteredMutisigs =
@@ -146,25 +166,25 @@ const Menu: FC<Props> = ({ className }) => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [multisigAddresses, network]);
 
-	useEffect(() => {
-		const active = multisigAddresses.find(
-			(item) => item.address === selectedMultisigAddress || item.proxy === selectedMultisigAddress
-		);
-		if (typeof window !== 'undefined')
-			localStorage.setItem('active_multisig', active?.proxy && isProxy ? active.proxy : selectedMultisigAddress);
-		setUserDetailsContextState((prevState) => {
-			return {
-				...prevState,
-				activeMultisig:
-					sharedMultisigInfo && isSharedMultisig
-						? sharedMultisigInfo.address
-						: active?.proxy && isProxy
-						? active.proxy
-						: selectedMultisigAddress
-			};
-		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [multisigAddresses, selectedMultisigAddress, isProxy, sharedMultisigInfo, isSharedMultisig]);
+	// useEffect(() => {
+	// const active = multisigAddresses.find(
+	// (item) => item.address === selectedMultisigAddress || item.proxy === selectedMultisigAddress
+	// );
+	// if (typeof window !== 'undefined')
+	// localStorage.setItem('active_multisig', active?.proxy && isProxy ? active.proxy : selectedMultisigAddress);
+	// setUserDetailsContextState((prevState) => {
+	// return {
+	// ...prevState,
+	// activeMultisig:
+	// sharedMultisigInfo && isSharedMultisig
+	// ? sharedMultisigInfo.address
+	// : active?.proxy && isProxy
+	// ? active.proxy
+	// : selectedMultisigAddress
+	// };
+	// });
+	// // eslint-disable-next-line react-hooks/exhaustive-deps
+	// }, [multisigAddresses, selectedMultisigAddress, isProxy, sharedMultisigInfo, isSharedMultisig]);
 
 	return (
 		<div className={`bg-bg-main flex flex-col h-full py-[25px] px-3 ${className}`}>
@@ -186,6 +206,45 @@ const Menu: FC<Props> = ({ className }) => {
 						</Badge>
 					</Link>
 				</section>
+				{orgOptions && orgOptions.length > 0 && activeOrg && (
+					<section className='w-full mb-2'>
+						<Dropdown
+							trigger={['click']}
+							className='p-2 org_dropdown cursor-pointer'
+							menu={{
+								items: orgOptions,
+								onClick: (e) => {
+									const org = JSON.parse(e.key) as IOrganisation;
+									setActiveOrg(org);
+									if (typeof window !== 'undefined') localStorage.setItem('active-org', org.id);
+									setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: '' }));
+									setSelectedMultisigAddress('');
+								}
+							}}
+						>
+							<div className='flex justify-between items-center text-white gap-x-2'>
+								<div className='flex items-center gap-x-3'>
+									<Image
+										width={30}
+										height={30}
+										className='rounded-full h-[30px] w-[30px]'
+										src={activeOrg?.imageURI || emptyImage}
+										alt='empty profile image'
+									/>
+									{/* <RandomAvatar
+										name={orgID}
+										size={30}
+									/> */}
+									<div className='flex flex-col gap-y-[1px]'>
+										<span className='text-sm text-white capitalize truncate max-w-[100px]'>{activeOrg?.name}</span>
+										<span className='text-xs text-text_secondary'>{activeOrg?.members?.length} Members</span>
+									</div>
+								</div>
+								<CircleArrowDownIcon className='text-white' />
+							</div>
+						</Dropdown>
+					</section>
+				)}
 				<section>
 					<h2 className='uppercase text-text_secondary ml-3 text-[10px] font-primary'>Menu</h2>
 					<ul className='flex flex-col py-2 text-white list-none'>
@@ -216,61 +275,49 @@ const Menu: FC<Props> = ({ className }) => {
 			<h2 className='uppercase text-text_secondary ml-3 text-[10px] font-primary flex items-center justify-between'>
 				<span>Multisigs</span>
 				<span className='bg-highlight text-primary rounded-full flex items-center justify-center h-5 w-5 font-normal text-xs'>
-					{multisigAddresses
-						? multisigAddresses.filter(
-								(multisig) =>
-									multisig.network === network && !multisigSettings?.[multisig.address]?.deleted && !multisig.disabled
-						  ).length
-						: '0'}
+					{multisigs ? multisigs.length : '0'}
 				</span>
 			</h2>
 			<section className='overflow-y-auto max-h-full [&::-webkit-scrollbar]:hidden flex-1 mb-3'>
-				{multisigAddresses && (
+				{multisigs && (
 					<ul className='flex flex-col gap-y-2 py-3 text-white list-none'>
-						{multisigAddresses
-							.filter(
-								(multisig) =>
-									multisig.network === network &&
-									!multisigSettings?.[`${multisig.address}_${multisig.network}`]?.deleted &&
-									!multisig.disabled
-							)
-							.map((multisig) => {
-								return (
-									<li
-										className='w-full'
-										key={multisig.address}
+						{multisigs.map((multisig) => {
+							return (
+								<li
+									className='w-full'
+									key={multisig.address}
+								>
+									<button
+										className={`w-full flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
+											multisig.address === selectedMultisigAddress && 'bg-highlight text-primary'
+										}`}
+										onClick={() => {
+											setUserDetailsContextState((prevState: any) => {
+												return {
+													...prevState,
+													activeMultisig: multisig.address,
+													isSharedSafe: false,
+													notOwnerOfSafe: false,
+													sharedMultisigAddress: '',
+													sharedMultisigInfo: undefined
+												};
+											});
+											setSelectedMultisigAddress(multisig.address);
+										}}
 									>
-										<button
-											className={`w-full flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
-												multisig.address === selectedMultisigAddress && 'bg-highlight text-primary'
-											}`}
-											onClick={() => {
-												setUserDetailsContextState((prevState: any) => {
-													return {
-														...prevState,
-														activeMultisig: multisig.address,
-														isSharedSafe: false,
-														notOwnerOfSafe: false,
-														sharedMultisigAddress: '',
-														sharedMultisigInfo: undefined
-													};
-												});
-												setSelectedMultisigAddress(multisig.address);
-											}}
-										>
-											<Identicon
-												className='image identicon mx-2'
-												value={multisig.address}
-												size={23}
-												theme='polkadot'
-											/>
-											<span className='truncate'>
-												{multisigSettings?.[`${multisig.address}_${multisig.network}`]?.name || multisig.name}
-											</span>
-										</button>
-									</li>
-								);
-							})}
+										<Identicon
+											className='image identicon mx-2'
+											value={multisig.address}
+											size={23}
+											theme='polkadot'
+										/>
+										<span className='truncate'>
+											{multisigSettings?.[`${multisig.address}_${multisig.network}`]?.name || multisig.name}
+										</span>
+									</button>
+								</li>
+							);
+						})}
 					</ul>
 				)}
 			</section>

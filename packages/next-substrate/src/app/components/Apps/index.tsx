@@ -9,6 +9,7 @@ import Feedback from '@next-substrate/app/components/Settings/Feedback';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import AppCard from './AppCard';
 
 const currentApps = [
@@ -25,12 +26,12 @@ const currentApps = [
 ];
 
 const AllApps = () => {
-	const { multisigAddresses, activeMultisig, address: userAddress } = useGlobalUserDetailsContext();
+	const { activeMultisig, address: userAddress } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 	return (
 		<div>
-			{!multisigAddresses || !multisig ? (
+			{!activeOrg || !activeOrg.multisigs ? (
 				<section className='mb-4 text-sm border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 					<p className='text-white'>
 						Looks Like You Don&apos;t have a Multisig. Please Create One to use our Features.
@@ -68,7 +69,7 @@ const AllApps = () => {
 			)}
 			{userAddress && (
 				<div className='mt-[30px] flex gap-x-[30px]'>
-					{multisigAddresses && activeMultisig && multisig && (
+					{activeMultisig && (
 						<section className='w-full'>
 							<Details />
 						</section>

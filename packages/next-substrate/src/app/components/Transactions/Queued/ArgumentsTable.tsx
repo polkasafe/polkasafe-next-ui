@@ -3,14 +3,17 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import React, { FC, useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
+import { ApiPromise } from '@polkadot/api';
 // import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 // import shortenAddress from '@next-substrate/utils/shortenAddress';
 
 interface IArgumentsTableProps {
 	className?: string;
 	callData: string;
+	api: ApiPromise;
+	apiReady: boolean;
+	network: string;
 }
 
 const urlRegex = /(https?:\/\/[^\s]+)/g;
@@ -67,9 +70,7 @@ const Arguments = ({ argumentsJSON }: { argumentsJSON: any }) => {
 	);
 };
 
-const ArgumentsTable: FC<IArgumentsTableProps> = ({ callData, className }) => {
-	const { api, apiReady, network } = useGlobalApiContext();
-
+const ArgumentsTable: FC<IArgumentsTableProps> = ({ callData, className, api, apiReady, network }) => {
 	const [decodedCallData, setDecodedCallData] = useState<any>();
 	const [txnParams, setTxnParams] = useState<{ method: string; section: string }>({} as any);
 

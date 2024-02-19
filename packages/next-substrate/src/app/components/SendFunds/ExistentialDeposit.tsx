@@ -9,9 +9,8 @@ import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedT
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import useGetWalletAccounts from '@next-substrate/hooks/useGetWalletAccounts';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import AddressQr from '@next-common/ui-components/AddressQr';
@@ -25,6 +24,8 @@ import setSigner from '@next-substrate/utils/setSigner';
 import transferFunds from '@next-substrate/utils/transferFunds';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
@@ -38,11 +39,19 @@ const ExistentialDeposit = ({
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { api, apiReady, network } = useGlobalApiContext();
-	const { activeMultisig, multisigAddresses, addressBook, loggedInWallet } = useGlobalUserDetailsContext();
-	const { accounts } = useGetWalletAccounts(loggedInWallet);
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
+	const { activeMultisig, loggedInWallet, address } = useGlobalUserDetailsContext();
 
-	const [selectedSender, setSelectedSender] = useState(getEncodedAddress(addressBook[0].address, network) || '');
+	const { activeOrg } = useActiveOrgContext();
+	const multisig = activeOrg?.multisigs?.find(
+		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+	);
+
+	const { accounts } = useGetWalletAccounts(loggedInWallet);
+	const network = multisig.network || networks.POLKADOT;
+
+	const [selectedSender, setSelectedSender] = useState(getEncodedAddress(address, network) || '');
 	const [amount, setAmount] = useState(new BN(0));
 	const [loading, setLoading] = useState(false);
 	const [showQrModal, setShowQrModal] = useState(false);
@@ -52,7 +61,24 @@ const ExistentialDeposit = ({
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 	const [txnHash, setTxnHash] = useState<string>('');
 	const [selectedAccountBalance, setSelectedAccountBalance] = useState<string>('');
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
 
 	useEffect(() => {
 		if (!getSubstrateAddress(selectedSender)) {
@@ -117,6 +143,7 @@ const ExistentialDeposit = ({
 
 	return success ? (
 		<TransactionSuccessScreen
+			network={network}
 			successMessage='Existential Deposit Successful!'
 			waitMessage='Your multisig is now on-chain.
 				You can now, create a proxy which will allow you to change multisig configurations later.
@@ -161,7 +188,12 @@ const ExistentialDeposit = ({
 						withBadge={false}
 						address={multisig?.address || activeMultisig}
 					/>
-					<Balance address={multisig?.address || activeMultisig} />
+					<Balance
+						network={network}
+						api={api}
+						apiReady={apiReady}
+						address={multisig?.address || activeMultisig}
+					/>
 				</div>
 
 				<Form disabled={loading}>
@@ -169,6 +201,9 @@ const ExistentialDeposit = ({
 						<div className='flex items-center justify-between mb-2'>
 							<label className='text-primary font-normal text-xs leading-[13px] block'>Sending from</label>
 							<Balance
+								network={network}
+								api={api}
+								apiReady={apiReady}
 								address={selectedSender}
 								onChange={setSelectedAccountBalance}
 							/>
@@ -190,7 +225,7 @@ const ExistentialDeposit = ({
 											id='sender'
 											placeholder='Send from Address..'
 											onChange={(value) => setSelectedSender(value)}
-											defaultValue={getEncodedAddress(addressBook[0]?.address, network) || ''}
+											defaultValue={getEncodedAddress(address, network) || ''}
 										/>
 										<div className='absolute right-2'>
 											<button onClick={() => copyText(selectedSender, true, network)}>
@@ -209,6 +244,7 @@ const ExistentialDeposit = ({
 					<section className='mt-6'>
 						<label className='text-primary font-normal text-xs leading-[13px] block mb-2'>Amount*</label>
 						<BalanceInput
+							network={network}
 							multipleCurrency
 							fromBalance={selectedAccountBalance}
 							defaultValue={String(chainProperties[network]?.existentialDeposit)}
