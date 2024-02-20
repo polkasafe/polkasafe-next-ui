@@ -9,20 +9,22 @@ import ManageMultisig from '@next-substrate/app/components/Settings/ManageMultis
 import Notifications from '@next-substrate/app/components/Settings/Notifications';
 import TransactionFields from '@next-substrate/app/components/Settings/TransactionFields';
 import TwoFactorAuth from '@next-substrate/app/components/Settings/TwoFactorAuth';
+import MultisigOverview from '@next-substrate/app/components/Settings/Overview';
 import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 
 enum ETab {
 	SIGNATORIES,
 	NOTIFICATIONS,
 	TRANSACTIONS,
-	ADMIN
+	ADMIN,
+	OVERVIEW
 }
 
 const Settings = () => {
 	const [tab, setTab] = useState(ETab.SIGNATORIES);
 
 	return (
-		<div className='scale-[80%] h-[125%] w-[125%] origin-top-left'>
+		<div className='scale-[80%] h-[125%] w-[125%] origin-top-left flex flex-col'>
 			<AddMultisigModal />
 			<div className='flex items-center mb-5'>
 				<button
@@ -58,6 +60,14 @@ const Settings = () => {
 				>
 					Admin <span className='bg-success text-bg-secondary text-xs py-[2px] px-2 rounded-lg'>New</span>
 				</button>
+				<button
+					onClick={() => setTab(ETab.OVERVIEW)}
+					className={`rounded-lg p-3 text-sm leading-[15px] text-white ${
+						tab === ETab.OVERVIEW && 'text-primary bg-highlight'
+					}`}
+				>
+					Overview <span className='bg-success text-bg-secondary text-xs py-[2px] px-2 rounded-lg'>New</span>
+				</button>
 			</div>
 			{tab === ETab.SIGNATORIES ? (
 				<ManageMultisig />
@@ -65,8 +75,10 @@ const Settings = () => {
 				<Notifications />
 			) : tab === ETab.TRANSACTIONS ? (
 				<TransactionFields />
-			) : (
+			) : tab === ETab.ADMIN ? (
 				<TwoFactorAuth />
+			) : (
+				<MultisigOverview />
 			)}
 		</div>
 	);
