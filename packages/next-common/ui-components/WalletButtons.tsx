@@ -79,6 +79,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 			}
 
 			const accounts = await injected.accounts.get();
+
 			if (accounts.length === 0) {
 				setFetchAccountsLoading?.(false);
 				setNoAccounts?.(true);
@@ -101,7 +102,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 	useEffect(() => {
 		getAccounts(loggedInWallet);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [loggedInWallet]);
+	}, []);
 
 	const handleWalletClick = async (event: React.MouseEvent<HTMLButtonElement, MouseEvent>, wallet: Wallet) => {
 		setAccounts([]);

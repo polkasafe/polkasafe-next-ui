@@ -346,12 +346,7 @@ const ConnectWallet = () => {
 			<div className='mb-4 mt-1'>
 				<ConnectWalletImg />
 			</div>
-			{fetchAccountsLoading ? (
-				<Loader
-					size='large'
-					text='Loading Accounts...'
-				/>
-			) : tfaToken ? (
+			{tfaToken ? (
 				<>
 					<h2 className='text-lg text-white font-semibold'>Two Factor Authentication</h2>
 					<p className='text-sm text-white'>
@@ -435,7 +430,9 @@ const ConnectWallet = () => {
 								setWallet={setSelectedWallet}
 								setAccounts={setAccounts}
 							/>
-							{noExtension ? (
+							{fetchAccountsLoading ? (
+								<Loader text='Loading Accounts...' />
+							) : noExtension ? (
 								<p className='mt-[10px]  text-normal text-sm text-white text-center capitalize'>
 									Please Install {selectedWallet} Extension.
 								</p>
