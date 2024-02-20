@@ -86,13 +86,15 @@ const SendFundsForm = ({
 	transactionType = ETransactionType.SEND_TOKEN,
 	setTransactionType // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
-	const { activeMultisig, address, isProxy, loggedInWallet, transactionFields } = useGlobalUserDetailsContext();
+	const { activeMultisig, address, loggedInWallet, transactionFields } = useGlobalUserDetailsContext();
 	const [api, setApi] = useState<ApiPromise>();
 	const [apiReady, setApiReady] = useState(false);
 	const [note, setNote] = useState<string>('');
 	const [loading, setLoading] = useState(false);
 	const [amount, setAmount] = useState(new BN(0));
 	const { activeOrg } = useActiveOrgContext();
+
+	const [isProxy, setIsProxy] = useState<boolean>(false);
 
 	const [multisig, setMultisig] = useState<IMultisigAddress>(
 		activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
@@ -150,18 +152,41 @@ const SendFundsForm = ({
 		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
 	);
 
-	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
-		key: JSON.stringify(item),
+	const multisigOptionsWithProxy: IMultisigAddress[] = [];
+
+	activeOrg?.multisigs?.forEach((item) => {
+		if (item.proxy) {
+			multisigOptionsWithProxy.push(item);
+		}
+	});
+
+	const multisigOptions: ItemType[] = multisigOptionsWithProxy?.map((item) => ({
+		key: JSON.stringify({ ...item, isProxy: true }),
 		label: (
 			<AddressComponent
 				isMultisig
 				showNetworkBadge
 				network={item.network}
 				withBadge={false}
-				address={item.address}
+				address={item.proxy}
 			/>
 		)
 	}));
+
+	activeOrg?.multisigs?.forEach((item) => {
+		multisigOptions.push({
+			key: JSON.stringify({ ...item, isProxy: false }),
+			label: (
+				<AddressComponent
+					isMultisig
+					showNetworkBadge
+					network={item.network}
+					withBadge={false}
+					address={item.address}
+				/>
+			)
+		});
+	});
 
 	const transactionTypes: ItemType[] = Object.values(ETransactionType)
 		.filter(
@@ -210,15 +235,11 @@ const SendFundsForm = ({
 		setRecipientAndAmount(copyOptionsArray);
 	};
 
-	console.log('network and selected Multi', network, multisig, selectedMultisig);
-
 	useEffect(() => {
-		console.log('activeOrg', activeOrg);
 		if (!activeOrg || !activeOrg.multisigs) return;
 		const m = activeOrg?.multisigs?.find(
 			(item) => item.address === selectedMultisig || item.proxy === selectedMultisig
 		);
-		console.log('multisig', selectedMultisig, m);
 		setMultisig(m);
 		setNetwork(m?.network);
 	}, [activeOrg, selectedMultisig]);
@@ -264,7 +285,12 @@ const SendFundsForm = ({
 		});
 		setAutoCompleteAddresses(
 			allAddresses.map((a) => ({
-				label: <AddressComponent address={a} />,
+				label: (
+					<AddressComponent
+						network={network}
+						address={a}
+					/>
+				),
 				value: a
 			}))
 		);
@@ -538,9 +564,13 @@ const SendFundsForm = ({
 										menu={{
 											items: multisigOptions,
 											onClick: (e) => {
-												console.log(JSON.parse(e.key));
-												setSelectedMultisig(JSON.parse(e.key)?.address);
-												setNetwork(JSON.parse(e.key)?.network);
+												const data = JSON.parse(e.key);
+												setSelectedMultisig(data?.address);
+												setNetwork(data?.network);
+												setIsProxy(data?.isProxy);
+												if (data?.network !== network) {
+													setApiReady(false);
+												}
 											}
 										}}
 									>

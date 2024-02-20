@@ -21,6 +21,7 @@ const Balance: React.FC<Props> = ({ address, className, onChange, api, apiReady,
 	const [balance, setBalance] = useState<string>('0');
 
 	useEffect(() => {
+		console.log('network in balance', network, address);
 		if (!api || !apiReady || !address) return;
 
 		api.query?.system
@@ -34,7 +35,7 @@ const Balance: React.FC<Props> = ({ address, className, onChange, api, apiReady,
 			})
 			.catch((e) => console.error(e));
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [address, api, apiReady]);
+	}, [address, api, apiReady, network]);
 
 	return (
 		<div

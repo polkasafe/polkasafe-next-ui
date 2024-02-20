@@ -10,7 +10,7 @@ import BN from 'bn.js';
 import { useEffect, useState } from 'react';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { currencies, currencyProperties } from '@next-common/global/currencyConstants';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import formatBnBalance from '@next-substrate/utils/formatBnBalance';
 import inputToBn from '@next-substrate/utils/inputToBn';
 import { CurrencyFlag } from '@next-substrate/app/components/Settings/ChangeCurrency';
@@ -46,10 +46,13 @@ const BalanceInput: React.FC<Props> = ({
 
 	const [currency, setCurrency] = useState<string>(network);
 
-	console.log('netowrk', network);
+	useEffect(() => {
+		setCurrency(network);
+	}, [network]);
 
-	const tokenCurrencyPrice =
-		currency !== network ? Number(tokenUsdPrice) * allCurrencyPrices[currencyProperties[currency]?.symbol].value : 1;
+	const tokenCurrencyPrice = !Object.values(networks).includes(currency)
+		? Number(tokenUsdPrice) * allCurrencyPrices[currencyProperties[currency]?.symbol].value
+		: 1;
 
 	useEffect(() => {
 		const value = Number(defaultValue);
@@ -161,7 +164,9 @@ const BalanceInput: React.FC<Props> = ({
 									setBalance(a.target.value);
 								}}
 								placeholder={`${placeholder} ${
-									currency === network ? chainProperties[network]?.tokenSymbol : currencyProperties[currency].symbol
+									Object.values(networks).includes(currency)
+										? chainProperties[network]?.tokenSymbol
+										: currencyProperties[currency].symbol
 								}`}
 								defaultValue={defaultValue}
 								value={balance}
@@ -176,7 +181,7 @@ const BalanceInput: React.FC<Props> = ({
 										onClick: onCurrencyChange
 									}}
 								>
-									{currency === network ? (
+									{Object.values(networks).includes(currency) ? (
 										<div className='absolute right-0 flex cursor-pointer items-center justify-center gap-x-1 pr-3 text-white'>
 											<ParachainIcon src={chainProperties[network]?.logo} />
 											<span>{chainProperties[network]?.tokenSymbol}</span>
@@ -200,7 +205,7 @@ const BalanceInput: React.FC<Props> = ({
 								</div>
 							)}
 						</div>
-						{currency !== network && isValidInput && (
+						{!Object.values(networks).includes(currency) && isValidInput && (
 							<span className='text-waiting mt-1 flex items-center gap-x-1 text-xs'>
 								You send = {formatBnBalance(bnBalance, { numberAfterComma: 3, withUnit: true }, network)}
 								<Tooltip
