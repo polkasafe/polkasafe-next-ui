@@ -439,7 +439,6 @@ const SendFundsForm = ({
 					transactionFields: transactionFieldsObject
 				});
 			}
-			console.log('created', queueItemData);
 			setTransactionData(queueItemData);
 			setLoading(false);
 			setSuccess(true);
