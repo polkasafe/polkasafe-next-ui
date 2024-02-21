@@ -7,7 +7,6 @@ import { Badge, Dropdown, Modal, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { FC, useState } from 'react';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { IAllAddresses } from '@next-common/types';
@@ -21,11 +20,11 @@ import {
 } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import copyText from '@next-substrate/utils/copyText';
-import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import EditAddress from './Edit';
 import RemoveAddress from './Remove';
@@ -181,7 +180,6 @@ export const RemoveAddressModal = ({
 };
 
 const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
-	const { network } = useGlobalApiContext();
 	const { activeOrg } = useActiveOrgContext();
 	const { address: userAddress } = useGlobalUserDetailsContext();
 	const { records } = useActiveMultisigContext();
@@ -246,7 +244,7 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 	];
 
 	const addressBookData: DataType[] = Object.keys(addresses)?.map((address) => {
-		const encodedAddress = getEncodedAddress(address, network) || address;
+		const encodedAddress = getSubstrateAddress(address);
 		return {
 			actions: (
 				<div className=' flex items-center justify-right gap-x-[10px]'>
@@ -289,12 +287,12 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 					<div className='ml-[14px] text-text_secondary text-base flex items-center gap-x-[6px]'>
 						<button
 							className='hover:text-primary'
-							onClick={() => copyText(encodedAddress, true, network)}
+							onClick={() => copyText(encodedAddress)}
 						>
 							<CopyIcon />
 						</button>
 						<a
-							href={`https://${network}.subscan.io/account/${encodedAddress}`}
+							href={`https://www.subscan.io/account/${encodedAddress}`}
 							target='_blank'
 							rel='noreferrer'
 						>

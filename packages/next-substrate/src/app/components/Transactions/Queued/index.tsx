@@ -80,18 +80,13 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 			})
 		);
 		setLoading(false);
-		const sorted = [...allTxns].sort((a, b) => {
-			const date1 = new Date(a?.created_at);
-			const date2 = new Date(b?.created_at);
-			return Number(date1) - Number(date2);
-		});
-		setQueuedTransactions(sorted.reverse());
-		console.log('all txns', sorted.reverse());
+		const sorted = [...allTxns].sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1));
+		setQueuedTransactions(sorted);
 	}, [activeMultisig, activeOrg, setLoading]);
 
 	useEffect(() => {
 		fetchAllTransactions();
-	}, [fetchAllTransactions]);
+	}, [fetchAllTransactions, refetch]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const fetchQueuedTransactions = useCallback(async () => {

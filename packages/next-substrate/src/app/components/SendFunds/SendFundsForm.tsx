@@ -372,6 +372,8 @@ const SendFundsForm = ({
 					: api.tx.balances.transfer(recipientAndAmount[0].recipient, amount);
 				const gasInfo = await txn.paymentInfo(address);
 				setTotalGas(new BN(gasInfo.partialFee.toString()));
+			} else {
+				setTotalGas(new BN(0));
 			}
 
 			// initiator balance

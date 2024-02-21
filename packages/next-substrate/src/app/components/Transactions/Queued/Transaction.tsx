@@ -28,6 +28,7 @@ import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -442,7 +443,8 @@ const Transaction: FC<ITransactionProps> = ({
 								<p className='col-span-2'>{dayjs(date).format('lll')}</p>
 								<p className='col-span-2 flex items-center justify-end gap-x-4'>
 									<span className='text-waiting'>
-										{!approvals.includes(address) && 'Awaiting your Confirmation'} ({approvals.length}/{threshold})
+										{!approvals.includes(getEncodedAddress(address, network)) && 'Awaiting your Confirmation'} (
+										{approvals.length}/{threshold})
 									</span>
 									<span className='text-white text-sm'>
 										{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}

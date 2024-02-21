@@ -387,14 +387,14 @@ const SentInfo: FC<ISentInfoProps> = ({
 						{updatedNote ? (
 							<span className='text-white font-normal flex items-center flex-wrap gap-x-3'>
 								<p className='whitespace-pre'>{updatedNote}</p>
-								{depositor === userAddress && (
+								{depositor === getEncodedAddress(userAddress, network) && (
 									<button onClick={() => setOpenEditNoteModal(true)}>
 										<EditIcon className='text-primary cursor-pointer' />
 									</button>
 								)}
 							</span>
 						) : (
-							depositor === userAddress && (
+							depositor === getEncodedAddress(userAddress, network) && (
 								<button onClick={() => setOpenEditNoteModal(true)}>
 									<EditIcon className='text-primary cursor-pointer' />
 								</button>
@@ -554,7 +554,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 												className={`${i === 0 && 'mt-4'} success bg-transaparent`}
 											>
 												<div className='mb-3 flex items-center gap-x-4'>
-													<AddressComponent address={address} />
+													<AddressComponent
+														address={address}
+														network={network}
+													/>
 												</div>
 											</Timeline.Item>
 										))}
@@ -583,8 +586,11 @@ const SentInfo: FC<ISentInfoProps> = ({
 														className='warning bg-transaparent'
 													>
 														<div className='mb-3 flex items-center gap-x-4 relative'>
-															<AddressComponent address={address} />
-															{depositor === userAddress && (
+															<AddressComponent
+																address={address}
+																network={network}
+															/>
+															{depositor === getEncodedAddress(userAddress, network) && (
 																<NotifyButton
 																	address={address}
 																	onClick={approvalReminder}
@@ -645,7 +651,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						</Timeline.Item>
 					</Timeline>
 					<div className='w-full mt-3 flex flex-col gap-y-2 items-center'>
-						{!approvals.includes(userAddress) && (
+						{!approvals.includes(getEncodedAddress(userAddress, network)) && (
 							<Button
 								disabled={
 									notOwnerOfMultisig ||
@@ -656,7 +662,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 								loading={loading}
 								onClick={handleApproveTransaction}
 								className={`w-full border-none text-sm font-normal ${
-									approvals.includes(userAddress) ||
+									approvals.includes(getEncodedAddress(userAddress, network)) ||
 									!decodedCallData ||
 									(approvals.length === threshold - 1 && !callDataString)
 										? 'bg-highlight text-text_secondary'
@@ -666,7 +672,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 								Approve Transaction
 							</Button>
 						)}
-						{depositor === userAddress && (
+						{depositor === getEncodedAddress(userAddress, network) && (
 							<Button
 								disabled={notOwnerOfMultisig || !callDataString || !decodedCallData}
 								loading={loading}
