@@ -5,7 +5,6 @@ import emptyImage from '@next-common/assets/icons/empty-image.png';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import { EditIcon } from '@next-common/ui-components/CustomIcons';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
-import { useCreateOrgStepsContext } from '@next-evm/context/CreateOrgStepsContext';
 import { IMultisigAddress } from '@next-common/types';
 
 const ReviewOrgStep = ({
@@ -13,15 +12,16 @@ const ReviewOrgStep = ({
 	linkedMultisigs,
 	loading,
 	orgImageUrl,
-	notCreateOrg
+	notCreateOrg,
+	onEdit
 }: {
 	orgName: string;
 	linkedMultisigs: IMultisigAddress[];
 	loading: boolean;
 	orgImageUrl: string;
 	notCreateOrg?: boolean;
+	onEdit?: () => void;
 }) => {
-	const { setStep } = useCreateOrgStepsContext();
 	return (
 		<div className='rounded-xl p-6 bg-bg-main flex flex-col'>
 			<div className='rounded-xl p-3 flex justify-between items-center bg-[rgba(229, 233, 243, 0.08)] overflow-hidden mb-5 relative'>
@@ -39,7 +39,7 @@ const ReviewOrgStep = ({
 				</div>
 				{notCreateOrg ? null : (
 					<PrimaryButton
-						onClick={() => setStep(0)}
+						onClick={onEdit}
 						icon={<EditIcon />}
 						disabled={loading}
 					>

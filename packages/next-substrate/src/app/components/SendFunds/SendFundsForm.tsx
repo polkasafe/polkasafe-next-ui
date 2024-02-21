@@ -564,7 +564,7 @@ const SendFundsForm = ({
 											items: multisigOptions,
 											onClick: (e) => {
 												const data = JSON.parse(e.key);
-												setSelectedMultisig(data?.address);
+												setSelectedMultisig(data?.isProxy ? data?.proxy : data?.address);
 												setNetwork(data?.network);
 												setIsProxy(data?.isProxy);
 												if (data?.network !== network) {

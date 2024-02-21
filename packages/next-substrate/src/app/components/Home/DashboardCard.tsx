@@ -193,7 +193,7 @@ const DashboardCard = ({
 						<div className='relative'>
 							<Identicon
 								className={`border-2 rounded-full bg-transparent ${
-									hasProxy && isProxy ? 'border-[#FF79F2]' : 'border-primary'
+									hasProxy && isProxy ? 'border-proxy-pink' : 'border-primary'
 								} p-1.5`}
 								value={activeMultisig}
 								size={50}
@@ -201,7 +201,7 @@ const DashboardCard = ({
 							/>
 							<div
 								className={`${
-									hasProxy && isProxy ? 'bg-[#FF79F2] text-highlight' : 'bg-primary text-white'
+									hasProxy && isProxy ? 'bg-proxy-pink text-highlight' : 'bg-primary text-white'
 								} text-sm rounded-lg absolute -bottom-0 left-[16px] px-2`}
 							>
 								{currentMultisig?.threshold}/{currentMultisig?.signatories?.length}
@@ -214,7 +214,7 @@ const DashboardCard = ({
 									DEFAULT_MULTISIG_NAME}
 								<div
 									className={`px-2 py-[2px] rounded-md text-xs font-medium ${
-										hasProxy && isProxy ? 'bg-[#FF79F2] text-highlight' : 'bg-primary text-white'
+										hasProxy && isProxy ? 'bg-proxy-pink text-highlight' : 'bg-primary text-white'
 									}`}
 								>
 									{hasProxy && isProxy ? 'Proxy' : 'Multisig'}

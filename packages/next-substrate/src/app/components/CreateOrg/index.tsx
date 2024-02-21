@@ -64,6 +64,7 @@ const CreateOrg = () => {
 					loading={loading}
 					orgName={orgName}
 					linkedMultisigs={linkedMultisigs}
+					onEdit={() => setStep(0)}
 				/>
 			),
 			description: 'Review the details of your organisation, these can be edited later as well',

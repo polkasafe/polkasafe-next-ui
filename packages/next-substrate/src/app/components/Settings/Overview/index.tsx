@@ -91,6 +91,29 @@ const MultisigOverview = () => {
 		targetHandle: 'left'
 	}));
 
+	if (selectedMultisig.proxy) {
+		nodes.push({
+			data: { address: selectedMultisig.proxy, handle: 'left', network },
+			id: selectedMultisig.proxy,
+			position: { x: 600, y: 0 },
+			type: 'custom'
+		});
+
+		edges.push({
+			animated: true,
+			id: `${selectedMultisig.address}-${selectedMultisig.proxy}`,
+			markerEnd: {
+				height: 20,
+				type: MarkerType.Arrow,
+				width: 20
+			},
+			source: selectedMultisig.address,
+			sourceHandle: 'right',
+			target: selectedMultisig.proxy,
+			targetHandle: 'left'
+		});
+	}
+
 	return (
 		<div className='flex-1 flex flex-col'>
 			{!activeOrg || !activeOrg?.multisigs || activeOrg?.multisigs?.length === 0 ? (

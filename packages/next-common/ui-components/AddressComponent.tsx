@@ -25,6 +25,7 @@ interface IAddressComponent {
 	name?: string;
 	onlyAddress?: boolean;
 	isMultisig?: boolean;
+	isProxy?: boolean;
 	signatories?: number;
 	threshold?: number;
 	network?: string;
@@ -38,6 +39,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 	iconSize = 28,
 	onlyAddress,
 	isMultisig,
+	isProxy,
 	signatories,
 	threshold,
 	network,
@@ -49,7 +51,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 
 	const addressBook = activeOrg?.addressBook || [];
 
-	const multisig = activeOrg?.multisigs?.find((item) => item.address === address);
+	const multisig = activeOrg?.multisigs?.find((item) => item.address === address || item.proxy === address);
 
 	const addressObj = addressBook?.find((item) => item?.address === address);
 
@@ -60,7 +62,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 
 	return (
 		<div className=' flex items-center gap-x-3'>
-			{multisig?.proxy && getSubstrateAddress(multisig.proxy) === getSubstrateAddress(address) ? (
+			{(multisig?.proxy && getSubstrateAddress(multisig.proxy) === getSubstrateAddress(address)) || isProxy ? (
 				withBadge ? (
 					<Badge
 						count='Proxy'
@@ -69,7 +71,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 						color='#FF79F2'
 					>
 						<Identicon
-							className='rounded-full border-2 border-[#FF79F2] bg-transparent p-1'
+							className='rounded-full border-2 border-proxy-pink bg-transparent p-1'
 							value={address}
 							size={iconSize}
 							theme='polkadot'
@@ -77,7 +79,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 					</Badge>
 				) : (
 					<Identicon
-						className='rounded-full border-2 border-[#FF79F2] bg-transparent p-1'
+						className='rounded-full border-2 border-proxy-pink bg-transparent p-1'
 						value={address}
 						size={iconSize}
 						theme='polkadot'
