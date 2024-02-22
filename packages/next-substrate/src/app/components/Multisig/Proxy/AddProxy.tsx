@@ -54,6 +54,7 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 
 	const [multisigBalance, setMultisigBalance] = useState<BN>(new BN(0));
 	const [reservedProxyDeposit, setReservedProxyDeposit] = useState<BN>(new BN(0));
+	const [totalDeposit, setTotalDeposit] = useState<BN>(new BN(0));
 
 	useEffect(() => {
 		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
@@ -75,6 +76,10 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 
 	useEffect(() => {
 		if (!api || !apiReady || !activeMultisig) return;
+
+		const depositBase = api.consts.multisig.depositBase.toString();
+		const depositFactor = api.consts.multisig.depositFactor.toString();
+		setTotalDeposit(new BN(depositBase).add(new BN(depositFactor)));
 
 		api.query?.system
 			?.account(activeMultisig)
@@ -201,8 +206,8 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 				</span>
 				<p>
 					A small deposit of ({formatBnBalance(reservedProxyDeposit, { numberAfterComma: 3, withUnit: true }, network)}{' '}
-					+ Existential Deposit) should be present in your Multisig account and approval would be required from
-					threshold signatories to Create a Proxy.
+					+ {formatBnBalance(totalDeposit, { numberAfterComma: 3, withUnit: true }, network)}) should be present in your
+					Account and approval would be required from threshold signatories to Create a Proxy.
 				</p>
 			</section>
 

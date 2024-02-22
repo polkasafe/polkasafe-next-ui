@@ -37,7 +37,7 @@ const AddressDropdown = () => {
 		setUserDetailsContextState((prevState) => {
 			return {
 				...prevState,
-				activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
+				activeMultisig: '',
 				address: '',
 				addressBook: [],
 				isSharedMultisig: false,
@@ -64,7 +64,7 @@ const AddressDropdown = () => {
 					setUserDetailsContextState((prevState) => {
 						return {
 							...prevState,
-							activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
+							activeMultisig: '',
 							address: '',
 							addressBook: [],
 							isSharedMultisig: false,

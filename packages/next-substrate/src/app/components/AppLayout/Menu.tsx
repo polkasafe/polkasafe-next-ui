@@ -50,9 +50,7 @@ const Menu: FC<Props> = ({ className }) => {
 	const { network } = useGlobalApiContext();
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [multisigs, setMultisigs] = useState<IMultisigAndNetwork[]>();
-	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState(
-		(typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || ''
-	);
+	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState('');
 	const pathname = usePathname();
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 

@@ -21,7 +21,7 @@ import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 export const initialUserDetailsContext: UserDetailsContextType = {
 	userID: '',
 	organisations: [],
-	activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
+	activeMultisig: '',
 	address: '',
 	addressBook: [],
 	createdAt: new Date(),
