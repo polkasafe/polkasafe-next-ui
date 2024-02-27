@@ -236,6 +236,11 @@ export default async function approveProxy({
 				})
 				.catch((error) => {
 					console.log(error);
+					queueNotification({
+						header: 'Failed!',
+						message: error.message,
+						status: NotificationStatus.ERROR
+					});
 					reject(error);
 				});
 		} else {

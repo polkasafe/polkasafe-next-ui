@@ -26,6 +26,7 @@ import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import setSigner from '@next-substrate/utils/setSigner';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -409,7 +410,8 @@ const Transaction: FC<ITransactionProps> = ({
 								<p className='col-span-2'>{dayjs(date).format('lll')}</p>
 								<p className='col-span-2 flex items-center justify-end gap-x-4'>
 									<span className='text-waiting'>
-										{!approvals.includes(address) && 'Awaiting your Confirmation'} ({approvals.length}/{threshold})
+										{!approvals.includes(getEncodedAddress(address, network)) && 'Awaiting your Confirmation'} (
+										{approvals.length}/{threshold})
 									</span>
 									<span className='text-white text-sm'>
 										{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}
