@@ -50,7 +50,7 @@ const AddressComponent = ({
 
 	const multisig = multisigAddresses?.find((item) => item.address === address);
 
-	const addressObj = addressBook?.find((item) => item?.address === address);
+	const addressObj = addressBook?.find((item) => item?.address?.toLowerCase() === address.toLowerCase());
 
 	return (
 		<div className=' flex items-center gap-x-3'>

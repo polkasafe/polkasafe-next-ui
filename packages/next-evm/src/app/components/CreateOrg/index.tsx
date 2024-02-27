@@ -26,7 +26,6 @@ const CreateOrg = () => {
 	const { user } = usePrivy();
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const router = useRouter();
-	console.log('wallets', wallets[0]?.isConnected());
 	console.log('user', user);
 	const [orgImageUrl, setOrgImageUrl] = useState<string>('');
 	const [orgName, setOrgName] = useState<string>('');
