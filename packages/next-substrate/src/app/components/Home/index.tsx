@@ -154,7 +154,7 @@ const Home = ({ className }: { className?: string }) => {
 
 	useEffect(() => {
 		const fetchProxyData = async () => {
-			if (!multisig || ['alephzero'].includes(network)) return;
+			if (!multisig || !activeMultisig || ['alephzero'].includes(network)) return;
 			const response = await fetch(`https://${network}.api.subscan.io/api/scan/events`, {
 				body: JSON.stringify({
 					row: 1,

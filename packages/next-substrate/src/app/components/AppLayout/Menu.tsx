@@ -110,6 +110,13 @@ const Menu: FC<Props> = ({ className }) => {
 			title: 'Address Book'
 		},
 		{
+			baseURL: '/treasury-analytics',
+			disabled: notOwnerOfMultisig,
+			icon: <AddressBookIcon />,
+			key: getPath('/treasury-analytics'),
+			title: 'Treasury Analytics'
+		},
+		{
 			baseURL: '/apps',
 			icon: <AppsIcon />,
 			key: getPath('/apps'),

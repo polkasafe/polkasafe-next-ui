@@ -57,65 +57,74 @@ export function useMultisigAssetsContext() {
 export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): ReactNode => {
 	const [allAssets, setAllAssets] = useState<IMultisigAssets>({});
 	const [organisationBalance, setOrgBalance] = useState<IOrganisationBalance>();
-	const [loading, setLoading] = useState<boolean>(false);
+	const [loading, setLoading] = useState<boolean>(true);
+	const [dataLoaded, setDataLoaded] = useState<boolean>(false);
 
 	const { activeOrg } = useActiveOrgContext();
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleGetAssets = useCallback(async () => {
-		if (!activeOrg) return;
+		if (!activeOrg?.multisigs || dataLoaded) {
+			console.log('not found at 1st');
+			return;
+		}
 
 		try {
-			setLoading(true);
 			const allMultisigs = activeOrg?.multisigs;
 
 			const totalOrgBalance: IOrganisationBalance = {
 				tokens: {},
 				total: '0'
 			};
-			await Promise.all(
-				allMultisigs.map(async (account) => {
-					const { data, error } = await getAssetsForAddress(account.address, account.network);
 
-					console.log('balance', data);
-					if (data && !error) {
-						setAllAssets((prev) => ({
-							...prev,
-							[account.address]: { assets: data, fiatTotal: '0' }
-						}));
+			let counter = 0;
+			// eslint-disable-next-line no-restricted-syntax
+			for (const account of allMultisigs) {
+				// eslint-disable-next-line no-await-in-loop
+				const { data, error } = await getAssetsForAddress(account.address, account.network);
+
+				if (data && !error) {
+					setAllAssets((prev) => ({
+						...prev,
+						[account.address]: { assets: data, fiatTotal: '0' }
+					}));
+				}
+
+				const total = Number(totalOrgBalance.total) + Number(data.reduce((t, item) => t + Number(item.balance_usd), 0));
+				data?.forEach((item) => {
+					let balanceToken = 0;
+					let balanceUSD = 0;
+					if (totalOrgBalance.tokens[item.symbol]) {
+						balanceToken = Number(totalOrgBalance.tokens[item.symbol].balance_token) + Number(item.balance_token);
+						balanceUSD = Number(totalOrgBalance.tokens[item.symbol].balance_usd) + Number(item.balance_usd);
+					} else {
+						balanceToken += Number(item.balance_token);
+						balanceUSD += Number(item.balance_usd);
 					}
+					totalOrgBalance.tokens[item.symbol] = {
+						balance_token: balanceToken.toString(),
+						balance_usd: balanceUSD.toString(),
+						logo: item.logoURI,
+						name: item.name,
+						tokenAddress: item.tokenAddress || '',
+						tokenDecimals: item.token_decimals,
+						tokenSymbol: item.symbol
+					};
+				});
+				totalOrgBalance.total = total.toString();
+				counter += 1;
+			}
 
-					const total =
-						Number(totalOrgBalance.total) + Number(data.reduce((t, item) => t + Number(item.balance_usd), 0));
-					data?.forEach((item) => {
-						let balanceToken = 0;
-						if (totalOrgBalance.tokens[item.symbol]) {
-							balanceToken = Number(totalOrgBalance.tokens[item.symbol].balance_token) + Number(item.balance_token);
-						} else {
-							balanceToken += Number(item.balance_token);
-						}
-						totalOrgBalance.tokens[item.symbol] = {
-							balance_token: balanceToken.toString(),
-							balance_usd: item.balance_usd,
-							logo: item.logoURI,
-							name: item.name,
-							tokenAddress: item.tokenAddress || '',
-							tokenDecimals: item.token_decimals,
-							tokenSymbol: item.symbol
-						};
-					});
-					totalOrgBalance.total = total.toString();
-				})
-			);
-
-			console.log('total orgg balance', totalOrgBalance);
 			setOrgBalance(totalOrgBalance);
 			setLoading(false);
+			if (counter === allMultisigs.length) {
+				setDataLoaded(true);
+			}
 		} catch (error) {
 			console.log('ERROR', error);
 			setLoading(false);
 		}
-	}, [activeOrg]);
+	}, [activeOrg?.multisigs, dataLoaded]);
 
 	useEffect(() => {
 		handleGetAssets();
@@ -131,5 +140,5 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 		[allAssets, loading, organisationBalance]
 	);
 
-	return <MultisigAssetsContext.Provider value={value}>{children}</MultisigAssetsContext.Provider>;
+	return <MultisigAssetsContext.Provider value={value}>{dataLoaded ? children : null}</MultisigAssetsContext.Provider>;
 };

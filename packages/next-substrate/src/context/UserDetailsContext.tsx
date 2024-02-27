@@ -320,7 +320,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	const router = useRouter();
 
 	const [userDetailsContextState, setUserDetailsContextState] = useState(initialUserDetailsContext);
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 
 	const searchParams = useSearchParams();
 
@@ -382,9 +382,11 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const connectAddress = useCallback(async () => {
-		if (typeof window !== 'undefined' && !localStorage.getItem('address')) return;
+		if (typeof window !== 'undefined' && !localStorage.getItem('address')) {
+			setLoading(false);
+			return;
+		}
 
-		setLoading(true);
 		const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/login_substrate`, {
 			headers: firebaseFunctionsHeader(),
 			method: 'POST'
@@ -455,7 +457,10 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [connectAddress]);
 
-	const value = useMemo(() => ({ ...userDetailsContextState, setUserDetailsContextState }), [userDetailsContextState]);
+	const value = useMemo(
+		() => ({ ...userDetailsContextState, loading, setUserDetailsContextState }),
+		[loading, userDetailsContextState]
+	);
 
 	return (
 		<UserDetailsContext.Provider value={value}>

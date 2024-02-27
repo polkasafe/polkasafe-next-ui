@@ -40,7 +40,6 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 		?.sort((a, b) => a.balance - b.balance)
 		?.reverse()
 		?.filter((_, i) => i < 4);
-	console.log('data array', sortedData);
 	const data = {
 		labels: sortedData?.map(
 			(item) =>
@@ -79,7 +78,7 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 			</div>
 			{!sortedData || sortedData.length === 0 || sortedData?.[0]?.balance === 0 ? (
 				<div
-					className={`${className} bg-bg-main relative flex flex-col justify-around rounded-xl p-8 h-[17rem] shadow-lg scale-90 w-[111%] origin-top-left`}
+					className={`bg-bg-main relative flex flex-col justify-around rounded-xl p-8 h-[17rem] shadow-lg scale-90 w-[111%] origin-top-left ${className}`}
 				>
 					<div className='flex flex-col gap-y-2 items-center justify-center'>
 						<NoAssetsSVG />
@@ -88,7 +87,7 @@ const TopAssetsCard = ({ className }: { className?: string }) => {
 				</div>
 			) : (
 				<div
-					className={`${className} bg-bg-main relative flex flex-col justify-around rounded-xl p-8 shadow-lg scale-90 w-[111%] origin-top-left`}
+					className={`bg-bg-main relative flex flex-col justify-around rounded-xl p-8 shadow-lg scale-90 w-[111%] origin-top-left ${className}`}
 				>
 					<div className='h-[190px] w-[400px]'>
 						<Doughnut
