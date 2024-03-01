@@ -6,18 +6,22 @@ import { Chart as ChartJS, LineElement, LinearScale, PointElement, TimeScale, To
 import { Line } from 'react-chartjs-2';
 import 'chartjs-adapter-date-fns';
 import { ITreasuryTxns } from '@next-substrate/context/HistoricalTransactionsContext';
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from 'dayjs';
 
 ChartJS.register(LineElement, LinearScale, PointElement, TimeScale, Tooltip, Legend);
 
 const BalanceHistory = ({
 	incomingTransactions,
 	outgoingTransactions,
-	id
+	id,
+	startDate,
+	endDate
 }: {
 	incomingTransactions: ITreasuryTxns[];
 	outgoingTransactions: ITreasuryTxns[];
 	id: string;
+	startDate: null | Dayjs;
+	endDate: null | Dayjs;
 }) => {
 	const { organisationBalance, allAssets } = useMultisigAssetsContext();
 
@@ -30,25 +34,39 @@ const BalanceHistory = ({
 		dayjs(a.timestamp).isBefore(dayjs(b.timestamp)) ? -1 : 1
 	);
 
+	const filterredIncomingTxns =
+		startDate && endDate
+			? sortedIncomingTxns.filter(
+					(item) => dayjs(item.timestamp).isBefore(dayjs(endDate)) && dayjs(item.timestamp).isAfter(dayjs(startDate))
+			  )
+			: sortedIncomingTxns;
+
+	const filterredOutgoingTxns =
+		startDate && endDate
+			? sortedOutgoingTxns.filter(
+					(item) => dayjs(item.timestamp).isBefore(dayjs(endDate)) && dayjs(item.timestamp).isAfter(dayjs(startDate))
+			  )
+			: sortedOutgoingTxns;
+
 	const data = {
 		datasets: [
 			{
-				borderColor: '#1573FE',
-				data: sortedIncomingTxns?.map((item) => Number(item?.balance_usd)),
+				borderColor: '#5C7AE6',
+				data: filterredIncomingTxns?.map((item) => Number(item?.balance_usd)),
 				label: 'Incoming',
 				legend: {
 					position: 'right'
 				},
 				tension: 0.3,
-				pointBackgroundColor: '#1573FE',
+				pointBackgroundColor: '#5C7AE6',
 				pointBorderColor: 'white',
 				radius: 0,
 				hitRadius: 40,
 				hoverRadius: 8
 			},
 			{
-				borderColor: '#8B8B8B',
-				data: sortedOutgoingTxns?.map((item) => Number(item?.balance_usd)),
+				borderColor: '#3D3C41',
+				data: filterredOutgoingTxns?.map((item) => Number(item?.balance_usd)),
 				label: 'Outgoing',
 				legend: {
 					position: 'right'
@@ -63,7 +81,7 @@ const BalanceHistory = ({
 	};
 
 	return (
-		<div className='rounded-xl p-5 bg-bg-secondary gap-x-5'>
+		<>
 			<div className='mb-4'>
 				<p className='text-sm text-text_secondary mb-2'>Total Balance</p>
 				<p className='text-[25px] font-bold text-white'>
@@ -109,7 +127,7 @@ const BalanceHistory = ({
 					}}
 				/>
 			</div>
-		</div>
+		</>
 	);
 };
 

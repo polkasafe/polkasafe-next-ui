@@ -30,6 +30,7 @@ interface IAddressComponent {
 	threshold?: number;
 	network?: string;
 	showNetworkBadge?: boolean;
+	addressLength?: number;
 }
 
 const AddressComponent: React.FC<IAddressComponent> = ({
@@ -43,6 +44,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 	signatories,
 	threshold,
 	network,
+	addressLength,
 	showNetworkBadge // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IAddressComponent) => {
 	const { multisigSettings } = useGlobalUserDetailsContext();
@@ -123,7 +125,12 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 			)}
 			{onlyAddress ? (
 				<div className='text-text_secondary flex items-center gap-x-3 text-sm font-normal'>
-					<span className='text-white'>{shortenAddress(displayAddress || '', 10)}</span>
+					<span className='text-white'>
+						{addressObj?.nickName ||
+							addressObj?.name ||
+							multisigSettings[`${address}_${network}`]?.name ||
+							shortenAddress(address || '', addressLength || 10)}
+					</span>
 					<span className='flex items-center gap-x-2'>
 						<button onClick={() => copyText(address, true, network)}>
 							<CopyIcon className='hover:text-primary' />
