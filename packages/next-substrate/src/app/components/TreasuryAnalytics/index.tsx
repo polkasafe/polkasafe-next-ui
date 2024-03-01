@@ -1,5 +1,5 @@
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { useHistoricalTransactionsContext } from '@next-substrate/context/HistoricalTransactionsContext';
+import { ITreasury } from '@next-substrate/context/HistoricalTransactionsContext';
 import { Divider, Dropdown } from 'antd';
 import React, { useState } from 'react';
 import Loader from '@next-common/ui-components/Loader';
@@ -8,14 +8,34 @@ import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import Image from 'next/image';
 import emptyImage from '@next-common/assets/icons/empty-image.png';
+import useFetch from '@next-substrate/hooks/useFetch';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import formatBalance from '@next-substrate/utils/formatBalance';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import BalanceHistory from './BalanceHistory';
 import TopAssetsCard from '../Home/TopAssetsCard';
 
 const TreasuryAnalytics = () => {
-	const { treasury, loadingTreasury } = useHistoricalTransactionsContext();
 	const { activeOrg } = useActiveOrgContext();
 
-	console.log('treasury', treasury);
+	const {
+		data: treasury,
+		// error,
+		loading
+		// refetch
+	} = useFetch<ITreasury>({
+		body: {
+			multisigs: activeOrg?.multisigs || [],
+			organisationId: activeOrg?.id || ''
+		},
+		cache: {
+			enabled: true,
+			tte: 60
+		},
+		headers: firebaseFunctionsHeader(),
+		key: 'treasury',
+		url: `${FIREBASE_FUNCTIONS_URL}/getTreasuryAnalyticsForMultisigs_substrate`
+	});
 
 	const [selectedID, setSelectedID] = useState<string>(activeOrg?.id || '');
 
@@ -53,7 +73,7 @@ const TreasuryAnalytics = () => {
 		)
 	});
 
-	return loadingTreasury ? (
+	return loading ? (
 		<Loader />
 	) : (
 		<div className='scale-[80%] h-[125%] w-[125%] origin-top-left flex flex-col gap-y-4'>
@@ -100,7 +120,7 @@ const TreasuryAnalytics = () => {
 				<div>
 					<label className='text-text_secondary text-sm mb-2'>Incoming</label>
 					<div className='text-success font-bold text-[25px]'>
-						$ {selectedID && treasury?.[selectedID] ? treasury[selectedID].totalIncomingUSD : '0.00'}
+						$ {selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalIncomingUSD) : '0.00'}
 					</div>
 				</div>
 				<Divider
@@ -111,7 +131,7 @@ const TreasuryAnalytics = () => {
 				<div>
 					<label className='text-text_secondary text-sm mb-2'>Outgoing</label>
 					<div className='text-failure font-bold text-[25px]'>
-						$ {selectedID && treasury?.[selectedID] ? treasury[selectedID].totalOutgoingUSD : '0.00'}
+						$ {selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalOutgoingUSD) : '0.00'}
 					</div>
 				</div>
 			</div>

@@ -54,7 +54,6 @@ export const HistoricalTransactionsProvider = ({ children }: { children?: ReactN
 	const { loadingAssets } = useMultisigAssetsContext();
 	const [treasury, setTreasury] = useState<ITreasury>();
 	const [loading, setLoading] = useState<boolean>(false);
-	const [dataLoaded, setDataLoaded] = useState<boolean>(false);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleGetHistoricalTransfers = useCallback(async () => {
@@ -74,7 +73,6 @@ export const HistoricalTransactionsProvider = ({ children }: { children?: ReactN
 
 			setLoading(true);
 
-			let counter = 0;
 			// eslint-disable-next-line no-restricted-syntax
 			for (const multisig of allMultisigs) {
 				// eslint-disable-next-line no-await-in-loop
@@ -144,7 +142,6 @@ export const HistoricalTransactionsProvider = ({ children }: { children?: ReactN
 						}
 					}));
 				}
-				counter += 1;
 			}
 
 			setLoading(false);
@@ -153,9 +150,6 @@ export const HistoricalTransactionsProvider = ({ children }: { children?: ReactN
 				...prev,
 				[activeOrg.id]: orgTreasury
 			}));
-			if (counter === allMultisigs.length) {
-				setDataLoaded(true);
-			}
 		} catch (error) {
 			console.log('ERROR', error);
 			setLoading(false);
@@ -163,14 +157,10 @@ export const HistoricalTransactionsProvider = ({ children }: { children?: ReactN
 	}, [activeOrg, loadingAssets]);
 
 	useEffect(() => {
-		handleGetHistoricalTransfers();
+		// handleGetHistoricalTransfers();
 	}, [handleGetHistoricalTransfers]);
 
 	const value = useMemo(() => ({ loadingTreasury: loading, treasury }), [loading, treasury]);
 
-	return (
-		<HistoricalTransactionsContext.Provider value={value}>
-			{dataLoaded ? children : null}
-		</HistoricalTransactionsContext.Provider>
-	);
+	return <HistoricalTransactionsContext.Provider value={value}>{children}</HistoricalTransactionsContext.Provider>;
 };

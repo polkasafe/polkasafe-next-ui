@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
 import formatBalance from '@next-substrate/utils/formatBalance';
 import React from 'react';
@@ -38,7 +39,12 @@ const BalanceHistory = ({
 				legend: {
 					position: 'right'
 				},
-				tension: 0.3
+				tension: 0.3,
+				pointBackgroundColor: '#1573FE',
+				pointBorderColor: 'white',
+				radius: 0,
+				hitRadius: 40,
+				hoverRadius: 8
 			},
 			{
 				borderColor: '#8B8B8B',
@@ -47,7 +53,10 @@ const BalanceHistory = ({
 				legend: {
 					position: 'right'
 				},
-				tension: 0.3
+				tension: 0.3,
+				radius: 0,
+				hitRadius: 40,
+				hoverRadius: 8
 			}
 		],
 		labels: sortedIncomingTxns?.map((item) => item.timestamp)
@@ -56,10 +65,13 @@ const BalanceHistory = ({
 	return (
 		<div className='rounded-xl p-5 bg-bg-secondary gap-x-5'>
 			<div className='mb-4'>
-				<p className='text-sm text-text_secondary mb-3'>Total Balance</p>
+				<p className='text-sm text-text_secondary mb-2'>Total Balance</p>
 				<p className='text-[25px] font-bold text-white'>
 					$ {formatBalance(Number(allAssets[id]?.fiatTotal || organisationBalance?.total))}
 				</p>
+			</div>
+			<div className='mb-4'>
+				<p className='text-sm text-white font-medium'>Balance History</p>
 			</div>
 			<div className='h-[300px]'>
 				<Line
@@ -68,6 +80,7 @@ const BalanceHistory = ({
 						maintainAspectRatio: false,
 						plugins: {
 							legend: {
+								align: 'end',
 								labels: {
 									boxHeight: 0,
 									color: '#ffffff',
@@ -85,7 +98,12 @@ const BalanceHistory = ({
 								type: 'time'
 							},
 							y: {
-								beginAtZero: true
+								beginAtZero: true,
+								ticks: {
+									callback(value) {
+										return `$${formatBalance(value)}`;
+									}
+								}
 							}
 						}
 					}}

@@ -140,5 +140,5 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 		[allAssets, loading, organisationBalance]
 	);
 
-	return <MultisigAssetsContext.Provider value={value}>{dataLoaded ? children : null}</MultisigAssetsContext.Provider>;
+	return <MultisigAssetsContext.Provider value={value}>{children}</MultisigAssetsContext.Provider>;
 };

@@ -18,6 +18,7 @@ import { ActiveOrgProvider } from '@next-substrate/context/ActiveOrgContext';
 import { CreateOrgStepsProvider } from '@next-substrate/context/CreateOrgStepsContext';
 import { MultisigAssetsProvider } from '@next-substrate/context/MultisigAssetsContext';
 import { HistoricalTransactionsProvider } from '@next-substrate/context/HistoricalTransactionsContext';
+import CacheProvider from '@next-substrate/context/CachedDataContext';
 
 export default function Providers({ children }: { children?: ReactNode }) {
 	return (
@@ -31,11 +32,13 @@ export default function Providers({ children }: { children?: ReactNode }) {
 									<AddMultisigProvider>
 										<ActiveOrgProvider>
 											<MultisigAssetsProvider>
-												<HistoricalTransactionsProvider>
-													<DAppContextProvider>
-														<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
-													</DAppContextProvider>
-												</HistoricalTransactionsProvider>
+												<CacheProvider>
+													<HistoricalTransactionsProvider>
+														<DAppContextProvider>
+															<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
+														</DAppContextProvider>
+													</HistoricalTransactionsProvider>
+												</CacheProvider>
 											</MultisigAssetsProvider>
 										</ActiveOrgProvider>
 									</AddMultisigProvider>
