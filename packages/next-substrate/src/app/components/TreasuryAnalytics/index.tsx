@@ -1,6 +1,5 @@
 import './style.css';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { ITreasury } from '@next-substrate/context/HistoricalTransactionsContext';
 import { DatePicker, Divider, Dropdown, Segmented, TimeRangePickerProps } from 'antd';
 import React, { useState } from 'react';
 import Loader from '@next-common/ui-components/Loader';
@@ -15,9 +14,17 @@ import formatBalance from '@next-substrate/utils/formatBalance';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import dayjs, { Dayjs } from 'dayjs';
 import EmptyStateSVG from '@next-common/assets/Empty-State-TreasuryAnalytics.svg';
+import { ITreasury } from '@next-common/types';
 import BalanceHistory from './BalanceHistory';
 import TopAssetsCard from '../Home/TopAssetsCard';
 
+enum EDateFilters {
+	YESTERDAY = -1,
+	WEEK = -7,
+	MONTH = -30,
+	QUARTER = -90,
+	YEAR = -360
+}
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const TreasuryAnalytics = () => {
 	const { activeOrg } = useActiveOrgContext();
@@ -44,6 +51,7 @@ const TreasuryAnalytics = () => {
 	const [selectedID, setSelectedID] = useState<string>(activeOrg?.id || '');
 	const [startDate, setStartDate] = useState<null | Dayjs>(null);
 	const [endDate, setEndDate] = useState<null | Dayjs>(dayjs());
+	const [outerDateFilter, setOuterDateFilter] = useState<EDateFilters>(EDateFilters.YEAR);
 
 	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
 		key: `${item.address}_${item.network}`,
@@ -105,35 +113,39 @@ const TreasuryAnalytics = () => {
 		<div className='scale-[80%] h-[125%] w-[125%] origin-top-left flex flex-col gap-y-4'>
 			<div className='flex justify-between items-center'>
 				<Segmented
-					onChange={(value) => setStartDate(dayjs(value))}
-					className='bg-transparent text-text_secondary border border-text_secondary hover:text-text_secondary'
-					value={startDate && startDate.toString()}
+					onChange={(value) => {
+						setStartDate(dayjs(dayjs().add(Number(value), 'd')));
+						setOuterDateFilter(Number(value) as EDateFilters);
+					}}
+					className='bg-transparent text-text_secondary border border-bg-secondary p-1'
+					value={outerDateFilter}
 					options={[
 						{
 							label: '24H',
-							value: dayjs().add(-1, 'd').toString()
+							value: EDateFilters.YESTERDAY
 						},
 						{
 							label: '7D',
-							value: dayjs().add(-7, 'd').toString()
+							value: EDateFilters.WEEK
 						},
 						{
 							label: '30D',
-							value: dayjs().add(-30, 'd').toString()
+							value: EDateFilters.MONTH
 						},
 						{
 							label: '90D',
-							value: dayjs().add(-90, 'd').toString()
+							value: EDateFilters.QUARTER
 						},
 						{
 							label: '360D',
-							value: dayjs().add(-360, 'd').toString()
+							value: EDateFilters.YEAR
 						}
 					]}
 				/>
 				<div className='flex gap-x-3'>
 					<DatePicker.RangePicker
 						onChange={onRangeChange}
+						value={[startDate, endDate]}
 						className='border border-primary shadow-none rounded-lg p-2 bg-highlight min-w-[260px]'
 						presets={rangePresets}
 					/>
@@ -211,7 +223,7 @@ const TreasuryAnalytics = () => {
 					</div>
 				</div>
 			</div>
-			<div className='rounded-xl p-5 bg-bg-secondary min-h-[300px]'>
+			<div className='rounded-xl p-5 bg-bg-secondary min-h-[300px] balance_history'>
 				{!treasury?.[selectedID]?.incomingTransactions && !treasury?.[selectedID]?.outgoingTransactions ? (
 					<div className='w-full flex flex-col gap-y-2 items-center h-full'>
 						<EmptyStateSVG />

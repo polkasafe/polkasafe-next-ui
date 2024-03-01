@@ -7,7 +7,6 @@ import { IQueueItem, ITransaction } from '@next-common/types';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
-import { useHistoricalTransactionsContext } from '@next-substrate/context/HistoricalTransactionsContext';
 import MembersTable from './Members';
 import TransactionHistory from './TransactionHistory';
 import TransactionQueue from './TransactionQueue';
@@ -24,7 +23,6 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 
 	const { activeOrg } = useActiveOrgContext();
 	const { loadingAssets } = useMultisigAssetsContext();
-	const { loadingTreasury } = useHistoricalTransactionsContext();
 	const { wallets } = useWallets();
 	const [pendingTxns, setPendingTxns] = useState<IQueueItem[]>([]);
 	const [queueLoading, setQueueLoading] = useState<boolean>(false);
@@ -32,8 +30,7 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 	const [historyLoading, setHistoryLoading] = useState<boolean>(false);
 
 	const fetchAllPendingTransactions = useCallback(async () => {
-		if (!activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0 || loadingAssets || loadingTreasury)
-			return;
+		if (!activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0 || loadingAssets) return;
 		// eslint-disable-next-line sonarjs/no-unused-collection
 		const allTxns = [];
 		setQueueLoading(true);
@@ -64,15 +61,14 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 		const sorted = [...allTxns].sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1));
 		setPendingTxns(sorted);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeOrg, wallets, loadingAssets, loadingTreasury]);
+	}, [activeOrg, wallets, loadingAssets]);
 
 	useEffect(() => {
 		fetchAllPendingTransactions();
 	}, [fetchAllPendingTransactions]);
 
 	const fetchAllTransactions = useCallback(async () => {
-		if (!activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0 || loadingAssets || loadingTreasury)
-			return;
+		if (!activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0 || loadingAssets) return;
 		// eslint-disable-next-line sonarjs/no-unused-collection
 		const allTxns = [];
 		setHistoryLoading(true);
@@ -102,7 +98,7 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 		setHistoryLoading(false);
 		const sorted = [...allTxns].sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1));
 		setCompletedTransactions(sorted);
-	}, [activeOrg, loadingAssets, loadingTreasury]);
+	}, [activeOrg, loadingAssets]);
 
 	useEffect(() => {
 		fetchAllTransactions();
