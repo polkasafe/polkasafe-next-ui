@@ -1,6 +1,7 @@
 import './style.css';
+import { SyncOutlined } from '@ant-design/icons';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { DatePicker, Divider, Dropdown, Segmented, TimeRangePickerProps } from 'antd';
+import { Button, DatePicker, Divider, Dropdown, Segmented, TimeRangePickerProps } from 'antd';
 import React, { useState } from 'react';
 import Loader from '@next-common/ui-components/Loader';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
@@ -17,6 +18,7 @@ import EmptyStateSVG from '@next-common/assets/Empty-State-TreasuryAnalytics.svg
 import { ITreasury } from '@next-common/types';
 import BalanceHistory from './BalanceHistory';
 import TopAssetsCard from '../Home/TopAssetsCard';
+import TransactionsByEachToken from './TransactionsByEachToken';
 
 enum EDateFilters {
 	YESTERDAY = -1,
@@ -32,8 +34,8 @@ const TreasuryAnalytics = () => {
 	const {
 		data: treasury,
 		// error,
-		loading
-		// refetch
+		loading,
+		refetch
 	} = useFetch<ITreasury>({
 		body: {
 			multisigs: activeOrg?.multisigs || [],
@@ -110,7 +112,7 @@ const TreasuryAnalytics = () => {
 	return loading ? (
 		<Loader />
 	) : (
-		<div className='scale-[80%] h-[125%] w-[125%] origin-top-left flex flex-col gap-y-4'>
+		<div className='flex flex-col gap-y-4'>
 			<div className='flex justify-between items-center'>
 				<Segmented
 					onChange={(value) => {
@@ -222,6 +224,21 @@ const TreasuryAnalytics = () => {
 							: '0.00'}
 					</div>
 				</div>
+				<div className='flex-1' />
+				<Button
+					size='large'
+					onClick={() => refetch(true)}
+					disabled={loading}
+					icon={
+						<SyncOutlined
+							spin={loading}
+							className='text-primary'
+						/>
+					}
+					className='text-primary bg-highlight outline-none border-none font-medium text-sm'
+				>
+					Refresh
+				</Button>
 			</div>
 			<div className='rounded-xl p-5 bg-bg-secondary min-h-[300px] balance_history'>
 				{!treasury?.[selectedID]?.incomingTransactions && !treasury?.[selectedID]?.outgoingTransactions ? (
@@ -240,8 +257,19 @@ const TreasuryAnalytics = () => {
 					/>
 				)}
 			</div>
-			<div className='flex'>
+			<div className='grid grid-cols-2 gap-x-4'>
 				<TopAssetsCard className='bg-bg-secondary' />
+				<TransactionsByEachToken
+					className='bg-bg-secondary'
+					incomingUSD={
+						selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalIncomingUSD) : '0.00'
+					}
+					outgoingUSD={
+						selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalOutgoingUSD) : '0.00'
+					}
+					incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}
+					outgoingTransactions={treasury?.[selectedID]?.outgoingTransactions || []}
+				/>
 			</div>
 		</div>
 	);

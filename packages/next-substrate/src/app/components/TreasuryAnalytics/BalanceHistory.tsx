@@ -124,11 +124,31 @@ const BalanceHistory = ({
 		];
 	});
 
+	sortedOutgoingTxns.forEach((item) => {
+		if (tokensData[chainProperties[item.network].tokenSymbol]) {
+			tokensData[chainProperties[item.network].tokenSymbol].push({
+				balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
+				timestamp: item.timestamp,
+				type: item.type
+			});
+			return;
+		}
+		tokensData[chainProperties[item.network].tokenSymbol] = [
+			{
+				balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
+				timestamp: item.timestamp,
+				type: item.type
+			}
+		];
+	});
+
 	console.log('tokenData', tokensData);
 
 	const barChartData = {
 		datasets: Object.keys(tokensData).map((item) => ({
-			data: tokensData[item].map((token) => token.balance_token)
+			data: tokensData[item].map((token) => token.balance_token),
+			backgroundColor: '#5C7AE6',
+			borderRadius: 10
 		})),
 		labels: sortedIncomingTxns?.map((item) => item.timestamp)
 	};
