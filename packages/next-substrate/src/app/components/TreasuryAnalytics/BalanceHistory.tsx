@@ -156,20 +156,20 @@ const BalanceHistory = ({
 	return (
 		<>
 			<div className='mb-4'>
-				<p className='text-sm text-text_secondary mb-1'>Total Balance</p>
-				<p className='text-[25px] font-bold text-white'>
+				<p className='text-xs text-text_secondary mb-1'>Total Balance</p>
+				<p className='text-[22px] font-bold text-white'>
 					$ {formatBalance(Number(allAssets[id]?.fiatTotal || organisationBalance?.total))}
 				</p>
 			</div>
 			<Segmented
-				// size='large'
+				size='small'
 				onChange={(value) => setTokenTypeFilter(value as ETokenTypeFilter)}
-				className='bg-transparent text-text_secondary border border-text_secondary p-1 mb-4'
+				className='bg-transparent text-text_secondary border border-text_secondary p-1 mb-3'
 				value={tokenTypeFilter}
 				options={[ETokenTypeFilter.USD, ETokenTypeFilter.TOKENS]}
 			/>
 			<div>
-				<p className='text-sm text-white font-medium'>Balance History</p>
+				<p className='text-xs text-white font-medium'>Balance History</p>
 			</div>
 			<div className='h-[300px]'>
 				{tokenTypeFilter === ETokenTypeFilter.USD ? (

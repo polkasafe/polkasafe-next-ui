@@ -11,82 +11,110 @@ import NoAssetsSVG from '@next-common/assets/icons/no-transaction-home.svg';
 import { ETxnType, ITreasuryTxns } from '@next-common/types';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
-import { Dropdown } from 'antd';
+import { Divider, Dropdown } from 'antd';
+import formatBalance from '@next-substrate/utils/formatBalance';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+interface ITokenTxnsData {
+	balance_token: number;
+	balance_usd: number;
+	tokenSymbol: string;
+	type: ETxnType;
+}
+
 interface ITokenData {
 	[network: string]: {
-		balance_token: number;
-		balance_usd: number;
-		tokenSymbol: string;
-		type: ETxnType;
-	}[];
+		totalTokenAmountIncoming: number;
+		totalTokenAmountOutgoing: number;
+		totalUsdAmountIncoming: number;
+		totalUsdAmountOutgoing: number;
+		txns: ITokenTxnsData[];
+	};
 }
 
 const TransactionsByEachToken = ({
 	className,
-	incomingUSD,
-	outgoingUSD,
 	incomingTransactions,
 	outgoingTransactions
 }: {
 	className?: string;
-	incomingUSD: string;
-	outgoingUSD: string;
 	incomingTransactions: ITreasuryTxns[];
 	outgoingTransactions: ITreasuryTxns[];
 }) => {
-	const tokensData: ITokenData = {};
+	const [tokenTxns, setTokenTxns] = useState<ITokenData>({});
 
-	incomingTransactions.forEach((item) => {
-		if (tokensData[item.network]) {
-			tokensData[item.network].push({
-				balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
-				balance_usd: Number.isNaN(Number(item.balance_usd)) ? 0 : Number(item.balance_usd),
-				type: item.type,
-				tokenSymbol: chainProperties[item.network].tokenSymbol
-			});
-			return;
-		}
-		tokensData[item.network] = [
-			{
-				balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
-				balance_usd: Number.isNaN(Number(item.balance_usd)) ? 0 : Number(item.balance_usd),
-				type: item.type,
-				tokenSymbol: chainProperties[item.network].tokenSymbol
-			}
-		];
-	});
-	outgoingTransactions.forEach((item) => {
-		if (tokensData[item.network]) {
-			tokensData[item.network].push({
-				balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
-				balance_usd: Number.isNaN(Number(item.balance_usd)) ? 0 : Number(item.balance_usd),
-				type: item.type,
-				tokenSymbol: chainProperties[item.network].tokenSymbol
-			});
-			return;
-		}
-		tokensData[item.network] = [
-			{
-				balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
-				balance_usd: Number.isNaN(Number(item.balance_usd)) ? 0 : Number(item.balance_usd),
-				type: item.type,
-				tokenSymbol: chainProperties[item.network].tokenSymbol
-			}
-		];
-	});
+	const [selectedToken, setSelectedToken] = useState<string>();
 
-	const [selectedToken, setSelectedToken] = useState<string>(Object.keys(tokensData)[0]);
+	// eslint-disable-next-line sonarjs/cognitive-complexity
+	useEffect(() => {
+		const tokensData: ITokenData = {};
+		incomingTransactions.forEach((item) => {
+			if (tokensData[item.network] && tokensData[item.network].txns) {
+				tokensData[item.network].totalTokenAmountIncoming += Number(item.balance_token);
+				tokensData[item.network].totalUsdAmountIncoming += Number(item.balance_usd);
+				tokensData[item.network].txns.push({
+					balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
+					balance_usd: Number.isNaN(Number(item.balance_usd)) ? 0 : Number(item.balance_usd),
+					type: item.type,
+					tokenSymbol: chainProperties[item.network].tokenSymbol
+				});
+				return;
+			}
+			tokensData[item.network] = {
+				totalTokenAmountIncoming: Number(item.balance_token),
+				totalUsdAmountIncoming: Number(item.balance_usd),
+				totalTokenAmountOutgoing: 0,
+				totalUsdAmountOutgoing: 0,
+				txns: [
+					{
+						balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
+						balance_usd: Number.isNaN(Number(item.balance_usd)) ? 0 : Number(item.balance_usd),
+						type: item.type,
+						tokenSymbol: chainProperties[item.network].tokenSymbol
+					}
+				]
+			};
+		});
+		outgoingTransactions.forEach((item) => {
+			if (tokensData[item.network] && tokensData[item.network].txns) {
+				tokensData[item.network].totalTokenAmountOutgoing += Number(item.balance_token);
+				tokensData[item.network].totalUsdAmountOutgoing += Number(item.balance_usd);
+				tokensData[item.network].txns.push({
+					balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
+					balance_usd: Number.isNaN(Number(item.balance_usd)) ? 0 : Number(item.balance_usd),
+					type: item.type,
+					tokenSymbol: chainProperties[item.network].tokenSymbol
+				});
+				return;
+			}
+			tokensData[item.network] = {
+				totalTokenAmountIncoming: 0,
+				totalUsdAmountIncoming: 0,
+				totalTokenAmountOutgoing: Number(item.balance_token),
+				totalUsdAmountOutgoing: Number(item.balance_usd),
+				txns: [
+					{
+						balance_token: Number.isNaN(Number(item.balance_token)) ? 0 : Number(item.balance_token),
+						balance_usd: Number.isNaN(Number(item.balance_usd)) ? 0 : Number(item.balance_usd),
+						type: item.type,
+						tokenSymbol: chainProperties[item.network].tokenSymbol
+					}
+				]
+			};
+		});
+		console.log('tokens data', tokensData);
+		setTokenTxns(tokensData);
+	}, [incomingTransactions, outgoingTransactions]);
 
 	useEffect(() => {
-		setSelectedToken(Object.keys(tokensData)[0]);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		if (Object.keys(tokenTxns).length > 0) {
+			setSelectedToken(Object.keys(tokenTxns)[0]);
+		}
+	}, [tokenTxns]);
 
-	const multisigOptions: ItemType[] = Object.keys(tokensData)?.map((item) => ({
+	const multisigOptions: ItemType[] = Object.keys(tokenTxns)?.map((item) => ({
 		key: item,
 		label: (
 			<div className='flex items-center gap-x-2'>
@@ -94,35 +122,38 @@ const TransactionsByEachToken = ({
 					src={chainProperties[item].logo}
 					size={10}
 				/>
-				<span>{chainProperties[item].tokenSymbol}</span>
+				<span className='text-white'>{chainProperties[item].tokenSymbol}</span>
 			</div>
 		)
 	}));
 
-	const tokenIncomingtxns = tokensData[selectedToken]?.filter((item) => item.type === ETxnType.INCOMING).length;
-	const tokenOutgoingTxns = tokensData[selectedToken]?.filter((item) => item.type === ETxnType.OUTGOING).length;
+	const tokenIncomingtxns = tokenTxns[selectedToken]?.txns?.filter((item) => item.type === ETxnType.INCOMING).length;
+	const tokenOutgoingTxns = tokenTxns[selectedToken]?.txns?.filter((item) => item.type === ETxnType.OUTGOING).length;
 
 	const diff = Math.abs(tokenIncomingtxns - tokenOutgoingTxns);
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const backgroundCircle = {
-		id: 'backgroundCircle',
+	const textCenter = {
+		id: 'textCenter',
 		beforeDatasetsDraw(chart: any) {
 			const { ctx } = chart;
 			ctx.save();
 
 			const xCoor = chart.getDatasetMeta(0).data[0].x;
 			const yCoor = chart.getDatasetMeta(0).data[0].y;
-			const { innerRadius } = chart.getDatasetMeta(0).data[0];
-			const { outerRadius } = chart.getDatasetMeta(0).data[0];
-			const width = outerRadius - innerRadius;
-			const angle = Math.PI / 180;
-
-			ctx.beginPath();
-			ctx.lineWidth = width;
-			ctx.strokeStyle = 'grey';
-			ctx.arc(xCoor, yCoor, outerRadius - width / 2, 0, angle * 360, false);
-			ctx.stroke();
+			ctx.font = 'bold 20px sans-serif';
+			ctx.fillStyle = 'white';
+			ctx.textAlign = 'center';
+			ctx.baseline = 'middle';
+			ctx.fillText(
+				`$ ${formatBalance(
+					tokenTxns[selectedToken]
+						? tokenTxns[selectedToken].totalUsdAmountIncoming - tokenTxns[selectedToken].totalUsdAmountOutgoing
+						: 0
+				)}`,
+				xCoor,
+				yCoor
+			);
 		}
 	};
 
@@ -175,7 +206,7 @@ const TransactionsByEachToken = ({
 					</div>
 				</Dropdown>
 			</div>
-			{!tokensData ? (
+			{!tokenTxns ? (
 				<div
 					className={`bg-bg-main relative flex flex-col justify-around rounded-xl p-8 h-[17rem] shadow-lg scale-90 w-[111%] origin-top-left ${className}`}
 				>
@@ -191,6 +222,7 @@ const TransactionsByEachToken = ({
 					<div className='h-[190px] w-[400px]'>
 						<Doughnut
 							data={data}
+							// plugins={[textCenter]}
 							options={{
 								maintainAspectRatio: false,
 								plugins: {
@@ -201,11 +233,23 @@ const TransactionsByEachToken = ({
 							}}
 						/>
 					</div>
-					<div>
-						<label className='text-text_secondary text-sm mb-2'>Incoming</label>
-						<div className='text-success font-bold text-[25px] mb-3'>$ {incomingUSD}</div>
-						<label className='text-text_secondary text-sm mb-2'>Outgoing</label>
-						<div className='text-failure font-bold text-[25px]'>$ {outgoingUSD}</div>
+					<div className='flex flex-col items-center'>
+						<div>
+							<label className='text-text_secondary text-sm mb-2'>Incoming</label>
+							<div className='text-success font-bold text-[25px]'>
+								$ {formatBalance(tokenTxns[selectedToken]?.totalUsdAmountIncoming)}
+							</div>
+						</div>
+						<Divider
+							orientation='center'
+							className='border border-text_secondary my-2 w-[130%]'
+						/>
+						<div>
+							<label className='text-text_secondary text-sm mb-2'>Outgoing</label>
+							<div className='text-failure font-bold text-[25px]'>
+								$ {formatBalance(tokenTxns[selectedToken]?.totalUsdAmountOutgoing)}
+							</div>
+						</div>
 					</div>
 				</div>
 			)}

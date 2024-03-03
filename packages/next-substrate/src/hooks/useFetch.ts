@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from 'react';
 import { useCache } from '@next-substrate/context/CachedDataContext';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
 type CustomAxiosConfig = {
 	body: object;
@@ -33,6 +34,8 @@ export default function useFetch<T = any>({
 	const [data, setData] = useState<T | undefined>();
 	const [error, setError] = useState<string>();
 	const { getCache, setCache, deleteCache } = useCache();
+
+	const { activeOrg } = useActiveOrgContext();
 
 	const refetch = (hard: boolean = false) => {
 		setLoading(true);
@@ -72,9 +75,10 @@ export default function useFetch<T = any>({
 	}
 
 	useEffect(() => {
+		if (!activeOrg || !activeOrg.id) return;
 		if (initialEnabled) refetch();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+	}, [activeOrg]);
 
 	return { data, error, inValidate, loading, refetch } as const;
 }

@@ -115,6 +115,7 @@ const TreasuryAnalytics = () => {
 		<div className='flex flex-col gap-y-4'>
 			<div className='flex justify-between items-center'>
 				<Segmented
+					size='small'
 					onChange={(value) => {
 						setStartDate(dayjs(dayjs().add(Number(value), 'd')));
 						setOuterDateFilter(Number(value) as EDateFilters);
@@ -148,12 +149,12 @@ const TreasuryAnalytics = () => {
 					<DatePicker.RangePicker
 						onChange={onRangeChange}
 						value={[startDate, endDate]}
-						className='border border-primary shadow-none rounded-lg p-2 bg-highlight min-w-[260px]'
+						className='border border-primary shadow-none rounded-lg py-1 pxx-2 bg-highlight min-w-[200px] text-xs'
 						presets={rangePresets}
 					/>
 					<Dropdown
 						trigger={['click']}
-						className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer min-w-[200px]'
+						className='border border-primary rounded-lg py-1 px-2 bg-bg-secondary cursor-pointer min-w-[200px] text-xs'
 						menu={{
 							items: multisigOptions,
 							onClick: (e) => {
@@ -165,8 +166,8 @@ const TreasuryAnalytics = () => {
 							{selectedID === activeOrg?.id ? (
 								<div className='flex items-center gap-x-3'>
 									<Image
-										width={25}
-										height={25}
+										width={20}
+										height={20}
 										className='rounded-full h-[30px] w-[30px]'
 										src={activeOrg?.imageURI || emptyImage}
 										alt='empty profile image'
@@ -194,30 +195,34 @@ const TreasuryAnalytics = () => {
 			</div>
 			<div className='rounded-xl p-5 bg-bg-secondary flex gap-x-5'>
 				<div>
-					<label className='text-text_secondary text-sm mb-2'>Incoming</label>
-					<div className='text-success font-bold text-[25px]'>
+					<label className='text-text_secondary text-xs mb-1.5'>Incoming</label>
+					<div className='text-success font-bold text-[22px]'>
 						$ {selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalIncomingUSD) : '0.00'}
 					</div>
 				</div>
-				<Divider
-					type='vertical'
-					orientation='center'
-					className='border border-text_secondary h-full'
-				/>
 				<div>
-					<label className='text-text_secondary text-sm mb-2'>Outgoing</label>
-					<div className='text-failure font-bold text-[25px]'>
+					<Divider
+						type='vertical'
+						orientation='center'
+						className='border border-text_secondary h-full'
+					/>
+				</div>
+				<div>
+					<label className='text-text_secondary text-xs mb-1.5'>Outgoing</label>
+					<div className='text-failure font-bold text-[22px]'>
 						$ {selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalOutgoingUSD) : '0.00'}
 					</div>
 				</div>
-				<Divider
-					type='vertical'
-					orientation='center'
-					className='border border-text_secondary h-full'
-				/>
 				<div>
-					<label className='text-text_secondary text-sm mb-2'>Net</label>
-					<div className='text-white font-bold text-[25px]'>
+					<Divider
+						type='vertical'
+						orientation='center'
+						className='border border-text_secondary h-full'
+					/>
+				</div>
+				<div>
+					<label className='text-text_secondary text-xs mb-1.5'>Net</label>
+					<div className='text-white font-bold text-[22px]'>
 						${' '}
 						{selectedID && treasury?.[selectedID]
 							? formatBalance(Math.abs(treasury[selectedID].totalOutgoingUSD - treasury[selectedID].totalIncomingUSD))
@@ -226,7 +231,6 @@ const TreasuryAnalytics = () => {
 				</div>
 				<div className='flex-1' />
 				<Button
-					size='large'
 					onClick={() => refetch(true)}
 					disabled={loading}
 					icon={
@@ -261,12 +265,6 @@ const TreasuryAnalytics = () => {
 				<TopAssetsCard className='bg-bg-secondary' />
 				<TransactionsByEachToken
 					className='bg-bg-secondary'
-					incomingUSD={
-						selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalIncomingUSD) : '0.00'
-					}
-					outgoingUSD={
-						selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalOutgoingUSD) : '0.00'
-					}
 					incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}
 					outgoingTransactions={treasury?.[selectedID]?.outgoingTransactions || []}
 				/>
