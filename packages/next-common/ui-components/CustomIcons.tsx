@@ -98,6 +98,7 @@ import WatchIconSVG from '~assets/icons/watch-icon.svg';
 import StarSVG from '~assets/icons/star-icon.svg';
 import ArrowLeftCircleSVG from '~assets/icons/arrow-left-circle.svg';
 import ArrowRightCircleSVG from '~assets/icons/arrow-right-circle.svg';
+import TreasuryAnalyticsSVG from '~assets/icons/treasury-analytics-icon.svg';
 
 export const AddIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
@@ -818,6 +819,15 @@ export const ArrowRightCircle: React.FC<Partial<CustomIconComponentProps>> = (
 ) => (
 	<Icon
 		component={ArrowRightCircleSVG}
+		{...props}
+	/>
+);
+
+export const TreasuryAnalyticsIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
+	<Icon
+		component={TreasuryAnalyticsSVG}
 		{...props}
 	/>
 );

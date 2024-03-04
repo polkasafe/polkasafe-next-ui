@@ -147,6 +147,7 @@ const BalanceHistory = ({
 	const barChartData = {
 		datasets: Object.keys(tokensData).map((item) => ({
 			data: tokensData[item].map((token) => token.balance_token),
+			label: item,
 			backgroundColor: '#5C7AE6',
 			borderRadius: 10
 		})),

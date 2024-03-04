@@ -235,8 +235,8 @@ const TransactionsByEachToken = ({
 					</div>
 					<div className='flex flex-col items-center'>
 						<div>
-							<label className='text-text_secondary text-sm mb-2'>Incoming</label>
-							<div className='text-success font-bold text-[25px]'>
+							<label className='text-text_secondary text-sm mb-1'>Incoming</label>
+							<div className='text-success font-bold text-[22px]'>
 								$ {formatBalance(tokenTxns[selectedToken]?.totalUsdAmountIncoming)}
 							</div>
 						</div>
@@ -245,9 +245,24 @@ const TransactionsByEachToken = ({
 							className='border border-text_secondary my-2 w-[130%]'
 						/>
 						<div>
-							<label className='text-text_secondary text-sm mb-2'>Outgoing</label>
-							<div className='text-failure font-bold text-[25px]'>
+							<label className='text-text_secondary text-sm mb-1'>Outgoing</label>
+							<div className='text-failure font-bold text-[22px]'>
 								$ {formatBalance(tokenTxns[selectedToken]?.totalUsdAmountOutgoing)}
+							</div>
+						</div>
+						<Divider
+							orientation='center'
+							className='border border-text_secondary my-2 w-[130%]'
+						/>
+						<div>
+							<label className='text-text_secondary text-sm mb-1'>Net</label>
+							<div className='text-white font-bold text-[22px]'>
+								${' '}
+								{formatBalance(
+									tokenTxns[selectedToken]
+										? tokenTxns[selectedToken].totalUsdAmountIncoming - tokenTxns[selectedToken].totalUsdAmountOutgoing
+										: 0
+								)}
 							</div>
 						</div>
 					</div>

@@ -23,7 +23,8 @@ import {
 	SettingsIcon,
 	StarIcon,
 	TransactionIcon,
-	UserPlusIcon
+	UserPlusIcon,
+	TreasuryAnalyticsIcon
 } from '@next-common/ui-components/CustomIcons';
 import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
 import Image from 'next/image';
@@ -112,7 +113,7 @@ const Menu: FC<Props> = ({ className }) => {
 		{
 			baseURL: '/treasury-analytics',
 			disabled: notOwnerOfMultisig,
-			icon: <AddressBookIcon />,
+			icon: <TreasuryAnalyticsIcon />,
 			key: getPath('/treasury-analytics'),
 			title: 'Treasury Analytics'
 		},
