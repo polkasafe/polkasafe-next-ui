@@ -149,7 +149,8 @@ const BalanceHistory = ({
 			data: tokensData[item].map((token) => token.balance_token),
 			label: item,
 			backgroundColor: '#5C7AE6',
-			borderRadius: 10
+			borderRadius: 10,
+			barThickness: 20
 		})),
 		labels: sortedIncomingTxns?.map((item) => item.timestamp)
 	};
