@@ -28,6 +28,7 @@ import {
 	SettingsIcon,
 	StarIcon,
 	TransactionIcon,
+	TreasuryAnalyticsIcon,
 	UserPlusIcon
 } from '@next-common/ui-components/CustomIcons';
 import { useAddMultisigContext } from '@next-evm/context/AddMultisigContext';
@@ -115,6 +116,13 @@ const Menu: FC<Props> = ({ className }) => {
 			icon: <AddressBookIcon />,
 			key: getPath('/address-book'),
 			title: 'Address Book'
+		},
+		{
+			baseURL: '/treasury-analytics',
+			disabled: notOwnerOfSafe,
+			icon: <TreasuryAnalyticsIcon />,
+			key: getPath('/treasury-analytics'),
+			title: 'Treasury Analytics'
 		},
 		{
 			baseURL: '/apps',

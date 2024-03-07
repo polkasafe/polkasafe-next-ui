@@ -739,6 +739,10 @@ export default class GnosisSafeService {
 		return this.safeService.getPendingTransactions(multisigAddress);
 	};
 
+	getMultisigTxns = async (multisigAddress: string): Promise<SafeMultisigTransactionListResponse> => {
+		return this.safeService.getMultisigTransactions(multisigAddress);
+	};
+
 	// eslint-disable-next-line class-methods-use-this
 	getMultisigAllAssets = async (network: NETWORK, multisigAddress: string): Promise<any> => {
 		const assets: SafeBalanceResponse = await getBalances(

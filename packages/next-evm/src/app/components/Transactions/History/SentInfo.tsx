@@ -84,35 +84,23 @@ const SentInfo: FC<ISentInfoProps> = ({
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
 		if (tokenAddress) {
-			getHistoricalTokenPrice(network, tokenAddress, date).then((res) => {
-				const prices: any[] = res?.prices || [];
-				prices.forEach((item, i) => {
-					if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
-						setUsdValue(Number(item[1]).toFixed(4));
-					}
-				});
+			getHistoricalTokenPrice(network, tokenAddress, date).then((usd) => {
+				setUsdValue(Number(usd).toFixed(4));
 			});
 		} else if (amount && !Array.isArray(amount)) {
-			getHistoricalNativeTokenPrice(network, date).then((res) => {
-				const currentPrice = res?.market_data?.current_price?.usd || '0';
-				setUsdValue(Number(currentPrice).toFixed(4));
+			getHistoricalNativeTokenPrice(network, date).then((usd) => {
+				setUsdValue(Number(usd).toFixed(4));
 			});
 		} else if (multiSendTokens && multiSendTokens.length > 0) {
 			multiSendTokens.forEach((token) => {
 				if (!token.tokenAddress) {
-					getHistoricalNativeTokenPrice(network, date).then((res) => {
-						const currentPrice = res?.market_data?.current_price?.usd || '0';
-						setUsdValue((prev) => [...prev, Number(currentPrice).toFixed(4)]);
+					getHistoricalNativeTokenPrice(network, date).then((usd) => {
+						setUsdValue((prev) => [...prev, Number(usd).toFixed(4)]);
 					});
 					return;
 				}
-				getHistoricalTokenPrice(network, token.tokenAddress, date).then((res) => {
-					const prices: any[] = res?.prices || [];
-					prices.forEach((item, i) => {
-						if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
-							setUsdValue((prev) => [...prev, Number(item[1]).toFixed(4)]);
-						}
-					});
+				getHistoricalTokenPrice(network, token.tokenAddress, date).then((usd) => {
+					setUsdValue((prev) => [...prev, Number(usd).toFixed(4)]);
 				});
 			});
 		}

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@covalenthq/client-sdk": "^0.9.4",
     "@craco/craco": "^7.1.0",
     "@ethersproject/abi": "^5.7.0",
     "@ethersproject/bytes": "^5.7.0",

@@ -11,7 +11,6 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { StaticImageData } from 'next/image';
 import getHistoricalTokenPrice from '@next-evm/utils/getHistoricalTokenPrice';
-import dayjs from 'dayjs';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import getHistoricalNativeTokenPrice from '@next-evm/utils/getHistoricalNativeTokenPrice';
@@ -44,24 +43,18 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 	network
 }) => {
 	const [usdValue, setUsdValue] = useState<string[]>([]);
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
 		if (!tokenDetialsArray || tokenDetialsArray.length === 0) return;
 		tokenDetialsArray.forEach((token) => {
 			if (!token.tokenAddress) {
-				getHistoricalNativeTokenPrice(network, date).then((res) => {
-					const currentPrice = res?.market_data?.current_price?.usd || '0';
-					setUsdValue((prev) => [...prev, Number(currentPrice).toFixed(4)]);
+				getHistoricalNativeTokenPrice(network, date).then((usd) => {
+					setUsdValue((prev) => [...prev, Number(usd).toFixed(4)]);
 				});
 				return;
 			}
-			getHistoricalTokenPrice(network, token.tokenAddress, date).then((res) => {
-				console.log('res', res);
-				const prices: any[] = res?.prices || [];
-				prices.forEach((item, i) => {
-					if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
-						setUsdValue((prev) => [...prev, Number(item[1]).toFixed(4)]);
-					}
-				});
+			getHistoricalTokenPrice(network, token.tokenAddress, date).then((usd) => {
+				setUsdValue((prev) => [...prev, Number(usd).toFixed(4)]);
 			});
 		});
 	}, [date, network, tokenDetialsArray]);
