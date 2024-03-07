@@ -13,7 +13,9 @@ const getHistoricalNativeTokenPrice = async (network: NETWORK, date: Date | stri
 	const data = await fetch(
 		`https://api.covalenthq.com/v1/pricing/historical_by_addresses_v2/${
 			chainProperties[network].covalentNetworkName || ''
-		}/USD/${NATIVE_TOKEN_ADDRESS}/?key=${process.env.COVALENT_API}&from=${formattedDate}&to=${formattedDate}`,
+		}/USD/${NATIVE_TOKEN_ADDRESS}/?key=${
+			process.env.NEXT_PUBLIC_COVALENT_API_KEY
+		}&from=${formattedDate}&to=${formattedDate}`,
 		{ method: 'GET' }
 	);
 
