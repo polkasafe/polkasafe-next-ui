@@ -443,6 +443,8 @@ export interface ITreasuryTxns {
 	timestamp: string;
 	multisigAddress: string;
 	network: string;
+	tokenSymbol?: string;
+	tokenAddress?: string;
 }
 
 export interface ITreasury {
