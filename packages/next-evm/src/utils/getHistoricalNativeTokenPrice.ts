@@ -11,11 +11,9 @@ const NATIVE_TOKEN_ADDRESS = '0x0000000000000000000000000000000000000000';
 const getHistoricalNativeTokenPrice = async (network: NETWORK, date: Date | string): Promise<number | string> => {
 	const formattedDate = dayjs(date).format('YYYY-MM-DD');
 	const data = await fetch(
-		`${process.env.NEXT_PUBLIC_COVALENT_API_URI}/pricing/historical_by_addresses_v2/${
+		`https://api.covalenthq.com/v1/pricing/historical_by_addresses_v2/${
 			chainProperties[network].covalentNetworkName || ''
-		}/USD/${NATIVE_TOKEN_ADDRESS}/?key=${
-			process.env.NEXT_PUBLIC_COVALENT_API_KEY
-		}&from=${formattedDate}&to=${formattedDate}`,
+		}/USD/${NATIVE_TOKEN_ADDRESS}/?key=${process.env.COVALENT_API}&from=${formattedDate}&to=${formattedDate}`,
 		{ method: 'GET' }
 	);
 

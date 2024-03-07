@@ -13,11 +13,9 @@ const getHistoricalTokenPrice = async (
 ): Promise<string | number> => {
 	const formattedDate = dayjs(date).format('YYYY-MM-DD');
 	const data = await fetch(
-		`${process.env.NEXT_PUBLIC_COVALENT_API_URI}/pricing/historical_by_addresses_v2/${
+		`https://api.covalenthq.com/v1/pricing/historical_by_addresses_v2/${
 			chainProperties[network].covalentNetworkName || ''
-		}/USD/${contractAddress}/?key=${
-			process.env.NEXT_PUBLIC_COVALENT_API_KEY
-		}&from=${formattedDate}&to=${formattedDate}`,
+		}/USD/${contractAddress}/?key=${process.env.COVALENT_API}&from=${formattedDate}&to=${formattedDate}`,
 		{ method: 'GET' }
 	);
 
