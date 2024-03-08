@@ -53,6 +53,12 @@ const TreasuryAnalytics = () => {
 	const [refetch, setRefetch] = useState<boolean>(false);
 
 	useEffect(() => {
+		if (activeOrg && activeOrg.id) {
+			setSelectedID(activeOrg.id);
+		}
+	}, [activeOrg]);
+
+	useEffect(() => {
 		const fetchtxns = async () => {
 			if (!activeOrg || !activeOrg.multisigs || !activeOrg.id) return;
 
