@@ -110,10 +110,11 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 						return;
 					}
 
-					if (queueTransactions) {
-						setQueuedTransactions(queueTransactions);
-						setLoading(false);
-					}
+					if (queueTransactions)
+						setQueuedTransactions(
+							queueTransactions.map((item) => ({ ...item, multisigAddress: activeMultisig, network: multisig.network }))
+						);
+					setLoading(false);
 				} else {
 					setLoading(false);
 				}
@@ -138,7 +139,9 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 				}
 
 				if (queueTransactions) {
-					setQueuedTransactions(queueTransactions);
+					setQueuedTransactions(
+						queueTransactions.map((item) => ({ ...item, multisigAddress: activeMultisig, network: multisig.network }))
+					);
 					setLoading(false);
 				}
 			}

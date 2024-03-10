@@ -12,7 +12,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, ITxNotification } from '@next-common/types';
+import { IMultisigAddress, ITxNotification, ITxnCategory } from '@next-common/types';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,
@@ -37,6 +37,7 @@ import { ApiPromise } from '@polkadot/api';
 import ArgumentsTable from './ArgumentsTable';
 import EditNote from './EditNote';
 import NotifyButton from './NotifyButton';
+import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -69,6 +70,9 @@ interface ISentInfoProps {
 	multisig: IMultisigAddress;
 	api: ApiPromise;
 	apiReady: boolean;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -100,7 +104,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 	network,
 	multisig,
 	api,
-	apiReady
+	apiReady,
+	category,
+	setCategory,
+	setTransactionFields
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
@@ -357,12 +364,17 @@ const SentInfo: FC<ISentInfoProps> = ({
 					Object.keys(transactionFields).length !== 0 &&
 					transactionFields.category !== 'none' && (
 						<>
-							<div className='flex items-center justify-between mt-3'>
-								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
-								<span className='text-primary border border-solid border-primary rounded-xl px-[6px] py-1'>
-									{transactionFields?.category}
-								</span>
-							</div>
+							<p className='flex items-center justify-between mt-3'>
+								<span className='text-text_secondary font-normal text-sm'>Category:</span>
+								<TransactionFields
+									callHash={callHash}
+									category={category}
+									setCategory={setCategory}
+									transactionFieldsObject={transactionFields}
+									setTransactionFieldsObject={setTransactionFields}
+									multisigAddress={multisig.address}
+								/>
+							</p>
 							{transactionFields &&
 								transactionFields.subfields &&
 								Object.keys(transactionFields?.subfields).map((key) => {

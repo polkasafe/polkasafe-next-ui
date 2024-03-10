@@ -131,7 +131,13 @@ const History: FC<IHistory> = ({
 
 					if (multisigTransactions) {
 						setLoading(false);
-						setTransactions(multisigTransactions);
+						setTransactions(
+							multisigTransactions.map((item) => ({
+								...item,
+								multisigAddress: activeMultisig,
+								network: multisig.network
+							}))
+						);
 					}
 				} else {
 					setLoading(false);
@@ -183,7 +189,13 @@ const History: FC<IHistory> = ({
 				if (multisigTransactions && !multisigError) {
 					setLoading(false);
 					data = [...data, ...multisigTransactions.transactions];
-					setTransactions(data);
+					setTransactions(
+						data.map((item) => ({
+							...item,
+							multisigAddress: activeMultisig,
+							network: multisig.network
+						}))
+					);
 					docs += multisigTransactions.count;
 					setTotalDocs(docs);
 				}

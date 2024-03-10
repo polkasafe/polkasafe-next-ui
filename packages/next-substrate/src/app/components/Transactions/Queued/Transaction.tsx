@@ -12,7 +12,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, IQueueItem, ITxNotification } from '@next-common/types';
+import { IMultisigAddress, IQueueItem, ITxnCategory, ITxNotification } from '@next-common/types';
 import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';
 import approveAddProxy from '@next-substrate/utils/approveAddProxy';
@@ -32,10 +32,11 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
+import TransactionFields, { generateCategoryKey } from '../TransactionFields';
 
 interface ITransactionProps {
 	totalAmount?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	// eslint-disable-next-line react/no-unused-prop-types
 	status: 'Approval' | 'Cancelled' | 'Executed';
 	date: string;
@@ -104,6 +105,14 @@ const Transaction: FC<ITransactionProps> = ({
 	);
 
 	const [amountUSD, setAmountUSD] = useState<string>('');
+
+	const [category, setCategory] = useState<string>(
+		transactionFields?.category ? generateCategoryKey(transactionFields?.category) : 'none'
+	);
+
+	const [transactionFieldsObject, setTransactionFieldsObject] = useState<ITxnCategory>(
+		transactionFields || { category: 'none', subfields: {} }
+	);
 
 	useEffect(() => {
 		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
@@ -395,10 +404,10 @@ const Transaction: FC<ITransactionProps> = ({
 									toggleTransactionVisible(!transactionInfoVisible);
 								}}
 								className={classNames(
-									'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
+									'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px]'
 								)}
 							>
-								<p className='col-span-3 flex items-center gap-x-3'>
+								<p className='col-span-2 flex items-center gap-x-3'>
 									<span
 										className={`flex items-center justify-center w-9 h-9 ${
 											isProxyApproval || isProxyAddApproval || isProxyRemovalApproval
@@ -441,6 +450,19 @@ const Transaction: FC<ITransactionProps> = ({
 									<p className='col-span-2'>-</p>
 								)}
 								<p className='col-span-2'>{dayjs(date).format('lll')}</p>
+								<p
+									className='col-span-2'
+									onClick={(e) => e.stopPropagation()}
+								>
+									<TransactionFields
+										callHash={callHash}
+										category={category}
+										setCategory={setCategory}
+										transactionFieldsObject={transactionFieldsObject}
+										setTransactionFieldsObject={setTransactionFieldsObject}
+										multisigAddress={multisigAddress}
+									/>
+								</p>
 								<p className='col-span-2 flex items-center justify-end gap-x-4'>
 									<span className='text-waiting'>
 										{!approvals.includes(getEncodedAddress(address, network)) && 'Awaiting your Confirmation'} (
@@ -504,7 +526,7 @@ const Transaction: FC<ITransactionProps> = ({
 							delegate_id={decodedCallData?.args?.call?.args?.delegate?.id}
 							isProxyRemovalApproval={isProxyRemovalApproval}
 							notifications={notifications}
-							transactionFields={transactionFields}
+							transactionFields={transactionFieldsObject}
 							customTx={customTx}
 							decodedCallData={decodedCallData}
 							txnParams={txnParams}
@@ -512,6 +534,9 @@ const Transaction: FC<ITransactionProps> = ({
 							network={network}
 							api={api}
 							apiReady={apiReady}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
 						/>
 					</div>
 				</Collapse.Panel>

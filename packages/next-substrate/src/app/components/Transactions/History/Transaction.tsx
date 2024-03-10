@@ -8,7 +8,7 @@ import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { ITransaction } from '@next-common/types';
+import { ITransaction, ITxnCategory } from '@next-common/types';
 import {
 	ArrowDownLeftIcon,
 	ArrowUpRightIcon,
@@ -23,6 +23,7 @@ import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import ReceivedInfo from './ReceivedInfo';
 import SentInfo from './SentInfo';
+import TransactionFields, { generateCategoryKey } from '../TransactionFields';
 
 dayjs.extend(LocalizedFormat);
 
@@ -57,6 +58,14 @@ const Transaction: FC<ITransaction> = ({
 		multisigAddress === from || multisig?.address === from || multisig?.proxy === from ? 'Sent' : 'Received';
 	const pathname = usePathname();
 	const hash = pathname.slice(1);
+
+	const [category, setCategory] = useState<string>(
+		transactionFields?.category ? generateCategoryKey(transactionFields?.category) : 'none'
+	);
+
+	const [transactionFieldsObject, setTransactionFieldsObject] = useState<ITxnCategory>(
+		transactionFields || { category: 'none', subfields: {} }
+	);
 
 	useEffect(() => {
 		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
@@ -121,10 +130,10 @@ const Transaction: FC<ITransaction> = ({
 					<div
 						onClick={() => toggleTransactionVisible(!transactionInfoVisible)}
 						className={classNames(
-							'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
+							'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px]'
 						)}
 					>
-						<p className='col-span-3 flex items-center gap-x-3'>
+						<p className='col-span-2 flex items-center gap-x-3'>
 							{type === 'Sent' || customTx ? (
 								<span
 									className={`flex items-center justify-center w-9 h-9 ${
@@ -162,6 +171,19 @@ const Transaction: FC<ITransaction> = ({
 							<p className='col-span-2'>-</p>
 						)}
 						<p className='col-span-2'>{dayjs(created_at).format('lll')}</p>
+						<p
+							className='col-span-2'
+							onClick={(e) => e.stopPropagation()}
+						>
+							<TransactionFields
+								callHash={callHash}
+								category={category}
+								setCategory={setCategory}
+								transactionFieldsObject={transactionFieldsObject}
+								setTransactionFieldsObject={setTransactionFieldsObject}
+								multisigAddress={multisigAddress}
+							/>
+						</p>
 						<p className='col-span-2 flex items-center justify-end gap-x-4'>
 							<span className='text-success'>Success</span>
 							<span className='text-white text-sm'>

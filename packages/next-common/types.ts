@@ -276,9 +276,14 @@ export interface ITxNotification {
 	};
 }
 
+export interface ITxnCategory {
+	category: string;
+	subfields: { [subfield: string]: { name: string; value: string } };
+}
+
 export interface IQueueItem {
 	totalAmount?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	callData: string;
 	callHash: string;
 	network: string;
@@ -306,7 +311,7 @@ export interface ITransaction {
 	multisigAddress?: string;
 	network: string;
 	note?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	notifications?: {
 		[address: string]: {
 			lastNotified: Date;
