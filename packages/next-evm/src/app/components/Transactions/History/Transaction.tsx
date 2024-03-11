@@ -10,7 +10,7 @@ import React, { FC, useCallback, useEffect, useState } from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
-import { ITransaction } from '@next-common/types';
+import { ITransaction, ITxnCategory } from '@next-common/types';
 import {
 	ArrowDownLeftIcon,
 	ArrowUpRightIcon,
@@ -35,6 +35,7 @@ import { useWallets } from '@privy-io/react-auth';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import ReceivedInfo from './ReceivedInfo';
 import SentInfo from './SentInfo';
+import TransactionFields, { generateCategoryKey } from '../TransactionFields';
 
 dayjs.extend(LocalizedFormat);
 
@@ -97,6 +98,13 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 	const { wallets } = useWallets();
 	const connectedWallet = wallets?.[0];
+
+	const [category, setCategory] = useState<string>('none');
+
+	const [transactionFieldsObject, setTransactionFieldsObject] = useState<ITxnCategory>({
+		category: 'none',
+		subfields: {}
+	});
 
 	useEffect(() => {
 		if (!multisig?.network) return;
@@ -263,6 +271,14 @@ const Transaction: FC<IHistoryTransactions> = ({
 				} else {
 					setLoading(false);
 					setTransactionDetails(getTransactionData || ({} as any));
+					if (getTransactionData?.transactionFields) {
+						setTransactionFieldsObject(getTransactionData.transactionFields);
+						setCategory(
+							getTransactionData?.transactionFields?.category
+								? generateCategoryKey(getTransactionData.transactionFields.category)
+								: 'none'
+						);
+					}
 				}
 			}
 		} catch (error) {
@@ -289,7 +305,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							toggleTransactionVisible(!transactionInfoVisible);
 						}}
 						className={classNames(
-							'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
+							'grid items-center grid-cols-11 cursor-pointer text-white font-normal text-sm leading-[15px]'
 						)}
 					>
 						<p className='col-span-4 flex items-center gap-x-3'>
@@ -312,7 +328,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								{isFundType ? (
 									isMultiTokenTx ? (
 										<div className='flex gap-x-2 items-center'>
-											Received Multiple Tokens
+											Multiple Tokens
 											{tokenDetailsArray.map((item) => (
 												<ParachainIcon
 													tooltip={item.tokenSymbol}
@@ -322,7 +338,6 @@ const Transaction: FC<IHistoryTransactions> = ({
 										</div>
 									) : (
 										<p className='flex items-center grid grid-cols-8'>
-											<span className='col-span-1'>Received</span>
 											<div className='flex items-center col-span-7 gap-x-2'>
 												<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
 												<span className='font-normal text-xs leading-[13px] text-success'>
@@ -350,7 +365,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								) : isSentType ? (
 									isMultiTokenTx ? (
 										<div className='flex gap-x-2 items-center'>
-											Sent Multiple Tokens
+											Multiple Tokens
 											{tokenDetailsArray.map((item) => (
 												<ParachainIcon
 													tooltip={item.tokenSymbol}
@@ -362,7 +377,6 @@ const Transaction: FC<IHistoryTransactions> = ({
 										'On-chain Rejection'
 									) : (
 										<p className='grid grid-cols-8 flex items-center'>
-											<span className='col-span-1'>Sent</span>
 											<div className='flex items-center col-span-7 gap-x-2'>
 												<ParachainIcon
 													src={
@@ -438,6 +452,16 @@ const Transaction: FC<IHistoryTransactions> = ({
 							/>
 						</p>
 						{created_at && <p className='col-span-2'>{new Date(created_at).toLocaleString()}</p>}
+						<p className='col-span-2 pr-2'>
+							<TransactionFields
+								callHash={txHash}
+								category={category}
+								setCategory={setCategory}
+								transactionFieldsObject={transactionFieldsObject}
+								setTransactionFieldsObject={setTransactionFieldsObject}
+								multisigAddress={multisig.address}
+							/>
+						</p>
 						<p className='col-span-1 flex items-center justify-end gap-x-4'>
 							<span className='text-success'>Success</span>
 							<span className='text-white text-sm'>

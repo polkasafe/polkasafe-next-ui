@@ -26,11 +26,12 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
-import { EAssetType, IMultisigAddress } from '@next-common/types';
+import { EAssetType, IMultisigAddress, ITxnCategory } from '@next-common/types';
 import { useWallets } from '@privy-io/react-auth';
 import EditNote from './EditNote';
 // eslint-disable-next-line import/no-cycle
 import { ITokenDetails } from './Transaction';
+import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -61,6 +62,9 @@ interface ISentInfoProps {
 	isContractInteraction?: boolean;
 	setOpenReplaceTxnModal: React.Dispatch<React.SetStateAction<boolean>>;
 	network: NETWORK;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 	// multisig: IMultisigAddress;
 }
 
@@ -91,7 +95,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 	isCustomTxn,
 	setOpenReplaceTxnModal,
 	network,
-	isContractInteraction
+	isContractInteraction,
+	category,
+	setCategory,
+	setTransactionFields
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { address: a, notOwnerOfSafe } = useGlobalUserDetailsContext();
@@ -310,36 +317,37 @@ const SentInfo: FC<ISentInfoProps> = ({
 								)}
 							</span>
 						</div>
-						{!!transactionFields &&
-							Object.keys(transactionFields).length !== 0 &&
-							transactionFields.category !== 'none' && (
-								<>
-									<div className='flex items-center justify-between mt-3'>
-										<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
-										<span className='text-primary border border-solid border-primary rounded-xl px-[6px] py-1'>
-											{transactionFields?.category}
-										</span>
-									</div>
-									{transactionFields &&
-										transactionFields.subfields &&
-										Object.keys(transactionFields?.subfields).map((key) => {
-											const subfield = transactionFields.subfields[key];
-											return (
-												<div
-													key={key}
-													className='flex items-center justify-between mt-3'
-												>
-													<span className='text-text_secondary font-normal text-sm leading-[15px]'>
-														{subfield.name}:
-													</span>
-													<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
-														{subfield.value}
-													</span>
-												</div>
-											);
-										})}
-								</>
-							)}
+						{!!transactionFields && Object.keys(transactionFields).length !== 0 && (
+							<>
+								<div className='flex items-center justify-between mt-3'>
+									<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
+									<TransactionFields
+										callHash={callHash}
+										category={category}
+										setCategory={setCategory}
+										transactionFieldsObject={transactionFields}
+										setTransactionFieldsObject={setTransactionFields}
+										multisigAddress={multisig.address}
+									/>
+								</div>
+								{transactionFields &&
+									transactionFields.subfields &&
+									Object.keys(transactionFields?.subfields).map((key) => {
+										const subfield = transactionFields.subfields[key];
+										return (
+											<div
+												key={key}
+												className='flex items-center justify-between mt-3'
+											>
+												<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield.name}:</span>
+												<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
+													{subfield.value}
+												</span>
+											</div>
+										);
+									})}
+							</>
+						)}
 					</>
 				)}
 				<p

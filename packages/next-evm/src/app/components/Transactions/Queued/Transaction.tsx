@@ -12,7 +12,7 @@ import { useRouter } from 'next/navigation';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
-import { EAssetType, ITransaction, NotificationStatus } from '@next-common/types';
+import { EAssetType, ITransaction, ITxnCategory, NotificationStatus } from '@next-common/types';
 import {
 	ArrowUpRightIcon,
 	CircleArrowDownIcon,
@@ -38,6 +38,7 @@ import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import ReplaceTxnModal from './ReplaceTxnModal';
 // eslint-disable-next-line import/no-cycle
 import SentInfo from './SentInfo';
+import TransactionFields, { generateCategoryKey } from '../TransactionFields';
 
 export interface ITransactionProps {
 	date: Date;
@@ -132,6 +133,13 @@ const Transaction: FC<ITransactionProps> = ({
 	const { wallets } = useWallets();
 	const connectedWallet = wallets?.[0];
 
+	const [category, setCategory] = useState<string>('none');
+
+	const [transactionFieldsObject, setTransactionFieldsObject] = useState<ITxnCategory>({
+		category: 'none',
+		subfields: {}
+	});
+
 	const getTxDetails = useCallback(async () => {
 		try {
 			setTransactionDetailsLoading(true);
@@ -175,6 +183,14 @@ const Transaction: FC<ITransactionProps> = ({
 
 			if (!getTransactionErr && getTransactionData) {
 				setTransactionDetails(getTransactionData);
+				if (getTransactionData?.transactionFields) {
+					setTransactionFieldsObject(getTransactionData.transactionFields);
+					setCategory(
+						getTransactionData?.transactionFields?.category
+							? generateCategoryKey(getTransactionData.transactionFields.category)
+							: 'none'
+					);
+				}
 			}
 			setTransactionDetailsLoading(false);
 		} catch (err) {
@@ -404,7 +420,7 @@ const Transaction: FC<ITransactionProps> = ({
 								toggleTransactionVisible(!transactionInfoVisible);
 							}}
 							className={classNames(
-								'grid items-center grid-cols-11 cursor-pointer text-white font-normal text-sm leading-[15px]'
+								'grid items-center grid-cols-12 cursor-pointer text-white font-normal text-sm leading-[15px]'
 							)}
 						>
 							<p className='col-span-4 flex items-center gap-x-3'>
@@ -444,7 +460,6 @@ const Transaction: FC<ITransactionProps> = ({
 											</div>
 										) : (
 											<p className='flex items-center gap-x-2'>
-												Send
 												<ParachainIcon
 													src={
 														decodedCallData?.method === 'multiSend'
@@ -503,7 +518,7 @@ const Transaction: FC<ITransactionProps> = ({
 									)}
 								</span>
 							</p>
-							<p className='col-span-3'>
+							<p className='col-span-2'>
 								<AddressComponent
 									address={multisigAddress}
 									isMultisig
@@ -513,6 +528,16 @@ const Transaction: FC<ITransactionProps> = ({
 								/>
 							</p>
 							<p className='col-span-2'>{dayjs(date).format('lll')}</p>
+							<p className='col-span-2 pr-2'>
+								<TransactionFields
+									callHash={callHash}
+									category={category}
+									setCategory={setCategory}
+									transactionFieldsObject={transactionFieldsObject}
+									setTransactionFieldsObject={setTransactionFieldsObject}
+									multisigAddress={multisigAddress}
+								/>
+							</p>
 							<p className='col-span-2 flex items-center justify-end gap-x-4'>
 								<span className='text-waiting'>
 									{!approvals.includes(address)
@@ -571,7 +596,7 @@ const Transaction: FC<ITransactionProps> = ({
 						handleExecuteTransaction={handleExecuteTransaction}
 						note={transactionDetails.note || ''}
 						txType={txType}
-						transactionFields={transactionDetails.transactionFields}
+						transactionFields={transactionFieldsObject}
 						transactionDetailsLoading={transactionDetailsLoading}
 						tokenSymbol={txInfo?.transferInfo?.tokenSymbol}
 						tokenDecimals={txInfo?.transferInfo?.decimals}
@@ -583,6 +608,9 @@ const Transaction: FC<ITransactionProps> = ({
 						isContractInteraction={isContractInteraction}
 						setOpenReplaceTxnModal={setOpenReplaceTxnModal}
 						network={network as NETWORK}
+						category={category}
+						setCategory={setCategory}
+						setTransactionFields={setTransactionFieldsObject}
 					/>
 				</div>
 			</Collapse.Panel>
