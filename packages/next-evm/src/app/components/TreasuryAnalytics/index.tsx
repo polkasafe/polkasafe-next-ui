@@ -1,8 +1,7 @@
 /* eslint-disable sort-keys */
 import './style.css';
-import { SyncOutlined } from '@ant-design/icons';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
-import { Button, DatePicker, Divider, Dropdown, Segmented, TimeRangePickerProps } from 'antd';
+import { DatePicker, Dropdown, Segmented, TimeRangePickerProps } from 'antd';
 import React, { useEffect, useState } from 'react';
 import Loader from '@next-common/ui-components/Loader';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
@@ -10,7 +9,6 @@ import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import Image from 'next/image';
 import emptyImage from '@next-common/assets/icons/empty-image.png';
-import formatBalance from '@next-evm/utils/formatBalance';
 import dayjs, { Dayjs } from 'dayjs';
 import EmptyStateSVG from '@next-common/assets/Empty-State-TreasuryAnalytics.svg';
 import { ETxnType, ITreasury, ITreasuryTxns } from '@next-common/types';
@@ -26,13 +24,15 @@ import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import TransactionsByEachToken from './TransactionsByEachToken';
 import TopAssetsCard from '../Home/TopAssetsCard';
 import BalanceHistory from './BalanceHistory';
+import TotalBalances from './TotalBalances';
 
 enum EDateFilters {
 	YESTERDAY = -1,
 	WEEK = -7,
 	MONTH = -30,
 	QUARTER = -90,
-	YEAR = -360
+	YEAR = -360,
+	ALL = 0
 }
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const TreasuryAnalytics = () => {
@@ -46,7 +46,7 @@ const TreasuryAnalytics = () => {
 	const [selectedID, setSelectedID] = useState<string>(activeOrg?.id || '');
 	const [startDate, setStartDate] = useState<null | Dayjs>(null);
 	const [endDate, setEndDate] = useState<null | Dayjs>(dayjs());
-	const [outerDateFilter, setOuterDateFilter] = useState<EDateFilters>(EDateFilters.YEAR);
+	const [outerDateFilter, setOuterDateFilter] = useState<EDateFilters>(EDateFilters.ALL);
 
 	const [treasury, setTreasury] = useState<ITreasury>({});
 
@@ -83,7 +83,6 @@ const TreasuryAnalytics = () => {
 					trusted: true
 				});
 				const txns = allTxns.results.filter((item) => item.transfers.length > 0);
-				console.log('tranfers', txns);
 
 				let totalIncomingUSD = 0;
 				let totalOutgoingUSD = 0;
@@ -96,12 +95,16 @@ const TreasuryAnalytics = () => {
 						for (const item of txn.transfers) {
 							const token = item.value || 0;
 							const type = item.from === multisig.address ? ETxnType.OUTGOING : ETxnType.INCOMING;
-							const timestamp = dayjs(txn.executionDate).format('YYYY-MM-DD');
+							const timestamp = dayjs(txn.executionDate).toString();
 							const txHash = item.transactionHash;
 							const tokenAddress = item.tokenInfo ? item.tokenInfo.address : '';
 							const tokenSymbol = item.tokenInfo
 								? item.tokenInfo.symbol
 								: chainProperties[multisig.network].tokenSymbol;
+
+							const tokenLogoUri = item.tokenInfo
+								? item.tokenInfo.logoUri || chainProperties[multisig.network].logo
+								: chainProperties[multisig.network].logo;
 
 							let usdValue = '0';
 
@@ -109,7 +112,6 @@ const TreasuryAnalytics = () => {
 								// eslint-disable-next-line no-await-in-loop
 								const usd = await getHistoricalNativeTokenPrice(multisig.network as NETWORK, new Date(timestamp));
 								usdValue = Number(usd).toFixed(4);
-								console.log(tokenSymbol, usdValue);
 							} else {
 								// eslint-disable-next-line no-await-in-loop
 								const usd = await getHistoricalTokenPrice(
@@ -118,7 +120,6 @@ const TreasuryAnalytics = () => {
 									new Date(timestamp)
 								);
 								usdValue = Number(usd).toFixed(4);
-								console.log(tokenSymbol, usdValue);
 							}
 
 							const usd = tokenToUSDConversion(
@@ -141,6 +142,7 @@ const TreasuryAnalytics = () => {
 									network: multisig.network,
 									tokenAddress,
 									tokenSymbol,
+									tokenLogoUri,
 									timestamp,
 									txHash,
 									type
@@ -157,6 +159,7 @@ const TreasuryAnalytics = () => {
 									network: multisig.network,
 									tokenAddress,
 									tokenSymbol,
+									tokenLogoUri,
 									timestamp,
 									txHash,
 									type
@@ -242,7 +245,6 @@ const TreasuryAnalytics = () => {
 			setEndDate(dates[1]);
 			console.log('From: ', dateStrings[0], ', to: ', dateStrings[1]);
 		} else {
-			console.log('Clear');
 			setStartDate(null);
 			setEndDate(null);
 		}
@@ -256,7 +258,14 @@ const TreasuryAnalytics = () => {
 				<Segmented
 					size='small'
 					onChange={(value) => {
+						if (value === 0) {
+							setStartDate(null);
+							setEndDate(dayjs());
+							setOuterDateFilter(EDateFilters.ALL);
+							return;
+						}
 						setStartDate(dayjs(dayjs().add(Number(value), 'd')));
+						setEndDate(dayjs());
 						setOuterDateFilter(Number(value) as EDateFilters);
 					}}
 					className='bg-transparent text-text_secondary border border-bg-secondary p-1'
@@ -281,6 +290,10 @@ const TreasuryAnalytics = () => {
 						{
 							label: '360D',
 							value: EDateFilters.YEAR
+						},
+						{
+							label: 'ALL',
+							value: EDateFilters.ALL
 						}
 					]}
 				/>
@@ -332,7 +345,7 @@ const TreasuryAnalytics = () => {
 					</Dropdown>
 				</div>
 			</div>
-			<div className='rounded-xl p-5 bg-bg-secondary flex gap-x-5'>
+			{/* <div className='rounded-xl p-5 bg-bg-secondary flex gap-x-5'>
 				<div>
 					<label className='text-text_secondary text-xs mb-1.5'>Incoming</label>
 					<div className='text-success font-bold text-[22px]'>
@@ -382,7 +395,14 @@ const TreasuryAnalytics = () => {
 				>
 					Refresh
 				</Button>
-			</div>
+			</div> */}
+			<TotalBalances
+				startDate={startDate}
+				endDate={endDate}
+				onReload={() => setRefetch((prev) => !prev)}
+				incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}
+				outgoingTransactions={treasury?.[selectedID]?.outgoingTransactions || []}
+			/>
 			<div className='rounded-xl p-5 bg-bg-secondary min-h-[300px] balance_history'>
 				{!treasury?.[selectedID]?.incomingTransactions && !treasury?.[selectedID]?.outgoingTransactions ? (
 					<div className='w-full flex flex-col gap-y-2 items-center h-full'>
@@ -401,7 +421,7 @@ const TreasuryAnalytics = () => {
 				)}
 			</div>
 			<div className='grid grid-cols-2 gap-x-4'>
-				<TopAssetsCard className='bg-bg-secondary' />
+				<TopAssetsCard className='bg-bg-secondary h-[90%]' />
 				<TransactionsByEachToken
 					className='bg-bg-secondary'
 					incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}

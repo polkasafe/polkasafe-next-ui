@@ -5,6 +5,7 @@
 // eslint-disable-next-line import/no-cycle
 import GnosisSafeService from '@next-evm/services/Gnosis';
 import { Dispatch, SetStateAction } from 'react';
+import { StaticImageData } from 'next/image';
 import { NETWORK } from './global/evm-network-constants';
 
 export enum CHANNEL {
@@ -450,6 +451,7 @@ export interface ITreasuryTxns {
 	network: string;
 	tokenSymbol?: string;
 	tokenAddress?: string;
+	tokenLogoUri?: string | StaticImageData;
 }
 
 export interface ITreasury {

@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@amcharts/amcharts5": "^5.8.4",
     "@covalenthq/client-sdk": "^0.9.4",
     "@craco/craco": "^7.1.0",
     "@ethersproject/abi": "^5.7.0",
