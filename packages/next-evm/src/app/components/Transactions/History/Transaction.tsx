@@ -242,50 +242,38 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 		setTxData(txDetails.txData);
 		setTxInfo(txDetails.txInfo);
-	}, [txHash, network]);
+
+		const getTransactionRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getTransactionDetailsEth`, {
+			body: JSON.stringify({
+				callHash: txHash
+			}),
+			headers: firebaseFunctionsHeader(connectedWallet.address),
+			method: 'POST'
+		});
+		const { data: getTransactionData, error: getTransactionErr } = (await getTransactionRes.json()) as {
+			data: ITransaction;
+			error: string;
+		};
+
+		if (getTransactionErr) {
+			console.log('error', getTransactionErr);
+			setLoading(false);
+		} else {
+			setLoading(false);
+			setTransactionDetails(getTransactionData || ({} as any));
+			if (getTransactionData?.transactionFields) {
+				setTransactionFieldsObject(getTransactionData.transactionFields);
+				setCategory(
+					getTransactionData?.transactionFields?.category
+						? generateCategoryKey(getTransactionData.transactionFields.category)
+						: 'none'
+				);
+			}
+		}
+	}, [network, txHash, connectedWallet]);
 	useEffect(() => {
 		getTxDetails();
 	}, [getTxDetails]);
-
-	const handleGetHistoryNote = async () => {
-		try {
-			if (!connectedWallet.address) {
-				console.log('ERROR');
-			} else {
-				setLoading(true);
-				const getTransactionRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getTransactionDetailsEth`, {
-					body: JSON.stringify({
-						callHash: txHash
-					}),
-					headers: firebaseFunctionsHeader(connectedWallet.address),
-					method: 'POST'
-				});
-				const { data: getTransactionData, error: getTransactionErr } = (await getTransactionRes.json()) as {
-					data: ITransaction;
-					error: string;
-				};
-
-				if (getTransactionErr) {
-					console.log('error', getTransactionErr);
-					setLoading(false);
-				} else {
-					setLoading(false);
-					setTransactionDetails(getTransactionData || ({} as any));
-					if (getTransactionData?.transactionFields) {
-						setTransactionFieldsObject(getTransactionData.transactionFields);
-						setCategory(
-							getTransactionData?.transactionFields?.category
-								? generateCategoryKey(getTransactionData.transactionFields.category)
-								: 'none'
-						);
-					}
-				}
-			}
-		} catch (error) {
-			setLoading(false);
-			console.log('ERROR', error);
-		}
-	};
 
 	return (
 		<Collapse
@@ -299,16 +287,13 @@ const Transaction: FC<IHistoryTransactions> = ({
 				header={
 					<div
 						onClick={() => {
-							if (!transactionInfoVisible) {
-								handleGetHistoryNote();
-							}
 							toggleTransactionVisible(!transactionInfoVisible);
 						}}
 						className={classNames(
-							'grid items-center grid-cols-11 cursor-pointer text-white font-normal text-sm leading-[15px]'
+							'grid items-center grid-cols-[repeat(13,_minmax(0,_1fr))] cursor-pointer text-white font-normal text-sm leading-[15px]'
 						)}
 					>
-						<p className='col-span-4 flex items-center gap-x-3'>
+						<p className='col-span-5 flex items-center gap-x-3'>
 							{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
 								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
 									{isRejectionTxn ? (
@@ -442,7 +427,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								)}
 							</span>
 						</p>
-						<p className='col-span-2'>
+						<p className='col-span-3'>
 							<AddressComponent
 								address={safeAddress}
 								withBadge={false}
@@ -451,8 +436,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 								network={multisig?.network as NETWORK}
 							/>
 						</p>
-						{created_at && <p className='col-span-2'>{new Date(created_at).toLocaleString()}</p>}
-						<p className='col-span-2 pr-2'>
+						{created_at && <p className='col-span-2'>{dayjs(created_at).format('DD/MM/YYYY[,] HH:mm')}</p>}
+						<p className='col-span-2 pr-1'>
 							<TransactionFields
 								callHash={txHash}
 								category={category}

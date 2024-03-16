@@ -142,12 +142,13 @@ const TransactionFields = ({
 						...Object.keys(userTransactionFields)
 							.filter((c) => c !== 'none')
 							.map((c) => ({
-								disabled: userTransactionFields[c]?.fieldName === transactionFieldsObject?.category,
+								disabled:
+									userTransactionFields[c]?.fieldName === transactionFieldsObject?.category || loadingCategoryChange,
 								key: userTransactionFields[c]?.fieldName,
 								label: (
 									<span
 										className={`flex justify-between gap-x-2 items-center ${
-											userTransactionFields[c]?.fieldName === transactionFieldsObject?.category
+											userTransactionFields[c]?.fieldName === transactionFieldsObject?.category || loadingCategoryChange
 												? 'text-text_placeholder'
 												: 'text-white'
 										}`}
@@ -172,6 +173,7 @@ const TransactionFields = ({
 						<Divider className='m-0 border-text_secondary' />
 						<div className='p-2'>
 							<Input
+								disabled={loadingCategoryChange}
 								placeholder='Add new category'
 								className='w-full text-sm font-normal leading-[15px] border-none outline-none p-2 placeholder:text-[#505050] bg-bg-main rounded-lg text-white resize-none'
 								value={newCategory}
@@ -194,13 +196,19 @@ const TransactionFields = ({
 				)}
 			>
 				<div className='flex max-w-full'>
-					<div className='border border-primary rounded-xl p-2 bg-bg-secondary cursor-pointer flex items-center text-white gap-x-3 max-w-full'>
+					<div
+						className={`border-x-[0.5px] border-y-[0.5px] ${
+							!transactionFieldsObject?.category || transactionFieldsObject?.category === 'none'
+								? 'border-failure text-failure'
+								: 'border-waiting text-waiting'
+						} rounded-[20px] p-2 bg-bg-secondary cursor-pointer flex items-center gap-x-3 max-w-full`}
+					>
 						<span className='truncate'>
 							{!transactionFieldsObject?.category || transactionFieldsObject?.category === 'none'
 								? 'Category'
 								: transactionFieldsObject?.category}
 						</span>
-						{loadingCategoryChange ? <Loader size='small' /> : <CircleArrowDownIcon className='text-primary' />}
+						{loadingCategoryChange ? <Loader size='small' /> : <CircleArrowDownIcon />}
 					</div>
 				</div>
 			</Dropdown>
