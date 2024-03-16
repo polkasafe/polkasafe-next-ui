@@ -167,7 +167,7 @@ const TransactionFields = ({
 				}}
 				// eslint-disable-next-line react/no-unstable-nested-components
 				dropdownRender={(menu) => (
-					<div className='border border-primary rounded-xl bg-bg-secondary'>
+					<div className='custom-dropdown border border-primary rounded-xl bg-bg-secondary'>
 						{React.cloneElement(menu as React.ReactElement)}
 						<Divider className='m-0 border-text_secondary' />
 						<div className='p-2'>

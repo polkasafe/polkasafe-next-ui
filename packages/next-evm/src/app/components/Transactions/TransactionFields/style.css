@@ -1,7 +1,7 @@
-.ant-dropdown-menu-root {
+.custom-dropdown .ant-dropdown-menu {
     margin-top: 6px !important;
     border: none !important;
-    border-radius: 0 in !important;
+    border-radius: 0 !important;
     background-color: transparent !important;
     padding: 12px 8px !important;
     overflow-y: auto;
