@@ -30,7 +30,9 @@ const TokenFlow = ({
 			<div className='flex flex-col items-center'>
 				<div className='w-full'>
 					<label className='text-text_secondary text-sm mb-1'>Incoming</label>
-					<div className='text-success font-bold text-[18px] xl:text-[22px]'>$ {formatBalance(incomingAmount)}</div>
+					<div className='text-success font-bold text-[18px] xl:text-[22px]'>
+						$ {formatBalance(incomingAmount || 0)}
+					</div>
 				</div>
 				<Divider
 					orientation='center'
@@ -38,7 +40,9 @@ const TokenFlow = ({
 				/>
 				<div className='w-full'>
 					<label className='text-text_secondary text-sm mb-1'>Outgoing</label>
-					<div className='text-failure font-bold text-[18px] xl:text-[22px]'>$ {formatBalance(outgoingAmount)}</div>
+					<div className='text-failure font-bold text-[18px] xl:text-[22px]'>
+						$ {formatBalance(outgoingAmount || 0)}
+					</div>
 				</div>
 			</div>
 		</div>

@@ -81,7 +81,7 @@ const CircularProgressBar = ({
 				style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)' }}
 			>
 				<label className='text-text_secondary text-xs mb-1'>Net Balance</label>
-				<div className='text-white font-bold text-[18px]'>$ {formatBalance(netBalance)}</div>
+				<div className='text-white font-bold text-[18px]'>$ {formatBalance(netBalance || 0)}</div>
 			</div>
 		</div>
 	);

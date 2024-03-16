@@ -3,7 +3,9 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 export default function formatBalance(amount: number | string) {
-	return Number(amount)
-		.toFixed(2)
-		.replace(/\d(?=(\d{3})+\.)/g, '$&,');
+	return Number.isNaN(Number(amount))
+		? '0.00'
+		: Number(amount)
+				.toFixed(2)
+				.replace(/\d(?=(\d{3})+\.)/g, '$&,');
 }
