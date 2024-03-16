@@ -24,7 +24,7 @@ const CircularProgressBar = ({
 	const dashArrayInner = innerRadius * Math.PI * 2;
 	const dashOffsetInner = dashArrayInner - (dashArrayInner * incomingPercent) / 100;
 	return (
-		<div className='relative rounded-full bg-text_placeholder'>
+		<div className='relative rounded-full bg-[#2F3239]'>
 			<div>
 				<svg
 					width={outerWidth}
