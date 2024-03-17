@@ -11,6 +11,7 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 const DeleteField = ({
 	onCancel,
@@ -21,12 +22,14 @@ const DeleteField = ({
 	category: string;
 	subfield: string;
 }) => {
-	const { transactionFields, setUserDetailsContextState, userID } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const handleDeleteField = async () => {
 		try {
-			if (!userID) {
+			if (!userID || !activeOrg?.id) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
@@ -37,6 +40,7 @@ const DeleteField = ({
 
 				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFieldsEth`, {
 					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -70,7 +74,7 @@ const DeleteField = ({
 						message: 'Transaction Fields Updated.',
 						status: NotificationStatus.SUCCESS
 					});
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

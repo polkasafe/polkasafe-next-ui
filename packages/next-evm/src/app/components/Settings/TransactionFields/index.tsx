@@ -8,11 +8,14 @@ import React, { useState } from 'react';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import AddCustomField from './AddCustomField';
 import SubfieldsList from './SubfieldsList';
 
 const TransactionFields = () => {
-	const { address: userAddress, transactionFields } = useGlobalUserDetailsContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 	const [openAddCustomFieldModal, setOpenAddCustomFieldModal] = useState(false);
 	const [category, setCategory] = useState<string>(Object.keys(transactionFields)[0] || 'none');
 

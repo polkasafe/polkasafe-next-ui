@@ -467,6 +467,11 @@ const Transaction: FC<IHistoryTransactions> = ({
 							loading={loading}
 							tokenDetialsArray={tokenDetailsArray}
 							network={multisig?.network as NETWORK}
+							transactionFields={transactionFieldsObject}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
+							multisigAddress={multisig?.address || ''}
 						/>
 					) : (
 						<SentInfo
@@ -488,7 +493,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							}
 							callHash={txHash || ''}
 							note={transactionDetails?.note || ''}
-							transactionFields={transactionDetails?.transactionFields}
+							transactionFields={transactionFieldsObject}
 							from={executor || ''}
 							loading={loading}
 							txType={type}
@@ -508,6 +513,10 @@ const Transaction: FC<IHistoryTransactions> = ({
 							isRejectionTxn={isRejectionTxn}
 							network={multisig?.network as NETWORK}
 							isContractInteraction={isContractInteraction}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
+							multisigAddress={multisig?.address || ''}
 						/>
 					)}
 				</div>

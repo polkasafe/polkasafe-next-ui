@@ -102,9 +102,9 @@ const SendFundsForm = ({
 	defaultNFT,
 	defaultToken // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
-	const { activeMultisig, address, multisigAddresses, transactionFields, activeMultisigData } =
-		useGlobalUserDetailsContext();
+	const { activeMultisig, address, multisigAddresses, activeMultisigData } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 	const [network, setNetwork] = useState<NETWORK>(
 		(activeMultisigData?.network as NETWORK) || (activeOrg?.multisigs?.[0]?.network as NETWORK) || NETWORK.POLYGON
 	);

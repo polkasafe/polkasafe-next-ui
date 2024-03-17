@@ -11,6 +11,7 @@ import React, { useState } from 'react';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import { useWallets } from '@privy-io/react-auth';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import EditTransactionFieldsModal from './EditTransactionFieldsModal';
 
 export const generateCategoryKey = (category: string) => {
@@ -48,14 +49,75 @@ const TransactionFields = ({
 	const { wallets } = useWallets();
 	const connectedWallet = wallets?.[0];
 
-	const { userID, transactionFields: userTransactionFields } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields: userTransactionFields } = activeOrg;
 	const [loadingCategoryChange, setLoadingCategoryChange] = useState(false);
 
 	const [openUpdateTransactionCategoryModal, setOpenUpdateTransactionCategoryModal] = useState<boolean>(false);
 
 	const [newCategory, setNewCategory] = useState<string>('');
 
-	const handleUpdateTransactionCategory = async (c: string) => {
+	const updateOrgTransactionFields = async (c: string) => {
+		try {
+			if (!userID || !activeOrg?.id) {
+				console.log('ERROR');
+			} else {
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFieldsEth`, {
+					body: JSON.stringify({
+						organisationId: activeOrg.id,
+						transactionFields: {
+							...userTransactionFields,
+							[generateCategoryKey(c)]: {
+								fieldDesc: '',
+								fieldName: c,
+								subfields: {}
+							}
+						}
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
+
+				if (updateTransactionFieldsError) {
+					queueNotification({
+						header: 'Error!',
+						message: 'There was some problem adding custom category to Organisation',
+						status: NotificationStatus.ERROR
+					});
+					return;
+				}
+
+				if (updateTransactionFieldsData) {
+					setActiveOrg((prev) => ({
+						...prev,
+						transactionFields: {
+							...prev.transactionFields,
+							[generateCategoryKey(c)]: {
+								fieldDesc: '',
+								fieldName: c,
+								subfields: {}
+							}
+						}
+					}));
+				}
+			}
+		} catch (error) {
+			console.log('ERROR', error);
+			queueNotification({
+				header: 'Failed!',
+				message: 'Error in Updating Transaction Fields.',
+				status: NotificationStatus.ERROR
+			});
+		}
+	};
+
+	const handleUpdateTransactionCategory = async (c: string, newCat?: boolean) => {
 		try {
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
@@ -98,6 +160,9 @@ const TransactionFields = ({
 					message: 'Transaction Fields Updated.',
 					status: NotificationStatus.SUCCESS
 				});
+				if (newCat) {
+					await updateOrgTransactionFields(c);
+				}
 				setLoadingCategoryChange(false);
 			}
 		} catch (error) {
@@ -184,7 +249,7 @@ const TransactionFields = ({
 											category: newCategory,
 											subfields: {}
 										});
-										handleUpdateTransactionCategory(newCategory);
+										handleUpdateTransactionCategory(newCategory, true);
 									}
 								}}
 								onChange={(e) => {

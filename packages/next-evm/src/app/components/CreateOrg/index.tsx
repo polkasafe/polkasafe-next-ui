@@ -106,6 +106,7 @@ const CreateOrg = () => {
 			setActiveOrg(createOrgData);
 			if (typeof window !== 'undefined') localStorage.setItem('active-org', createOrgData.id);
 			router.push('/');
+			setStep(0);
 		}
 	};
 

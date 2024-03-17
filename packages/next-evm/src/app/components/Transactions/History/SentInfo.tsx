@@ -23,6 +23,8 @@ import dayjs from 'dayjs';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import getHistoricalNativeTokenPrice from '@next-evm/utils/getHistoricalNativeTokenPrice';
+import { ITxnCategory } from '@next-common/types';
+import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -37,7 +39,7 @@ interface ISentInfoProps {
 	loading?: boolean;
 	from: string;
 	txType?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	tokenSymbol?: string;
 	tokenDecimals?: number;
 	tokenAddress?: string;
@@ -52,6 +54,10 @@ interface ISentInfoProps {
 	isCustomTxn?: boolean;
 	isContractInteraction?: boolean;
 	network: NETWORK;
+	multisigAddress: string;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -75,7 +81,11 @@ const SentInfo: FC<ISentInfoProps> = ({
 	isCustomTxn,
 	tokenAddress,
 	network,
-	isContractInteraction
+	isContractInteraction,
+	category,
+	setCategory,
+	setTransactionFields,
+	multisigAddress
 }) => {
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const threshold = approvals?.length || 0;
@@ -262,36 +272,37 @@ const SentInfo: FC<ISentInfoProps> = ({
 					<Spin className='mt-3' />
 				) : (
 					<>
-						{!!transactionFields &&
-							Object.keys(transactionFields).length !== 0 &&
-							transactionFields.category !== 'none' && (
-								<>
-									<div className='flex items-center justify-between mt-3'>
-										<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
-										<span className='text-primary border border-solid border-primary rounded-xl px-[6px] py-1'>
-											{transactionFields?.category}
-										</span>
-									</div>
-									{transactionFields &&
-										transactionFields?.subfields &&
-										Object.keys(transactionFields?.subfields).map((key) => {
-											const subfield = transactionFields?.subfields[key];
-											return (
-												<div
-													key={key}
-													className='flex items-center justify-between mt-3'
-												>
-													<span className='text-text_secondary font-normal text-sm leading-[15px]'>
-														{subfield?.name}:
-													</span>
-													<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
-														{subfield?.value}
-													</span>
-												</div>
-											);
-										})}
-								</>
-							)}
+						{!!transactionFields && Object.keys(transactionFields).length !== 0 && (
+							<>
+								<div className='flex items-center justify-between mt-3'>
+									<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
+									<TransactionFields
+										callHash={callHash}
+										category={category}
+										setCategory={setCategory}
+										transactionFieldsObject={transactionFields}
+										setTransactionFieldsObject={setTransactionFields}
+										multisigAddress={multisigAddress}
+									/>
+								</div>
+								{transactionFields &&
+									transactionFields.subfields &&
+									Object.keys(transactionFields?.subfields).map((key) => {
+										const subfield = transactionFields.subfields[key];
+										return (
+											<div
+												key={key}
+												className='flex items-center justify-between mt-3'
+											>
+												<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield.name}:</span>
+												<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
+													{subfield.value}
+												</span>
+											</div>
+										);
+									})}
+							</>
+						)}
 						{note && (
 							<div className='flex items-center justify-between mt-3'>
 								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Note:</span>

@@ -15,6 +15,7 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import { useWallets } from '@privy-io/react-auth';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 const AddSubfield = ({
 	className,
@@ -30,7 +31,9 @@ const AddSubfield = ({
 	const [subfields, setSubfields] = useState<{ name: string; subfieldType: EFieldType; required: boolean }[]>([
 		{ name: '', required: true, subfieldType: EFieldType.SINGLE_SELECT }
 	]);
-	const { setUserDetailsContextState, transactionFields, userID } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 
 	const { wallets } = useWallets();
 	const connectedWallet = wallets?.[0];
@@ -86,7 +89,7 @@ const AddSubfield = ({
 
 	const handleSave = async () => {
 		try {
-			if (!userID) {
+			if (!userID || !activeOrg?.id) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
@@ -104,6 +107,7 @@ const AddSubfield = ({
 
 				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFieldsEth`, {
 					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -140,7 +144,7 @@ const AddSubfield = ({
 						message: 'Transaction Fields Updated.',
 						status: NotificationStatus.SUCCESS
 					});
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

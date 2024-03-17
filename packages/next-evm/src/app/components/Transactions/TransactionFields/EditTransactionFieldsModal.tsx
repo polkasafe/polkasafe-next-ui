@@ -7,6 +7,7 @@ import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import { useWallets } from '@privy-io/react-auth';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import CancelBtn from '../../Settings/CancelBtn';
 import ModalBtn from '../../Settings/ModalBtn';
 
@@ -38,7 +39,9 @@ const EditTransactionFieldsModal = ({
 	const { wallets } = useWallets();
 	const connectedWallet = wallets?.[0];
 
-	const { transactionFields, userID } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 	const [transactionFieldsObject, setTransactionFieldsObject] = useState<{
 		category: string;
 		subfields: { [subfield: string]: { name: string; value: string } };

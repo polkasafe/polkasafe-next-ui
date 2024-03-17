@@ -47,7 +47,7 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 	}, []);
 
 	const fetchAllTransactions = useCallback(async () => {
-		if (activeMultisig || !activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0) return;
+		if (activeMultisig || !activeOrg?.multisigs || activeOrg.multisigs?.length === 0) return;
 
 		const allTxns = [];
 		setLoading(true);
@@ -73,7 +73,7 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 		setLoading(false);
 		setTransactions(allTxns);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig, activeOrg, connectedWallet]);
+	}, [activeMultisig, activeOrg?.multisigs, connectedWallet]);
 
 	useEffect(() => {
 		fetchAllTransactions();

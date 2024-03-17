@@ -17,6 +17,14 @@ export enum CHANNEL {
 	IN_APP = 'in_app'
 }
 
+export interface ITransactionFields {
+	[field: string]: {
+		fieldName: string;
+		fieldDesc: string;
+		subfields: ITransactionCategorySubfields;
+	};
+}
+
 export interface IMultisigAndNetwork {
 	name?: string;
 	address: string;
@@ -31,6 +39,7 @@ export interface IOrganisation {
 	multisigs: IMultisigAddress[];
 	addressBook: IAddressBookItem[];
 	members: string[];
+	transactionFields: ITransactionFields;
 }
 
 export interface IUserNotificationChannelPreferences {
@@ -85,14 +94,6 @@ export interface ITransactionCategorySubfields {
 		subfieldType: EFieldType;
 		required: boolean;
 		dropdownOptions?: IDropdownOptions[];
-	};
-}
-
-export interface ITransactionFields {
-	[field: string]: {
-		fieldName: string;
-		fieldDesc: string;
-		subfields: ITransactionCategorySubfields;
 	};
 }
 

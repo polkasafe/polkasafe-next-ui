@@ -87,8 +87,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 	}, []);
 
 	const fetchAllTransactions = useCallback(async () => {
-		if (activeMultisig || !activeOrg || !connectedWallet || !activeOrg.multisigs || activeOrg.multisigs?.length === 0)
-			return;
+		if (activeMultisig || !connectedWallet || !activeOrg?.multisigs || activeOrg.multisigs?.length === 0) return;
 		const allTxns = [];
 		setLoading(true);
 		await Promise.all(
@@ -116,7 +115,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 		});
 		setQueuedTransactions(sorted.reverse());
 		console.log('all txns', sorted.reverse());
-	}, [activeMultisig, activeOrg, connectedWallet, setLoading]);
+	}, [activeMultisig, activeOrg?.multisigs, connectedWallet, setLoading]);
 
 	useEffect(() => {
 		fetchAllTransactions();

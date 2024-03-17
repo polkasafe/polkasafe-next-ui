@@ -14,6 +14,8 @@ import getHistoricalTokenPrice from '@next-evm/utils/getHistoricalTokenPrice';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import getHistoricalNativeTokenPrice from '@next-evm/utils/getHistoricalNativeTokenPrice';
+import { ITxnCategory } from '@next-common/types';
+import TransactionFields from '../TransactionFields';
 
 interface IReceivedInfoProps {
 	addedOwner?: string;
@@ -30,6 +32,11 @@ interface IReceivedInfoProps {
 		tokenAddress: string;
 	}[];
 	network: NETWORK;
+	transactionFields?: ITxnCategory;
+	multisigAddress: string;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
 const ReceivedInfo: FC<IReceivedInfoProps> = ({
@@ -40,7 +47,12 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 	loading,
 	addedOwner,
 	tokenDetialsArray,
-	network
+	network,
+	transactionFields,
+	multisigAddress,
+	category,
+	setCategory,
+	setTransactionFields
 }) => {
 	const [usdValue, setUsdValue] = useState<string[]>([]);
 	// eslint-disable-next-line sonarjs/cognitive-complexity
@@ -141,6 +153,37 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 						/>
 					</p>
 				</div>
+			)}
+			{!!transactionFields && Object.keys(transactionFields).length !== 0 && (
+				<>
+					<div className='flex items-center gap-x-5 mt-3'>
+						<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
+						<TransactionFields
+							callHash={callHash}
+							category={category}
+							setCategory={setCategory}
+							transactionFieldsObject={transactionFields}
+							setTransactionFieldsObject={setTransactionFields}
+							multisigAddress={multisigAddress}
+						/>
+					</div>
+					{transactionFields &&
+						transactionFields.subfields &&
+						Object.keys(transactionFields?.subfields).map((key) => {
+							const subfield = transactionFields.subfields[key];
+							return (
+								<div
+									key={key}
+									className='flex items-center gap-x-5 mt-3'
+								>
+									<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield.name}:</span>
+									<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
+										{subfield.value}
+									</span>
+								</div>
+							);
+						})}
+				</>
 			)}
 			{loading ? (
 				<Spin className='mt-3' />

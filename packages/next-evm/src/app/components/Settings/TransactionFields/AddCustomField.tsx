@@ -11,6 +11,7 @@ import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 const AddCustomField = ({
 	className,
@@ -25,17 +26,21 @@ const AddCustomField = ({
 
 	const [fieldName, setFieldName] = useState<string>('');
 	const [fieldDesc, setFieldDesc] = useState<string>('');
-	const { setUserDetailsContextState, transactionFields, userID } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 
 	const handleSave = async () => {
 		try {
-			if (!userID) {
+			if (!userID || !activeOrg?.id) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
 
 				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFieldsEth`, {
 					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[fieldName.toLowerCase().split(' ').join('_')]: {
@@ -70,7 +75,7 @@ const AddCustomField = ({
 						message: 'Transaction Fields Updated.',
 						status: NotificationStatus.SUCCESS
 					});
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,
