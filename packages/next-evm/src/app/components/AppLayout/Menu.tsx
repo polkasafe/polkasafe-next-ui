@@ -126,7 +126,7 @@ const Menu: FC<Props> = ({ className }) => {
 		},
 		{
 			baseURL: '/apps',
-			disabled: true,
+			// disabled: true,
 			icon: <AppsIcon />,
 			key: getPath('/apps'),
 			title: 'Apps'
