@@ -3,12 +3,7 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import type { MutableRefObject } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import type {
-	SafeAppData,
-	ChainInfo as WebCoreChainInfo,
-	TransactionDetails,
-	RpcUri
-} from '@safe-global/safe-gateway-typescript-sdk';
+import type { SafeAppData, TransactionDetails, RpcUri } from '@safe-global/safe-gateway-typescript-sdk';
 
 import type {
 	AddressBookItem,
@@ -72,18 +67,13 @@ export const createSafeAppsWeb3Provider = (
 const useAppCommunicator = (
 	iframeRef: MutableRefObject<HTMLIFrameElement | null>,
 	app: SafeAppData | undefined,
-	chain: WebCoreChainInfo | undefined,
 	handlers: UseAppCommunicatorHandlers
 ): AppCommunicator | undefined => {
 	const [communicator, setCommunicator] = useState<AppCommunicator | undefined>(undefined);
 
 	const safeAppWeb3Provider = useMemo(() => {
-		if (!chain) {
-			return;
-		}
-
-		return createSafeAppsWeb3Provider(chain.rpcUri);
-	}, [chain]);
+		return createSafeAppsWeb3Provider({ value: 'https://polygon-rpc.com/', authentication: '' });
+	}, []);
 
 	useEffect(() => {
 		let communicatorInstance: AppCommunicator;
@@ -173,7 +163,7 @@ const useAppCommunicator = (
 		communicator?.on(Methods.requestAddressBook, (msg) => {
 			return handlers.onRequestAddressBook(msg.origin);
 		});
-	}, [safeAppWeb3Provider, handlers, chain, communicator]);
+	}, [safeAppWeb3Provider, handlers, communicator]);
 
 	return communicator;
 };
