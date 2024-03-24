@@ -81,11 +81,13 @@ const ManualExtrinsics = ({
 	className,
 	network,
 	api,
+	apiReady,
 	setCallData
 }: {
 	className?: string;
 	network: string;
 	api: ApiPromise;
+	apiReady: boolean;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
 	const [palletRPCs, setPalletRPCs] = useState<ItemType[]>([]);
@@ -124,7 +126,7 @@ const ManualExtrinsics = ({
 	}, [inputParams, paramFields]);
 
 	const updatePalletRPCs = useCallback(() => {
-		if (!api) {
+		if (!api || !apiReady) {
 			return;
 		}
 		const apiType = api.tx;
@@ -133,10 +135,10 @@ const ManualExtrinsics = ({
 			.filter((pr) => Object.keys(apiType[pr]).length > 0)
 			.map((pr) => ({ key: pr, label: <span className='text-white flex items-center gap-x-2'>{pr}</span> }));
 		setPalletRPCs(palletRPCsList);
-	}, [api]);
+	}, [api, apiReady]);
 
 	const updateCallables = useCallback(() => {
-		if (!api || !palletRpc) {
+		if (!api || !apiReady || !palletRpc) {
 			return;
 		}
 
@@ -144,10 +146,10 @@ const ManualExtrinsics = ({
 			.sort()
 			.map((c) => ({ key: c, label: <span className='text-white flex items-center gap-x-2'>{c}</span> }));
 		setCallables(callablesList);
-	}, [api, palletRpc]);
+	}, [api, apiReady, palletRpc]);
 
 	const updateParamFields = useCallback(() => {
-		if (!api || !palletRpc || !callable) {
+		if (!api || !apiReady || !palletRpc || !callable) {
 			setParamFields(null);
 			return;
 		}
@@ -173,7 +175,7 @@ const ManualExtrinsics = ({
 
 		setParamFields(paramFieldsList);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, callable, palletRpc, formState]);
+	}, [api, apiReady, callable, palletRpc, formState]);
 
 	useEffect(updatePalletRPCs, [updatePalletRPCs]);
 	useEffect(updateCallables, [updateCallables]);
@@ -214,7 +216,7 @@ const ManualExtrinsics = ({
 	};
 
 	useEffect(() => {
-		if (!api) {
+		if (!api || !apiReady) {
 			return;
 		}
 
@@ -233,7 +235,7 @@ const ManualExtrinsics = ({
 			console.error(e);
 			console.error(e);
 		}
-	}, [api, areAllParamsFilled, callable, palletRpc, transformedParams, setCallData]);
+	}, [api, areAllParamsFilled, callable, palletRpc, transformedParams, setCallData, apiReady]);
 
 	return (
 		<section className='w-[500px]'>

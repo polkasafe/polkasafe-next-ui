@@ -9,10 +9,12 @@ import { ApiPromise } from '@polkadot/api';
 const SetIdentity = ({
 	className,
 	api,
+	apiReady,
 	setCallData
 }: {
 	className?: string;
 	api: ApiPromise;
+	apiReady: boolean;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
 	const { activeMultisig } = useGlobalUserDetailsContext();
@@ -33,7 +35,7 @@ const SetIdentity = ({
 	};
 
 	const getMultisigAddressIdentityInfo = useCallback(async () => {
-		if (!api) return;
+		if (!api || !apiReady) return;
 
 		const info = await api.derive.accounts.info(activeMultisig);
 		if (info.identity) {
@@ -45,14 +47,14 @@ const SetIdentity = ({
 			setTwitterHandle(identity.twitter);
 			setWebsiteUrl(identity.web);
 		}
-	}, [activeMultisig, api]);
+	}, [activeMultisig, api, apiReady]);
 
 	useEffect(() => {
 		getMultisigAddressIdentityInfo();
 	}, [getMultisigAddressIdentityInfo]);
 
 	useEffect(() => {
-		if (!api) return;
+		if (!api || !apiReady) return;
 
 		const args = {
 			additional: [],
@@ -68,7 +70,7 @@ const SetIdentity = ({
 		const tx = api.tx.identity.setIdentity(args);
 		setCallData(tx.method.toHex());
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, displayName, elementHandle, email, legalName, twitterHandle, websiteUrl]);
+	}, [api, apiReady, displayName, elementHandle, email, legalName, twitterHandle, websiteUrl]);
 
 	return (
 		<div className={`grid grid-cols-2 gap-4 ${className}`}>

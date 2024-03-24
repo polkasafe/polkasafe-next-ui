@@ -627,6 +627,7 @@ const SendFundsForm = ({
 							</section>
 						) : transactionType === ETransactionType.MANUAL_EXTRINSIC ? (
 							<ManualExtrinsics
+								apiReady={apiReady}
 								api={api}
 								network={network}
 								setCallData={setCallData}
@@ -640,6 +641,7 @@ const SendFundsForm = ({
 							/>
 						) : transactionType === ETransactionType.SUBMIT_PROPOSAL ? (
 							<SubmitProposal
+								apiReady={apiReady}
 								network={network}
 								api={api}
 								className={className}
@@ -648,6 +650,7 @@ const SendFundsForm = ({
 						) : transactionType === ETransactionType.SET_IDENTITY ? (
 							<SetIdentity
 								api={api}
+								apiReady={apiReady}
 								className={className}
 								setCallData={setCallData}
 							/>

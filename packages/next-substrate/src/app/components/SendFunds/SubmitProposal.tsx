@@ -14,10 +14,12 @@ const SubmitProposal = ({
 	className,
 	setCallData,
 	api,
+	apiReady,
 	network
 }: {
 	className?: string;
 	api: ApiPromise;
+	apiReady: boolean;
 	network: string;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
@@ -29,7 +31,7 @@ const SubmitProposal = ({
 
 	const trackArr: string[] = [];
 
-	if (network && networkTrackInfo) {
+	if (network && networkTrackInfo && networkTrackInfo[network]) {
 		Object.entries(networkTrackInfo[network]).forEach(([key, value]) => {
 			if (value.group === 'Treasury') {
 				trackArr.push(key);
@@ -45,6 +47,7 @@ const SubmitProposal = ({
 	useEffect(() => {
 		if (
 			!api ||
+			!apiReady ||
 			!api.tx.referenda ||
 			!api.tx.referenda.submit ||
 			!preimageHash ||
@@ -68,7 +71,7 @@ const SubmitProposal = ({
 		if (proposal) setCallData(proposal.method.toHex());
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, preimageHash, preimageLength, track, blockNumber, enactment]);
+	}, [api, apiReady, preimageHash, preimageLength, track, blockNumber, enactment]);
 
 	return (
 		<div className={className}>
