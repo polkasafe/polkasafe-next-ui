@@ -3,15 +3,26 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import React from 'react';
 import astarLogo from '@next-common/assets/parachains-logos/astar-logo.png';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import { Apps, useGlobalDAppContext } from '@next-substrate/context/DAppContext';
+import { useGlobalDAppContext } from '@next-substrate/context/DAppContext';
 import { networks } from '@next-common/global/networkConstants';
 import { ArrowRightIcon, PolkassemblyIcon, SubIDIcon } from '@next-common/ui-components/CustomIcons';
 import Image from 'next/image';
 
-const AppModal = ({ name, description, onCancel }: { name: string; description: string; onCancel: () => void }) => {
+const AppModal = ({
+	name,
+	description,
+	appUrl,
+	onCancel,
+	newTab
+}: {
+	name: string;
+	description: string;
+	onCancel: () => void;
+	appUrl: string;
+	newTab?: boolean;
+	// modal?: boolean;
+}) => {
 	const { setIframeVisibility } = useGlobalDAppContext();
-	const { network } = useGlobalApiContext();
 	return (
 		<div className='flex flex-col cursor-pointer justify-around rounded-lg scale-90 w-[100%] -mt-[25px] -mb-[25px] origin-top-left'>
 			<div className='flex flex-col overflow-auto w-[110%]'>
@@ -56,18 +67,12 @@ const AppModal = ({ name, description, onCancel }: { name: string; description: 
 				<button
 					className='mt-10 text-white bg-primary p-3 rounded-lg w-full flex items-center justify-center gap-x-1 cursor-pointer'
 					onClick={() => {
-						if (name === 'Polkassembly' && typeof window !== 'undefined') {
-							window.open(`https://${network}.polkassembly.io/`, '_blank');
-							return;
-						}
-						if (name === 'Astar' && typeof window !== 'undefined') {
-							window.open('https://portal.astar.network/astar/dapp-staking/discover', '_blank');
-							return;
+						if (appUrl && newTab) {
+							window.open(`${appUrl}`, '_blank');
+						} else {
+							setIframeVisibility(appUrl);
 						}
 						onCancel();
-						setIframeVisibility(
-							name === 'Polkassembly' ? Apps.POLKASSEMBLY : name === 'Sub ID' ? Apps.SUB_ID : Apps.ASTAR
-						);
 					}}
 				>
 					<span className='font-medium text-xs'>Open app</span>

@@ -17,10 +17,12 @@ const SubmitPreimage = ({
 	setCallData,
 	api,
 	network,
-	className
+	className,
+	apiReady
 }: {
 	className?: string;
 	api: ApiPromise;
+	apiReady: boolean;
 	network: string;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
@@ -51,6 +53,7 @@ const SubmitPreimage = ({
 	return (
 		<div>
 			<ManualExtrinsics
+				apiReady={apiReady}
 				className={className}
 				api={api}
 				network={network}

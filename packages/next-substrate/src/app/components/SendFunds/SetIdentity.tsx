@@ -3,22 +3,21 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Form, Input } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { ApiPromise } from '@polkadot/api';
 
 const SetIdentity = ({
 	className,
+	multisigAddress,
 	api,
 	apiReady,
 	setCallData
 }: {
 	className?: string;
+	multisigAddress: string;
 	api: ApiPromise;
 	apiReady: boolean;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-	const { activeMultisig } = useGlobalUserDetailsContext();
-
 	const [displayName, setDisplayName] = useState<string | undefined>();
 	const [legalName, setLegalName] = useState<string | undefined>();
 	const [elementHandle, setElementHandle] = useState<string | undefined>();
@@ -37,7 +36,7 @@ const SetIdentity = ({
 	const getMultisigAddressIdentityInfo = useCallback(async () => {
 		if (!api || !apiReady) return;
 
-		const info = await api.derive.accounts.info(activeMultisig);
+		const info = await api.derive.accounts.info(multisigAddress);
 		if (info.identity) {
 			const { identity } = info;
 			setDisplayName(identity.display);
@@ -47,7 +46,7 @@ const SetIdentity = ({
 			setTwitterHandle(identity.twitter);
 			setWebsiteUrl(identity.web);
 		}
-	}, [activeMultisig, api, apiReady]);
+	}, [multisigAddress, api, apiReady]);
 
 	useEffect(() => {
 		getMultisigAddressIdentityInfo();

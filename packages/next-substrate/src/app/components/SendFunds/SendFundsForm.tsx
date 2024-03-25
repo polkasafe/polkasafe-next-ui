@@ -59,6 +59,7 @@ import TransactionSuccessScreen from './TransactionSuccessScreen';
 import UploadAttachment, { ISubfieldAndAttachment } from './UploadAttachment';
 import AddAddressModal from './AddAddressModal';
 import SetIdentity from './SetIdentity';
+import Delegate from './Delegate';
 
 export enum ETransactionType {
 	SEND_TOKEN = 'Send Token',
@@ -66,7 +67,8 @@ export enum ETransactionType {
 	CALL_DATA = 'Call Data',
 	SUBMIT_PREIMAGE = 'Submit Preimage',
 	SUBMIT_PROPOSAL = 'Submit Proposal',
-	SET_IDENTITY = 'Set Identity'
+	SET_IDENTITY = 'Set Identity',
+	DELEGATE = 'Delegate'
 }
 
 interface ISendFundsFormProps {
@@ -634,6 +636,7 @@ const SendFundsForm = ({
 							/>
 						) : transactionType === ETransactionType.SUBMIT_PREIMAGE ? (
 							<SubmitPreimage
+								apiReady={apiReady}
 								network={network}
 								api={api}
 								setCallData={setCallData}
@@ -649,10 +652,19 @@ const SendFundsForm = ({
 							/>
 						) : transactionType === ETransactionType.SET_IDENTITY ? (
 							<SetIdentity
+								multisigAddress={multisig.address || activeMultisig}
 								api={api}
 								apiReady={apiReady}
 								className={className}
 								setCallData={setCallData}
+							/>
+						) : transactionType === ETransactionType.DELEGATE ? (
+							<Delegate
+								api={api}
+								apiReady={apiReady}
+								className={className}
+								setCallData={setCallData}
+								autocompleteAddresses={autocompleteAddresses}
 							/>
 						) : (
 							<section className=''>
@@ -1095,10 +1107,12 @@ const SendFundsForm = ({
 					</section> */}
 					</Form>
 					<section className='flex items-center gap-x-5 justify-center mt-10'>
-						<CancelBtn
-							className='w-[250px]'
-							onClick={onCancel}
-						/>
+						{onCancel && (
+							<CancelBtn
+								className='w-[250px]'
+								onClick={onCancel}
+							/>
+						)}
 						<ModalBtn
 							disabled={
 								(transactionType === ETransactionType.SEND_TOKEN &&
@@ -1117,7 +1131,8 @@ const SendFundsForm = ({
 								((transactionType === ETransactionType.CALL_DATA ||
 									transactionType === ETransactionType.MANUAL_EXTRINSIC ||
 									transactionType === ETransactionType.SUBMIT_PREIMAGE ||
-									transactionType === ETransactionType.SUBMIT_PROPOSAL) &&
+									transactionType === ETransactionType.SUBMIT_PROPOSAL ||
+									transactionType === ETransactionType.DELEGATE) &&
 									(!callData || !callHash)) ||
 								Object.keys(transactionFields[category].subfields).some((key) =>
 									transactionFields[category].subfields[key].subfieldType === EFieldType.ATTACHMENT

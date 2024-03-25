@@ -101,12 +101,14 @@ const TransactionSuccessScreen = ({
 					</div>
 				)}
 			</div>
-			<div className='flex justify-center mt-2'>
-				<ModalBtn
-					title='Done'
-					onClick={onDone}
-				/>
-			</div>
+			{onDone && (
+				<div className='flex justify-center mt-2'>
+					<ModalBtn
+						title='Done'
+						onClick={onDone}
+					/>
+				</div>
+			)}
 		</div>
 	);
 };

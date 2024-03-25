@@ -2,26 +2,65 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import React from 'react';
+import React, { ReactElement } from 'react';
 import Link from 'next/link';
 // import Details from '@next-substrate/app/components/Settings/Details';
 import Feedback from '@next-substrate/app/components/Settings/Feedback';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
+import { ExternalLinkIcon, PolkassemblyIcon, SubIDIcon } from '@next-common/ui-components/CustomIcons';
 
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import astarLogo from '@next-common/assets/parachains-logos/astar-logo.png';
+import { StaticImageData } from 'next/image';
 import AppCard from './AppCard';
+import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
 
-const currentApps = [
-	{ description: 'One Stop Shop For All Substrate Addresses And Balances', name: 'Sub ID' },
+export interface IAppData {
+	name: string;
+	description: string;
+	logoUrl?: string | StaticImageData;
+	logoComponent?: ReactElement;
+	appUrl?: string;
+	newTab?: boolean;
+	modal?: boolean;
+	modalComponent?: ReactElement;
+}
+
+const currentApps: IAppData[] = [
 	{
-		description: 'The most unified platform to discuss and vote on governance proposals, motions and referandas',
-		name: 'Polkassembly'
+		appUrl: 'https://sub.id/',
+		description: 'One Stop Shop For All Substrate Addresses And Balances',
+		logoComponent: <SubIDIcon />,
+		name: 'Sub ID'
 	},
 	{
+		appUrl: 'https://polkadot.polkassembly.io/',
+		description: 'The most unified platform to discuss and vote on governance proposals, motions and referandas',
+		logoComponent: <PolkassemblyIcon />,
+		name: 'Polkassembly',
+		newTab: true
+	},
+	{
+		appUrl: 'https://portal.astar.network/astar/dapp-staking/discover',
 		description:
 			'Astar Network is a blockchain that aims to become Polkadot\'s "smart contract hub" and serves as a parachain for Polkadot',
-		name: 'Astar'
+		logoUrl: astarLogo,
+		name: 'Astar',
+		newTab: true
+	},
+	{
+		description: 'Set On-Chain Identity for your Multisig Address',
+		logoComponent: <PolkassemblyIcon />,
+		modal: true,
+		modalComponent: <SendFundsForm transactionType={ETransactionType.SET_IDENTITY} />,
+		name: 'Set Identity'
+	},
+	{
+		description: 'Any account set as proxy will be able to perform actions in place of the proxied account',
+		logoComponent: <PolkassemblyIcon />,
+		modal: true,
+		modalComponent: <SendFundsForm transactionType={ETransactionType.DELEGATE} />,
+		name: 'Delegate'
 	}
 ];
 
@@ -56,12 +95,19 @@ const AllApps = () => {
 							</Link>
 						</div>
 					</div>
-					<section className='flex flex-col gap-4 md:flex-row'>
+					<section className='grid grid-cols-4 gap-5'>
 						{currentApps.map((app) => (
 							<AppCard
+								className='col-span-1'
+								logoComponent={app.logoComponent}
+								logoUrl={app.logoUrl}
+								appUrl={app.appUrl}
 								key={app.name}
-								// eslint-disable-next-line react/jsx-props-no-spreading
-								{...app}
+								name={app.name}
+								description={app.description}
+								newTab={app.newTab}
+								modal={app.modal}
+								modalComponent={app.modalComponent}
 							/>
 						))}
 					</section>

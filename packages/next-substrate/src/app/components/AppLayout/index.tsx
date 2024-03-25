@@ -18,7 +18,6 @@ import { useGlobalDAppContext } from '@next-substrate/context/DAppContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { ISharedAddressBooks } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
-import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
@@ -50,7 +49,6 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 	const pathname = usePathname();
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
-	const IframeUrl = `https://sub.id/${getSubstrateAddress(activeMultisig)}`;
 	const isAppsPage = pathname.split('/').pop() === 'apps';
 	const hideSlider = iframeState && isAppsPage;
 
@@ -181,7 +179,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 								id='Dapp'
 								title='Dapp'
 								onLoad={handleIframeLoad}
-								src={IframeUrl}
+								src={iframeVisibility}
 								className={`w-full h-[calc(100%)] ${loading ? 'hidden' : 'block'}`}
 							/>
 							{!hideSlider && (
