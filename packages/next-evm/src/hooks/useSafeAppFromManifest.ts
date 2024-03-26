@@ -1,5 +1,6 @@
 /* eslint-disable sort-keys */
 /* eslint-disable no-restricted-syntax */
+'use client';
 import { SafeAppAccessPolicyTypes, SafeAppData } from '@safe-global/safe-gateway-typescript-sdk';
 import { useEffect, useState } from 'react';
 

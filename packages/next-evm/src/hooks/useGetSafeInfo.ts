@@ -13,6 +13,7 @@ const useGetSafeInfo = () => {
 
 	// polygon mainnet 137(0x89)
 	const chainId = '0x89';
+	console.log('🚀 ~ useGetSafeInfo ~ chainId:', chainId);
 	// const chain = useCurrentChain();
 	// const chainName = chain?.chainName || '';
 	// const chainName = 'polygon';

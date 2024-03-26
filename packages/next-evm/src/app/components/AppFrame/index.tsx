@@ -1,6 +1,7 @@
 /* eslint-disable sonarjs/no-duplicate-string */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable sort-keys */
+'use client';
 import React, { useEffect, useRef, useState } from 'react';
 import useAppCommunicator from '@next-evm/hooks/useAppCommunicator';
 import {
@@ -15,8 +16,9 @@ import {
 import { SafeAppData, TransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import useGetSafeInfo from '@next-evm/hooks/useGetSafeInfo';
 import { TxEvent, txSubscribe } from '@next-evm/services/tx/txEvents';
-import { SAFE_APPS_EVENTS, trackSafeAppEvent } from '@next-evm/services/analytics';
+// import { SAFE_APPS_EVENTS, trackSafeAppEvent } from '@next-evm/services/analytics';
 import { SafeMsgEvent, safeMsgSubscribe } from '@next-evm/services/safeMsgEvents';
+import { useSafeAppFromBackend } from '@next-evm/hooks/useSafeAppFromBackend';
 
 type SafeAppDataWithPermissions = SafeAppData;
 
@@ -31,10 +33,24 @@ const AppFrame = ({
 	const [settings, setSettings] = useState<SafeSettings>({
 		offChainSigning: true
 	});
+	// const { safe, safeLoaded, safeAddress } = useSafeInfo();
 	const [currentRequestId, setCurrentRequestId] = useState<String | undefined>();
-
+	// const [remoteApp, , isBackendAppsLoading] = useSafeAppFromBackend(appUrl, safe.chainId);
 	const communicator = useAppCommunicator(iframeRef, safeAppFromManifest, {
+		// onConfirmTransactions: (txs: BaseTransaction[], requestId: RequestId, params?: SendTransactionRequestParams) => {
+		// 	const data = {
+		// 		app: safeAppFromManifest,
+		// 		appId: remoteApp ? String(remoteApp.id) : undefined,
+		// 		requestId: requestId,
+		// 		txs: txs,
+		// 		params: params
+		// 	};
+
+		// 	setCurrentRequestId(requestId);
+		// 	setTxFlow(<SafeAppsTxFlow data={data} />, onTxFlowClose);
+		// },
 		onGetSafeInfo: useGetSafeInfo(),
+		// onGetSafeInfo: null,
 		onGetSafeBalances: null,
 		onGetChainInfo: () => {
 			// if (!chain) return;
@@ -96,7 +112,7 @@ const AppFrame = ({
 	useEffect(() => {
 		const unsubscribe = txSubscribe(TxEvent.SAFE_APPS_REQUEST, async ({ safeAppRequestId, safeTxHash }) => {
 			if (safeAppRequestId && currentRequestId === safeAppRequestId) {
-				trackSafeAppEvent(SAFE_APPS_EVENTS.PROPOSE_TRANSACTION, 'Jumper');
+				// trackSafeAppEvent(SAFE_APPS_EVENTS.PROPOSE_TRANSACTION, 'Jumper');
 				communicator?.send({ safeTxHash }, safeAppRequestId);
 			}
 		});

@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-shadow */
 import type { MutableRefObject } from 'react';
 import { useEffect, useMemo, useState } from 'react';
-import type { SafeAppData, TransactionDetails, RpcUri } from '@safe-global/safe-gateway-typescript-sdk';
+import { SafeAppData, RPC_AUTHENTICATION, TransactionDetails, RpcUri } from '@safe-global/safe-gateway-typescript-sdk';
 
 import type {
 	AddressBookItem,
@@ -54,13 +54,30 @@ export type UseAppCommunicatorHandlers = {
 	onSetSafeSettings: (settings: SafeSettings) => SafeSettings;
 	onGetOffChainSignature: (messageHash: string) => Promise<string | undefined>;
 };
+const SAFE_APPS_INFURA_TOKEN = process.env.NEXT_PUBLIC_SAFE_APPS_INFURA_TOKEN;
+const formatRpcServiceUrl = ({ authentication, value }: RpcUri, token: string): string => {
+	const needsToken = authentication === RPC_AUTHENTICATION.API_KEY_PATH;
 
+	if (needsToken && !token) {
+		console.warn('Infura token not set in .env');
+		return '';
+	}
+
+	return needsToken ? `${value}${token}` : value;
+};
 export const createSafeAppsWeb3Provider = (
 	safeAppsRpcUri: RpcUri,
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	customRpc?: string
 ): ethers.providers.JsonRpcProvider | undefined => {
-	if (!safeAppsRpcUri.value) return;
+	const url = customRpc || formatRpcServiceUrl(safeAppsRpcUri, SAFE_APPS_INFURA_TOKEN);
+
+	// if (!safeAppsRpcUri.value) return;
+	// return new ethers.providers.JsonRpcProvider(safeAppsRpcUri.value);
+	if (!url) return;
+	// return new JsonRpcProvider(url, undefined, {
+	// 	staticNetwork: true
+	// });
 	return new ethers.providers.JsonRpcProvider(safeAppsRpcUri.value);
 };
 
@@ -72,7 +89,10 @@ const useAppCommunicator = (
 	const [communicator, setCommunicator] = useState<AppCommunicator | undefined>(undefined);
 
 	const safeAppWeb3Provider = useMemo(() => {
-		return createSafeAppsWeb3Provider({ value: 'https://polygon-rpc.com/', authentication: '' });
+		return createSafeAppsWeb3Provider({
+			value: 'https://polygon-rpc.com/',
+			authentication: RPC_AUTHENTICATION.API_KEY_PATH
+		});
 	}, []);
 
 	useEffect(() => {
@@ -136,6 +156,8 @@ const useAppCommunicator = (
 
 			try {
 				// eslint-disable-next-line @typescript-eslint/return-await
+				console.log('inside RPC communcn');
+
 				return await safeAppWeb3Provider.send(params.call, params.params);
 			} catch (err) {
 				throw new Error((err as JsonRpcResponse).error);
