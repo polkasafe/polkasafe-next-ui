@@ -29,6 +29,7 @@
     "firebase-admin": "^11.11.0",
     "formidable-serverless": "^1.1.1",
     "hi-base32": "^0.5.1",
+    "lodash": "^4.17.21",
     "next": "latest",
     "nextjs-toploader": "^1.5.3",
     "otpauth": "^9.1.5",
