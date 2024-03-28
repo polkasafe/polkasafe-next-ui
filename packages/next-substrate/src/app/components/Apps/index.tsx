@@ -14,6 +14,8 @@ import astarLogo from '@next-common/assets/parachains-logos/astar-logo.png';
 import { StaticImageData } from 'next/image';
 import AppCard from './AppCard';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
+import CreateProposal from './CreateProposal';
+// import VoteOnProposal from './VoteOnProposal';
 
 export interface IAppData {
 	name: string;
@@ -48,6 +50,20 @@ const currentApps: IAppData[] = [
 		name: 'Astar',
 		newTab: true
 	},
+	{
+		description: 'Create Proposal',
+		logoComponent: <PolkassemblyIcon />,
+		modal: true,
+		modalComponent: <CreateProposal />,
+		name: 'Create Proposal'
+	},
+	// {
+	// description: 'Vote on Proposal',
+	// logoComponent: <PolkassemblyIcon />,
+	// modal: true,
+	// modalComponent: <VoteOnProposal />,
+	// name: 'Vote on Proposal'
+	// },
 	{
 		description: 'Set On-Chain Identity for your Multisig Address',
 		logoComponent: <PolkassemblyIcon />,
