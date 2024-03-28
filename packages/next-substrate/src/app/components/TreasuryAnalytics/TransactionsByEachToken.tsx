@@ -6,14 +6,14 @@
 import React, { useEffect, useState } from 'react';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
 import NoAssetsSVG from '@next-common/assets/icons/no-transaction-home.svg';
 import { ETxnType, ITreasuryTxns } from '@next-common/types';
 import { chainProperties } from '@next-common/global/networkConstants';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
-import { Divider, Dropdown } from 'antd';
-import formatBalance from '@next-substrate/utils/formatBalance';
+import { StaticImageData } from 'next/image';
+import { Dropdown } from 'antd';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
+import TokenFlow from './TokenFlow';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -26,6 +26,7 @@ interface ITokenTxnsData {
 
 interface ITokenData {
 	[network: string]: {
+		tokenLogoUri: string | StaticImageData;
 		totalTokenAmountIncoming: number;
 		totalTokenAmountOutgoing: number;
 		totalUsdAmountIncoming: number;
@@ -47,6 +48,8 @@ const TransactionsByEachToken = ({
 
 	const [selectedToken, setSelectedToken] = useState<string>();
 
+	console.log('outgoing', outgoingTransactions);
+
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
 		const tokensData: ITokenData = {};
@@ -63,6 +66,7 @@ const TransactionsByEachToken = ({
 				return;
 			}
 			tokensData[item.network] = {
+				tokenLogoUri: chainProperties[item.network].logo,
 				totalTokenAmountIncoming: Number(item.balance_token),
 				totalUsdAmountIncoming: Number(item.balance_usd),
 				totalTokenAmountOutgoing: 0,
@@ -89,7 +93,8 @@ const TransactionsByEachToken = ({
 				});
 				return;
 			}
-			tokensData[item.network] = {
+			tokensData[item.tokenSymbol] = {
+				tokenLogoUri: chainProperties[item.network].logo,
 				totalTokenAmountIncoming: 0,
 				totalUsdAmountIncoming: 0,
 				totalTokenAmountOutgoing: Number(item.balance_token),
@@ -104,7 +109,6 @@ const TransactionsByEachToken = ({
 				]
 			};
 		});
-		console.log('tokens data', tokensData);
 		setTokenTxns(tokensData);
 	}, [incomingTransactions, outgoingTransactions]);
 
@@ -114,71 +118,21 @@ const TransactionsByEachToken = ({
 		}
 	}, [tokenTxns]);
 
-	const multisigOptions: ItemType[] = Object.keys(tokenTxns)?.map((item) => ({
+	const tokenOptions: ItemType[] = Object.keys(tokenTxns)?.map((item) => ({
 		key: item,
 		label: (
 			<div className='flex items-center gap-x-2'>
 				<ParachainIcon
-					src={chainProperties[item].logo}
+					src={tokenTxns[item].tokenLogoUri}
 					size={10}
 				/>
-				<span className='text-white'>{chainProperties[item].tokenSymbol}</span>
+				<span className='text-white capitalize'>{item}</span>
 			</div>
 		)
 	}));
 
 	const tokenIncomingtxns = tokenTxns[selectedToken]?.txns?.filter((item) => item.type === ETxnType.INCOMING).length;
 	const tokenOutgoingTxns = tokenTxns[selectedToken]?.txns?.filter((item) => item.type === ETxnType.OUTGOING).length;
-
-	const diff = Math.abs(tokenIncomingtxns - tokenOutgoingTxns);
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const textCenter = {
-		id: 'textCenter',
-		beforeDatasetsDraw(chart: any) {
-			const { ctx } = chart;
-			ctx.save();
-
-			const xCoor = chart.getDatasetMeta(0).data[0].x;
-			const yCoor = chart.getDatasetMeta(0).data[0].y;
-			ctx.font = 'bold 20px sans-serif';
-			ctx.fillStyle = 'white';
-			ctx.textAlign = 'center';
-			ctx.baseline = 'middle';
-			ctx.fillText(
-				`$ ${formatBalance(
-					tokenTxns[selectedToken]
-						? tokenTxns[selectedToken].totalUsdAmountIncoming - tokenTxns[selectedToken].totalUsdAmountOutgoing
-						: 0
-				)}`,
-				xCoor,
-				yCoor
-			);
-		}
-	};
-
-	const data = {
-		datasets: [
-			{
-				label: 'Outgoing Transactions',
-				data: [tokenOutgoingTxns, diff],
-				backgroundColor: ['#E63946', '#1B2028'],
-				borderWidth: 10,
-				cutout: 50,
-				borderRadius: 10,
-				borderColor: '#24272E'
-			},
-			{
-				label: 'Incoming Transactions',
-				data: [tokenIncomingtxns, diff],
-				backgroundColor: ['#06D6A0', '#1B2028'],
-				borderColor: '#24272E',
-				borderWidth: 10,
-				cutout: 50,
-				borderRadius: 10
-			}
-		]
-	};
 
 	return (
 		<div>
@@ -188,7 +142,7 @@ const TransactionsByEachToken = ({
 					trigger={['click']}
 					className='border border-primary rounded-lg p-1 bg-bg-secondary cursor-pointer min-w-[150px]'
 					menu={{
-						items: multisigOptions,
+						items: tokenOptions,
 						onClick: (e) => {
 							setSelectedToken(e.key);
 						}
@@ -197,10 +151,10 @@ const TransactionsByEachToken = ({
 					<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
 						<div className='flex items-center gap-x-2'>
 							<ParachainIcon
-								src={chainProperties[selectedToken]?.logo}
+								src={tokenTxns[selectedToken]?.tokenLogoUri}
 								size={10}
 							/>
-							<span className='text-xs'>{chainProperties[selectedToken]?.tokenSymbol}</span>
+							<span className='text-xs capitalize'>{selectedToken}</span>
 						</div>
 						<CircleArrowDownIcon className='text-primary' />
 					</div>
@@ -219,53 +173,12 @@ const TransactionsByEachToken = ({
 				<div
 					className={`bg-bg-main relative flex items-center rounded-xl p-8 shadow-lg scale-90 w-[111%] origin-top-left ${className}`}
 				>
-					<div className='h-[190px] w-[400px]'>
-						<Doughnut
-							data={data}
-							// plugins={[textCenter]}
-							options={{
-								maintainAspectRatio: false,
-								plugins: {
-									legend: {
-										display: false
-									}
-								}
-							}}
-						/>
-					</div>
-					<div className='flex flex-col items-center'>
-						<div>
-							<label className='text-text_secondary text-sm mb-1'>Incoming</label>
-							<div className='text-success font-bold text-[22px]'>
-								$ {formatBalance(tokenTxns[selectedToken]?.totalUsdAmountIncoming)}
-							</div>
-						</div>
-						<Divider
-							orientation='center'
-							className='border border-text_secondary my-2 w-[130%]'
-						/>
-						<div>
-							<label className='text-text_secondary text-sm mb-1'>Outgoing</label>
-							<div className='text-failure font-bold text-[22px]'>
-								$ {formatBalance(tokenTxns[selectedToken]?.totalUsdAmountOutgoing)}
-							</div>
-						</div>
-						<Divider
-							orientation='center'
-							className='border border-text_secondary my-2 w-[130%]'
-						/>
-						<div>
-							<label className='text-text_secondary text-sm mb-1'>Net</label>
-							<div className='text-white font-bold text-[22px]'>
-								${' '}
-								{formatBalance(
-									tokenTxns[selectedToken]
-										? tokenTxns[selectedToken].totalUsdAmountIncoming - tokenTxns[selectedToken].totalUsdAmountOutgoing
-										: 0
-								)}
-							</div>
-						</div>
-					</div>
+					<TokenFlow
+						numberOfIncoming={tokenIncomingtxns}
+						numberOfOutgoing={tokenOutgoingTxns}
+						incomingAmount={tokenTxns[selectedToken]?.totalUsdAmountIncoming}
+						outgoingAmount={tokenTxns[selectedToken]?.totalUsdAmountOutgoing}
+					/>
 				</div>
 			)}
 		</div>

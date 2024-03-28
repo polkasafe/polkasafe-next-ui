@@ -237,7 +237,7 @@ export default function CreateReferendaForm({
 			console.error('ERROR:', error);
 			queueNotification({
 				header: 'Failed!',
-				message: error.message,
+				message: 'Error in Creating Proposal',
 				status: NotificationStatus.ERROR
 			});
 		}

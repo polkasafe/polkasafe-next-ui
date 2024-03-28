@@ -1,7 +1,6 @@
 import './style.css';
-import { SyncOutlined } from '@ant-design/icons';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { Button, DatePicker, Divider, Dropdown, Segmented, TimeRangePickerProps } from 'antd';
+import { DatePicker, Dropdown, Segmented, TimeRangePickerProps } from 'antd';
 import React, { useState } from 'react';
 import Loader from '@next-common/ui-components/Loader';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
@@ -11,7 +10,6 @@ import Image from 'next/image';
 import emptyImage from '@next-common/assets/icons/empty-image.png';
 import useFetch from '@next-substrate/hooks/useFetch';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import formatBalance from '@next-substrate/utils/formatBalance';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import dayjs, { Dayjs } from 'dayjs';
 import EmptyStateSVG from '@next-common/assets/Empty-State-TreasuryAnalytics.svg';
@@ -19,13 +17,15 @@ import { ITreasury } from '@next-common/types';
 import BalanceHistory from './BalanceHistory';
 import TopAssetsCard from '../Home/TopAssetsCard';
 import TransactionsByEachToken from './TransactionsByEachToken';
+import TotalBalances from './TotalBalances';
 
 enum EDateFilters {
 	YESTERDAY = -1,
 	WEEK = -7,
 	MONTH = -30,
 	QUARTER = -90,
-	YEAR = -360
+	YEAR = -360,
+	ALL = 0
 }
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const TreasuryAnalytics = () => {
@@ -53,7 +53,7 @@ const TreasuryAnalytics = () => {
 	const [selectedID, setSelectedID] = useState<string>(activeOrg?.id || '');
 	const [startDate, setStartDate] = useState<null | Dayjs>(null);
 	const [endDate, setEndDate] = useState<null | Dayjs>(dayjs());
-	const [outerDateFilter, setOuterDateFilter] = useState<EDateFilters>(EDateFilters.YEAR);
+	const [outerDateFilter, setOuterDateFilter] = useState<EDateFilters>(EDateFilters.ALL);
 
 	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
 		key: `${item.address}_${item.network}`,
@@ -117,7 +117,14 @@ const TreasuryAnalytics = () => {
 				<Segmented
 					size='small'
 					onChange={(value) => {
+						if (value === 0) {
+							setStartDate(null);
+							setEndDate(dayjs());
+							setOuterDateFilter(EDateFilters.ALL);
+							return;
+						}
 						setStartDate(dayjs(dayjs().add(Number(value), 'd')));
+						setEndDate(dayjs());
 						setOuterDateFilter(Number(value) as EDateFilters);
 					}}
 					className='bg-transparent text-text_secondary border border-bg-secondary p-1'
@@ -142,6 +149,10 @@ const TreasuryAnalytics = () => {
 						{
 							label: '360D',
 							value: EDateFilters.YEAR
+						},
+						{
+							label: 'ALL',
+							value: EDateFilters.ALL
 						}
 					]}
 				/>
@@ -193,57 +204,13 @@ const TreasuryAnalytics = () => {
 					</Dropdown>
 				</div>
 			</div>
-			<div className='rounded-xl p-5 bg-bg-secondary flex gap-x-5'>
-				<div>
-					<label className='text-text_secondary text-xs mb-1.5'>Incoming</label>
-					<div className='text-success font-bold text-[22px]'>
-						$ {selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalIncomingUSD) : '0.00'}
-					</div>
-				</div>
-				<div>
-					<Divider
-						type='vertical'
-						orientation='center'
-						className='border border-text_secondary h-full'
-					/>
-				</div>
-				<div>
-					<label className='text-text_secondary text-xs mb-1.5'>Outgoing</label>
-					<div className='text-failure font-bold text-[22px]'>
-						$ {selectedID && treasury?.[selectedID] ? formatBalance(treasury[selectedID].totalOutgoingUSD) : '0.00'}
-					</div>
-				</div>
-				<div>
-					<Divider
-						type='vertical'
-						orientation='center'
-						className='border border-text_secondary h-full'
-					/>
-				</div>
-				<div>
-					<label className='text-text_secondary text-xs mb-1.5'>Net</label>
-					<div className='text-white font-bold text-[22px]'>
-						${' '}
-						{selectedID && treasury?.[selectedID]
-							? formatBalance(Math.abs(treasury[selectedID].totalOutgoingUSD - treasury[selectedID].totalIncomingUSD))
-							: '0.00'}
-					</div>
-				</div>
-				<div className='flex-1' />
-				<Button
-					onClick={() => refetch(true)}
-					disabled={loading}
-					icon={
-						<SyncOutlined
-							spin={loading}
-							className='text-primary'
-						/>
-					}
-					className='text-primary bg-highlight outline-none border-none font-medium text-sm'
-				>
-					Refresh
-				</Button>
-			</div>
+			<TotalBalances
+				startDate={startDate}
+				endDate={endDate}
+				onReload={() => refetch(true)}
+				incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}
+				outgoingTransactions={treasury?.[selectedID]?.outgoingTransactions || []}
+			/>
 			<div className='rounded-xl p-5 bg-bg-secondary min-h-[300px] balance_history'>
 				{!treasury?.[selectedID]?.incomingTransactions && !treasury?.[selectedID]?.outgoingTransactions ? (
 					<div className='w-full flex flex-col gap-y-2 items-center h-full'>
@@ -262,7 +229,7 @@ const TreasuryAnalytics = () => {
 				)}
 			</div>
 			<div className='grid grid-cols-2 gap-x-4'>
-				<TopAssetsCard className='bg-bg-secondary' />
+				<TopAssetsCard className='bg-bg-secondary h-[90%]' />
 				<TransactionsByEachToken
 					className='bg-bg-secondary'
 					incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}
