@@ -6,6 +6,7 @@ import React, { useEffect, useState } from 'react';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import CancelBtn from '../../Settings/CancelBtn';
 import ModalBtn from '../../Settings/ModalBtn';
 
@@ -34,7 +35,10 @@ const EditTransactionFieldsModal = ({
 		}>
 	>;
 }) => {
-	const { transactionFields, userID } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
+
 	const [transactionFieldsObject, setTransactionFieldsObject] = useState<{
 		category: string;
 		subfields: { [subfield: string]: { name: string; value: string } };

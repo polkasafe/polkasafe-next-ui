@@ -204,6 +204,12 @@ const Transaction: FC<ITransaction> = ({
 							callHash={callHash}
 							amount_usd={amount_usd}
 							to={String(to)}
+							transactionFields={transactionFieldsObject}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
+							multisigAddress={multisig?.address || ''}
+							note={note || ''}
 						/>
 					) : (
 						<SentInfo

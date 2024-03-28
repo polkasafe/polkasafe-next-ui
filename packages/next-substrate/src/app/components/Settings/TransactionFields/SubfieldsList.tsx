@@ -12,6 +12,7 @@ import styled from 'styled-components';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import AddSubfield from './AddSubfield';
 import DeleteField from './DeleteField';
 import EditField from './EditField';
@@ -119,7 +120,10 @@ const DeleteFieldModal = ({
 };
 
 const SubfieldsList = ({ className, category }: { className?: string; category: string }) => {
-	const { transactionFields, setUserDetailsContextState, userID } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
+
 	const [loading, setLoading] = useState<boolean>(false);
 	const [openAddSubfieldModal, setOpenAddSubfieldModal] = useState(false);
 
@@ -134,6 +138,7 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 
 				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields_substrate`, {
 					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -164,7 +169,7 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 				}
 
 				if (updateTransactionFieldsData) {
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

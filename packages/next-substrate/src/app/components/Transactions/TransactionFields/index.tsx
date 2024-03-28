@@ -10,6 +10,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { Divider, Dropdown, Input, Tooltip } from 'antd';
 import React, { useState } from 'react';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import EditTransactionFieldsModal from './EditTransactionFieldsModal';
 
 export const generateCategoryKey = (category: string) => {
@@ -44,14 +45,76 @@ const TransactionFields = ({
 	transactionFieldsObject: ITxnCategory;
 	setTransactionFieldsObject: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }) => {
-	const { userID, transactionFields: userTransactionFields } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields: userTransactionFields } = activeOrg;
+
 	const [loadingCategoryChange, setLoadingCategoryChange] = useState(false);
 
 	const [openUpdateTransactionCategoryModal, setOpenUpdateTransactionCategoryModal] = useState<boolean>(false);
 
 	const [newCategory, setNewCategory] = useState<string>('');
 
-	const handleUpdateTransactionCategory = async (c: string) => {
+	const updateOrgTransactionFields = async (c: string) => {
+		try {
+			if (!userID || !activeOrg?.id) {
+				console.log('ERROR');
+			} else {
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields_substrate`, {
+					body: JSON.stringify({
+						organisationId: activeOrg.id,
+						transactionFields: {
+							...userTransactionFields,
+							[generateCategoryKey(c)]: {
+								fieldDesc: '',
+								fieldName: c,
+								subfields: {}
+							}
+						}
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
+
+				if (updateTransactionFieldsError) {
+					queueNotification({
+						header: 'Error!',
+						message: 'There was some problem adding custom category to Organisation',
+						status: NotificationStatus.ERROR
+					});
+					return;
+				}
+
+				if (updateTransactionFieldsData) {
+					setActiveOrg((prev) => ({
+						...prev,
+						transactionFields: {
+							...prev.transactionFields,
+							[generateCategoryKey(c)]: {
+								fieldDesc: '',
+								fieldName: c,
+								subfields: {}
+							}
+						}
+					}));
+				}
+			}
+		} catch (error) {
+			console.log('ERROR', error);
+			queueNotification({
+				header: 'Failed!',
+				message: 'Error in Updating Transaction Fields.',
+				status: NotificationStatus.ERROR
+			});
+		}
+	};
+
+	const handleUpdateTransactionCategory = async (c: string, newCat?: boolean) => {
 		try {
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
@@ -97,6 +160,9 @@ const TransactionFields = ({
 					message: 'Transaction Fields Updated.',
 					status: NotificationStatus.SUCCESS
 				});
+				if (newCat) {
+					await updateOrgTransactionFields(c);
+				}
 				setLoadingCategoryChange(false);
 			}
 		} catch (error) {
@@ -180,7 +246,7 @@ const TransactionFields = ({
 											category: newCategory,
 											subfields: {}
 										});
-										handleUpdateTransactionCategory(newCategory);
+										handleUpdateTransactionCategory(newCategory, true);
 									}
 								}}
 								onChange={(e) => {
@@ -192,13 +258,19 @@ const TransactionFields = ({
 				)}
 			>
 				<div className='flex max-w-full'>
-					<div className='border border-primary rounded-xl p-2 bg-bg-secondary cursor-pointer flex items-center text-white gap-x-3 max-w-full'>
+					<div
+						className={`border-x-[0.5px] border-y-[0.5px] ${
+							!transactionFieldsObject?.category || transactionFieldsObject?.category === 'none'
+								? 'border-failure text-failure'
+								: 'border-waiting text-waiting'
+						} rounded-[20px] p-2 bg-bg-secondary cursor-pointer flex items-center gap-x-3 max-w-full`}
+					>
 						<span className='truncate'>
 							{!transactionFieldsObject?.category || transactionFieldsObject?.category === 'none'
 								? 'Category'
 								: transactionFieldsObject?.category}
 						</span>
-						{loadingCategoryChange ? <Loader size='small' /> : <CircleArrowDownIcon className='text-primary' />}
+						{loadingCategoryChange ? <Loader size='small' /> : <CircleArrowDownIcon />}
 					</div>
 				</div>
 			</Dropdown>

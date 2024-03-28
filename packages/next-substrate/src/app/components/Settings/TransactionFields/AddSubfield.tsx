@@ -15,6 +15,7 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import styled from 'styled-components';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
 const AddSubfield = ({
 	className,
@@ -31,7 +32,10 @@ const AddSubfield = ({
 		{ name: '', required: true, subfieldType: EFieldType.SINGLE_SELECT }
 	]);
 
-	const { setUserDetailsContextState, transactionFields, userID } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 
 	const fieldTypeOptions: ItemType[] = Object.values(EFieldType)
 		.filter((key) => key !== EFieldType.ATTACHMENT)
@@ -86,7 +90,7 @@ const AddSubfield = ({
 		try {
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userID) {
+			if (!userID || !activeOrg?.id) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
@@ -104,6 +108,7 @@ const AddSubfield = ({
 
 				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields_substrate`, {
 					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -140,7 +145,7 @@ const AddSubfield = ({
 						message: 'Transaction Fields Updated.',
 						status: NotificationStatus.SUCCESS
 					});
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

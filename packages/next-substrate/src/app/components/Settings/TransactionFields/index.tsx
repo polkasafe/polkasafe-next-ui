@@ -6,11 +6,15 @@ import { Button, Modal } from 'antd';
 import React, { useState } from 'react';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import AddCustomField from './AddCustomField';
 import SubfieldsList from './SubfieldsList';
 
 const ManageMultisig = () => {
-	const { address: userAddress, transactionFields } = useGlobalUserDetailsContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
+
 	const [openAddCustomFieldModal, setOpenAddCustomFieldModal] = useState(false);
 	const [category, setCategory] = useState<string>(Object.keys(transactionFields)[0] || 'none');
 

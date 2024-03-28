@@ -14,6 +14,8 @@ import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIco
 import copyText from '@next-substrate/utils/copyText';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
+import { ITxnCategory } from '@next-common/types';
+import TransactionFields from '../TransactionFields';
 
 interface IReceivedInfoProps {
 	amount: string;
@@ -24,9 +26,29 @@ interface IReceivedInfoProps {
 	from: string;
 	to: string;
 	callHash: string;
+	note?: string;
+	transactionFields?: ITxnCategory;
+	multisigAddress: string;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
-const ReceivedInfo: FC<IReceivedInfoProps> = ({ amount, to, amount_usd, amountType, date, from, callHash }) => {
+const ReceivedInfo: FC<IReceivedInfoProps> = ({
+	amount,
+	to,
+	amount_usd,
+	amountType,
+	date,
+	from,
+	callHash,
+	note,
+	transactionFields,
+	multisigAddress,
+	category,
+	setCategory,
+	setTransactionFields
+}) => {
 	const { addressBook } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
@@ -95,6 +117,45 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({ amount, to, amount_usd, amountTy
 					</div>
 				)}
 			</section>
+			{!!transactionFields && Object.keys(transactionFields).length !== 0 && (
+				<>
+					<div className='flex items-center gap-x-5 mt-3'>
+						<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
+						<TransactionFields
+							callHash={callHash}
+							category={category}
+							setCategory={setCategory}
+							transactionFieldsObject={transactionFields}
+							setTransactionFieldsObject={setTransactionFields}
+							multisigAddress={multisigAddress}
+						/>
+					</div>
+					{transactionFields &&
+						transactionFields.subfields &&
+						Object.keys(transactionFields?.subfields).map((key) => {
+							const subfield = transactionFields.subfields[key];
+							return (
+								<div
+									key={key}
+									className='flex items-center gap-x-5 mt-3'
+								>
+									<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield.name}:</span>
+									<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
+										{subfield.value}
+									</span>
+								</div>
+							);
+						})}
+				</>
+			)}
+			{note && (
+				<div className='w-full max-w-[418px] flex items-center gap-x-5 mt-3'>
+					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Note:</span>
+					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
+						<span className='text-white font-normal text-sm leading-[15px] whitespace-pre'>{note}</span>
+					</p>
+				</div>
+			)}
 		</article>
 	);
 };

@@ -41,7 +41,7 @@ import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	amount: string | string[];
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	amountUSD: string;
 	date: string;
 	// time: string;

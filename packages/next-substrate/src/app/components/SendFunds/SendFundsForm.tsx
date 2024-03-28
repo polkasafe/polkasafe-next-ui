@@ -88,13 +88,14 @@ const SendFundsForm = ({
 	transactionType = ETransactionType.SEND_TOKEN,
 	setTransactionType // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
-	const { activeMultisig, address, loggedInWallet, transactionFields } = useGlobalUserDetailsContext();
+	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
 	const [api, setApi] = useState<ApiPromise>();
 	const [apiReady, setApiReady] = useState(false);
 	const [note, setNote] = useState<string>('');
 	const [loading, setLoading] = useState(false);
 	const [amount, setAmount] = useState(new BN(0));
 	const { activeOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 
 	const [isProxy, setIsProxy] = useState<boolean>(false);
 
