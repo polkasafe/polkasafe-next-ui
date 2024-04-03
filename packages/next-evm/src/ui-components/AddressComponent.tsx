@@ -27,6 +27,7 @@ interface IAddressComponent {
 	network?: NETWORK;
 	fullAddress?: boolean;
 	showNetworkBadge?: boolean;
+	withEmail?: boolean;
 }
 
 const AddressComponent = ({
@@ -41,7 +42,8 @@ const AddressComponent = ({
 	threshold,
 	network,
 	fullAddress,
-	showNetworkBadge
+	showNetworkBadge,
+	withEmail
 }: IAddressComponent) => {
 	const { multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
@@ -144,6 +146,11 @@ const AddressComponent = ({
 							</a>
 						</span>
 					</div>
+					{withEmail && addressObj.email && (
+						<div>
+							<span className='text-xs text-text_secondary'>{addressObj.email}</span>
+						</div>
+					)}
 				</div>
 			)}
 		</div>

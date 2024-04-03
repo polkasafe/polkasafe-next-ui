@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -129,8 +130,35 @@ export interface UserDetailsContextType {
 	watchlists?: { [address: string]: IWatchlist };
 }
 
+export interface IInvoice {
+	organisationId: string;
+	title: string;
+	from: string;
+	to: Array<string>;
+	network: string;
+	amount: string;
+	note: string;
+	status: {
+		current_status: string;
+		history: Array<{ status: string; updated_at: Date }>;
+	};
+	paid_from: null | [{ token: string; amount: number }];
+	files: string;
+}
+
+export enum EINVOICE_STATUS {
+	PENDING = 'pending',
+	REJECTED = 'rejected',
+	APPROVED = 'approved',
+	PAID = 'paid'
+}
+
 export interface UserDetailsContextTypeEVM {
 	organisations?: IOrganisation[];
+	invoices?: {
+		sentInvoices: Array<IInvoice>;
+		recivedInvoices: Array<IInvoice>;
+	};
 	userID: string;
 	loggedInWallet: any;
 	activeMultisig: string;
@@ -214,6 +242,10 @@ export interface I2FAToken {
 
 export interface IUser {
 	organisations?: IOrganisation[];
+	invoices?: {
+		sentInvoices: Array<IInvoice>;
+		recivedInvoices: Array<IInvoice>;
+	};
 	userId: string;
 	address: string;
 	email: string | null;
