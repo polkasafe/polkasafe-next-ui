@@ -1,0 +1,34 @@
+import { NETWORK } from '@next-common/global/evm-network-constants';
+import AddressComponent from '@next-evm/ui-components/AddressComponent';
+import React from 'react';
+
+const ReviewPayment = ({
+	receiverAddress,
+	network,
+	amount
+}: {
+	receiverAddress: string;
+	network: NETWORK;
+	amount: string;
+}) => {
+	return (
+		<div>
+			<div className='rounded-xl bg-bg-secondary p-2 mb-3'>
+				<p className='font-bold text-sm mb-2'>Receiver Details:</p>
+				<div className='border border-text_placeholder rounded-xl p-3 flex items-center justify-between'>
+					<AddressComponent
+						address={receiverAddress}
+						network={network}
+						isMultisig
+						withBadge={false}
+					/>
+					<div className='rounded-lg bg-bg-main px-2 py-1 flex justify-between items-center text-white'>
+						{amount} USD
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};
+
+export default ReviewPayment;

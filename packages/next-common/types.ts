@@ -41,6 +41,13 @@ export interface IOrganisation {
 	addressBook: IAddressBookItem[];
 	members: string[];
 	transactionFields: ITransactionFields;
+	userFullName?: string;
+	country?: string;
+	state?: string;
+	city?: string;
+	postalCode?: string;
+	organisationAddress?: string;
+	taxNumber?: string;
 }
 
 export interface IUserNotificationChannelPreferences {
@@ -131,6 +138,7 @@ export interface UserDetailsContextType {
 }
 
 export interface IInvoice {
+	id: string;
 	organisationId: string;
 	title: string;
 	from: string;

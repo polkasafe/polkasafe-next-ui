@@ -1,15 +1,38 @@
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import Image from 'next/image';
-import React from 'react';
+import React, { useState } from 'react';
 import receivedInvoiceImage from '@next-common/assets/ReceivedInvoice.png';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import formatBalance from '@next-evm/utils/formatBalance';
 import dayjs from 'dayjs';
+import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { EINVOICE_STATUS, IInvoice } from '@next-common/types';
+import CompleteInvoicePayment from './CompletePayment';
 
 const ReceivedInvoices = () => {
 	const { invoices } = useGlobalUserDetailsContext();
+	const [opemPaymentModal, setOpenPaymentModal] = useState(false);
+	const [modalTitle, setModalTitle] = useState<string>('');
+	const [selectedInvoice, setSelectedInvoice] = useState<IInvoice>(invoices?.recivedInvoices?.[0]);
 	return (
 		<div className='scale-90 h-[111%] w-[111%] origin-top-left'>
+			{invoices?.recivedInvoices?.length > 0 && (
+				<ModalComponent
+					title={modalTitle}
+					onCancel={() => setOpenPaymentModal(false)}
+					open={opemPaymentModal}
+				>
+					<CompleteInvoicePayment
+						onModalChange={(title) => setModalTitle(title)}
+						onCancel={() => setOpenPaymentModal(false)}
+						receiverAddress={selectedInvoice.from}
+						requestedAmount={selectedInvoice.amount}
+						status={selectedInvoice.status.current_status as EINVOICE_STATUS}
+						invoiceId={selectedInvoice.id}
+					/>
+				</ModalComponent>
+			)}
 			<article className='grid grid-cols-7 gap-x-5 bg-bg-secondary text-text_secondary py-4 px-4 rounded-lg text-sm mb-2'>
 				<span className='col-span-1'>Creation Date</span>
 				<span className='col-span-1'>Invoice #</span>
@@ -38,6 +61,15 @@ const ReceivedInvoices = () => {
 						<p className='col-span-1'>$ {formatBalance(item.amount)}</p>
 						<p className='col-span-1 flex justify-between items-center'>
 							<span className='text-waiting capitalize'>{item.status.current_status}</span>
+							<span
+								className='text-lg text-primary cursor-pointer'
+								onClick={() => {
+									setOpenPaymentModal(true);
+									setSelectedInvoice(item);
+								}}
+							>
+								<RightArrowOutlined />
+							</span>
 						</p>
 					</div>
 				))

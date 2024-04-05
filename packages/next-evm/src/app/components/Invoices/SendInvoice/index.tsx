@@ -7,10 +7,13 @@ import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContex
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import { Spin } from 'antd';
+import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '../../Settings/CancelBtn';
 import PaymentDetails from './PaymentDetails';
 import ReviewDetails from './ReviewDetails';
 import SelectContact from './SelectContact';
+import SharePaymentRequest from './SharePaymentRequest';
 
 const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModalChange: (title: string) => void }) => {
 	const { activeOrg } = useActiveOrgContext();
@@ -27,6 +30,8 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 	const [title, setTitle] = useState<string>('');
 	const [note, setNote] = useState<string>('');
 	const [contactAddresses, setContactAddresses] = useState<string[]>([]);
+
+	const [invoiceId, setInvoiceId] = useState<string>('');
 
 	const [loading, setLoading] = useState<boolean>(false);
 
@@ -67,6 +72,17 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 			title: 'Review your Payment Request'
 		},
 		{
+			component: (
+				<SharePaymentRequest
+					invoiceId={invoiceId}
+					setInvoiceId={setInvoiceId}
+					setStep={setSendInvoiceStep}
+				/>
+			),
+			description: 'Review the details of your organisation, these can be edited later as well',
+			title: 'Share your Payment Request'
+		},
+		{
 			component: <SelectContact setSelectedAddresses={setContactAddresses} />,
 			description: 'Review the details of your organisation, these can be edited later as well',
 			title: 'Select Contact to Receive Payment'
@@ -88,6 +104,7 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 				amount,
 				fileURL: '',
 				from: multisig.address || activeMultisig,
+				invoiceId,
 				network: multisig.network,
 				note,
 				organisationId: selectedOrg.id || activeOrg.id,
@@ -102,6 +119,13 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 			data: any;
 			error: string;
 		};
+		if (invoiceError) {
+			queueNotification({
+				header: 'Error in Sending Invoice!',
+				message: invoiceError,
+				status: NotificationStatus.ERROR
+			});
+		}
 		if (invoiceData && !invoiceError) {
 			queueNotification({
 				header: 'Invoice Sent!',
@@ -114,64 +138,77 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 					sentInvoices: [...prev.invoices.sentInvoices, invoiceData]
 				}
 			}));
+			onCancel();
 		}
+		setLoading(false);
 		console.log('invoice data', invoiceData, invoiceError);
 	};
 
 	return (
-		<div>
-			{steps.map((item, i) =>
-				i === sendInvoiceStep ? (
-					<div>
-						{/* <p className='text-sm text-text_secondary mb-5'>{item.description}</p> */}
-						{item.component}
-					</div>
-				) : null
-			)}
-			<div className='flex w-full justify-between mt-5'>
-				<CancelBtn
-					disabled={loading}
-					title={sendInvoiceStep === 0 ? 'Cancel' : 'Back'}
-					icon={sendInvoiceStep !== 0 && <ArrowLeftCircle className='text-sm' />}
-					onClick={() => {
-						if (sendInvoiceStep === 0) {
-							onCancel();
-							return;
-						}
-						onModalChange(steps[sendInvoiceStep - 1]?.title || '');
-						setSendInvoiceStep((prev) => prev - 1);
-					}}
+		<Spin
+			spinning={loading}
+			indicator={
+				<LoadingLottie
+					width={sendInvoiceStep === 2 && 250}
+					noWaitMessage
+					message='Sending Invoice'
 				/>
-				<PrimaryButton
-					loading={loading}
-					disabled={
-						(sendInvoiceStep === 0 &&
-							(!title ||
-								!amount ||
-								Number.isNaN(Number(amount)) ||
-								Number(amount) === 0 ||
-								!multisig ||
-								!selectedOrg)) ||
-						(sendInvoiceStep === 2 && contactAddresses.length === 0)
-					}
-					icon={sendInvoiceStep === 2 && <CheckOutlined className='text-sm' />}
-					onClick={() => {
-						if (sendInvoiceStep === 2) {
-							sendInvoice();
-							return;
+			}
+		>
+			<div>
+				{steps.map((item, i) =>
+					i === sendInvoiceStep ? (
+						<div>
+							{/* <p className='text-sm text-text_secondary mb-5'>{item.description}</p> */}
+							{item.component}
+						</div>
+					) : null
+				)}
+				<div className='flex w-full justify-between mt-5'>
+					<CancelBtn
+						disabled={loading}
+						title={sendInvoiceStep === 0 ? 'Cancel' : 'Back'}
+						icon={sendInvoiceStep !== 0 && <ArrowLeftCircle className='text-sm' />}
+						onClick={() => {
+							if (sendInvoiceStep === 0) {
+								onCancel();
+								return;
+							}
+							onModalChange(steps[sendInvoiceStep - 1]?.title || '');
+							setSendInvoiceStep((prev) => prev - 1);
+						}}
+					/>
+					<PrimaryButton
+						loading={loading}
+						disabled={
+							(sendInvoiceStep === 0 &&
+								(!title ||
+									!amount ||
+									Number.isNaN(Number(amount)) ||
+									Number(amount) === 0 ||
+									!multisig ||
+									!selectedOrg)) ||
+							(sendInvoiceStep === 3 && contactAddresses.length === 0)
 						}
+						icon={sendInvoiceStep > 1 && <CheckOutlined className='text-sm' />}
+						onClick={() => {
+							if (sendInvoiceStep > 1) {
+								sendInvoice();
+								return;
+							}
 
-						setSendInvoiceStep((prev) => prev + 1);
-						onModalChange(steps[sendInvoiceStep + 1]?.title || '');
-					}}
-					className='min-w-[120px] flex justify-center items-center gap-x-2 text-sm'
-					size='large'
-				>
-					{sendInvoiceStep === 2 ? 'Confirm' : 'Next'}
-					{sendInvoiceStep !== 2 && <ArrowRightCircle className='text-sm' />}
-				</PrimaryButton>
+							setSendInvoiceStep((prev) => prev + 1);
+							onModalChange(steps[sendInvoiceStep + 1]?.title || '');
+						}}
+						className='min-w-[120px] flex justify-center items-center gap-x-2 text-sm'
+						size='large'
+					>
+						{sendInvoiceStep > 1 ? 'Done' : 'Next'}
+						{sendInvoiceStep < 2 && <ArrowRightCircle className='text-sm' />}
+					</PrimaryButton>
+				</div>
 			</div>
-		</div>
+		</Spin>
 	);
 };
 

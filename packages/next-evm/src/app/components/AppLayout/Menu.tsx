@@ -24,6 +24,7 @@ import {
 	CircleArrowDownIcon,
 	ExchangeIcon,
 	HomeIcon,
+	InvoicesIcon,
 	NotificationIcon,
 	SettingsIcon,
 	StarIcon,
@@ -149,7 +150,7 @@ const Menu: FC<Props> = ({ className }) => {
 			},
 			{
 				baseURL: '/invoices',
-				icon: <SettingsIcon />,
+				icon: <InvoicesIcon />,
 				key: getPath('/invoices'),
 				title: 'Invoices'
 			}

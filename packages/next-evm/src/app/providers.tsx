@@ -14,7 +14,7 @@ import antdTheme from '@next-evm/styles/antdTheme';
 import { AddMultisigProvider } from '@next-evm/context/AddMultisigContext';
 import { MultisigAssetsProvider } from '@next-evm/context/MultisigAssetsContext';
 import { CurrencyContextProvider } from '@next-evm/context/CurrencyContext';
-import { SuperfluidProvider } from '@next-evm/context/SuperfluidContext';
+// import { SuperfluidProvider } from '@next-evm/context/SuperfluidContext';
 import { PrivyProvider } from '@privy-io/react-auth';
 import { CreateOrgStepsProvider } from '@next-evm/context/CreateOrgStepsContext';
 import { ActiveOrgProvider } from '@next-evm/context/ActiveOrgContext';
@@ -42,21 +42,21 @@ export default function Providers({ children }: { children?: ReactNode }) {
 						>
 							<LayoutWrapper>
 								<UserDetailsProvider>
-									<SuperfluidProvider>
-										<ActiveMultisigProvider>
-											<AddMultisigProvider>
-												<ActiveOrgProvider>
-													<MultisigAssetsProvider>
-														<CurrencyContextProvider>
-															<DAppContextProvider>
-																<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
-															</DAppContextProvider>
-														</CurrencyContextProvider>
-													</MultisigAssetsProvider>
-												</ActiveOrgProvider>
-											</AddMultisigProvider>
-										</ActiveMultisigProvider>
-									</SuperfluidProvider>
+									{/* <SuperfluidProvider> */}
+									<ActiveMultisigProvider>
+										<AddMultisigProvider>
+											<ActiveOrgProvider>
+												<MultisigAssetsProvider>
+													<CurrencyContextProvider>
+														<DAppContextProvider>
+															<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
+														</DAppContextProvider>
+													</CurrencyContextProvider>
+												</MultisigAssetsProvider>
+											</ActiveOrgProvider>
+										</AddMultisigProvider>
+									</ActiveMultisigProvider>
+									{/* </SuperfluidProvider> */}
 								</UserDetailsProvider>
 							</LayoutWrapper>
 						</PrivyProvider>
