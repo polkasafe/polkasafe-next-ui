@@ -9,6 +9,7 @@ import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useWallets } from '@privy-io/react-auth';
 import CancelBtn from '../../Settings/CancelBtn';
 import PaymentStep from './PaymentStep';
 import ReviewPayment from './ReviewPayment';
@@ -45,6 +46,9 @@ const CompleteInvoicePayment = ({
 	const [invoiceStatus, setInvoiceStatus] = useState<EINVOICE_STATUS>(status);
 
 	const [rejectConfirmationModal, setRejectConfirmationModal] = useState<boolean>(false);
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets[0];
 
 	useEffect(() => {
 		if (activeOrg && activeOrg.multisigs) {
@@ -86,7 +90,7 @@ const CompleteInvoicePayment = ({
 	}, []);
 
 	const updateInvoiceStatus = async (s: EINVOICE_STATUS) => {
-		if (!invoiceId || !s) return;
+		if (!invoiceId || !s || !connectedWallet) return;
 
 		setApproveLoading(true);
 
@@ -95,7 +99,7 @@ const CompleteInvoicePayment = ({
 				invoiceId,
 				status: s
 			}),
-			headers: firebaseFunctionsHeader(),
+			headers: firebaseFunctionsHeader(connectedWallet.address),
 			method: 'POST'
 		});
 		const { data: invoiceData, error: invoiceError } = (await createInvoiceRes.json()) as {

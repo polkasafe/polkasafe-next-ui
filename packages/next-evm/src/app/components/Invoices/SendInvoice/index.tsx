@@ -9,6 +9,7 @@ import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { Spin } from 'antd';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
+import { useWallets } from '@privy-io/react-auth';
 import CancelBtn from '../../Settings/CancelBtn';
 import PaymentDetails from './PaymentDetails';
 import ReviewDetails from './ReviewDetails';
@@ -34,6 +35,9 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 	const [invoiceId, setInvoiceId] = useState<string>('');
 
 	const [loading, setLoading] = useState<boolean>(false);
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets[0];
 
 	useEffect(() => {
 		if (selectedOrg && selectedOrg.multisigs) {
@@ -95,7 +99,7 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 	}, []);
 
 	const sendInvoice = async () => {
-		if (!title || !amount || !activeOrg || !contactAddresses) return;
+		if (!title || !amount || !activeOrg || !contactAddresses || !connectedWallet) return;
 
 		setLoading(true);
 
@@ -112,7 +116,7 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 				title,
 				to: contactAddresses
 			}),
-			headers: firebaseFunctionsHeader(),
+			headers: firebaseFunctionsHeader(connectedWallet.address),
 			method: 'POST'
 		});
 		const { data: invoiceData, error: invoiceError } = (await createInvoiceRes.json()) as {
