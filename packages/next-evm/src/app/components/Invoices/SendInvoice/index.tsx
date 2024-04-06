@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowLeftCircle, ArrowRightCircle, CheckOutlined } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
-import { EINVOICE_STATUS, IMultisigAddress, IOrganisation, NotificationStatus } from '@next-common/types';
+import { EINVOICE_STATUS, IInvoice, IMultisigAddress, IOrganisation, NotificationStatus } from '@next-common/types';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
@@ -16,9 +16,17 @@ import ReviewDetails from './ReviewDetails';
 import SelectContact from './SelectContact';
 import SharePaymentRequest from './SharePaymentRequest';
 
-const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModalChange: (title: string) => void }) => {
+const SendInvoice = ({
+	onCancel,
+	onModalChange,
+	setSentInvoices
+}: {
+	onCancel: () => void;
+	onModalChange: (title: string) => void;
+	setSentInvoices: React.Dispatch<React.SetStateAction<IInvoice[]>>;
+}) => {
 	const { activeOrg } = useActiveOrgContext();
-	const { activeMultisig, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { activeMultisig } = useGlobalUserDetailsContext();
 	const activeMultisigData = activeOrg.multisigs.find(
 		(item) => item.address === activeMultisig || item.proxy === activeMultisig
 	);
@@ -135,13 +143,7 @@ const SendInvoice = ({ onCancel, onModalChange }: { onCancel: () => void; onModa
 				header: 'Invoice Sent!',
 				status: NotificationStatus.SUCCESS
 			});
-			setUserDetailsContextState((prev) => ({
-				...prev,
-				invoices: {
-					...prev.invoices,
-					sentInvoices: [...prev.invoices.sentInvoices, invoiceData]
-				}
-			}));
+			setSentInvoices((prev) => [...prev, invoiceData]);
 			onCancel();
 		}
 		setLoading(false);

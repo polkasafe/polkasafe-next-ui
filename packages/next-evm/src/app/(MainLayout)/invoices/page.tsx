@@ -99,6 +99,7 @@ const Invoices = () => {
 						<SendInvoice
 							onModalChange={(title) => setModalTitle(title)}
 							onCancel={() => setOpenSendInvoiceModal(false)}
+							setSentInvoices={setSentInvoices}
 						/>
 					</ModalComponent>
 					<div className='flex items-center gap-x-3 mb-4 scale-90 w-[111%] origin-top-left'>

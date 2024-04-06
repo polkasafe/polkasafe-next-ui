@@ -139,6 +139,7 @@ export interface UserDetailsContextType {
 
 export interface IInvoice {
 	id: string;
+	created_at: string;
 	organisationId: string;
 	title: string;
 	from: string;

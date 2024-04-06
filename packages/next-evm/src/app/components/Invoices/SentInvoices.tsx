@@ -29,7 +29,7 @@ const SentInvoices = ({ invoices }: { invoices: IInvoice[] }) => {
 			) : (
 				invoices.map((item, i) => (
 					<div className='border-b border-text_secondary py-4 px-4 grid items-center grid-cols-7 gap-x-5 text-white font-normal text-sm leading-[15px]'>
-						<p className='col-span-1'>{dayjs(item.status.history[0].updated_at).format('lll')}</p>
+						<p className='col-span-1'>{dayjs(item.created_at).format('ll')}</p>
 						<p className='col-span-1'># {i + 1}</p>
 						<p className='col-span-2'>
 							<AddressComponent address={item.from} />
