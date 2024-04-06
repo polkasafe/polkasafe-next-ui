@@ -1,24 +1,15 @@
-import { NETWORK } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import React from 'react';
 
-const ReviewPayment = ({
-	receiverAddress,
-	network,
-	amount
-}: {
-	receiverAddress: string;
-	network: NETWORK;
-	amount: string;
-}) => {
+const ReviewPayment = ({ receiverAddress, amount }: { receiverAddress: string; amount: string }) => {
 	return (
 		<div>
 			<div className='rounded-xl bg-bg-secondary p-2 mb-3'>
-				<p className='font-bold text-sm mb-2'>Receiver Details:</p>
+				<p className='font-bold text-sm mb-2 text-white'>Receiver Details:</p>
 				<div className='border border-text_placeholder rounded-xl p-3 flex items-center justify-between'>
 					<AddressComponent
 						address={receiverAddress}
-						network={network}
+						// network={network}
 						isMultisig
 						withBadge={false}
 					/>

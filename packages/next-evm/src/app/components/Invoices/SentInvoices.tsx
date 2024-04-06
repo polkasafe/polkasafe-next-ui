@@ -1,13 +1,12 @@
-import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import Image from 'next/image';
 import React from 'react';
 import sentInvoiceImage from '@next-common/assets/SentInvoice.png';
 import dayjs from 'dayjs';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import formatBalance from '@next-evm/utils/formatBalance';
+import { IInvoice } from '@next-common/types';
 
-const SentInvoices = () => {
-	const { invoices } = useGlobalUserDetailsContext();
+const SentInvoices = ({ invoices }: { invoices: IInvoice[] }) => {
 	console.log('invoices', invoices);
 	return (
 		<div className='scale-90 h-[111%] w-[111%] origin-top-left'>
@@ -19,7 +18,7 @@ const SentInvoices = () => {
 				<span className='col-span-1'>Amount</span>
 				<span className='col-span-1'>Status</span>
 			</article>
-			{invoices?.sentInvoices?.length === 0 ? (
+			{invoices?.length === 0 ? (
 				<div className='w-full flex items-center flex-col gap-y-2 mt-5'>
 					<Image
 						src={sentInvoiceImage}
@@ -28,7 +27,7 @@ const SentInvoices = () => {
 					<span className='text-sm text-text_secondary'>No Invoices Sent</span>
 				</div>
 			) : (
-				invoices.sentInvoices.map((item, i) => (
+				invoices.map((item, i) => (
 					<div className='border-b border-text_secondary py-4 px-4 grid items-center grid-cols-7 gap-x-5 text-white font-normal text-sm leading-[15px]'>
 						<p className='col-span-1'>{dayjs(item.status.history[0].updated_at).format('lll')}</p>
 						<p className='col-span-1'># {i + 1}</p>

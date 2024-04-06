@@ -1,4 +1,3 @@
-import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import Image from 'next/image';
 import React, { useState } from 'react';
 import receivedInvoiceImage from '@next-common/assets/ReceivedInvoice.png';
@@ -10,14 +9,13 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { EINVOICE_STATUS, IInvoice } from '@next-common/types';
 import CompleteInvoicePayment from './CompletePayment';
 
-const ReceivedInvoices = () => {
-	const { invoices } = useGlobalUserDetailsContext();
+const ReceivedInvoices = ({ invoices }: { invoices: IInvoice[] }) => {
 	const [opemPaymentModal, setOpenPaymentModal] = useState(false);
 	const [modalTitle, setModalTitle] = useState<string>('');
-	const [selectedInvoice, setSelectedInvoice] = useState<IInvoice>(invoices?.recivedInvoices?.[0]);
+	const [selectedInvoice, setSelectedInvoice] = useState<IInvoice>(invoices?.[0]);
 	return (
 		<div className='scale-90 h-[111%] w-[111%] origin-top-left'>
-			{invoices?.recivedInvoices?.length > 0 && (
+			{invoices?.length > 0 && (
 				<ModalComponent
 					title={modalTitle}
 					onCancel={() => setOpenPaymentModal(false)}
@@ -41,7 +39,7 @@ const ReceivedInvoices = () => {
 				<span className='col-span-1'>Amount</span>
 				<span className='col-span-1'>Status</span>
 			</article>
-			{invoices?.recivedInvoices?.length === 0 ? (
+			{invoices?.length === 0 ? (
 				<div className='w-full flex items-center flex-col mt-10 gap-y-2'>
 					<Image
 						src={receivedInvoiceImage}
@@ -50,7 +48,7 @@ const ReceivedInvoices = () => {
 					<span className='text-sm text-text_secondary'>No Invoices Received</span>
 				</div>
 			) : (
-				invoices.recivedInvoices.map((item, i) => (
+				invoices.map((item, i) => (
 					<div className='border-b border-text_secondary py-4 px-4 grid items-center grid-cols-7 gap-x-5 text-white font-normal text-sm leading-[15px]'>
 						<p className='col-span-1'>{dayjs(item.status.history[0].updated_at).format('lll')}</p>
 						<p className='col-span-1'># {i + 1}</p>

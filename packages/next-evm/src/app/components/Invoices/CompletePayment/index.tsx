@@ -4,7 +4,6 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import { EINVOICE_STATUS, IMultisigAddress } from '@next-common/types';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { NETWORK } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
@@ -13,6 +12,7 @@ import { useWallets } from '@privy-io/react-auth';
 import CancelBtn from '../../Settings/CancelBtn';
 import PaymentStep from './PaymentStep';
 import ReviewPayment from './ReviewPayment';
+import SendFundsForm from '../../SendFunds/SendFundsForm';
 
 const CompleteInvoicePayment = ({
 	onCancel,
@@ -74,13 +74,22 @@ const CompleteInvoicePayment = ({
 		{
 			component: (
 				<ReviewPayment
-					receiverAddress=''
-					network={NETWORK.POLYGON}
-					amount=''
+					receiverAddress={receiverAddress}
+					amount={requestedAmount}
 				/>
 			),
 			description: 'Add members to your organisation by creating or linking multisig(s)',
 			title: 'Review your Payment'
+		},
+		{
+			component: (
+				<SendFundsForm
+					onCancel={onCancel}
+					defaultSelectedAddress={receiverAddress}
+				/>
+			),
+			description: '',
+			title: 'Send Funds'
 		}
 	];
 
@@ -195,42 +204,40 @@ const CompleteInvoicePayment = ({
 							</div>
 						) : null
 					)}
-					<div className='flex w-full justify-between mt-5'>
-						<CancelBtn
-							disabled={loading}
-							title={sendInvoiceStep === 0 ? 'Cancel' : 'Back'}
-							icon={sendInvoiceStep !== 0 && <ArrowLeftCircle className='text-sm' />}
-							onClick={() => {
-								if (sendInvoiceStep === 0) {
-									onCancel();
-									return;
+					{sendInvoiceStep !== 2 && (
+						<div className='flex w-full justify-between mt-5'>
+							<CancelBtn
+								disabled={loading}
+								title={sendInvoiceStep === 0 ? 'Cancel' : 'Back'}
+								icon={sendInvoiceStep !== 0 && <ArrowLeftCircle className='text-sm' />}
+								onClick={() => {
+									if (sendInvoiceStep === 0) {
+										onCancel();
+										return;
+									}
+									onModalChange(steps[sendInvoiceStep - 1]?.title || '');
+									setSendInvoiceStep((prev) => prev - 1);
+								}}
+							/>
+							<PrimaryButton
+								loading={loading}
+								disabled={
+									sendInvoiceStep === 0 &&
+									(!amount || Number.isNaN(Number(amount)) || Number(amount) === 0 || !multisig || !activeOrg)
 								}
-								onModalChange(steps[sendInvoiceStep - 1]?.title || '');
-								setSendInvoiceStep((prev) => prev - 1);
-							}}
-						/>
-						<PrimaryButton
-							loading={loading}
-							disabled={
-								sendInvoiceStep === 0 &&
-								(!amount || Number.isNaN(Number(amount)) || Number(amount) === 0 || !multisig || !activeOrg)
-							}
-							icon={sendInvoiceStep === 2 && <CheckOutlined className='text-sm' />}
-							onClick={() => {
-								if (sendInvoiceStep === 2) {
-									return;
-								}
-
-								setSendInvoiceStep((prev) => prev + 1);
-								onModalChange(steps[sendInvoiceStep + 1]?.title || '');
-							}}
-							className='min-w-[120px] flex justify-center items-center gap-x-2 text-sm'
-							size='large'
-						>
-							{sendInvoiceStep === 2 ? 'Confirm' : 'Next'}
-							{sendInvoiceStep !== 2 && <ArrowRightCircle className='text-sm' />}
-						</PrimaryButton>
-					</div>
+								icon={sendInvoiceStep === 1 && <CheckOutlined className='text-sm' />}
+								onClick={() => {
+									setSendInvoiceStep((prev) => prev + 1);
+									onModalChange(steps[sendInvoiceStep + 1]?.title || '');
+								}}
+								className='min-w-[120px] flex justify-center items-center gap-x-2 text-sm'
+								size='large'
+							>
+								{sendInvoiceStep === 1 ? 'Confirm' : 'Next'}
+								{sendInvoiceStep !== 1 && <ArrowRightCircle className='text-sm' />}
+							</PrimaryButton>
+						</div>
+					)}
 				</>
 			)}
 		</div>

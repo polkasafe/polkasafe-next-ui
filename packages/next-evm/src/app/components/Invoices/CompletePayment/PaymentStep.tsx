@@ -40,7 +40,7 @@ const PaymentStep = ({
 	return (
 		<div>
 			<div className='rounded-xl bg-bg-secondary p-2 mb-3'>
-				<p className='font-bold text-sm mb-2'>Receiver Details:</p>
+				<p className='font-bold text-sm mb-2 text-white'>Receiver Details:</p>
 				<div className='border border-text_placeholder rounded-xl p-3 flex items-center justify-between'>
 					<AddressComponent
 						address={receiverAddress}
@@ -54,9 +54,9 @@ const PaymentStep = ({
 				</div>
 			</div>
 			<div className='rounded-xl bg-bg-secondary p-2'>
-				<p className='font-bold text-sm mb-2'>Enter Details to Pay Receiver:</p>
+				<p className='font-bold text-sm mb-2 text-white'>Enter Details to Pay Receiver:</p>
 				<Form>
-					<div className='flex flex-col gap-y-3'>
+					<div className='flex flex-col gap-y-3 mb-3'>
 						<label
 							className='text-primary text-xs leading-[13px] font-normal'
 							htmlFor='multisig'
@@ -110,7 +110,7 @@ const PaymentStep = ({
 						>
 							<InputNumber
 								// placeholder='Amount'
-								className='text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-2 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white w-full'
+								className='text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-2 placeholder:text-[#505050] bg-bg-main rounded-lg text-white w-full'
 								id='tax-number'
 								onChange={(val) => setAmount(String(val))}
 								value={amount}
