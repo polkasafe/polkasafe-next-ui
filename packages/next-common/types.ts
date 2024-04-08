@@ -153,6 +153,7 @@ export interface IInvoice {
 	};
 	paid_from: null | [{ token: string; amount: number }];
 	files: string;
+	transactionHash: string;
 }
 
 export enum EINVOICE_STATUS {

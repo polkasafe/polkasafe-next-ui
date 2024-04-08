@@ -31,8 +31,6 @@ const AddressDropdown = () => {
 	const [isVisible, toggleVisibility] = useState(false);
 	const isMouseEnter = useRef(false);
 
-	console.log(wallets);
-
 	const handleDisconnect = async () => {
 		logout();
 		if (typeof window !== 'undefined') localStorage.clear();

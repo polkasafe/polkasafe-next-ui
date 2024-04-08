@@ -153,7 +153,10 @@ const Invoices = () => {
 					{tab === ETab.SENT ? (
 						<SentInvoices invoices={sentInvoices} />
 					) : (
-						<ReceivedInvoices invoices={userReceivedInvoices} />
+						<ReceivedInvoices
+							invoices={userReceivedInvoices}
+							setInvoices={setUserReceivedInvoices}
+						/>
 					)}
 				</>
 			)}

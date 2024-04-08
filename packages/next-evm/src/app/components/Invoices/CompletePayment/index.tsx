@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { ArrowLeftCircle, ArrowRightCircle, CheckOutlined } from '@next-common/ui-components/CustomIcons';
+import { ArrowLeftCircle, ArrowRightCircle } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
-import { EINVOICE_STATUS, IMultisigAddress } from '@next-common/types';
-import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
-import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
+import { EINVOICE_STATUS, IInvoice } from '@next-common/types';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useWallets } from '@privy-io/react-auth';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 import CancelBtn from '../../Settings/CancelBtn';
-import PaymentStep from './PaymentStep';
 import ReviewPayment from './ReviewPayment';
-import SendFundsForm from '../../SendFunds/SendFundsForm';
+import PayInvoice from '../PayInvoice';
 
 const CompleteInvoicePayment = ({
 	onCancel,
@@ -20,7 +18,10 @@ const CompleteInvoicePayment = ({
 	requestedAmount,
 	receiverAddress,
 	status,
-	invoiceId
+	invoiceId,
+	setInvoices,
+	invoiceIndex,
+	requestedNetwork
 }: {
 	onCancel: () => void;
 	onModalChange: (title: string) => void;
@@ -28,16 +29,11 @@ const CompleteInvoicePayment = ({
 	receiverAddress: string;
 	status: EINVOICE_STATUS;
 	invoiceId: string;
+	setInvoices: React.Dispatch<React.SetStateAction<IInvoice[]>>;
+	invoiceIndex: number;
+	requestedNetwork: NETWORK;
 }) => {
-	const { activeOrg } = useActiveOrgContext();
-	const { activeMultisig } = useGlobalUserDetailsContext();
-	const activeMultisigData = activeOrg.multisigs.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
-	);
-
 	const [sendInvoiceStep, setSendInvoiceStep] = useState<number>(0);
-	const [multisig, setMultisig] = useState<IMultisigAddress>(activeMultisigData || activeOrg?.multisigs?.[0]);
-	const [amount, setAmount] = useState<string>('0');
 
 	const [loading] = useState<boolean>(false);
 
@@ -50,27 +46,7 @@ const CompleteInvoicePayment = ({
 	const { wallets } = useWallets();
 	const connectedWallet = wallets[0];
 
-	useEffect(() => {
-		if (activeOrg && activeOrg.multisigs) {
-			setMultisig(activeOrg.multisigs[0]);
-		}
-	}, [activeOrg]);
-
 	const steps = [
-		{
-			component: (
-				<PaymentStep
-					amount={amount}
-					setAmount={setAmount}
-					multisig={multisig}
-					setMultisig={setMultisig}
-					receiverAddress={receiverAddress}
-					requestedAmount={requestedAmount}
-				/>
-			),
-			description: 'Give details about your organisation to help customise experience better',
-			title: 'Complete Payment'
-		},
 		{
 			component: (
 				<ReviewPayment
@@ -83,9 +59,12 @@ const CompleteInvoicePayment = ({
 		},
 		{
 			component: (
-				<SendFundsForm
+				<PayInvoice
+					invoiceId={invoiceId}
 					onCancel={onCancel}
-					defaultSelectedAddress={receiverAddress}
+					receiverAddress={receiverAddress}
+					requestedAmount={requestedAmount}
+					requestedNetwork={requestedNetwork}
 				/>
 			),
 			description: '',
@@ -117,6 +96,12 @@ const CompleteInvoicePayment = ({
 		};
 		if (!invoiceError && invoiceData) {
 			setInvoiceStatus(s);
+			setInvoices((prev) => {
+				const copyArray = [...prev];
+				const copyObject = { ...copyArray[invoiceIndex] };
+				copyObject.status.current_status = s;
+				return copyArray;
+			});
 		}
 		setApproveLoading(false);
 	};
@@ -204,7 +189,7 @@ const CompleteInvoicePayment = ({
 							</div>
 						) : null
 					)}
-					{sendInvoiceStep !== 2 && (
+					{sendInvoiceStep !== 1 && (
 						<div className='flex w-full justify-between mt-5'>
 							<CancelBtn
 								disabled={loading}
@@ -221,11 +206,6 @@ const CompleteInvoicePayment = ({
 							/>
 							<PrimaryButton
 								loading={loading}
-								disabled={
-									sendInvoiceStep === 0 &&
-									(!amount || Number.isNaN(Number(amount)) || Number(amount) === 0 || !multisig || !activeOrg)
-								}
-								icon={sendInvoiceStep === 1 && <CheckOutlined className='text-sm' />}
 								onClick={() => {
 									setSendInvoiceStep((prev) => prev + 1);
 									onModalChange(steps[sendInvoiceStep + 1]?.title || '');
@@ -233,8 +213,8 @@ const CompleteInvoicePayment = ({
 								className='min-w-[120px] flex justify-center items-center gap-x-2 text-sm'
 								size='large'
 							>
-								{sendInvoiceStep === 1 ? 'Confirm' : 'Next'}
-								{sendInvoiceStep !== 1 && <ArrowRightCircle className='text-sm' />}
+								Pay Now
+								<ArrowRightCircle className='text-sm' />
 							</PrimaryButton>
 						</div>
 					)}
