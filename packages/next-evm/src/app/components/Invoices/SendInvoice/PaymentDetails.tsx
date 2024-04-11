@@ -19,7 +19,8 @@ const PaymentDetails = ({
 	amount,
 	setAmount,
 	note,
-	setNote
+	setNote,
+	setFile
 }: {
 	selectedOrg: IOrganisation;
 	setSelectedOrg: React.Dispatch<React.SetStateAction<IOrganisation>>;
@@ -31,6 +32,7 @@ const PaymentDetails = ({
 	setAmount: React.Dispatch<React.SetStateAction<string>>;
 	note: string;
 	setNote: React.Dispatch<React.SetStateAction<string>>;
+	setFile: React.Dispatch<React.SetStateAction<File>>;
 }) => {
 	const { organisations } = useGlobalUserDetailsContext();
 
@@ -51,7 +53,6 @@ const PaymentDetails = ({
 			/>
 		)
 	}));
-
 	return (
 		<Form className='flex flex-col gap-y-5'>
 			<div className='flex flex-col gap-y-3'>
@@ -205,6 +206,30 @@ const PaymentDetails = ({
 						onChange={(e) => setNote(e.target.value)}
 						value={note}
 						defaultValue={note}
+					/>
+				</Form.Item>
+			</div>
+			<div className='flex flex-col gap-y-3'>
+				<label
+					className='text-primary text-xs leading-[13px] font-normal'
+					htmlFor='note'
+				>
+					Upload file
+				</label>
+				<Form.Item
+					name='note'
+					rules={[
+						{
+							message: 'Required',
+							required: true
+						}
+					]}
+					className='border-0 outline-0 my-0 p-0'
+				>
+					<input
+						type='file'
+						id='file-uploader'
+						onChange={(e) => setFile(e.target.files?.[0])}
 					/>
 				</Form.Item>
 			</div>

@@ -15,6 +15,7 @@ import PaymentDetails from './PaymentDetails';
 import ReviewDetails from './ReviewDetails';
 import SelectContact from './SelectContact';
 import SharePaymentRequest from './SharePaymentRequest';
+import getIPFSLink from '../utils/getPinataLink';
 
 const SendInvoice = ({
 	onCancel,
@@ -39,6 +40,7 @@ const SendInvoice = ({
 	const [title, setTitle] = useState<string>('');
 	const [note, setNote] = useState<string>('');
 	const [contactAddresses, setContactAddresses] = useState<string[]>([]);
+	const [file, setFile] = useState<File>();
 
 	const [invoiceId, setInvoiceId] = useState<string>('');
 
@@ -67,6 +69,7 @@ const SendInvoice = ({
 					setTitle={setTitle}
 					note={note}
 					setNote={setNote}
+					setFile={setFile}
 				/>
 			),
 			description: 'Give details about your organisation to help customise experience better',
@@ -106,15 +109,41 @@ const SendInvoice = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
+	const handleUploadImageSubmission = async () => {
+		const formData = new FormData();
+		formData.append('file', file);
+		const JWT = process.env.NEXT_PINATA_JWT_KEY;
+		const host = process.env.NEXT_PUBLIC_PINATA_HOST;
+		console.log(JWT, host);
+		try {
+			const response = await fetch(`${host}/pinning/pinFileToIPFS`, {
+				body: formData,
+				headers: {
+					Authorization: `Bearer ${JWT}` // Ensure to set your Pinata JWT in your environment variables
+				},
+				method: 'POST'
+			});
+			const data = await response.json();
+			return { data, error: null };
+		} catch (error) {
+			console.error('Error uploading file:', error);
+			return { data: null, error };
+		}
+	};
+
 	const sendInvoice = async () => {
 		if (!title || !amount || !activeOrg || !contactAddresses || !connectedWallet) return;
 
 		setLoading(true);
 
+		const { data: ipfsHash } = await handleUploadImageSubmission();
+
+		const link = getIPFSLink(ipfsHash);
+
 		const createInvoiceRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createInvoice_eth`, {
 			body: JSON.stringify({
 				amount,
-				fileURL: '',
+				fileURL: link,
 				from: multisig.address || activeMultisig,
 				invoiceId,
 				network: multisig.network,
