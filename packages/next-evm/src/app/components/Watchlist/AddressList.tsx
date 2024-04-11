@@ -3,6 +3,7 @@ import { Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { DeleteIcon, WatchIcon } from '@next-common/ui-components/CustomIcons';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { chainProperties } from '@next-common/global/evm-network-constants';
@@ -40,6 +41,7 @@ const RemoveAddressModal = ({ name, address, network }: { address: string; name:
 const AddressList = () => {
 	const { watchlists } = useGlobalUserDetailsContext();
 
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const baseURL = typeof window !== 'undefined' && global.window.location.origin;
 
 	interface DataType {
@@ -83,7 +85,7 @@ const AddressList = () => {
 	const watchlistData: DataType[] = Object.keys(watchlists)?.map((item) => ({
 		actions: (
 			<div className='flex items-center gap-x-2'>
-				<Tooltip title='Watch'>
+				{/* <Tooltip title='Watch'>
 					<a
 						target='_blank'
 						href={`${baseURL}?safe=${watchlists[item]?.address}&network=${watchlists[item]?.network}`}
@@ -93,7 +95,7 @@ const AddressList = () => {
 							<WatchIcon />
 						</button>
 					</a>
-				</Tooltip>
+				</Tooltip> */}
 				<RemoveAddressModal
 					address={watchlists[item]?.address}
 					name={watchlists[item]?.name}
