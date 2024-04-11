@@ -667,7 +667,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<Button
 								disabled={
 									notOwnerOfMultisig ||
-									approvals.includes(userAddress) ||
+									approvals.includes(getEncodedAddress(userAddress, network)) ||
 									!decodedCallData ||
 									(approvals.length === threshold - 1 && !callDataString)
 								}
