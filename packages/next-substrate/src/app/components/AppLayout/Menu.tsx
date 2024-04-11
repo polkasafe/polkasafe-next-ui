@@ -139,6 +139,12 @@ const Menu: FC<Props> = ({ className }) => {
 				key: getPath('/settings'),
 				title: 'Settings'
 			}
+			// {
+			// baseURL: '/invoices',
+			// icon: <SettingsIcon />,
+			// key: getPath('/invoices'),
+			// title: 'Invoices'
+			// }
 		);
 	}
 

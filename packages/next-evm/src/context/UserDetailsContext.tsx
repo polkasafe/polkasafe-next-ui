@@ -384,7 +384,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 						notification_preferences:
 							userData?.notification_preferences || initialUserDetailsContext.notification_preferences,
 						transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields,
-						watchlists: userData?.watchlists
+						watchlists: userData?.watchlists,
+						invoices: userData?.invoices
 					};
 				});
 				if (!userData.organisations || userData.organisations.length === 0) {
