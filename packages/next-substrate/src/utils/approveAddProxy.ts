@@ -229,7 +229,7 @@ export default async function approveAddProxy({
 								});
 								resolve();
 							} else if (event.method === 'ExtrinsicFailed') {
-								console.log('Transaction failed');
+								console.log('Transaction Failed');
 
 								const errorModule = (event.data as any)?.dispatchError?.asModule;
 								const { method, section, docs } = api.registry.findMetaError(errorModule);
