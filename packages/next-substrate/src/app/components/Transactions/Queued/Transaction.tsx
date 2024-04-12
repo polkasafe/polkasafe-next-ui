@@ -29,6 +29,7 @@ import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
+import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -429,26 +430,33 @@ const Transaction: FC<ITransactionProps> = ({
 											? `${txnParams?.section}.${txnParams?.method}`
 											: 'Sent'}
 									</span>
-								</p>
-								{!isProxyApproval && !isProxyAddApproval && !isProxyRemovalApproval && !customTx ? (
-									<p className='col-span-2 flex items-center gap-x-[6px]'>
-										<ParachainIcon src={chainProperties[network].logo} />
-										<span className='font-normal text-xs leading-[13px] text-failure'>
-											-{' '}
-											{decodedCallData && (decodedCallData?.args?.value || decodedCallData?.args?.call?.args?.value)
-												? parseDecodedValue({
-														network,
-														value: String(decodedCallData?.args?.value || decodedCallData?.args?.call?.args?.value),
-														withUnit: true
-												  })
-												: totalAmount
-												? `${totalAmount} ${token}`
-												: `? ${token}`}
+									{!isProxyApproval && !isProxyAddApproval && !isProxyRemovalApproval && !customTx && (
+										<span className='flex items-center gap-x-[6px]'>
+											<ParachainIcon src={chainProperties[network].logo} />
+											<span className='font-normal text-xs leading-[13px] text-failure'>
+												-{' '}
+												{decodedCallData && (decodedCallData?.args?.value || decodedCallData?.args?.call?.args?.value)
+													? parseDecodedValue({
+															network,
+															value: String(decodedCallData?.args?.value || decodedCallData?.args?.call?.args?.value),
+															withUnit: true
+													  })
+													: totalAmount
+													? `${totalAmount} ${token}`
+													: `? ${token}`}
+											</span>
 										</span>
-									</p>
-								) : (
-									<p className='col-span-2'>-</p>
-								)}
+									)}
+								</p>
+								<p className='col-span-2 flex items-center gap-x-[6px]'>
+									<AddressComponent
+										address={multisigAddress}
+										isMultisig
+										showNetworkBadge
+										withBadge={false}
+										network={multisig?.network}
+									/>
+								</p>
 								<p className='col-span-2'>{dayjs(date).format('lll')}</p>
 								<p
 									className='col-span-2'
