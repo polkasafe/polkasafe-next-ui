@@ -58,18 +58,20 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 	const [allAssets, setAllAssets] = useState<IMultisigAssets>({});
 	const [organisationBalance, setOrgBalance] = useState<IOrganisationBalance>();
 	const [loading, setLoading] = useState<boolean>(true);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [dataLoaded, setDataLoaded] = useState<boolean>(false);
 
 	const { activeOrg } = useActiveOrgContext();
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleGetAssets = useCallback(async () => {
-		if (!activeOrg?.multisigs || dataLoaded) {
+		if (!activeOrg || !activeOrg.id || !activeOrg.multisigs) {
 			console.log('not found at 1st');
 			return;
 		}
 
 		try {
+			setLoading(true);
 			const allMultisigs = activeOrg?.multisigs;
 
 			const totalOrgBalance: IOrganisationBalance = {
@@ -124,7 +126,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 			console.log('ERROR', error);
 			setLoading(false);
 		}
-	}, [activeOrg?.multisigs, dataLoaded]);
+	}, [activeOrg]);
 
 	useEffect(() => {
 		handleGetAssets();

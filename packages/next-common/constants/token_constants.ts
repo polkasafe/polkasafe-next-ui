@@ -14,6 +14,13 @@ export const tokenProperties = {
         "symbol": "KSM",
         "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/5034.png"
     },
+    "ASTR": {
+        "chainId": 1,
+        "name": "Astar",
+        "decimals": 18,
+        "symbol": "ASTR",
+        "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/12885.png"
+    },
     "WND": {
         "chainId": 1,
         "name": "Westend",
