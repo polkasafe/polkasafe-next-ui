@@ -176,10 +176,11 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 			// setSuccess(true);
 			// }
 			setLoading(false);
+			onCancel?.();
 		} catch (error) {
 			console.log(error);
-			setFailure(true);
 			setLoading(false);
+			onCancel?.();
 			// createProxy(multisigData, false);
 		}
 	};
@@ -224,6 +225,8 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 					error: string;
 				};
 
+				console.log('multisig', multisigData, multisigError);
+
 				if (multisigError) {
 					queueNotification({
 						header: 'Error!',
@@ -262,6 +265,19 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 						name: multisigName,
 						signatories,
 						threshold
+					});
+					setUserDetailsContextState((prevState) => {
+						return {
+							...prevState,
+							multisigAddresses: [...(prevState?.multisigAddresses || []), multisigData],
+							multisigSettings: {
+								...prevState.multisigSettings,
+								[`${multisigData.address}_${multisigData.network}`]: {
+									name: multisigData.name,
+									deleted: false
+								}
+							}
+						};
 					});
 				}
 			}
@@ -383,6 +399,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 											setSignatories={setSignatories}
 											signatories={signatories}
 											api={api}
+											apiReady={apiReady}
 										/>
 									) : (
 										<DragDrop setSignatories={setSignatories} />

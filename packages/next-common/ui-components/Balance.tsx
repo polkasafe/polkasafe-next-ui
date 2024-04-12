@@ -21,7 +21,6 @@ const Balance: React.FC<Props> = ({ address, className, onChange, api, apiReady,
 	const [balance, setBalance] = useState<string>('0');
 
 	useEffect(() => {
-		console.log('network in balance', network, address);
 		if (!api || !apiReady || !address) return;
 
 		api.query?.system

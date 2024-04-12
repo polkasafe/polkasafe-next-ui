@@ -108,7 +108,7 @@ const LinkMultisigStep = ({
 				onCancel={() => setOpenCreateMultisigModal(false)}
 			>
 				<CreateMultisig
-					onComplete={(multisig) =>
+					onComplete={(multisig) => {
 						setLinkedMultisigs((prev) => [
 							...prev,
 							{
@@ -119,8 +119,9 @@ const LinkMultisigStep = ({
 								signatories: multisig.signatories,
 								threshold: multisig.threshold
 							}
-						])
-					}
+						]);
+						setSelectedNetwork(multisig.network);
+					}}
 					onCancel={() => setOpenCreateMultisigModal(false)}
 				/>
 			</ModalComponent>
@@ -224,7 +225,7 @@ const LinkMultisigStep = ({
 							))
 					) : (
 						<section className='mb-4 text-sm border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
-							<p className='text-white'>No MultiSig found in this Network</p>
+							<p className='text-white'>No Onchain MultiSig found in this Network</p>
 						</section>
 					)}
 				</div>

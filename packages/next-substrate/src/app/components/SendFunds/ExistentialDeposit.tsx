@@ -63,6 +63,7 @@ const ExistentialDeposit = ({
 	const [selectedAccountBalance, setSelectedAccountBalance] = useState<string>('');
 
 	useEffect(() => {
+		console.log('netwokr', network);
 		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
 		setApi(new ApiPromise({ provider }));
 	}, [network]);

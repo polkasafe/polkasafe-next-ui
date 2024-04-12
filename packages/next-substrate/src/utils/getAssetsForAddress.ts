@@ -20,7 +20,6 @@ export default async function getAssetsForAddress(address: string, network: stri
 	};
 
 	try {
-		console.log('get address Called');
 		const res = await fetch(`https://${network}.api.subscan.io/api/scan/account/tokens`, {
 			body: JSON.stringify({ address }),
 			headers: SUBSCAN_API_HEADERS,
@@ -37,8 +36,6 @@ export default async function getAssetsForAddress(address: string, network: stri
 			await Promise.all(
 				response.native.map(async (asset) => {
 					const usdValue = await fetchTokenUSDValue(1, network);
-
-					console.log('after usd called');
 
 					const newAsset: IAsset = {
 						balance_token: formatBnBalance(
