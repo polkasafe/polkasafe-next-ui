@@ -7,12 +7,10 @@ import { Badge, Dropdown, Modal, Table, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import React, { FC, useState } from 'react';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
-import { IAllAddresses, IMultisigAddress } from '@next-common/types';
+import { IAllAddresses } from '@next-common/types';
 import {
-	AddIcon,
 	CopyIcon,
 	DeleteIcon,
 	EditIcon,
@@ -22,10 +20,10 @@ import {
 } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import copyText from '@next-substrate/utils/copyText';
-import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import EditAddress from './Edit';
@@ -78,7 +76,7 @@ const TransactionModal = ({ className, defaultAddress }: { className?: string; d
 	);
 };
 
-const EditAddressModal = ({
+export const EditAddressModal = ({
 	className,
 	addressToEdit,
 	nameToEdit,
@@ -87,11 +85,9 @@ const EditAddressModal = ({
 	emailToEdit,
 	telegramToEdit,
 	rolesToEdit,
-	shared,
 	personalToShared
 }: {
 	personalToShared?: boolean;
-	shared: boolean;
 	className?: string;
 	addressToEdit: string;
 	nameToEdit?: string;
@@ -104,20 +100,12 @@ const EditAddressModal = ({
 	const [openEditModal, setOpenEditModal] = useState<boolean>(false);
 	return (
 		<>
-			{personalToShared ? (
-				<Tooltip title='Add To Shared Address Book'>
-					<button onClick={() => setOpenEditModal(true)}>
-						<AddIcon className='text-primary' />
-					</button>
-				</Tooltip>
-			) : (
-				<button
-					onClick={() => setOpenEditModal(true)}
-					className='text-primary bg-highlight flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
-				>
-					<EditIcon />
-				</button>
-			)}
+			<button
+				onClick={() => setOpenEditModal(true)}
+				className='text-primary bg-highlight flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
+			>
+				<EditIcon />
+			</button>
 			<Modal
 				centered
 				footer={false}
@@ -147,7 +135,6 @@ const EditAddressModal = ({
 					emailToEdit={emailToEdit}
 					rolesToEdit={rolesToEdit}
 					telegramToEdit={telegramToEdit}
-					shared={shared}
 					personalToShared={personalToShared}
 				/>
 			</Modal>
@@ -155,36 +142,34 @@ const EditAddressModal = ({
 	);
 };
 
-const RemoveAddressModal = ({
+export const RemoveAddressModal = ({
 	addresses,
 	address,
 	userAddress,
-	multisig
+	members
 }: {
 	addresses: IAllAddresses;
 	address: string;
 	userAddress: string;
-	multisig: IMultisigAddress;
+	members: string[];
 }) => {
 	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
 	return (
 		<>
-			{address !== userAddress &&
-				!multisig?.signatories.some((a) => getSubstrateAddress(a) === getSubstrateAddress(address)) && (
-					<button
-						onClick={() => setOpenRemoveModal(true)}
-						className='text-failure bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
-					>
-						<DeleteIcon />
-					</button>
-				)}
+			{address !== userAddress && !members.includes(address) && (
+				<button
+					onClick={() => setOpenRemoveModal(true)}
+					className='text-failure bg-failure bg-opacity-10 flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'
+				>
+					<DeleteIcon />
+				</button>
+			)}
 			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Remove Address</h3>}
 				open={openRemoveModal}
 				onCancel={() => setOpenRemoveModal(false)}
 			>
 				<RemoveAddress
-					shared={addresses[address]?.shared}
 					addressToRemove={address}
 					name={addresses[address]?.name}
 					onCancel={() => setOpenRemoveModal(false)}
@@ -195,11 +180,9 @@ const RemoveAddressModal = ({
 };
 
 const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
-	const { network } = useGlobalApiContext();
-	const { address: userAddress, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
 	const { records } = useActiveMultisigContext();
-
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
 	interface DataType {
 		key: React.Key;
@@ -261,12 +244,11 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 	];
 
 	const addressBookData: DataType[] = Object.keys(addresses)?.map((address) => {
-		const encodedAddress = getEncodedAddress(address, network) || address;
+		const encodedAddress = getSubstrateAddress(address);
 		return {
 			actions: (
 				<div className=' flex items-center justify-right gap-x-[10px]'>
 					<EditAddressModal
-						shared={!!addresses[address].shared}
 						className={className}
 						nickNameToEdit={addresses[address]?.nickName}
 						addressToEdit={encodedAddress}
@@ -280,7 +262,7 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 						addresses={addresses}
 						address={address}
 						userAddress={userAddress}
-						multisig={multisig}
+						members={activeOrg && activeOrg.members ? activeOrg.members : []}
 					/>
 					<TransactionModal
 						defaultAddress={encodedAddress}
@@ -305,12 +287,12 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 					<div className='ml-[14px] text-text_secondary text-base flex items-center gap-x-[6px]'>
 						<button
 							className='hover:text-primary'
-							onClick={() => copyText(encodedAddress, true, network)}
+							onClick={() => copyText(encodedAddress)}
 						>
 							<CopyIcon />
 						</button>
 						<a
-							href={`https://${network}.subscan.io/account/${encodedAddress}`}
+							href={`https://www.subscan.io/account/${encodedAddress}`}
 							target='_blank'
 							rel='noreferrer'
 						>
@@ -360,7 +342,6 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 							rolesToEdit={addresses[address]?.roles}
 							telegramToEdit={addresses[address]?.telegram}
 							personalToShared
-							shared={false}
 						/>
 					)}
 				</p>

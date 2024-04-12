@@ -5,24 +5,18 @@
 'use client';
 
 import { Drawer, Layout, Badge } from 'antd';
-import React, { ReactNode, useCallback, useEffect, useState } from 'react';
+import React, { ReactNode, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import polkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
 import LongIframe from '@next-common/assets/long-iframe.svg';
 import shortIframe from '@next-common/assets/short-iframe.svg';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalDAppContext } from '@next-evm/context/DAppContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import useHandleMetamask from '@next-evm/hooks/useHandleMetamask';
-import { ISharedAddressBooks } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 
 import Image from 'next/image';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
 import dayjs from 'dayjs';
 import Footer from './Footer';
 import Menu from './Menu';
@@ -38,18 +32,13 @@ export interface IRouteInfo {
 }
 
 const AppLayout = ({ className, children }: { className?: string; children: ReactNode }) => {
-	const { activeMultisig, multisigAddresses, isNetworkMismatch } = useGlobalUserDetailsContext();
-	const { setActiveMultisigContextState } = useActiveMultisigContext();
-	const { network } = useGlobalApiContext();
+	const { activeMultisig, isNetworkMismatch } = useGlobalUserDetailsContext();
 	const { iframeVisibility, setIframeVisibility } = useGlobalDAppContext();
 	const [sideDrawer, setSideDrawer] = useState(false);
 	const [multisigChanged, setMultisigChanged] = useState(false);
 	const [iframeState, setIframeState] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const pathname = usePathname();
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const metamaskError = useHandleMetamask();
 
 	const IframeUrl = `https://sub.id/${activeMultisig}`;
 	const isAppsPage = pathname.split('/').pop() === 'apps';
@@ -62,33 +51,6 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 		}, 500);
 		setLoading(true);
 	}, [activeMultisig]);
-
-	const getSharedAddressBook = useCallback(async () => {
-		if (
-			(typeof window !== 'undefined' && !localStorage.getItem('signature')) ||
-			!localStorage.getItem('address') ||
-			!multisig
-		)
-			return;
-
-		setMultisigChanged(true);
-		const { data: sharedAddressBookData, error: sharedAddressBookError } =
-			await nextApiClientFetch<ISharedAddressBooks>(
-				`${EVM_API_URL}/getSharedAddressBookEth`,
-				{
-					multisigAddress: multisig?.proxy ? multisig.proxy : multisig?.address
-				},
-				{ network }
-			);
-
-		if (!sharedAddressBookError && sharedAddressBookData) {
-			setActiveMultisigContextState(sharedAddressBookData as any);
-		}
-		setMultisigChanged(false);
-	}, [multisig, network, setActiveMultisigContextState]);
-	useEffect(() => {
-		getSharedAddressBook();
-	}, [getSharedAddressBook]);
 
 	useEffect(() => {
 		if (isAppsPage) setLoading(true);
@@ -156,7 +118,7 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 						trigger={null}
 						collapsible={false}
 						collapsed
-						className={`hidden overflow-y-hidden bg-bg-main sidebar lg:block top-0 bottom-0 left-0 h-screen fixed w-full max-w-[180px] z-10 ${
+						className={`hidden overflow-y-hidden bg-bg-main sidebar lg:block top-0 bottom-0 left-0 h-screen fixed w-full max-w-[200px] z-10 ${
 							!hideSlider ? 'left-0' : 'left-[-300px]'
 						}`}
 					>
@@ -168,7 +130,7 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 						onClose={() => setSideDrawer(false)}
 						open={sideDrawer}
 						getContainer={false}
-						className='w-full max-w-[180px] p-0'
+						className='w-full max-w-[200px] p-0'
 					>
 						<Menu />
 					</Drawer>
@@ -176,7 +138,7 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 				<Layout className='min-h flex flex-row p-0 bg-bg-main'>
 					<div className={`hidden lg:block w-full max-w-[30px] ${hideSlider ? 'relative' : 'absolute'}`} />
 					<div
-						className={`hidden lg:block w-full max-w-[180px] ${
+						className={`hidden lg:block w-full max-w-[200px] ${
 							hideSlider ? 'absolute -left-[150px]' : 'relative left-0px'
 						}`}
 					/>
@@ -201,7 +163,7 @@ const AppLayout = ({ className, children }: { className?: string; children: Reac
 							)}
 						</div>
 					) : (
-						<Content className='bg-bg-secondary p-[30px] max-w-[100%] lg:max-w-[calc(100%-180px)] rounded-lg'>
+						<Content className='bg-bg-secondary p-[30px] max-w-[100%] lg:max-w-[calc(100%-200px)] rounded-lg'>
 							{multisigChanged || isNetworkMismatch ? <Loader size='large' /> : children}
 						</Content>
 					)}

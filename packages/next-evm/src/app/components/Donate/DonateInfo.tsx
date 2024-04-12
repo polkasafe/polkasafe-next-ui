@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Divider } from 'antd';
 import React from 'react';
-import PolkasafeLogo from '@next-common/assets/polkasafe-logo-white.svg';
+import TreasurEaseLogo from '@next-common/assets/TreasurEase-logo.svg';
 import { ExternalLinkIcon, WalletIcon } from '@next-common/ui-components/CustomIcons';
 
 import QR from './QR';
@@ -15,10 +15,12 @@ const DonateInfo = () => {
 				<article className='flex flex-col justify-between h-full'>
 					<p className='text-sm font-normal'>If you like the product, feel free to Donate us!</p>
 					<div className='flex items-center justify-center my-10'>
-						<PolkasafeLogo />
+						<div className='h-[80px] w-[230px]'>
+							<TreasurEaseLogo />
+						</div>
 					</div>
 					<div className='text-normal text-sm max-w-[367px] leading-4'>
-						Polkasafe is built for the ecosystem using grants from treasury & community.
+						TreasurEase is built for the ecosystem using grants from treasury & community.
 					</div>
 				</article>
 				<article>
@@ -27,24 +29,24 @@ const DonateInfo = () => {
 			</div>
 			<Divider className='bg-text_secondary my-8' />
 			<div className='flex items-center gap-x-5 gap-y-5 flex-col md:flex-row justify-between text-white'>
-				<p className='flex gap-x-2 flex-col xl:flex-row xl:items-center'>
-					<span className='text-sm font-normal mb-2'>
-						If you don&apos;t have a polkadot wallet, don&apos;t worry, you can create one for free at
+				<p className='flex gap-x-2 items-center'>
+					<span className='text-sm font-normal'>
+						If you don&apos;t have a wallet, don&apos;t worry, you can create one for free at
 					</span>
 					<span className='text-primary'>
 						<a
-							href='https://polkadot.js.org/extension/'
+							href='https://metamask.io/'
 							target='_blank'
 							rel='noreferrer'
 							className='flex items-center'
 						>
-							Polkadot{'{.js}'}
+							Metamask
 							<ExternalLinkIcon className='text-lg ml-2' />
 						</a>
 					</span>
 				</p>
 				<a
-					href='https://polkadot.js.org/extension/'
+					href='https://metamask.io/'
 					rel='noreferrer'
 					target='_blank'
 					className='text-primary px-[10px] py-2 bg-highlight rounded-lg flex items-center border-none outline-none gap-x-[10.83px]'

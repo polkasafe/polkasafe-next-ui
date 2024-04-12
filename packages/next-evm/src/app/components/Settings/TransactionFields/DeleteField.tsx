@@ -2,16 +2,16 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { EVM_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { Form } from 'antd';
 import React, { useState } from 'react';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-evm/app/components/Settings/RemoveBtn';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 const DeleteField = ({
 	onCancel,
@@ -22,16 +22,14 @@ const DeleteField = ({
 	category: string;
 	subfield: string;
 }) => {
-	const { transactionFields, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
 	const [loading, setLoading] = useState<boolean>(false);
-	const { network } = useGlobalApiContext();
 
 	const handleDeleteField = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress || !signature) {
+			if (!userID || !activeOrg?.id) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
@@ -40,9 +38,9 @@ const DeleteField = ({
 				const newSubfields = { ...newTransactionFields[category].subfields };
 				delete newSubfields[subfield];
 
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } = await nextApiClientFetch(
-					`${EVM_API_URL}/updateTransactionFieldsEth`,
-					{
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFieldsEth`, {
+					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -50,9 +48,15 @@ const DeleteField = ({
 								subfields: newSubfields
 							}
 						}
-					},
-					{ network }
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
 
 				if (updateTransactionFieldsError) {
 					queueNotification({
@@ -70,7 +74,7 @@ const DeleteField = ({
 						message: 'Transaction Fields Updated.',
 						status: NotificationStatus.SUCCESS
 					});
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

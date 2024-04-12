@@ -5,8 +5,6 @@ import Identicon from '@polkadot/react-identicon';
 import { Button, Divider, Modal } from 'antd';
 import React, { useState } from 'react';
 import EditAddress from '@next-substrate/app/components/AddressBook/Edit';
-import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import {
@@ -21,6 +19,8 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 import styled from 'styled-components';
 
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { IMultisigAddress } from '@next-common/types';
 import RemoveOwner from './Remove';
 
 const RemoveSignatoryModal = ({
@@ -122,20 +122,24 @@ const EditAddressModal = ({
 					rolesToEdit={rolesToEdit}
 					telegramToEdit={telegramToEdit}
 					nickNameToEdit={nickNameToEdit}
-					shared={false}
 				/>
 			</Modal>
 		</>
 	);
 };
 
-const ListOwners = ({ className, disabled }: { className?: string; disabled?: boolean }) => {
-	const { network } = useGlobalApiContext();
-	const { records } = useActiveMultisigContext();
-	const { multisigAddresses, activeMultisig, addressBook, address: userAddress } = useGlobalUserDetailsContext();
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
-	const signatories = multisig?.signatories;
-	const userAddressObject = addressBook.find((item) => item.address === userAddress);
+const ListOwners = ({
+	className,
+	disabled,
+	multisig
+}: {
+	className?: string;
+	disabled?: boolean;
+	multisig: IMultisigAddress;
+}) => {
+	const { activeOrg } = useActiveOrgContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
+	const userAddressObject = activeOrg?.addressBook?.find((item) => item.address === userAddress);
 
 	return (
 		<div className='text-sm font-medium leading-[15px] '>
@@ -165,12 +169,12 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 						<div className='ml-[14px] text-text_secondary text-base flex items-center gap-x-[6px]'>
 							<button
 								className='hover:text-primary'
-								onClick={() => copyText(userAddress, true, network)}
+								onClick={() => copyText(userAddress, true, multisig.network)}
 							>
 								<CopyIcon />
 							</button>
 							<a
-								href={`https://${network}.subscan.io/account/${userAddress}`}
+								href={`https://${multisig.network}.subscan.io/account/${userAddress}`}
 								target='_blank'
 								rel='noreferrer'
 							>
@@ -193,16 +197,16 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 				</div>
 				<Divider className='bg-text_secondary my-0' />
 			</article>
-			{signatories
+			{multisig.signatories
 				?.filter((item) => item !== userAddress)
 				.map((address, index) => {
-					const addressObject = addressBook.find((item) => item.address === address);
-					const encodedAddress = getEncodedAddress(address, network);
+					const addressObject = activeOrg?.addressBook?.find((item) => item?.address === address);
+					const encodedAddress = getEncodedAddress(address, multisig.network);
 					return (
 						<article key={index}>
 							<div className='grid grid-cols-4 gap-x-5 py-6 px-4 text-white'>
 								<p className='sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-base'>
-									{addressObject?.nickName || records?.[address]?.name || addressObject?.name || DEFAULT_ADDRESS_NAME}
+									{addressObject?.nickName || addressObject?.name || DEFAULT_ADDRESS_NAME}
 								</p>
 								<div className='col-span-2 flex items-center'>
 									<Identicon
@@ -220,12 +224,12 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 									<div className='ml-[14px] text-text_secondary text-base flex items-center gap-x-[6px]'>
 										<button
 											className='hover:text-primary'
-											onClick={() => copyText(address, true, network)}
+											onClick={() => copyText(address, true, multisig.network)}
 										>
 											<CopyIcon />
 										</button>
 										<a
-											href={`https://${network}.subscan.io/account/${encodedAddress}`}
+											href={`https://${multisig.network}.subscan.io/account/${encodedAddress}`}
 											target='_blank'
 											rel='noreferrer'
 										>
@@ -244,17 +248,17 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 										telegramToEdit={addressObject?.telegram}
 										rolesToEdit={addressObject?.roles}
 									/>
-									{signatories.length > 2 && !disabled && (
+									{multisig.signatories.length > 2 && !disabled && (
 										<RemoveSignatoryModal
 											threshold={multisig?.threshold || 2}
 											className={className}
-											signatoriesLength={signatories.length || 2}
+											signatoriesLength={multisig.signatories.length || 2}
 											address={address}
 										/>
 									)}
 								</div>
 							</div>
-							{signatories.length - 1 !== index ? <Divider className='bg-text_secondary my-0' /> : null}
+							{multisig.signatories.length - 1 !== index ? <Divider className='bg-text_secondary my-0' /> : null}
 						</article>
 					);
 				})}

@@ -7,17 +7,16 @@ import { Button } from 'antd';
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { Wallet } from '@next-common/types';
-import Balance from '@next-common/ui-components/Balance';
 import { CircleArrowDownIcon, CopyIcon, WarningRoundedIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-substrate/utils/copyText';
-import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import logout from '@next-substrate/utils/logout';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 import { useRouter } from 'next/navigation';
+import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface IAddress {
@@ -25,9 +24,9 @@ interface IAddress {
 	imgSrc: string;
 }
 const AddressDropdown = () => {
-	const { address, addressBook, loggedInWallet, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { address, loggedInWallet, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
-	const { network } = useGlobalApiContext();
 	const router = useRouter();
 
 	const [isVisible, toggleVisibility] = useState(false);
@@ -38,13 +37,14 @@ const AddressDropdown = () => {
 		setUserDetailsContextState((prevState) => {
 			return {
 				...prevState,
-				activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
+				activeMultisig: '',
 				address: '',
 				addressBook: [],
 				isSharedMultisig: false,
 				loggedInWallet: Wallet.POLKADOT,
 				multisigAddresses: [],
-				sharedMultisigInfo: undefined
+				sharedMultisigInfo: undefined,
+				userID: ''
 			};
 		});
 		setActiveMultisigContextState((prev) => ({
@@ -53,18 +53,18 @@ const AddressDropdown = () => {
 			records: {} as any
 		}));
 		toggleVisibility(false);
-		return router.replace('/');
+		router.replace('/login');
 	};
 
 	if (!address) {
 		return (
 			<Link
-				href='/'
+				href='/login'
 				onClick={() =>
 					setUserDetailsContextState((prevState) => {
 						return {
 							...prevState,
-							activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
+							activeMultisig: '',
 							address: '',
 							addressBook: [],
 							isSharedMultisig: false,
@@ -107,7 +107,7 @@ const AddressDropdown = () => {
 						title={address}
 						className='hidden md:inline-flex w-20 overflow-hidden truncate'
 					>
-						{addressBook?.find((item) => item.address === address)?.name || DEFAULT_ADDRESS_NAME}
+						{activeOrg?.addressBook?.find((item) => item.address === address)?.name || DEFAULT_ADDRESS_NAME}
 					</span>
 				</p>
 				<CircleArrowDownIcon className={`hidden md:inline-flex text-sm ${address ? 'text-primary' : 'text-white'}`} />
@@ -133,29 +133,19 @@ const AddressDropdown = () => {
 							theme='polkadot'
 						/>
 						<p className='text-white font-normal text-sm'>
-							{addressBook?.find((item) => item.address === address)?.name}
+							{activeOrg?.addressBook?.find((item) => item.address === address)?.name}
 						</p>
 						<p className='bg-bg-secondary mb-1 w-[300px] font-normal gap-x-2 text-sm p-2 rounded-lg flex items-center justify-center'>
-							<span className='text-text_secondary'>
-								{shortenAddress(getEncodedAddress(address, network) || address, 12)}
-							</span>
-							<button onClick={() => copyText(getEncodedAddress(address, network) || address, true, network)}>
+							<span className='text-text_secondary'>{shortenAddress(getSubstrateAddress(address) || address)}</span>
+							<button onClick={() => copyText(getSubstrateAddress(address) || address)}>
 								<CopyIcon className='text-base text-primary cursor-pointer' />
 							</button>
 						</p>
-						<Balance
-							className='ml-0'
-							address={address}
-						/>
 					</div>
 					<div className='w-full'>
 						<p className='border-t border-text_secondary flex items-center text-normal text-sm justify-between w-full p-2'>
 							<span className='text-text_secondary'>Wallet</span>
 							<span className='text-white capitalize'>{loggedInWallet}</span>
-						</p>
-						<p className='border-t border-b border-text_secondary flex items-center text-normal text-sm justify-between w-full p-2'>
-							<span className='text-text_secondary'>Network</span>
-							<span className='text-white capitalize'>{network}</span>
 						</p>
 					</div>
 					<Button

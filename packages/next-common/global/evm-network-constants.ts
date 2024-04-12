@@ -29,6 +29,7 @@ export type ChainPropType = {
 		coingeckoId?: string;
 		coingeckoNativeTokenId?: string;
 		nativeSuperTokenAddress?: string;
+		covalentNetworkName?: string;
 	};
 };
 
@@ -59,6 +60,7 @@ export const chainProperties: ChainPropType = {
 	[NETWORK.GOERLI]: {
 		blockExplorer: 'https://goerli.etherscan.io',
 		chainId: 5,
+		covalentNetworkName: 'linea-testnet',
 		decimals: 18,
 		displayName: 'Goerli',
 		logo: ethereumLogo,
@@ -72,6 +74,7 @@ export const chainProperties: ChainPropType = {
 		chainId: 137,
 		coingeckoId: 'polygon-pos',
 		coingeckoNativeTokenId: 'matic-network',
+		covalentNetworkName: 'matic-mainnet',
 		decimals: 18,
 		displayName: 'Polygon',
 		logo: polygonLogo,
@@ -85,6 +88,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://astar.subscan.io',
 		chainId: 592,
 		coingeckoId: 'astar',
+		covalentNetworkName: 'astar-mainnet',
 		decimals: 18,
 		displayName: 'Astar',
 		logo: astarLogo,
@@ -97,6 +101,7 @@ export const chainProperties: ChainPropType = {
 		chainId: 1,
 		coingeckoId: 'ethereum',
 		coingeckoNativeTokenId: 'ethereum',
+		covalentNetworkName: 'eth-mainnet',
 		decimals: 18,
 		displayName: 'Ethereum',
 		logo: ethereumLogo,
@@ -109,6 +114,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://bscscan.com',
 		chainId: 56,
 		coingeckoId: 'binance-smart-chain',
+		covalentNetworkName: 'bsc-mainnet',
 		decimals: 18,
 		displayName: 'BNB Smart Chain',
 		logo: bnbLogo,
@@ -121,6 +127,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://arbiscan.io',
 		chainId: 42161,
 		coingeckoId: 'arbitrum-one',
+		covalentNetworkName: 'arbitrum-mainnet',
 		decimals: 18,
 		displayName: 'Arbitrum',
 		logo: arbLogo,
@@ -133,6 +140,7 @@ export const chainProperties: ChainPropType = {
 		blockExplorer: 'https://optimistic.etherscan.io',
 		chainId: 10,
 		coingeckoId: 'optimistic-ethereum',
+		covalentNetworkName: 'optimism-mainnet',
 		decimals: 18,
 		displayName: 'Optimism',
 		logo: opLogo,

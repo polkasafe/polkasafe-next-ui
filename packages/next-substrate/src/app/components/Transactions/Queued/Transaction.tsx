@@ -10,10 +10,9 @@ import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, IQueueItem, ITxNotification } from '@next-common/types';
+import { IMultisigAddress, IQueueItem, ITxnCategory, ITxNotification } from '@next-common/types';
 import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';
 import approveAddProxy from '@next-substrate/utils/approveAddProxy';
@@ -26,14 +25,18 @@ import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import setSigner from '@next-substrate/utils/setSigner';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
+import TransactionFields, { generateCategoryKey } from '../TransactionFields';
 
 interface ITransactionProps {
 	totalAmount?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	// eslint-disable-next-line react/no-unused-prop-types
 	status: 'Approval' | 'Cancelled' | 'Executed';
 	date: string;
@@ -42,11 +45,12 @@ interface ITransactionProps {
 	callData: string;
 	callHash: string;
 	note: string;
-	amountUSD: string;
 	refetch?: () => void;
 	setQueuedTransactions?: React.Dispatch<React.SetStateAction<IQueueItem[]>>;
 	numberOfTransactions: number;
 	notifications?: ITxNotification;
+	multisigAddress: string;
+	network: string;
 }
 
 const Transaction: FC<ITransactionProps> = ({
@@ -55,22 +59,22 @@ const Transaction: FC<ITransactionProps> = ({
 	totalAmount,
 	approvals,
 	refetch,
-	amountUSD,
 	callData,
 	callHash,
 	date,
 	setQueuedTransactions,
 	numberOfTransactions,
 	threshold,
-	notifications
+	notifications,
+	multisigAddress,
+	network
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const [messageApi, contextHolder] = message.useMessage();
 	const router = useRouter();
 	const pathname = usePathname();
 
-	const { activeMultisig, multisigAddresses, address, setUserDetailsContextState, loggedInWallet } =
-		useGlobalUserDetailsContext();
+	const { multisigAddresses, address, setUserDetailsContextState, loggedInWallet } = useGlobalUserDetailsContext();
 	const { records } = useActiveMultisigContext();
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
@@ -79,8 +83,10 @@ const Transaction: FC<ITransactionProps> = ({
 	const [getMultiDataLoading, setGetMultisigDataLoading] = useState(false);
 	const [loadingMessages, setLoadingMessages] = useState('');
 	const [openLoadingModal, setOpenLoadingModal] = useState(false);
-	const { api, apiReady, network } = useGlobalApiContext();
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
 
+	const { activeOrg } = useActiveOrgContext();
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const [callDataString, setCallDataString] = useState<string>(callData || '');
 	const [decodedCallData, setDecodedCallData] = useState<any>(null);
@@ -94,7 +100,43 @@ const Transaction: FC<ITransactionProps> = ({
 	const token = chainProperties[network].tokenSymbol;
 	const hash = pathname.slice(1);
 
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = activeOrg?.multisigs?.find(
+		(item) => item.address === multisigAddress || item.proxy === multisigAddress
+	);
+
+	const [amountUSD, setAmountUSD] = useState<string>('');
+
+	const [category, setCategory] = useState<string>(
+		transactionFields?.category ? generateCategoryKey(transactionFields?.category) : 'none'
+	);
+
+	const [transactionFieldsObject, setTransactionFieldsObject] = useState<ITxnCategory>(
+		transactionFields || { category: 'none', subfields: {} }
+	);
+
+	useEffect(() => {
+		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
+			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
+		});
+	}, [network]);
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
 
 	useEffect(() => {
 		if (!api || !apiReady) return;
@@ -123,7 +165,7 @@ const Transaction: FC<ITransactionProps> = ({
 			});
 		})();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, callDataString, callHash, network]);
+	}, [api, apiReady, callData, callDataString, callHash, network]);
 
 	useEffect(() => {
 		const fetchMultisigData = async (newMultisigAddress: string) => {
@@ -362,10 +404,10 @@ const Transaction: FC<ITransactionProps> = ({
 									toggleTransactionVisible(!transactionInfoVisible);
 								}}
 								className={classNames(
-									'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
+									'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px]'
 								)}
 							>
-								<p className='col-span-3 flex items-center gap-x-3'>
+								<p className='col-span-2 flex items-center gap-x-3'>
 									<span
 										className={`flex items-center justify-center w-9 h-9 ${
 											isProxyApproval || isProxyAddApproval || isProxyRemovalApproval
@@ -408,6 +450,19 @@ const Transaction: FC<ITransactionProps> = ({
 									<p className='col-span-2'>-</p>
 								)}
 								<p className='col-span-2'>{dayjs(date).format('lll')}</p>
+								<p
+									className='col-span-2'
+									onClick={(e) => e.stopPropagation()}
+								>
+									<TransactionFields
+										callHash={callHash}
+										category={category}
+										setCategory={setCategory}
+										transactionFieldsObject={transactionFieldsObject}
+										setTransactionFieldsObject={setTransactionFieldsObject}
+										multisigAddress={multisigAddress}
+									/>
+								</p>
 								<p className='col-span-2 flex items-center justify-end gap-x-4'>
 									<span className='text-waiting'>
 										{!approvals.includes(getEncodedAddress(address, network)) && 'Awaiting your Confirmation'} (
@@ -471,10 +526,17 @@ const Transaction: FC<ITransactionProps> = ({
 							delegate_id={decodedCallData?.args?.call?.args?.delegate?.id}
 							isProxyRemovalApproval={isProxyRemovalApproval}
 							notifications={notifications}
-							transactionFields={transactionFields}
+							transactionFields={transactionFieldsObject}
 							customTx={customTx}
 							decodedCallData={decodedCallData}
 							txnParams={txnParams}
+							multisig={multisig}
+							network={network}
+							api={api}
+							apiReady={apiReady}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
 						/>
 					</div>
 				</Collapse.Panel>

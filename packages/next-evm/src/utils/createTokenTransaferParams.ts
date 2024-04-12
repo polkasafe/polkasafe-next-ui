@@ -4,7 +4,7 @@
 
 import { Interface } from '@ethersproject/abi';
 // eslint-disable-next-line import/no-cycle
-import { IAsset } from '@next-common/types';
+import { EAssetType, IAsset } from '@next-common/types';
 // import { pack as solidityPack } from '@ethersproject/solidity';
 import { MetaTransactionData } from '@safe-global/safe-core-sdk-types';
 import { OperationType } from '@safe-global/safe-core-sdk-types/dist/src/types';
@@ -39,7 +39,7 @@ const createTokenTransferParams = (
 			};
 		}) as MetaTransactionData[];
 	}
-	if (tokens && tokens.length !== 0 && tokens?.[0]?.tokenAddress) {
+	if (tokens && tokens.length !== 0 && tokens?.[0]?.tokenAddress && tokens?.[0]?.type !== EAssetType.NATIVE_TOKEN) {
 		return {
 			data: encodeERC20TransferData(recipient[0], value[0] as any),
 			to: tokens[0].tokenAddress,

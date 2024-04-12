@@ -5,40 +5,53 @@ import { Form, Input } from 'antd';
 import React, { useState } from 'react';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-evm/app/components/Settings/ModalBtn';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useWallets } from '@privy-io/react-auth';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
-const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void }) => {
-	const { network } = useGlobalApiContext();
+const RenameMultisig = ({
+	name,
+	onCancel,
+	multisig
+}: {
+	name: string;
+	onCancel: () => void;
+	multisig: IMultisigAddress;
+}) => {
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 
 	const [multisigName, setMultisigName] = useState<string>(name);
 	const [loading, setLoading] = useState<boolean>(false);
-	const { activeMultisig, setUserDetailsContextState, multisigAddresses } = useGlobalUserDetailsContext();
-
-	const multisig = multisigAddresses.find((item: any) => item.address === activeMultisig);
+	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 
 	const handleMultisigNameChange = async () => {
 		try {
 			setLoading(true);
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature || !multisigAddresses || !multisig?.address) {
+			if (!multisig.address) {
 				console.log('ERROR');
 				setLoading(false);
 			} else {
-				const { data: changeNameData, error: changeNameError } = await nextApiClientFetch<string>(
-					`${EVM_API_URL}/renameMultisigEth`,
-					{
-						address: multisig?.address,
-						name: multisigName
-					},
-					{ network }
-				);
+				const changeSafeNameres = await fetch(`${FIREBASE_FUNCTIONS_URL}/renameMultisigEth`, {
+					body: JSON.stringify({
+						address: multisig.address,
+						name: multisigName,
+						network: multisig.network,
+						organisationId: activeOrg.id
+					}),
+					headers: firebaseFunctionsHeader(connectedWallet.address),
+					method: 'POST'
+				});
+				const { data: changeNameData, error: changeNameError } = (await changeSafeNameres.json()) as {
+					data: string;
+					error: string;
+				};
 
 				if (changeNameError) {
 					queueNotification({
@@ -51,24 +64,18 @@ const RenameMultisig = ({ name, onCancel }: { name: string; onCancel: () => void
 				}
 
 				if (changeNameData) {
-					const copyMultisigAddresses = [...multisigAddresses];
-					const copyObject = copyMultisigAddresses?.find((item) => item.address === multisig.address);
-					if (copyObject) {
-						copyObject.name = multisigName;
-						setUserDetailsContextState((prev: any) => {
-							return {
-								...prev,
-								multisigAddresses: copyMultisigAddresses,
-								multisigSettings: {
-									...prev.multisigSettings,
-									[multisig.address]: {
-										...prev.multisigSettings[multisig.address],
-										name: multisigName
-									}
+					setUserDetailsContextState((prev: any) => {
+						return {
+							...prev,
+							multisigSettings: {
+								...prev.multisigSettings,
+								[`${multisig.address}_${multisig.network}`]: {
+									...prev.multisigSettings[`${multisig.address}_${multisig.network}`],
+									name: multisigName
 								}
-							};
-						});
-					}
+							}
+						};
+					});
 
 					queueNotification({
 						header: 'Success!',

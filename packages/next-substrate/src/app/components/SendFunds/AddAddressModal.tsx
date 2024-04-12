@@ -8,9 +8,9 @@ import { useState } from 'react';
 import addToAddressBook from '@next-substrate/utils/addToAddressBook';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { NotificationStatus } from '@next-common/types';
-import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { DefaultOptionType } from 'antd/es/select';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import CancelBtn from '../Settings/CancelBtn';
 import ModalBtn from '../Settings/ModalBtn';
 
@@ -25,16 +25,18 @@ const AddAddressModal = ({
 	setShowAddressModal: React.Dispatch<React.SetStateAction<boolean>>;
 	setAutoCompleteAddresses: React.Dispatch<React.SetStateAction<DefaultOptionType[]>>;
 }) => {
-	const { addressBook } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const [addAddressName, setAddAddressName] = useState('');
 	const [addAddressLoading, setAddAddressLoading] = useState(false);
 
 	const handleAddAddress = async () => {
+		if (!activeOrg || !activeOrg?.id || !activeOrg?.addressBook) return;
 		setAddAddressLoading(true);
 		const newAddresses = await addToAddressBook({
 			address: defaultAddress,
-			addressBook,
-			name: addAddressName
+			addressBook: activeOrg.addressBook,
+			name: addAddressName,
+			organisationId: activeOrg.id
 		});
 		setAddAddressLoading(false);
 		if (newAddresses) {

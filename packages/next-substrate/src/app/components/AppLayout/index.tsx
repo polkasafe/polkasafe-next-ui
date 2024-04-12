@@ -4,6 +4,7 @@
 
 'use client';
 
+import './styles.css';
 import { Drawer, Layout, Badge } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -17,7 +18,6 @@ import { useGlobalDAppContext } from '@next-substrate/context/DAppContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { ISharedAddressBooks } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
-import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
@@ -49,7 +49,6 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 	const pathname = usePathname();
 	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 
-	const IframeUrl = `https://sub.id/${getSubstrateAddress(activeMultisig)}`;
 	const isAppsPage = pathname.split('/').pop() === 'apps';
 	const hideSlider = iframeState && isAppsPage;
 
@@ -148,7 +147,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 						trigger={null}
 						collapsible={false}
 						collapsed
-						className={`hidden overflow-y-hidden bg-bg-main sidebar lg:block top-0 bottom-0 left-0 h-screen fixed w-full max-w-[180px] z-10 ${
+						className={`hidden overflow-y-hidden bg-bg-main sidebar lg:block top-0 bottom-0 left-0 h-screen fixed w-full max-w-[200px] z-10 ${
 							!hideSlider ? 'left-0' : 'left-[-300px]'
 						}`}
 					>
@@ -160,7 +159,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 						onClose={() => setSideDrawer(false)}
 						open={sideDrawer}
 						getContainer={false}
-						className='w-full max-w-[180px] p-0'
+						className='w-full max-w-[200px] p-0'
 					>
 						<Menu />
 					</Drawer>
@@ -168,7 +167,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 				<Layout className='min-h flex flex-row p-0 bg-bg-main'>
 					<div className={`hidden lg:block w-full max-w-[30px] ${hideSlider ? 'relative' : 'absolute'}`} />
 					<div
-						className={`hidden lg:block w-full max-w-[180px] ${
+						className={`hidden lg:block w-full max-w-[200px] ${
 							hideSlider ? 'absolute -left-[150px]' : 'relative left-0px'
 						}`}
 					/>
@@ -180,7 +179,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 								id='Dapp'
 								title='Dapp'
 								onLoad={handleIframeLoad}
-								src={IframeUrl}
+								src={iframeVisibility}
 								className={`w-full h-[calc(100%)] ${loading ? 'hidden' : 'block'}`}
 							/>
 							{!hideSlider && (
@@ -193,7 +192,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 							)}
 						</div>
 					) : (
-						<Content className='bg-bg-secondary p-[30px] max-w-[100%] lg:max-w-[calc(100%-180px)] rounded-lg'>
+						<Content className='bg-bg-secondary p-[30px] max-w-[100%] lg:max-w-[calc(100%-200px)] rounded-lg'>
 							{multisigChanged ? <Loader size='large' /> : children}
 						</Content>
 					)}

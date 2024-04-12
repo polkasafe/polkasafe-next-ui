@@ -3,21 +3,21 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import dayjs from 'dayjs';
-import React, { useEffect, useState, FC } from 'react';
+import React, { useEffect, useState, FC, useCallback } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import usePagination from '@next-substrate/hooks/usePagination';
 import { ITransaction } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import Pagination from '@next-common/ui-components/Pagination';
 import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisigHistoricalTransactions';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import ExportTransactionsHistory, { EExportType } from './ExportTransactionsHistory';
 
 import NoTransactionsHistory from './NoTransactionsHistory';
@@ -44,10 +44,15 @@ const History: FC<IHistory> = ({
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, multisigAddresses, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 	const { currencyPrice } = useGlobalCurrencyContext();
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
-	const { network } = useGlobalApiContext();
+	const { activeOrg } = useActiveOrgContext();
+	const multisig = activeOrg?.multisigs?.find(
+		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+	);
+
+	const network = multisig?.network || networks.POLKADOT;
+
 	const pathname = usePathname();
 	const { currentPage, setPage, totalDocs, setTotalDocs } = usePagination();
 	const [transactions, setTransactions] = useState<ITransaction[]>();
@@ -69,8 +74,47 @@ const History: FC<IHistory> = ({
 		}
 	}, [pathname, transactions]);
 
+	const fetchAllTransactions = useCallback(async () => {
+		if (activeMultisig || !activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0) return;
+
+		const allTxns = [];
+		setLoading(true);
+		await Promise.all(
+			// eslint-disable-next-line @typescript-eslint/no-shadow
+			activeOrg.multisigs.map(async (multisig) => {
+				const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
+					body: JSON.stringify({
+						limit: multisig.proxy ? 5 : 10,
+						multisigAddress: multisig?.address,
+						network: multisig?.network,
+						page: 1
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: historyData, error: historyError } = (await createOrgRes.json()) as {
+					data: { count: number; transactions: ITransaction[] };
+					error: string;
+				};
+				if (historyData?.transactions && !historyError) {
+					historyData.transactions.forEach((item) =>
+						allTxns.push({ ...item, multisigAddress: multisig.address, network: multisig.network })
+					);
+				}
+			})
+		);
+		setLoading(false);
+		setTransactions(allTxns);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeMultisig, activeOrg]);
+
+	useEffect(() => {
+		fetchAllTransactions();
+	}, [fetchAllTransactions]);
+
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
+		if (!activeMultisig) return;
 		const getTransactions = async () => {
 			setLoading(true);
 			if (!userAddress || !multisig) {
@@ -87,7 +131,13 @@ const History: FC<IHistory> = ({
 
 					if (multisigTransactions) {
 						setLoading(false);
-						setTransactions(multisigTransactions);
+						setTransactions(
+							multisigTransactions.map((item) => ({
+								...item,
+								multisigAddress: activeMultisig,
+								network: multisig.network
+							}))
+						);
 					}
 				} else {
 					setLoading(false);
@@ -98,43 +148,55 @@ const History: FC<IHistory> = ({
 				let data: any = [];
 				let docs: number = 0;
 
-				const {
-					data: { transactions: multisigTransactions, count: multisigTransactionsCount },
-					error: multisigError
-				} = await nextApiClientFetch<{ transactions: ITransaction[]; count: number }>(
-					`${SUBSTRATE_API_URL}/getMultisigHistory`,
-					{
+				const multisigHistoryRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
+					body: JSON.stringify({
 						limit: multisig.proxy ? 5 : 10,
 						multisigAddress: isSharedMultisig ? activeMultisig : multisig?.address,
+						network,
 						page: currentPage
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: multisigTransactions, error: multisigError } = (await multisigHistoryRes.json()) as {
+					data: { count: number; transactions: ITransaction[] };
+					error: string;
+				};
 
 				if (multisig.proxy) {
-					const {
-						data: { transactions: proxyTransactions, count: proxyTransactionsCount },
-						error: proxyError
-					} = await nextApiClientFetch<{ transactions: ITransaction[]; count: number }>(
-						`${SUBSTRATE_API_URL}/getMultisigHistory`,
-						{
-							limit: 10 - multisigTransactions.length,
+					const proxyHistoryRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
+						body: JSON.stringify({
+							limit: 10 - multisigTransactions.transactions.length,
 							multisigAddress: multisig.proxy,
+							network,
 							page: currentPage
-						}
-					);
+						}),
+						headers: firebaseFunctionsHeader(),
+						method: 'POST'
+					});
+					const { data: proxyTransactions, error: proxyError } = (await proxyHistoryRes.json()) as {
+						data: { count: number; transactions: ITransaction[] };
+						error: string;
+					};
 
 					if (proxyTransactions && !proxyError) {
 						setLoading(false);
-						data = proxyTransactions;
-						docs = proxyTransactionsCount;
+						data = proxyTransactions.transactions;
+						docs = proxyTransactions.count;
 					}
 				}
 
 				if (multisigTransactions && !multisigError) {
 					setLoading(false);
-					data = [...data, ...multisigTransactions];
-					setTransactions(data);
-					docs += multisigTransactionsCount;
+					data = [...data, ...multisigTransactions.transactions];
+					setTransactions(
+						data.map((item) => ({
+							...item,
+							multisigAddress: activeMultisig,
+							network: multisig.network
+						}))
+					);
+					docs += multisigTransactions.count;
 					setTotalDocs(docs);
 				}
 			} catch (error) {

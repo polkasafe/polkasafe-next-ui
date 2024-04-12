@@ -26,13 +26,16 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
-import { EAssetType } from '@next-common/types';
+import { EAssetType, IMultisigAddress, ITxnCategory } from '@next-common/types';
+import { useWallets } from '@privy-io/react-auth';
 import EditNote from './EditNote';
 // eslint-disable-next-line import/no-cycle
 import { ITokenDetails } from './Transaction';
+import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	amount: string | string[];
+	multisig: IMultisigAddress;
 	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
 	date: Date;
 	// time: string;
@@ -59,11 +62,16 @@ interface ISentInfoProps {
 	isContractInteraction?: boolean;
 	setOpenReplaceTxnModal: React.Dispatch<React.SetStateAction<boolean>>;
 	network: NETWORK;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
+	// multisig: IMultisigAddress;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
 	handleExecuteTransaction,
 	amount,
+	multisig,
 	addressAddOrRemove,
 	transactionFields,
 	className,
@@ -87,22 +95,27 @@ const SentInfo: FC<ISentInfoProps> = ({
 	isCustomTxn,
 	setOpenReplaceTxnModal,
 	network,
-	isContractInteraction
+	isContractInteraction,
+	category,
+	setCategory,
+	setTransactionFields
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { address: userAddress, multisigAddresses, activeMultisig, notOwnerOfSafe } = useGlobalUserDetailsContext();
+	const { address: a, notOwnerOfSafe } = useGlobalUserDetailsContext();
 	const { tokenFiatConversions } = useMultisigAssetsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const [updatedNote, setUpdatedNote] = useState(note);
 	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+	const userAddress = connectedWallet.address || a;
 
 	useEffect(() => {
 		setUpdatedNote(note);
 	}, [note]);
 
 	const depositor = approvals[0];
-
-	const activeMultisigObject = multisigAddresses?.find((item: any) => item.address === activeMultisig);
 
 	return (
 		<div className={classNames('flex gap-x-4', className)}>
@@ -156,7 +169,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 								<span>To:</span>
 							</p>
 							<div className='mt-3'>
-								<AddressComponent address={recipientAddress} />
+								<AddressComponent
+									network={network}
+									address={recipientAddress}
+								/>
 							</div>
 						</>
 					) : (
@@ -191,7 +207,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 												<span>To:</span>
 											</p>
 											<div className='mt-3'>
-												<AddressComponent address={item} />
+												<AddressComponent
+													network={network}
+													address={item}
+												/>
 											</div>
 											{recipientAddress.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
 										</>
@@ -221,7 +240,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 					<div>
 						<div className='mt-3 flex flex-col gap-y-2 text-white font-medium text-sm'>
 							<span>Interact with: </span>
-							<AddressComponent address={recipientAddress} />
+							<AddressComponent
+								network={network}
+								address={recipientAddress}
+							/>
 						</div>
 						<Divider className='bg-text_secondary my-5' />
 					</div>
@@ -238,7 +260,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 							{txType === 'addOwnerWithThreshold' ? 'Adding Owner' : 'Removing Owner'}:
 						</span>
 						<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-							<AddressComponent address={addressAddOrRemove} />
+							<AddressComponent
+								network={network}
+								address={addressAddOrRemove}
+							/>
 						</p>
 					</div>
 				)}
@@ -292,36 +317,37 @@ const SentInfo: FC<ISentInfoProps> = ({
 								)}
 							</span>
 						</div>
-						{!!transactionFields &&
-							Object.keys(transactionFields).length !== 0 &&
-							transactionFields.category !== 'none' && (
-								<>
-									<div className='flex items-center justify-between mt-3'>
-										<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
-										<span className='text-primary border border-solid border-primary rounded-xl px-[6px] py-1'>
-											{transactionFields?.category}
-										</span>
-									</div>
-									{transactionFields &&
-										transactionFields.subfields &&
-										Object.keys(transactionFields?.subfields).map((key) => {
-											const subfield = transactionFields.subfields[key];
-											return (
-												<div
-													key={key}
-													className='flex items-center justify-between mt-3'
-												>
-													<span className='text-text_secondary font-normal text-sm leading-[15px]'>
-														{subfield.name}:
-													</span>
-													<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
-														{subfield.value}
-													</span>
-												</div>
-											);
-										})}
-								</>
-							)}
+						{!!transactionFields && Object.keys(transactionFields).length !== 0 && (
+							<>
+								<div className='flex items-center justify-between mt-3'>
+									<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
+									<TransactionFields
+										callHash={callHash}
+										category={category}
+										setCategory={setCategory}
+										transactionFieldsObject={transactionFields}
+										setTransactionFieldsObject={setTransactionFields}
+										multisigAddress={multisig.address}
+									/>
+								</div>
+								{transactionFields &&
+									transactionFields.subfields &&
+									Object.keys(transactionFields?.subfields).map((key) => {
+										const subfield = transactionFields.subfields[key];
+										return (
+											<div
+												key={key}
+												className='flex items-center justify-between mt-3'
+											>
+												<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield.name}:</span>
+												<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
+													{subfield.value}
+												</span>
+											</div>
+										);
+									})}
+							</>
+						)}
 					</>
 				)}
 				<p
@@ -380,7 +406,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							className='success'
 						>
 							<div className='text-white font-normal text-sm leading-[15px]'>
-								Confirmations
+								Confirmations{' '}
 								<span className='text-text_secondary'>
 									{approvals.length} of {threshold}
 								</span>
@@ -416,14 +442,17 @@ const SentInfo: FC<ISentInfoProps> = ({
 												className={`${i === 0 && 'mt-4'} success bg-transaparent`}
 											>
 												<div className='mb-3 flex items-center gap-x-4'>
-													<AddressComponent address={address} />
+													<AddressComponent
+														network={network}
+														address={address}
+													/>
 												</div>
 											</Timeline.Item>
 										))}
 
-										{activeMultisigObject?.signatories
-											.filter((item: any) => !approvals.includes(item))
-											.map((address: any, i: any) => {
+										{multisig?.signatories
+											?.filter((item: any) => !approvals.includes(item))
+											?.map((address: any, i: any) => {
 												return (
 													<Timeline.Item
 														key={i}
@@ -435,7 +464,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 														className='warning bg-transaparent'
 													>
 														<div className='mb-3 flex items-center gap-x-4 relative'>
-															<AddressComponent address={address} />
+															<AddressComponent
+																network={network}
+																address={address}
+															/>
 														</div>
 													</Timeline.Item>
 												);

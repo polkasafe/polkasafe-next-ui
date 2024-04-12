@@ -6,16 +6,16 @@ import React, { useState } from 'react';
 import DragDrop from '@next-evm/app/components/AddressBook/DragDrop';
 import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import AddBtn from '@next-evm/app/components/Multisig/ModalBtn';
-import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 const ImportAdress = ({ onCancel }: { onCancel: () => void }) => {
 	const [addresses, setAddresses] = useState<IAddressBookItem[]>([]);
 	const [loading, setLoading] = useState<boolean>(false);
-	const { addressBook, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 
 	const handleAddAddress = async (
 		address: string,
@@ -27,45 +27,44 @@ const ImportAdress = ({ onCancel }: { onCancel: () => void }) => {
 		// eslint-disable-next-line sonarjs/cognitive-complexity
 	) => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
+			if (!activeOrg || activeOrg?.addressBook?.some((item: any) => item.address === address)) {
+				return;
+			}
 
-			if (!userAddress || !signature) {
-				console.log('ERROR');
-			} else {
-				if (addressBook.some((item: any) => item.address === address)) {
-					return;
-				}
+			const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBookEth`, {
+				body: JSON.stringify({
+					address,
+					discord: discord || '',
+					email: email || '',
+					name,
+					organisationId: activeOrg.id,
+					roles: roles || [],
+					telegram: telegram || ''
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: addAddressData, error: addAddressError } = (await createOrgRes.json()) as {
+				data: IAddressBookItem[];
+				error: string;
+			};
 
-				const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
-					`${EVM_API_URL}/addToAddressBookEth`,
-					{
-						address,
-						discord: discord || '',
-						email: email || '',
-						name,
-						roles: roles || [],
-						telegram: telegram || ''
-					}
-				);
+			if (addAddressError) {
+				queueNotification({
+					header: 'Error!',
+					message: addAddressError,
+					status: NotificationStatus.ERROR
+				});
+				return;
+			}
 
-				if (addAddressError) {
-					queueNotification({
-						header: 'Error!',
-						message: addAddressError,
-						status: NotificationStatus.ERROR
-					});
-					return;
-				}
-
-				if (addAddressData) {
-					setUserDetailsContextState((prevState: any) => {
-						return {
-							...prevState,
-							addressBook: addAddressData
-						};
-					});
-				}
+			if (addAddressData) {
+				setActiveOrg((prevState: any) => {
+					return {
+						...prevState,
+						addressBook: addAddressData
+					};
+				});
 			}
 		} catch (error) {
 			console.log('ERROR', error);

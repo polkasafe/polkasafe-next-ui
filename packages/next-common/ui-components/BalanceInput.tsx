@@ -8,10 +8,9 @@ import { Dropdown, Form, Input, Tooltip } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import BN from 'bn.js';
 import { useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { currencies, currencyProperties } from '@next-common/global/currencyConstants';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import formatBnBalance from '@next-substrate/utils/formatBnBalance';
 import inputToBn from '@next-substrate/utils/inputToBn';
 import { CurrencyFlag } from '@next-substrate/app/components/Settings/ChangeCurrency';
@@ -27,6 +26,7 @@ interface Props {
 	placeholder?: string;
 	defaultValue?: string;
 	multipleCurrency?: boolean;
+	network: string;
 }
 
 const BalanceInput: React.FC<Props> = ({
@@ -36,18 +36,23 @@ const BalanceInput: React.FC<Props> = ({
 	onChange,
 	placeholder = '',
 	defaultValue,
-	multipleCurrency = false
+	multipleCurrency = false,
+	network
 }: Props) => {
 	const [isValidInput, setIsValidInput] = useState(true);
-	const { network } = useGlobalApiContext();
 	const [balance, setBalance] = useState<string>('');
 	const [bnBalance, setBnBalance] = useState(new BN(0));
 	const { allCurrencyPrices, tokenUsdPrice } = useGlobalCurrencyContext();
 
 	const [currency, setCurrency] = useState<string>(network);
 
-	const tokenCurrencyPrice =
-		currency !== network ? Number(tokenUsdPrice) * allCurrencyPrices[currencyProperties[currency]?.symbol].value : 1;
+	useEffect(() => {
+		setCurrency(network);
+	}, [network]);
+
+	const tokenCurrencyPrice = !Object.values(networks).includes(currency)
+		? Number(tokenUsdPrice) * allCurrencyPrices[currencyProperties[currency]?.symbol].value
+		: 1;
 
 	useEffect(() => {
 		const value = Number(defaultValue);
@@ -101,8 +106,8 @@ const BalanceInput: React.FC<Props> = ({
 			key: network,
 			label: (
 				<span className='flex items-center gap-x-2 text-white'>
-					<ParachainIcon src={chainProperties[network].logo} />
-					{chainProperties[network].tokenSymbol}
+					<ParachainIcon src={chainProperties[network]?.logo} />
+					{chainProperties[network]?.tokenSymbol}
 				</span>
 			) as any
 		}
@@ -149,7 +154,7 @@ const BalanceInput: React.FC<Props> = ({
 								  bnBalance?.gte(new BN(fromBalance)) &&
 								  'Insufficient Balance in Sender Account.'
 						}
-						initialValue={chainProperties[network].existentialDeposit}
+						initialValue={chainProperties[network]?.existentialDeposit}
 					>
 						<div className='flex h-[50px] items-center'>
 							<Input
@@ -159,7 +164,9 @@ const BalanceInput: React.FC<Props> = ({
 									setBalance(a.target.value);
 								}}
 								placeholder={`${placeholder} ${
-									currency === network ? chainProperties[network]?.tokenSymbol : currencyProperties[currency].symbol
+									Object.values(networks).includes(currency)
+										? chainProperties[network]?.tokenSymbol
+										: currencyProperties[currency].symbol
 								}`}
 								defaultValue={defaultValue}
 								value={balance}
@@ -174,13 +181,10 @@ const BalanceInput: React.FC<Props> = ({
 										onClick: onCurrencyChange
 									}}
 								>
-									{currency === network ? (
-										<div className='absolute right-0 flex cursor-pointer items-center justify-center pr-3 text-white'>
-											<ParachainIcon
-												src={chainProperties[network].logo}
-												className='mr-2'
-											/>
-											<span>{chainProperties[network].tokenSymbol}</span>
+									{Object.values(networks).includes(currency) ? (
+										<div className='absolute right-0 flex cursor-pointer items-center justify-center gap-x-1 pr-3 text-white'>
+											<ParachainIcon src={chainProperties[network]?.logo} />
+											<span>{chainProperties[network]?.tokenSymbol}</span>
 											<CircleArrowDownIcon className='text-primary ml-1' />
 										</div>
 									) : (
@@ -195,20 +199,17 @@ const BalanceInput: React.FC<Props> = ({
 									)}
 								</Dropdown>
 							) : (
-								<div className='absolute right-0 flex items-center justify-center pr-3 text-white'>
-									<ParachainIcon
-										src={chainProperties[network].logo}
-										className='mr-2'
-									/>
-									<span>{chainProperties[network].tokenSymbol}</span>
+								<div className='absolute right-0 flex items-center justify-center gap-x-1 pr-3 text-white'>
+									<ParachainIcon src={chainProperties[network]?.logo} />
+									<span>{chainProperties[network]?.tokenSymbol}</span>
 								</div>
 							)}
 						</div>
-						{currency !== network && isValidInput && (
+						{!Object.values(networks).includes(currency) && isValidInput && (
 							<span className='text-waiting mt-1 flex items-center gap-x-1 text-xs'>
 								You send = {formatBnBalance(bnBalance, { numberAfterComma: 3, withUnit: true }, network)}
 								<Tooltip
-									title={`1 ${chainProperties[network].tokenSymbol} = ${tokenCurrencyPrice?.toFixed(2)} ${
+									title={`1 ${chainProperties[network]?.tokenSymbol} = ${tokenCurrencyPrice?.toFixed(2)} ${
 										currencyProperties[currency].symbol
 									}`}
 								>

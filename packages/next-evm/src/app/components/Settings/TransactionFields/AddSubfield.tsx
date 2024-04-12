@@ -8,13 +8,14 @@ import React, { useState } from 'react';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-evm/app/components/Settings/ModalBtn';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { EFieldType, ITransactionCategorySubfields, NotificationStatus } from '@next-common/types';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useWallets } from '@privy-io/react-auth';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 const AddSubfield = ({
 	className,
@@ -30,8 +31,12 @@ const AddSubfield = ({
 	const [subfields, setSubfields] = useState<{ name: string; subfieldType: EFieldType; required: boolean }[]>([
 		{ name: '', required: true, subfieldType: EFieldType.SINGLE_SELECT }
 	]);
-	const { network } = useGlobalApiContext();
-	const { setUserDetailsContextState, transactionFields } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 
 	const fieldTypeOptions: ItemType[] = Object.values(EFieldType)
 		.filter((key) => key !== EFieldType.ATTACHMENT)
@@ -84,10 +89,7 @@ const AddSubfield = ({
 
 	const handleSave = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress || !signature) {
+			if (!userID || !activeOrg?.id) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
@@ -103,23 +105,28 @@ const AddSubfield = ({
 					});
 				}
 
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
-					await nextApiClientFetch<string>(
-						`${EVM_API_URL}/updateTransactionFieldsEth`,
-						{
-							transactionFields: {
-								...transactionFields,
-								[category]: {
-									...transactionFields[category],
-									subfields: {
-										...transactionFields[category].subfields,
-										...subfieldsObject
-									}
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFieldsEth`, {
+					body: JSON.stringify({
+						organisationId: activeOrg.id,
+						transactionFields: {
+							...transactionFields,
+							[category]: {
+								...transactionFields[category],
+								subfields: {
+									...transactionFields[category].subfields,
+									...subfieldsObject
 								}
 							}
-						},
-						{ network }
-					);
+						}
+					}),
+					headers: firebaseFunctionsHeader(connectedWallet.address),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
 
 				if (updateTransactionFieldsError) {
 					queueNotification({
@@ -137,7 +144,7 @@ const AddSubfield = ({
 						message: 'Transaction Fields Updated.',
 						status: NotificationStatus.SUCCESS
 					});
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

@@ -1,0 +1,5 @@
+.org_dropdown {
+    border-radius: 20px;
+    background: radial-gradient(151.92% 127.02% at 15.32% 21.04%, rgba(179, 121, 223, 0.20) 0%, rgba(204, 88, 84, 0.02) 77.08%, rgba(179, 121, 223, 0.20) 100%);
+    backdrop-filter: blur(40px);
+}

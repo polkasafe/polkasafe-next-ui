@@ -8,10 +8,9 @@ import dayjs from 'dayjs';
 import { ethers } from 'ethers';
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import { ParachainIcon } from '@next-evm/app/components/NetworksDropdown/NetworkCard';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
-import { ITransaction } from '@next-common/types';
+import { ITransaction, ITxnCategory } from '@next-common/types';
 import {
 	ArrowDownLeftIcon,
 	ArrowUpRightIcon,
@@ -22,15 +21,21 @@ import {
 import { IHistoryTransactions } from '@next-evm/utils/convertSafeData/convertSafeHistory';
 
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { TransactionData, getTransactionDetails } from '@safe-global/safe-gateway-typescript-sdk';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { StaticImageData } from 'next/image';
 import formatBalance from '@next-evm/utils/formatBalance';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
-import SentInfo from './SentInfo';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { useWallets } from '@privy-io/react-auth';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import ReceivedInfo from './ReceivedInfo';
+import SentInfo from './SentInfo';
+import TransactionFields, { generateCategoryKey } from '../TransactionFields';
 
 dayjs.extend(LocalizedFormat);
 
@@ -45,19 +50,17 @@ const Transaction: FC<IHistoryTransactions> = ({
 	decodedData,
 	data: callData,
 	advancedDetails,
-	receivedTransfers
+	receivedTransfers,
+	safeAddress
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { network: defaultNetwork } = useGlobalApiContext();
-	const { gnosisSafe, isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } =
-		useGlobalUserDetailsContext();
+	const { isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { allAssets } = useMultisigAssetsContext();
 
 	const shared = sharedSafeAddress === activeMultisig;
-	const network =
-		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
-			? sharedSafeNetwork
-			: defaultNetwork;
+	const multisig = activeOrg?.multisigs?.find((item) => item.address === safeAddress);
+	const [network, setNetwork] = useState<NETWORK>(NETWORK.ETHEREUM);
 
 	const token = chainProperties[network].tokenSymbol;
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
@@ -93,13 +96,42 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 	const urlHash = typeof window !== 'undefined' && window.location.hash.slice(1);
 
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+
+	const [category, setCategory] = useState<string>('none');
+
+	const [transactionFieldsObject, setTransactionFieldsObject] = useState<ITxnCategory>({
+		category: 'none',
+		subfields: {}
+	});
+
+	useEffect(() => {
+		if (!multisig?.network) return;
+		const n =
+			isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
+				? sharedSafeNetwork
+				: multisig?.network || NETWORK.ETHEREUM;
+		setNetwork(n as NETWORK);
+	}, [isSharedSafe, multisig?.network, shared, sharedSafeNetwork]);
+
 	useEffect(() => {
 		if (!callData) return;
-		gnosisSafe.safeService
-			.decodeData(callData)
-			.then((res) => setDecodedCallData(res))
-			.catch((e) => console.log(e));
-	}, [callData, gnosisSafe.safeService]);
+		const decodeData = async () => {
+			const txUrl = returnTxUrl(network as NETWORK);
+			const provider = await connectedWallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+			gnosisService.safeService
+				.decodeData(callData)
+				.then((res) => setDecodedCallData(res))
+				.catch((e) => console.log(e));
+		};
+		decodeData();
+	}, [callData, connectedWallet, network]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
@@ -119,7 +151,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 			const tokenDetails = [];
 			tokenContractAddressArray.forEach((item) => {
 				if (realContractAddresses.includes(item)) {
-					const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
+					const assetDetails = allAssets[safeAddress]?.assets?.find((asset) => asset.tokenAddress === item);
 					tokenDetails.push({
 						tokenAddress: assetDetails?.tokenAddress || '',
 						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -140,7 +172,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
-					const isFakeToken = !allAssets.some((asset) => asset.tokenAddress === item?.tokenInfo?.address);
+					const isFakeToken = !allAssets[safeAddress]?.assets?.some(
+						(asset) => asset.tokenAddress === item?.tokenInfo?.address
+					);
 					tokenDetails.push({
 						isFakeToken,
 						tokenAddress: item?.tokenInfo?.address || '',
@@ -177,7 +211,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 			return sum + Number(a);
 		}, 0);
 		setTotalAmount(total);
-	}, [allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, txData]);
+	}, [allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, safeAddress, txData]);
 
 	useEffect(() => {
 		if (tokenDetailsArray.length > 1) {
@@ -208,41 +242,40 @@ const Transaction: FC<IHistoryTransactions> = ({
 
 		setTxData(txDetails.txData);
 		setTxInfo(txDetails.txInfo);
-	}, [txHash, network]);
+
+		const getTransactionRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getTransactionDetailsEth`, {
+			body: JSON.stringify({
+				callHash: txHash
+			}),
+			headers: firebaseFunctionsHeader(connectedWallet.address),
+			method: 'POST'
+		});
+		const { data: getTransactionData, error: getTransactionErr } = (await getTransactionRes.json()) as {
+			data: ITransaction;
+			error: string;
+		};
+
+		if (getTransactionErr) {
+			console.log('error', getTransactionErr);
+			setLoading(false);
+		} else {
+			setLoading(false);
+			setTransactionDetails(getTransactionData || ({} as any));
+			if (getTransactionData?.transactionFields) {
+				setTransactionFieldsObject(getTransactionData.transactionFields);
+				setCategory(
+					getTransactionData?.transactionFields?.category
+						? generateCategoryKey(getTransactionData.transactionFields.category)
+						: 'none'
+				);
+			}
+		}
+	}, [network, txHash, connectedWallet]);
 	useEffect(() => {
 		getTxDetails();
 	}, [getTxDetails]);
 
-	const handleGetHistoryNote = async () => {
-		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-			if (!userAddress || !signature) {
-				console.log('ERROR');
-			} else {
-				setLoading(true);
-				const { data: getTransactionData, error: getTransactionErr } = await nextApiClientFetch<ITransaction>(
-					`${EVM_API_URL}/getTransactionDetailsEth`,
-					{ callHash: txHash },
-					{ network }
-				);
-
-				if (getTransactionErr) {
-					console.log('error', getTransactionErr);
-					setLoading(false);
-				} else {
-					setLoading(false);
-					setTransactionDetails(getTransactionData || ({} as any));
-				}
-			}
-		} catch (error) {
-			setLoading(false);
-			console.log('ERROR', error);
-		}
-	};
-
-	return tokenDetailsArray?.[0]?.isFakeToken && isFundType ? null : (
+	return (
 		<Collapse
 			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left mb-[10px]'
 			bordered={false}
@@ -254,16 +287,13 @@ const Transaction: FC<IHistoryTransactions> = ({
 				header={
 					<div
 						onClick={() => {
-							if (!transactionInfoVisible) {
-								handleGetHistoryNote();
-							}
 							toggleTransactionVisible(!transactionInfoVisible);
 						}}
 						className={classNames(
-							'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
+							'grid items-center grid-cols-[repeat(13,_minmax(0,_1fr))] cursor-pointer text-white font-normal text-sm leading-[15px]'
 						)}
 					>
-						<p className={`${isFundType || isSentType ? 'col-span-5' : 'col-span-3'} flex items-center gap-x-3`}>
+						<p className='col-span-5 flex items-center gap-x-3'>
 							{type === 'Sent' || type === 'removeOwner' || type === 'MULTISIG_TRANSACTION' || type === 'multiSend' ? (
 								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
 									{isRejectionTxn ? (
@@ -283,7 +313,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								{isFundType ? (
 									isMultiTokenTx ? (
 										<div className='flex gap-x-2 items-center'>
-											Received Multiple Tokens
+											Multiple Tokens
 											{tokenDetailsArray.map((item) => (
 												<ParachainIcon
 													tooltip={item.tokenSymbol}
@@ -293,7 +323,6 @@ const Transaction: FC<IHistoryTransactions> = ({
 										</div>
 									) : (
 										<p className='flex items-center grid grid-cols-8'>
-											<span className='col-span-1'>Received</span>
 											<div className='flex items-center col-span-7 gap-x-2'>
 												<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
 												<span className='font-normal text-xs leading-[13px] text-success'>
@@ -308,7 +337,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 												</span>
 												from{' '}
 												<AddressComponent
+													network={network}
 													onlyAddress
+													addressLength={5}
 													iconSize={25}
 													withBadge={false}
 													address={receivedTransfers?.[0]?.from}
@@ -319,7 +350,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								) : isSentType ? (
 									isMultiTokenTx ? (
 										<div className='flex gap-x-2 items-center'>
-											Sent Multiple Tokens
+											Multiple Tokens
 											{tokenDetailsArray.map((item) => (
 												<ParachainIcon
 													tooltip={item.tokenSymbol}
@@ -331,7 +362,6 @@ const Transaction: FC<IHistoryTransactions> = ({
 										'On-chain Rejection'
 									) : (
 										<p className='grid grid-cols-8 flex items-center'>
-											<span className='col-span-1'>Sent</span>
 											<div className='flex items-center col-span-7 gap-x-2'>
 												<ParachainIcon
 													src={
@@ -361,7 +391,9 @@ const Transaction: FC<IHistoryTransactions> = ({
 													'Multiple Addresses'
 												) : (
 													<AddressComponent
+														network={network}
 														iconSize={25}
+														addressLength={5}
 														onlyAddress
 														withBadge={false}
 														address={txInfo?.recipient?.value || to.toString() || ''}
@@ -395,9 +427,27 @@ const Transaction: FC<IHistoryTransactions> = ({
 								)}
 							</span>
 						</p>
-						{!isSentType && !isFundType && <p className='col-span-2'>-</p>}
-						{created_at && <p className='col-span-2'>{new Date(created_at).toLocaleString()}</p>}
-						<p className='col-span-2 flex items-center justify-end gap-x-4'>
+						<p className='col-span-3'>
+							<AddressComponent
+								address={safeAddress}
+								withBadge={false}
+								isMultisig
+								showNetworkBadge
+								network={multisig?.network as NETWORK}
+							/>
+						</p>
+						{created_at && <p className='col-span-2'>{dayjs(created_at).format('DD/MM/YYYY[,] HH:mm')}</p>}
+						<p className='col-span-2 pr-1'>
+							<TransactionFields
+								callHash={txHash}
+								category={category}
+								setCategory={setCategory}
+								transactionFieldsObject={transactionFieldsObject}
+								setTransactionFieldsObject={setTransactionFieldsObject}
+								multisigAddress={multisig.address}
+							/>
+						</p>
+						<p className='col-span-1 flex items-center justify-end gap-x-4'>
 							<span className='text-success'>Success</span>
 							<span className='text-white text-sm'>
 								{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}
@@ -416,7 +466,12 @@ const Transaction: FC<IHistoryTransactions> = ({
 							note={transactionDetails?.note || ''}
 							loading={loading}
 							tokenDetialsArray={tokenDetailsArray}
-							network={network}
+							network={multisig?.network as NETWORK}
+							transactionFields={transactionFieldsObject}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
+							multisigAddress={multisig?.address || ''}
 						/>
 					) : (
 						<SentInfo
@@ -438,6 +493,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 							}
 							callHash={txHash || ''}
 							note={transactionDetails?.note || ''}
+							transactionFields={transactionFieldsObject}
 							from={executor || ''}
 							loading={loading}
 							txType={type}
@@ -455,8 +511,12 @@ const Transaction: FC<IHistoryTransactions> = ({
 							advancedDetails={advancedDetails}
 							isCustomTxn={isCustomTxn}
 							isRejectionTxn={isRejectionTxn}
-							network={network}
+							network={multisig?.network as NETWORK}
 							isContractInteraction={isContractInteraction}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
+							multisigAddress={multisig?.address || ''}
 						/>
 					)}
 				</div>

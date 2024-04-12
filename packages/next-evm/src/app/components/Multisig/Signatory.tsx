@@ -13,6 +13,7 @@ import { IAddressBookItem } from '@next-common/types';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import inputToBn from '@next-evm/utils/inputToBn';
 import shortenAddress from '@next-evm/utils/shortenAddress';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 interface ISignature {
 	name: string;
@@ -29,29 +30,33 @@ interface ISignatoryProps {
 }
 
 const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISignatoryProps) => {
-	const { address: userAddress, addressBook } = useGlobalUserDetailsContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
 
 	const [addresses, setAddresses] = useState<ISignature[]>([]);
 
 	const walletAccounts = useGetWalletAccounts();
 
+	const { activeOrg } = useActiveOrgContext();
+
 	useEffect(() => {
+		if (!activeOrg || !activeOrg.addressBook) return;
+
 		setAddresses(
-			addressBook
+			activeOrg.addressBook
 				?.filter(
-					(item: any, i: any) =>
-						i !== 0 &&
+					(item) =>
+						!signatories.includes(item.address) &&
 						(filterAddress ? item.address.includes(filterAddress, 0) || item.name.includes(filterAddress, 0) : true)
 				)
 				.map((item: IAddressBookItem, i: number) => ({
 					address: item.address,
-					key: i + 1,
+					key: signatories.length + i,
 					name: item.name
 				}))
 		);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [addressBook]);
+	}, [activeOrg, signatories]);
 
 	useEffect(() => {
 		const fetchBalances = async () => {
@@ -70,7 +75,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 		};
 		fetchBalances();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [addressBook]);
+	}, [activeOrg]);
 
 	const dragStart = (event: any) => {
 		event.dataTransfer.setData('text', event.target.id);
@@ -95,10 +100,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 			return [...prevState, address];
 		});
 
-		const drop2 = document.getElementById(`drop2${homepage && '-home'}`);
-		if (data) {
-			drop2?.appendChild(document.getElementById(data)!);
-		}
+		// const drop2 = document.getElementById(`drop2${homepage && '-home'}`);
+		// if (data) {
+		// drop2?.appendChild(document.getElementById(data)!);
+		// }
 	};
 
 	const dropReturn = (event: any) => {
@@ -116,10 +121,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 				return copyState;
 			});
 		}
-		const drop1 = document.getElementById(`drop1${homepage && '-home'}`);
-		if (data) {
-			drop1?.appendChild(document.getElementById(data)!);
-		}
+		// const drop1 = document.getElementById(`drop1${homepage && '-home'}`);
+		// if (data) {
+		// drop1?.appendChild(document.getElementById(data)!);
+		// }
 	};
 
 	const clickDropReturn = (event: any) => {
@@ -137,10 +142,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 				return copyState;
 			});
 		}
-		const drop1 = document.getElementById(`drop1${homepage && '-home'}`);
-		if (data) {
-			drop1?.appendChild(document.getElementById(data)!);
-		}
+		// const drop1 = document.getElementById(`drop1${homepage && '-home'}`);
+		// if (data) {
+		// drop1?.appendChild(document.getElementById(data)!);
+		// }
 	};
 
 	const clickDrop = async (event: any) => {
@@ -156,10 +161,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 			return [...prevState, address];
 		});
 
-		const drop2 = document.getElementById(`drop2${homepage && '-home'}`);
-		if (data) {
-			drop2?.appendChild(document.getElementById(data)!);
-		}
+		// const drop2 = document.getElementById(`drop2${homepage && '-home'}`);
+		// if (data) {
+		// drop2?.appendChild(document.getElementById(data)!);
+		// }
 	};
 
 	return (
@@ -184,7 +189,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 										Number(address.balance) === 0);
 								return (
 									<p
-										onClick={signatories.includes(address.address) ? clickDropReturn : clickDrop}
+										onClick={clickDrop}
 										title={address.address || ''}
 										id={`${address.key}-${address.address}`}
 										key={`${address.key}-${address.address}`}
@@ -192,7 +197,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 										draggable
 										onDragStart={dragStart}
 									>
-										{address.name}
+										{address.name || shortenAddress(address.address)}
 										{lowBalance && signatories.includes(address.address) && (
 											<Tooltip
 												title={
@@ -229,10 +234,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 							<>
 								<div className='text-sm text-text_secondary'>Addresses imported directly from your Metamask wallet</div>
 								{walletAccounts
-									.filter((item: string) => item !== userAddress)
+									.filter((item: string) => !signatories.includes(item))
 									.map((account: string, i: number) => (
 										<p
-											onClick={signatories.includes(account) ? clickDropReturn : clickDrop}
+											onClick={clickDrop}
 											title={account || ''}
 											id={`${i + 1}-${account}`}
 											key={`${i + 1}-${account}`}
@@ -259,17 +264,22 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 						onDrop={drop}
 						onDragOver={dragOver}
 					>
-						<p
-							title={userAddress || ''}
-							id={`0-${signatories[0]}`}
-							key={`0-${signatories[0]}`}
-							className='bg-bg-main p-2 m-1 rounded-md text-white cursor-default flex items-center gap-x-2 cursor-grab'
-						>
-							{addressBook[0]?.name}{' '}
-							<Tooltip title={<span className='text-sm text-text_secondary'>Your Wallet Address</span>}>
-								<Badge status='success' />
-							</Tooltip>
-						</p>
+						{signatories.map((a, i) => (
+							<p
+								onClick={a !== userAddress && clickDropReturn}
+								title={a || ''}
+								id={`${i}-${a}`}
+								key={`${i}-${a}`}
+								className='bg-bg-main p-2 m-1 rounded-md text-white cursor-default flex items-center gap-x-2 cursor-grab'
+							>
+								{activeOrg?.addressBook?.find((item) => item.address === a)?.name || shortenAddress(a)}{' '}
+								{a === userAddress && (
+									<Tooltip title={<span className='text-sm text-text_secondary'>Your Wallet Address</span>}>
+										<Badge status='success' />
+									</Tooltip>
+								)}
+							</p>
+						))}
 					</div>
 				</div>
 			</div>

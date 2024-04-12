@@ -4,10 +4,9 @@
 
 import { PlusCircleOutlined, ShareAltOutlined } from '@ant-design/icons';
 import { Dropdown, Skeleton, Tooltip } from 'antd';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import AddressQr from '@next-common/ui-components/AddressQr';
 import { CopyIcon, QRIcon, AssetsIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
@@ -17,12 +16,17 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import FundMultisig from '@next-evm/app/components/SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionTypeEVM } from '@next-evm/app/components/SendFunds/SendFundsForm';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { useGlobalCurrencyContext } from '@next-evm/context/CurrencyContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import formatBalance from '@next-evm/utils/formatBalance';
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { ethers } from 'ethers';
+import { useWallets } from '@privy-io/react-auth';
+import GnosisSafeService from '@next-evm/services/Gnosis';
 
 interface IDashboardCard {
 	className?: string;
@@ -43,12 +47,14 @@ const DashboardCard = ({
 		useGlobalUserDetailsContext();
 	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
 	const { allAssets, loadingAssets } = useMultisigAssetsContext();
-	const { network } = useGlobalApiContext();
+	const { network } = activeMultisigData;
+	const { wallets } = useWallets();
 
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
 	const currentMultisig = multisigAddresses?.find((item) => item.address === activeMultisig);
 	const [totalAssetValue, setTotalAssetValue] = useState<string>('');
 	const [transactionType, setTransactionType] = useState<ETransactionTypeEVM>(ETransactionTypeEVM.SEND_TOKEN);
+	const [multisigInfo, setMultisigInfo] = useState<{ threshold: number; signatories: string[] }>();
 
 	const baseURL = typeof window !== 'undefined' && global.window.location.href;
 
@@ -62,11 +68,36 @@ const DashboardCard = ({
 		}));
 
 	useEffect(() => {
-		if (allAssets && allAssets.length > 0) {
-			const total = allAssets.reduce((sum, asset) => sum + Number(asset.balance_usd), 0);
+		if (allAssets && allAssets[activeMultisig]?.assets?.length > 0) {
+			const total = allAssets[activeMultisig]?.assets.reduce((sum, asset) => sum + Number(asset.balance_usd), 0);
 			setTotalAssetValue(total.toString());
 		}
-	}, [allAssets]);
+	}, [activeMultisig, allAssets]);
+
+	const fetchMultisigInfo = useCallback(async () => {
+		if (!activeMultisig || !activeMultisigData) return;
+
+		const txUrl = returnTxUrl(network as NETWORK);
+		const provider = await wallets?.[0].getEthersProvider();
+		const web3Adapter = new EthersAdapter({
+			ethers,
+			signerOrProvider: provider
+		});
+		const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+
+		const info = await gnosisService.getMultisigData(activeMultisig);
+
+		if (info) {
+			setMultisigInfo({
+				signatories: info.owners,
+				threshold: info.threshold
+			});
+		}
+	}, [activeMultisig, activeMultisigData, network, wallets]);
+
+	useEffect(() => {
+		fetchMultisigInfo();
+	}, [fetchMultisigInfo]);
 
 	return (
 		<>
@@ -119,15 +150,17 @@ const DashboardCard = ({
 								/>
 							</div>
 							<div className=' bg-primary text-white text-sm rounded-lg absolute -bottom-1 left-[16px] px-2'>
-								{activeMultisigData?.threshold ? activeMultisigData.threshold : currentMultisig?.threshold}/
-								{activeMultisigData?.signatories?.length
-									? activeMultisigData?.signatories?.length
+								{multisigInfo?.threshold ? multisigInfo.threshold : currentMultisig?.threshold}/
+								{multisigInfo?.signatories?.length
+									? multisigInfo?.signatories?.length
 									: currentMultisig?.signatories.length}
 							</div>
 						</div>
 						<div>
 							<div className='text-base font-bold text-white flex items-center gap-x-2'>
-								{multisigSettings[activeMultisig]?.name || currentMultisig?.name || activeMultisigData?.name}
+								{multisigSettings[`${activeMultisig}_${network}`]?.name ||
+									currentMultisig?.name ||
+									activeMultisigData?.name}
 							</div>
 							<div className='flex text-xs'>
 								<div
@@ -181,14 +214,14 @@ const DashboardCard = ({
 							<div>
 								<div className='text-white'>Signatories</div>
 								<div className='font-bold text-lg text-primary'>
-									{activeMultisigData?.signatories?.length
-										? activeMultisigData?.signatories?.length
+									{multisigInfo?.signatories?.length
+										? multisigInfo?.signatories?.length
 										: currentMultisig?.signatories.length || 0}
 								</div>
 							</div>
 							<div>
 								<div className='text-white'>Tokens</div>
-								<div className='font-bold text-lg text-primary'>{allAssets?.length || 0}</div>
+								<div className='font-bold text-lg text-primary'>{allAssets[activeMultisig]?.assets?.length || 0}</div>
 							</div>
 							<div>
 								<div className='text-white'>Total Asset Value</div>

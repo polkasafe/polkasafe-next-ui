@@ -13,8 +13,6 @@ import React, { useEffect, useState } from 'react';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import ModalBtn from '@next-evm/app/components/Multisig/ModalBtn';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { EFieldType, IAsset, INFTAsset, NotificationStatus } from '@next-common/types';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
@@ -41,7 +39,12 @@ import Image from 'next/image';
 import { getSimulationLink, setSimulationSharing } from '@next-evm/utils/simulation';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
-import { useSuperfluidContext } from '@next-evm/context/SuperfluidContext';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { useWallets } from '@privy-io/react-auth';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { Framework } from '@superfluid-finance/sdk-core';
 import TransactionFailedScreen from './TransactionFailedScreen';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 import AddAddressModal from './AddAddressModal';
@@ -99,12 +102,18 @@ const SendFundsForm = ({
 	defaultNFT,
 	defaultToken // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
-	const { activeMultisig, addressBook, address, gnosisSafe, multisigAddresses, transactionFields, activeMultisigData } =
-		useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
-	const { records } = useActiveMultisigContext();
+	const { activeMultisig, address, multisigAddresses, activeMultisigData } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
+	const [network, setNetwork] = useState<NETWORK>(
+		(activeMultisigData?.network as NETWORK) || (activeOrg?.multisigs?.[0]?.network as NETWORK) || NETWORK.POLYGON
+	);
 	const { allAssets, allNfts } = useMultisigAssetsContext();
-	const { superfluidFramework } = useSuperfluidContext();
+	const { wallets } = useWallets();
+
+	const [selectedMultisig, setSelectedMultisig] = useState<string>(
+		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
+	);
 
 	const [note, setNote] = useState<string>('');
 	const [loading, setLoading] = useState(false);
@@ -113,7 +122,7 @@ const SendFundsForm = ({
 		{
 			amount: '0',
 			recipient: defaultSelectedAddress ? defaultSelectedAddress || '' : address || '',
-			token: defaultToken || allAssets[0] || ({} as IAsset)
+			token: defaultToken || allAssets[selectedMultisig]?.assets?.[0]
 		}
 	]);
 	const [autocompleteAddresses, setAutoCompleteAddresses] = useState<DefaultOptionType[]>([]);
@@ -155,7 +164,7 @@ const SendFundsForm = ({
 
 	const [flowRate, setFlowRate] = useState<EFlowRates>(EFlowRates.MONTH);
 
-	const [streamToken, setStreamToken] = useState<IAsset>(defaultToken || allAssets[0] || ({} as IAsset));
+	const [streamToken, setStreamToken] = useState<IAsset>(defaultToken);
 
 	const transactionTypes: ItemType[] = Object.values(ETransactionTypeEVM)
 		.filter((item) => {
@@ -166,6 +175,19 @@ const SendFundsForm = ({
 			label: <span className='text-white text-sm flex items-center gap-x-2'>{item}</span>
 		}));
 
+	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
+		key: JSON.stringify(item),
+		label: (
+			<AddressComponent
+				isMultisig
+				showNetworkBadge
+				network={item.network as NETWORK}
+				withBadge={false}
+				address={item.address}
+			/>
+		)
+	}));
+
 	const flowRates: ItemType[] = Object.keys(EFlowRates).map((item) => ({
 		key: EFlowRates[item],
 		label: <span className='text-white text-sm flex items-center gap-x-2'>/ {item.toLowerCase()}</span>
@@ -173,12 +195,31 @@ const SendFundsForm = ({
 
 	// nft txns vars
 
-	const [selectedNFT, setSelectedNFT] = useState<INFTAsset>(defaultNFT || allNfts[0] || ({} as INFTAsset));
+	const [selectedNFT, setSelectedNFT] = useState<INFTAsset>(defaultNFT);
 	const [nftRecipient, setNftRecipient] = useState<string>(address || '');
 
 	// transaction Builder vars
 	const [txnBuilderData, setTxnBuilderData] = useState<string>('');
 	const [txnBuilderToAddress, setTxnBuilderToAddress] = useState<string>('');
+
+	useEffect(() => {
+		if (allNfts && allNfts[selectedMultisig]) {
+			setSelectedNFT(allNfts[selectedMultisig][0]);
+		}
+	}, [allNfts, selectedMultisig]);
+
+	useEffect(() => {
+		if (allAssets && allAssets[selectedMultisig]?.assets) {
+			setStreamToken(allAssets[selectedMultisig]?.assets?.[0]);
+			setRecipientAndAmount([
+				{
+					amount: '0',
+					recipient: defaultSelectedAddress ? defaultSelectedAddress || '' : address || '',
+					token: defaultToken || allAssets[selectedMultisig]?.assets?.[0]
+				}
+			]);
+		}
+	}, [address, allAssets, defaultSelectedAddress, defaultToken, selectedMultisig]);
 
 	useEffect(() => {
 		if (!streamAmount) return;
@@ -220,7 +261,7 @@ const SendFundsForm = ({
 	const onAddRecipient = () => {
 		setRecipientAndAmount((prevState) => {
 			const copyOptionsArray = [...prevState];
-			copyOptionsArray.push({ amount: '0', recipient: '', token: defaultToken || allAssets?.[0] });
+			copyOptionsArray.push({ amount: '0', recipient: '', token: defaultToken || streamToken });
 			return copyOptionsArray;
 		});
 	};
@@ -233,21 +274,20 @@ const SendFundsForm = ({
 
 	// Set address options for recipient
 	useEffect(() => {
+		if (!activeOrg) return;
+		const { addressBook } = activeOrg;
+
 		const allAddresses: string[] = [];
-		if (records) {
-			Object.keys(records).forEach((a) => {
-				allAddresses.push(a);
-			});
-		}
-		addressBook.forEach((item) => {
-			if (!allAddresses.includes(item.address)) {
-				allAddresses.push(item.address);
+		addressBook?.forEach((item) => {
+			if (!allAddresses.includes(item?.address)) {
+				allAddresses.push(item?.address);
 			}
 		});
 		setAutoCompleteAddresses(
 			allAddresses.map((a) => ({
 				label: (
 					<AddressComponent
+						network={network}
 						withBadge={false}
 						address={a}
 					/>
@@ -255,7 +295,7 @@ const SendFundsForm = ({
 				value: a
 			}))
 		);
-	}, [address, addressBook, network, records]);
+	}, [activeOrg, address, network]);
 
 	useEffect(() => {
 		setTransactionFieldsObject({ category, subfields: {} });
@@ -274,7 +314,7 @@ const SendFundsForm = ({
 			0
 		);
 		setAmount(total.toString());
-	}, [activeMultisigData, recipientAndAmount]);
+	}, [recipientAndAmount]);
 
 	useEffect(() => {
 		setValidRecipient([]);
@@ -316,17 +356,26 @@ const SendFundsForm = ({
 	}, [recipientAndAmount, streamRecipient, transactionType]);
 
 	const handleSimulate = async () => {
+		const txUrl = returnTxUrl(network as NETWORK);
+		const wallet = wallets?.[0];
+		await wallet.switchChain(chainProperties[network].chainId);
+		const provider = await wallet.getEthersProvider();
+		const web3Adapter = new EthersAdapter({
+			ethers,
+			signerOrProvider: provider.getSigner(wallet.address)
+		});
+		const gnosisService = new GnosisSafeService(web3Adapter, web3Adapter.getSigner(), txUrl);
 		const recipients = recipientAndAmount.map((r) => r.recipient);
 		const amounts = recipientAndAmount.map((a) =>
 			ethers.utils.parseUnits(a.amount, a.token?.token_decimals || 'ether').toString()
 		);
 		const selectedTokens = recipientAndAmount.map((r) => r.token);
 		setSimulationLoading(true);
-		const simulationData = await gnosisSafe.getTxSimulationData(
-			activeMultisig,
+		const simulationData = await gnosisService.getTxSimulationData(
+			selectedMultisig,
 			recipients,
 			amounts,
-			address,
+			wallet.address || address,
 			selectedTokens,
 			chainProperties[network].chainId
 		);
@@ -346,6 +395,15 @@ const SendFundsForm = ({
 	const handleSubmit = async () => {
 		setLoading(true);
 		try {
+			const txUrl = returnTxUrl(network as NETWORK);
+			const wallet = wallets?.[0];
+			await wallet.switchChain(chainProperties[network].chainId);
+			const provider = await wallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider.getSigner(wallet.address)
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, web3Adapter.getSigner(), txUrl);
 			let safeTxHash = '';
 
 			const recipients = recipientAndAmount.map((r) => r.recipient);
@@ -354,6 +412,15 @@ const SendFundsForm = ({
 			);
 			const selectedTokens = recipientAndAmount.map((r) => r.token);
 			if (transactionType === ETransactionTypeEVM.STREAM_PAYMENTS) {
+				const sfProvider = typeof window !== 'undefined' && new ethers.providers.Web3Provider(window.ethereum);
+				await provider.send('eth_requestAccounts', []);
+
+				const { chainId } = chainProperties[network];
+
+				const superfluidFramework = await Framework.create({
+					chainId: Number(chainId),
+					provider: sfProvider
+				});
 				const superToken = await superfluidFramework.loadSuperToken(`${streamToken.name}x`);
 				const tokenAddress = superToken.address;
 				if (!tokenAddress) {
@@ -366,19 +433,19 @@ const SendFundsForm = ({
 					return;
 				}
 				if (updateStream) {
-					safeTxHash = await gnosisSafe.createUpdateStreamTx(
-						activeMultisig,
+					safeTxHash = await gnosisService.createUpdateStreamTx(
+						selectedMultisig,
 						streamRecipient,
 						weiAmount,
-						address,
+						wallet.address || address,
 						tokenAddress,
 						note,
 						defaultTxNonce,
 						chainProperties[network].contractNetworks
 					);
 				} else {
-					safeTxHash = await gnosisSafe.createStreamTx(
-						activeMultisig,
+					safeTxHash = await gnosisService.createStreamTx(
+						selectedMultisig,
 						streamRecipient,
 						weiAmount,
 						address,
@@ -389,20 +456,20 @@ const SendFundsForm = ({
 					);
 				}
 			} else if (transactionType === ETransactionTypeEVM.TRANSACTION_BUILDER) {
-				safeTxHash = await gnosisSafe.createTxnBuilderTx(
-					activeMultisig,
+				safeTxHash = await gnosisService.createTxnBuilderTx(
+					selectedMultisig,
 					txnBuilderToAddress,
-					address,
+					wallet.address || address,
 					txnBuilderData,
 					note,
 					defaultTxNonce,
 					chainProperties[network].contractNetworks
 				);
 			} else if (transactionType === ETransactionTypeEVM.SEND_NFT) {
-				safeTxHash = await gnosisSafe.createNftTx(
-					activeMultisig,
+				safeTxHash = await gnosisService.createNftTx(
+					selectedMultisig,
 					nftRecipient,
-					address,
+					wallet.address || address,
 					selectedNFT.tokenId,
 					selectedNFT.tokenAddress,
 					note,
@@ -410,11 +477,11 @@ const SendFundsForm = ({
 					chainProperties[network].contractNetworks
 				);
 			} else {
-				safeTxHash = await gnosisSafe.createSafeTx(
-					activeMultisig,
+				safeTxHash = await gnosisService.createSafeTx(
+					selectedMultisig,
 					recipients,
 					amounts,
-					address,
+					wallet.address || address,
 					note,
 					selectedTokens,
 					defaultTxNonce,
@@ -424,13 +491,14 @@ const SendFundsForm = ({
 
 			if (safeTxHash) {
 				addNewTransaction({
+					address: wallet?.address || address,
 					amount,
 					callData: safeTxHash,
 					callHash: safeTxHash,
 					executed: false,
 					network,
 					note,
-					safeAddress: activeMultisig,
+					safeAddress: selectedMultisig,
 					to: transactionType === ETransactionTypeEVM.STREAM_PAYMENTS ? streamRecipient : recipients,
 					transactionFields: transactionFieldsObject,
 					type: 'sent'
@@ -446,7 +514,7 @@ const SendFundsForm = ({
 						address,
 						addresses: getOtherSignatories(address, activeMultisig, multisigAddresses),
 						callHash: safeTxHash,
-						multisigAddress: activeMultisig,
+						multisigAddress: selectedMultisig,
 						network
 					},
 					network,
@@ -547,14 +615,40 @@ const SendFundsForm = ({
 					</section>
 				)}
 				<section>
-					<p className='text-primary font-normal text-xs leading-[13px]'>Sending from</p>
 					<div className='flex items-center gap-x-[10px] mt-[14px]'>
-						<article className='w-[500px] p-[10px] border-2 border-dashed border-bg-secondary rounded-lg flex items-center justify-between'>
-							<AddressComponent
-								withBadge={false}
-								address={activeMultisig}
-							/>
-							<Balance address={activeMultisig} />
+						<article className='w-[500px]'>
+							<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
+								Sending from
+								<Balance
+									isMultisig
+									allAssets={allAssets}
+									network={network}
+									address={selectedMultisig}
+								/>
+							</p>
+							<Dropdown
+								trigger={['click']}
+								className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-[500px]'
+								menu={{
+									items: multisigOptions,
+									onClick: (e) => {
+										console.log(JSON.parse(e.key));
+										setSelectedMultisig(JSON.parse(e.key)?.address);
+										setNetwork(JSON.parse(e.key)?.network as NETWORK);
+									}
+								}}
+							>
+								<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+									<AddressComponent
+										isMultisig
+										showNetworkBadge
+										network={network}
+										withBadge={false}
+										address={selectedMultisig}
+									/>
+									<CircleArrowDownIcon className='text-primary' />
+								</div>
+							</Dropdown>
 						</article>
 						<article className='w-[412px] flex items-center'>
 							<span className='-mr-1.5 z-0'>
@@ -646,6 +740,7 @@ const SendFundsForm = ({
 							<div className='flex items-start gap-x-2'>
 								<div className='flex-1'>
 									<BalanceInput
+										multisigAddress={selectedMultisig}
 										label='Flow Rate'
 										defaultValue={updateStreamAmount}
 										onChange={(balance) => setStreamAmount(balance)}
@@ -686,6 +781,7 @@ const SendFundsForm = ({
 						/>
 					) : transactionType === ETransactionTypeEVM.SEND_NFT ? (
 						<SendNFT
+							multisigAddress={selectedMultisig}
 							setNftRecipient={setNftRecipient}
 							setSelectedNft={setSelectedNFT}
 							selectedNft={selectedNFT}
@@ -771,6 +867,7 @@ const SendFundsForm = ({
 											</div>
 											<div className='flex items-center gap-x-2 w-[45%]'>
 												<BalanceInput
+													multisigAddress={selectedMultisig}
 													token={recipientAndAmount[i].token}
 													onTokenChange={(t) => onTokenChange(t, i)}
 													label='Amount*'

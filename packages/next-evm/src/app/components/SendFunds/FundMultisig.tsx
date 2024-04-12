@@ -1,8 +1,7 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
-import { useSigner } from '@thirdweb-dev/react';
-import { Form, Spin } from 'antd';
+import { Dropdown, Form, Spin } from 'antd';
 import { ethers } from 'ethers';
 import React, { useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
@@ -10,17 +9,21 @@ import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedT
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-evm/app/components/Multisig/CancelBtn';
 import ModalBtn from '@next-evm/app/components/Multisig/ModalBtn';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import Balance from '@next-evm/ui-components/Balance';
 import BalanceInput from '@next-evm/ui-components/BalanceInput';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import copyText from '@next-evm/utils/copyText';
-import shortenAddress from '@next-evm/utils/shortenAddress';
 
 import addNewTransaction from '@next-evm/utils/addNewTransaction';
+import { useWallets } from '@privy-io/react-auth';
+import { NETWORK } from '@next-common/global/evm-network-constants';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { CircleArrowDownIcon, CopyIcon } from '@next-common/ui-components/CustomIcons';
+import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
 const FundMultisig = ({
@@ -31,38 +34,66 @@ const FundMultisig = ({
 	className?: string;
 	onCancel: () => void;
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { network } = useGlobalApiContext();
-	const { activeMultisig, addressBook, address } = useGlobalUserDetailsContext();
+	const { activeMultisig, address } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { allAssets } = useMultisigAssetsContext();
 
-	const [selectedSender] = useState(addressBook[0].address);
+	const activeMultisigData = activeMultisig && activeOrg?.multisigs.find((item) => item.address === activeMultisig);
+
 	const [amount, setAmount] = useState('0');
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
 	const [failure] = useState(false);
 	const [loadingMessages] = useState<string>('');
 	const [txnHash] = useState<string>('');
-	const signer = useSigner();
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+
+	const [selectedMultisig, setSelectedMultisig] = useState<IMultisigAddress>(
+		activeMultisigData || activeOrg?.multisigs?.[0]
+	);
+
+	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
+		key: JSON.stringify(item),
+		label: (
+			<AddressComponent
+				isMultisig
+				showNetworkBadge
+				withBadge={false}
+				network={item.network as NETWORK}
+				address={item.address}
+			/>
+		)
+	}));
 
 	const handleSubmit = async () => {
+		if (!connectedWallet || !connectedWallet.address) return;
 		setLoading(true);
 		try {
+			const provider = await connectedWallet.getEthersProvider();
+			const signer = provider.getSigner(connectedWallet.address);
 			if (!signer) {
+				console.log('No signer found');
+				setLoading(false);
 				return;
 			}
 			const tx = await signer.sendTransaction({
-				to: activeMultisig,
+				to: selectedMultisig.address || activeMultisig,
 				value: ethers.utils.parseUnits(amount.toString(), 'ether').toString()
 			});
 			const { transactionHash, to } = await tx.wait();
 			await addNewTransaction({
+				address: connectedWallet?.address || address,
 				amount: ethers.utils.parseUnits(amount.toString(), 'ether').toString(),
 				callData: '',
 				callHash: transactionHash,
 				executed: true,
-				network,
+				network: NETWORK.POLYGON,
 				note: '',
-				safeAddress: activeMultisig,
+				safeAddress: selectedMultisig.address || activeMultisig,
 				to,
 				type: 'received'
 			});
@@ -90,8 +121,8 @@ const FundMultisig = ({
 		<TransactionSuccessScreen
 			successMessage='Transaction Successful!'
 			amount={amount}
-			sender={selectedSender}
-			recipients={[activeMultisig]}
+			sender={connectedWallet?.address}
+			recipients={[selectedMultisig.address]}
 			created_at={new Date()}
 			txnHash={txnHash}
 			onDone={() => {
@@ -112,47 +143,72 @@ const FundMultisig = ({
 			}
 		>
 			<div className={className}>
-				<p className='text-primary font-normal text-xs leading-[13px] mb-2'>Recipient</p>
-				{/* TODO: Make into reusable component */}
-				<div className=' p-[10px] border-2 border-dashed border-bg-secondary rounded-lg flex items-center justify-between'>
-					<AddressComponent
-						withBadge={false}
-						address={activeMultisig}
+				<p className='text-primary font-normal text-xs leading-[13px] mb-2 flex justify-between items-center'>
+					Recipient
+					<Balance
+						isMultisig
+						allAssets={allAssets}
+						network={selectedMultisig.network as NETWORK}
+						address={selectedMultisig.address || activeMultisig}
 					/>
-					<Balance address={activeMultisig} />
-				</div>
+				</p>
+				{/* TODO: Make into reusable component */}
+				<Dropdown
+					trigger={['click']}
+					className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-full'
+					menu={{
+						items: multisigOptions,
+						onClick: (e) => {
+							console.log(JSON.parse(e.key));
+							setSelectedMultisig(JSON.parse(e.key) as IMultisigAddress);
+						}
+					}}
+				>
+					<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+						<AddressComponent
+							isMultisig
+							showNetworkBadge
+							withBadge={false}
+							network={selectedMultisig.network as NETWORK}
+							address={selectedMultisig.address}
+						/>
+						<CircleArrowDownIcon className='text-primary' />
+					</div>
+				</Dropdown>
 
 				<Form disabled={loading}>
 					<section className='mt-6'>
 						<div className='flex items-center justify-between mb-2'>
 							<label className='text-primary font-normal text-xs leading-[13px] block'>Sending from</label>
-							<Balance address={selectedSender} />
+							<Balance
+								network={selectedMultisig.network as NETWORK}
+								address={connectedWallet.address || address}
+							/>
 						</div>
-						<div className='flex items-center gap-x-[10px]'>
+						<div className='flex items-center gap-x-[10px] border border-text_placeholder rounded-lg p-2'>
 							<div className='w-full'>
 								<div className='flex gap-x-3 items-center'>
 									<div className='relative'>
 										<MetaMaskAvatar
-											address={address || ''}
+											address={connectedWallet.address || address || ''}
 											size={20}
 										/>
 									</div>
 									<div>
 										<div className='text-xs font-bold text-white flex items-center gap-x-2'>My Address</div>
-										<div className='flex text-xs'>
+										<div className='flex text-xs text-text_secondary'>
 											<div
-												title={address || ''}
-												className=' font-normal text-text_secondary'
+												title={connectedWallet.address || address || ''}
+												className=' font-normal'
 											>
-												{address && shortenAddress(address || '')}
+												{connectedWallet.address || address || ''}
 											</div>
-											{
-												// eslint-disable-next-line jsx-a11y/control-has-associated-label
-												<button
-													className='ml-2 mr-1'
-													onClick={() => copyText(address)}
-												/>
-											}
+											<button
+												className='ml-2 mr-1 text-primary'
+												onClick={() => copyText(connectedWallet.address || address || '')}
+											>
+												<CopyIcon />
+											</button>
 										</div>
 									</div>
 								</div>
@@ -161,6 +217,7 @@ const FundMultisig = ({
 					</section>
 
 					<BalanceInput
+						multisigAddress={selectedMultisig.address || activeMultisig}
 						className='mt-6'
 						placeholder='5'
 						label='Amount*'

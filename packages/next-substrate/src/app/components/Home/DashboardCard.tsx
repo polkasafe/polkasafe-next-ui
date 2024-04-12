@@ -6,17 +6,16 @@ import { PlusCircleOutlined, SyncOutlined, ShareAltOutlined } from '@ant-design/
 import Identicon from '@polkadot/react-identicon';
 import { Button, Dropdown, Skeleton, Tooltip, Spin } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import BrainIcon from '@next-common/assets/icons/brain-icon.svg';
 import ChainIcon from '@next-common/assets/icons/chain-icon.svg';
 import DotIcon from '@next-common/assets/icons/image 39.svg';
 import SubscanIcon from '@next-common/assets/icons/subscan.svg';
 import PolkadotIcon from '@next-common/assets/parachains-icons/polkadot.svg';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
-import { IAsset, IMultisigAddress } from '@next-common/types';
+import { IMultisigAddress } from '@next-common/types';
 // import AddressQr from '@next-common/ui-components/AddressQr';
 import { CopyIcon, QRIcon, WalletIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
@@ -27,7 +26,8 @@ import shortenAddress from '@next-substrate/utils/shortenAddress';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import AddressQr from '@next-common/ui-components/AddressQr';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
-import getAssetsForAddress from '@next-substrate/utils/getAssetsForAddress';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
 import ExistentialDeposit from '../SendFunds/ExistentialDeposit';
 import FundMultisig from '../SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
@@ -53,7 +53,6 @@ const DashboardCard = ({
 }: IDashboardCard) => {
 	const {
 		activeMultisig,
-		multisigAddresses,
 		multisigSettings,
 		isProxy,
 		setUserDetailsContextState,
@@ -61,13 +60,11 @@ const DashboardCard = ({
 		sharedMultisigInfo,
 		notOwnerOfMultisig
 	} = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
+	const { activeOrg } = useActiveOrgContext();
 
-	const [assetsData, setAssetsData] = useState<IAsset[]>([]);
+	const { allAssets, loadingAssets } = useMultisigAssetsContext();
 	const [openFundMultisigModal, setOpenFundMultisigModal] = useState(false);
-	const [signatureLoader, setsignatureLoader] = useState<boolean>(true);
-	const [assetDataLoader, setassetDataLoader] = useState<boolean>(true);
 	const [transactionType, setTransactionType] = useState<ETransactionType>(ETransactionType.SEND_TOKEN);
 	const [currentMultisig, setCurrentMultisig] = useState<IMultisigAddress>({} as any);
 
@@ -76,10 +73,10 @@ const DashboardCard = ({
 			setCurrentMultisig(sharedMultisigInfo as any);
 		} else {
 			setCurrentMultisig(
-				multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+				activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
 			);
 		}
-	}, [activeMultisig, isSharedMultisig, multisigAddresses, sharedMultisigInfo]);
+	}, [activeMultisig, activeOrg?.multisigs, isSharedMultisig, sharedMultisigInfo]);
 
 	const baseURL = typeof window !== 'undefined' && global.window.location.origin;
 
@@ -87,42 +84,15 @@ const DashboardCard = ({
 		.filter(
 			(item) =>
 				!(
-					(['alephzero', 'astar', 'assethub-polkadot', 'assethub-kusama'].includes(network) &&
+					(['alephzero', 'astar', 'assethub-polkadot', 'assethub-kusama'].includes(currentMultisig?.network) &&
 						item === ETransactionType.SUBMIT_PREIMAGE) ||
-					(!['polkadot', 'kusama'].includes(network) && item === ETransactionType.SUBMIT_PROPOSAL)
+					(!['polkadot', 'kusama'].includes(currentMultisig?.network) && item === ETransactionType.SUBMIT_PROPOSAL)
 				)
 		)
 		.map((item) => ({
 			key: item,
 			label: <span className='text-white flex items-center gap-x-2'>{item}</span>
 		}));
-
-	const handleGetAssets = useCallback(async () => {
-		try {
-			if (!activeMultisig) return;
-
-			const { data, error } = await getAssetsForAddress(activeMultisig, network);
-
-			if (currentMultisig) {
-				setsignatureLoader(false);
-			}
-			if (error) {
-				setassetDataLoader(false);
-				return;
-			}
-
-			if (data) {
-				setassetDataLoader(false);
-				setAssetsData(data);
-			}
-		} catch (error) {
-			console.log('ERROR', error);
-		}
-	}, [activeMultisig, currentMultisig, network]);
-
-	useEffect(() => {
-		handleGetAssets();
-	}, [handleGetAssets]);
 
 	return (
 		<>
@@ -171,7 +141,7 @@ const DashboardCard = ({
 						<Tooltip title='Copy Share Link'>
 							<button
 								className='text-text_secondary text-lg'
-								onClick={() => copyText(`${baseURL}?multisig=${activeMultisig}&network=${network}`)}
+								onClick={() => copyText(`${baseURL}?multisig=${activeMultisig}&network=${currentMultisig?.network}`)}
 							>
 								<ShareAltOutlined />
 							</button>
@@ -187,7 +157,7 @@ const DashboardCard = ({
 						<a
 							className='w-5'
 							target='_blank'
-							href={`https://explorer.polkascan.io/${network}/account/${activeMultisig}`}
+							href={`https://explorer.polkascan.io/${currentMultisig?.network}/account/${activeMultisig}`}
 							rel='noreferrer'
 						>
 							<BrainIcon />
@@ -195,7 +165,7 @@ const DashboardCard = ({
 						<a
 							className='w-5'
 							target='_blank'
-							href={`https://dotscanner.com/${network}/account/${activeMultisig}?utm_source=polkadotjs`}
+							href={`https://dotscanner.com/${currentMultisig?.network}/account/${activeMultisig}?utm_source=polkadotjs`}
 							rel='noreferrer'
 						>
 							<DotIcon />
@@ -203,7 +173,7 @@ const DashboardCard = ({
 						<a
 							className='w-5'
 							target='_blank'
-							href={`https://${network}.polkaholic.io/account/${activeMultisig}?group=overview&chainfilters=all`}
+							href={`https://${currentMultisig?.network}.polkaholic.io/account/${activeMultisig}?group=overview&chainfilters=all`}
 							rel='noreferrer'
 						>
 							<ChainIcon />
@@ -211,7 +181,7 @@ const DashboardCard = ({
 						<a
 							className='w-5'
 							target='_blank'
-							href={`https://${network}.subscan.io/account/${activeMultisig}`}
+							href={`https://${currentMultisig?.network}.subscan.io/account/${activeMultisig}`}
 							rel='noreferrer'
 						>
 							<SubscanIcon />
@@ -223,7 +193,7 @@ const DashboardCard = ({
 						<div className='relative'>
 							<Identicon
 								className={`border-2 rounded-full bg-transparent ${
-									hasProxy && isProxy ? 'border-[#FF79F2]' : 'border-primary'
+									hasProxy && isProxy ? 'border-proxy-pink' : 'border-primary'
 								} p-1.5`}
 								value={activeMultisig}
 								size={50}
@@ -231,7 +201,7 @@ const DashboardCard = ({
 							/>
 							<div
 								className={`${
-									hasProxy && isProxy ? 'bg-[#FF79F2] text-highlight' : 'bg-primary text-white'
+									hasProxy && isProxy ? 'bg-proxy-pink text-highlight' : 'bg-primary text-white'
 								} text-sm rounded-lg absolute -bottom-0 left-[16px] px-2`}
 							>
 								{currentMultisig?.threshold}/{currentMultisig?.signatories?.length}
@@ -239,12 +209,12 @@ const DashboardCard = ({
 						</div>
 						<div>
 							<div className='text-base font-bold text-white flex items-center gap-x-2'>
-								{multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
+								{multisigSettings?.[`${activeMultisig}_${currentMultisig?.network}`]?.name ||
 									currentMultisig?.name ||
 									DEFAULT_MULTISIG_NAME}
 								<div
 									className={`px-2 py-[2px] rounded-md text-xs font-medium ${
-										hasProxy && isProxy ? 'bg-[#FF79F2] text-highlight' : 'bg-primary text-white'
+										hasProxy && isProxy ? 'bg-proxy-pink text-highlight' : 'bg-primary text-white'
 									}`}
 								>
 									{hasProxy && isProxy ? 'Proxy' : 'Multisig'}
@@ -262,14 +232,14 @@ const DashboardCard = ({
 							</div>
 							<div className='flex text-xs'>
 								<div
-									title={(activeMultisig && getEncodedAddress(activeMultisig, network)) || ''}
+									title={(activeMultisig && getEncodedAddress(activeMultisig, currentMultisig?.network)) || ''}
 									className=' font-normal text-text_secondary'
 								>
-									{activeMultisig && shortenAddress(getEncodedAddress(activeMultisig, network) || '')}
+									{activeMultisig && shortenAddress(getEncodedAddress(activeMultisig, currentMultisig?.network) || '')}
 								</div>
 								<button
 									className='ml-2 mr-1'
-									onClick={() => copyText(activeMultisig, true, network)}
+									onClick={() => copyText(activeMultisig, true, currentMultisig?.network)}
 								>
 									<CopyIcon className='text-primary' />
 								</button>
@@ -292,7 +262,7 @@ const DashboardCard = ({
 					</div>
 				</div>
 				<div className='flex gap-x-5 flex-wrap text-xs'>
-					{assetDataLoader ? (
+					{loadingAssets ? (
 						<Skeleton
 							paragraph={{ rows: 1, width: 150 }}
 							active
@@ -301,25 +271,21 @@ const DashboardCard = ({
 						<>
 							<div>
 								<div className='text-white'>Signatories</div>
-								<div className='font-bold text-lg text-primary'>
-									{signatureLoader ? <Spin size='default' /> : currentMultisig?.signatories?.length || 0}
-								</div>
+								<div className='font-bold text-lg text-primary'>{currentMultisig?.signatories?.length || 0}</div>
 							</div>
 							<div>
 								<div className='text-white'>Tokens</div>
 								<div className='font-bold text-lg text-primary'>
-									{assetDataLoader ? <Spin size='default' /> : assetsData.length}
+									{loadingAssets ? <Spin size='default' /> : allAssets?.[activeMultisig]?.assets.length}
 								</div>
 							</div>
 							<div>
 								<div className='text-white'>{currencyProperties[currency].symbol} Amount</div>
 								<div className='font-bold text-lg text-primary'>
-									{assetDataLoader ? (
+									{loadingAssets ? (
 										<Spin size='default' />
 									) : (
-										(
-											assetsData.reduce((total, item) => total + Number(item.balance_usd), 0) * Number(currencyPrice)
-										).toFixed(2) || 'N/A'
+										(Number(allAssets?.[activeMultisig]?.fiatTotal || 0) * Number(currencyPrice)).toFixed(2) || 'N/A'
 									)}
 								</div>
 							</div>

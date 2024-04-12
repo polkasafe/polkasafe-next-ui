@@ -5,7 +5,6 @@
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ArrowDownLeftIcon, ArrowUpRightIcon, OutlineCloseIcon } from '@next-common/ui-components/CustomIcons';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { getTransactionDetails, TransactionData } from '@safe-global/safe-gateway-typescript-sdk';
@@ -16,6 +15,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { Skeleton } from 'antd';
 import formatBalance from '@next-evm/utils/formatBalance';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
+import GnosisSafeService from '@next-evm/services/Gnosis';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 interface IHistoryTransactions {
@@ -25,6 +25,8 @@ interface IHistoryTransactions {
 	receivedTransfers?: any[];
 	amount_token: string;
 	to?: string;
+	network: NETWORK;
+	gnosisSafe: GnosisSafeService;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -34,18 +36,12 @@ const HistoryTransaction = ({
 	type,
 	receivedTransfers,
 	amount_token,
+	network,
+	gnosisSafe,
 	to // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IHistoryTransactions) => {
-	const { network: defaultNetwork } = useGlobalApiContext();
 	const { allAssets } = useMultisigAssetsContext();
-	const { gnosisSafe, isSharedSafe, sharedSafeNetwork, activeMultisig, sharedSafeAddress } =
-		useGlobalUserDetailsContext();
-
-	const shared = sharedSafeAddress === activeMultisig;
-	const network =
-		isSharedSafe && sharedSafeNetwork && Object.values(NETWORK).includes(sharedSafeNetwork) && shared
-			? sharedSafeNetwork
-			: defaultNetwork;
+	const { activeMultisig } = useGlobalUserDetailsContext();
 
 	const [txData, setTxData] = useState<TransactionData | undefined>({} as any);
 
@@ -129,7 +125,7 @@ const HistoryTransaction = ({
 			const tokenDetails = [];
 			tokenContractAddressArray.forEach((item) => {
 				if (realContractAddresses.includes(item)) {
-					const assetDetails = allAssets.find((asset) => asset.tokenAddress === item);
+					const assetDetails = allAssets[activeMultisig]?.assets?.find((asset) => asset.tokenAddress === item);
 					tokenDetails.push({
 						tokenAddress: assetDetails?.tokenAddress || '',
 						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
@@ -150,7 +146,9 @@ const HistoryTransaction = ({
 			const tokenDetails = [];
 			receivedTransfers.forEach((item) => {
 				if (item?.tokenInfo) {
-					const isFakeToken = !allAssets.some((asset) => asset.tokenAddress === item?.tokenInfo?.address);
+					const isFakeToken = !allAssets[activeMultisig]?.assets?.some(
+						(asset) => asset.tokenAddress === item?.tokenInfo?.address
+					);
 					tokenDetails.push({
 						isFakeToken,
 						tokenAddress: item?.tokenInfo?.address || '',
@@ -187,7 +185,7 @@ const HistoryTransaction = ({
 			return sum + Number(a);
 		}, 0);
 		setAmount(total);
-	}, [allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, txData]);
+	}, [activeMultisig, allAssets, decodedCallData, isFundType, isSentType, network, receivedTransfers, txData]);
 
 	useEffect(() => {
 		if (tokenDetailsArray.length > 1) {
@@ -251,6 +249,7 @@ const HistoryTransaction = ({
 								</span>
 								from{' '}
 								<AddressComponent
+									network={network}
 									onlyAddress
 									addressLength={6}
 									iconSize={25}
@@ -305,6 +304,7 @@ const HistoryTransaction = ({
 									'Multiple Addresses'
 								) : (
 									<AddressComponent
+										network={network}
 										iconSize={25}
 										addressLength={6}
 										onlyAddress

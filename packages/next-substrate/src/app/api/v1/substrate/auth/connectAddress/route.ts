@@ -71,6 +71,7 @@ export async function POST(req: Request) {
 				tfa_token: addressDoc.tfa_token,
 				transactionFields: addressDoc.transactionFields,
 				two_factor_auth: addressDoc.two_factor_auth,
+				userId: getEncodedAddress(addressDoc.address, network) || addressDoc.address,
 				watchlists: addressDoc.watchlists
 			};
 
@@ -94,7 +95,8 @@ export async function POST(req: Request) {
 			email: null,
 			multisigAddresses: [],
 			multisigSettings: {},
-			notification_preferences: DEFAULT_NOTIFICATION_PREFERENCES
+			notification_preferences: DEFAULT_NOTIFICATION_PREFERENCES,
+			userId: String(substrateAddress)
 		};
 
 		const newUserResponse: IUserResponse = {

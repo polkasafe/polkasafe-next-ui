@@ -8,10 +8,10 @@ import React, { FC } from 'react';
 import { usePathname } from 'next/navigation';
 import AddressDropdown from '@next-evm/app/components/AddressDropdown';
 import DonateBtn from '@next-evm/app/components/Donate/DonateBtn';
-import NetworksDropdown from '@next-evm/app/components/NetworksDropdown';
+// import NetworksDropdown from '@next-evm/app/components/NetworksDropdown';
 import Notification from '@next-evm/app/components/Notification';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { DocsIcon } from '@next-common/ui-components/CustomIcons';
+// import { DocsIcon } from '@next-common/ui-components/CustomIcons';
 
 const { Header } = Layout;
 
@@ -27,7 +27,7 @@ const NavHeader: FC<Props> = ({ sideDrawer, setSideDrawer, showSubmenu, onClick 
 	const { address } = useGlobalUserDetailsContext();
 	return (
 		<Header className='bg-bg-main z-10 flex flex-row items-center sticky top-0 left-0 p-0 h-[70px]'>
-			<section className='hidden lg:block w-[180px]' />
+			<section className='hidden lg:block w-[200px]' />
 			<section className='pr-4 lg:pr-8 pl-0 flex-1 flex items-center gap-x-2'>
 				<article className='lg:hidden ml-4'>
 					<button
@@ -60,17 +60,17 @@ const NavHeader: FC<Props> = ({ sideDrawer, setSideDrawer, showSubmenu, onClick 
 				</article>
 				<article className='ml-auto flex items-center gap-x-3'>
 					{address && <Notification />}
-					<NetworksDropdown />
+					{/* <NetworksDropdown /> */}
 					<AddressDropdown />
 					<DonateBtn />
-					<a
+					{/* <a
 						href='https://docs.polkasafe.xyz/'
 						target='_blank'
 						rel='noreferrer'
 						className='flex items-center justify-center gap-x-2 outline-none border-none text-waiting bg-waiting bg-opacity-10 rounded-lg p-2.5 shadow-none text-xs'
 					>
 						<DocsIcon /> Docs
-					</a>
+					</a> */}
 				</article>
 			</section>
 		</Header>

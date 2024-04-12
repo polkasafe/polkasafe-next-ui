@@ -2,29 +2,69 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { ArrowRightOutlined } from '@ant-design/icons';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Details from '@next-substrate/app/components/Settings/Details';
 import Feedback from '@next-substrate/app/components/Settings/Feedback';
 import AddNewOwnerBtn from '@next-substrate/app/components/Settings/Owners/AddBtn';
 import ListOwners from '@next-substrate/app/components/Settings/Owners/List';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
+import { CircleArrowDownIcon, CopyIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-substrate/utils/copyText';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { networks } from '@next-common/global/networkConstants';
+import { IMultisigAddress } from '@next-common/types';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import AddressComponent from '@next-common/ui-components/AddressComponent';
+import { Dropdown } from 'antd';
 import ChangeCurrency from './ChangeCurrency';
 
 const ManageMultisig = () => {
-	const { multisigAddresses, activeMultisig, address: userAddress } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
+	const { activeMultisig, userID } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const activeMultisigData = activeMultisig
+		? activeOrg?.multisigs.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+		: undefined;
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [network, setNetwork] = useState<string>(
+		activeMultisigData?.network || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
+	);
+	const [selectedMultisig, setSelectedMultisig] = useState<IMultisigAddress>(
+		activeMultisigData || activeOrg?.multisigs?.[0]
+	);
+
+	useEffect(() => {
+		if (!activeOrg || !activeOrg.multisigs) return;
+
+		if (activeMultisig) {
+			const m = activeOrg?.multisigs.find((item) => item.address === activeMultisig);
+			setSelectedMultisig(m);
+			return;
+		}
+		setSelectedMultisig(activeOrg?.multisigs?.[0]);
+	}, [activeMultisig, activeOrg]);
+
+	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
+		key: JSON.stringify(item),
+		label: (
+			<div className='scale-90 origin-top-left'>
+				<AddressComponent
+					isMultisig
+					showNetworkBadge
+					network={item.network}
+					withBadge={false}
+					address={item.address}
+				/>
+			</div>
+		)
+	}));
 
 	return (
 		<div>
-			{!multisigAddresses || !multisig ? (
+			{!activeOrg || !activeOrg?.multisigs || activeOrg?.multisigs?.length === 0 ? (
 				<section className='mb-4 text-sm border-2 border-solid border-waiting w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg flex items-center gap-x-2'>
 					<p className='text-white'>
 						Looks Like You Don&apos;t have a Multisig. Please Create One to use our Features.
@@ -32,9 +72,34 @@ const ManageMultisig = () => {
 				</section>
 			) : (
 				<>
-					<h2 className='font-bold text-xl leading-[22px] text-white mb-4'>Manage Safe Owners</h2>
+					<h2 className='font-bold text-xl leading-[22px] text-white mb-6'>Manage Safe Owners</h2>
+					<div className='flex justify-start mb-4'>
+						<Dropdown
+							trigger={['click']}
+							className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer min-w-[260px]'
+							menu={{
+								items: multisigOptions,
+								onClick: (e) => {
+									console.log(JSON.parse(e.key));
+									setSelectedMultisig(JSON.parse(e.key) as IMultisigAddress);
+									setNetwork(JSON.parse(e.key)?.network);
+								}
+							}}
+						>
+							<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+								<AddressComponent
+									isMultisig
+									showNetworkBadge
+									network={network}
+									withBadge={false}
+									address={selectedMultisig?.address}
+								/>
+								<CircleArrowDownIcon className='text-primary' />
+							</div>
+						</Dropdown>
+					</div>
 					<div className='bg-bg-main p-5 rounded-xl relative overflow-hidden'>
-						{multisig?.proxy ? (
+						{selectedMultisig?.proxy ? (
 							<section className='flex items-center justify-between flex-col gap-5 md:flex-row mb-6'>
 								<div className='bg-bg-secondary rounded-lg p-3 w-auto flex items-center gap-x-4'>
 									<div className='flex flex-col items-start'>
@@ -42,16 +107,16 @@ const ManageMultisig = () => {
 											Multisig
 										</div>
 										<div className='flex items-center text-text_secondary'>
-											{shortenAddress(multisig?.address || '', 10)}
+											{shortenAddress(selectedMultisig?.address || '', 10)}
 											<button
 												className='ml-2 mr-1'
-												onClick={() => copyText(multisig?.address || '', true, network)}
+												onClick={() => copyText(selectedMultisig?.address || '', true, network)}
 											>
 												<CopyIcon />
 											</button>
 											<a
 												href={`https://${network}.subscan.io/account/${getEncodedAddress(
-													multisig?.address || '',
+													selectedMultisig?.address || '',
 													network
 												)}`}
 												target='_blank'
@@ -69,16 +134,16 @@ const ManageMultisig = () => {
 											Proxy
 										</div>
 										<div className='flex items-center text-text_secondary'>
-											{shortenAddress(multisig?.proxy || '', 10)}
+											{shortenAddress(selectedMultisig?.proxy || '', 10)}
 											<button
 												className='ml-2 mr-1'
-												onClick={() => copyText(multisig?.proxy || '', true, network)}
+												onClick={() => copyText(selectedMultisig?.proxy || '', true, network)}
 											>
 												<CopyIcon />
 											</button>
 											<a
 												href={`https://${network}.subscan.io/account/${getEncodedAddress(
-													multisig?.proxy || '',
+													selectedMultisig?.proxy || '',
 													network
 												)}`}
 												target='_blank'
@@ -89,7 +154,7 @@ const ManageMultisig = () => {
 										</div>
 									</div>
 								</div>
-								<AddNewOwnerBtn disabled={!multisig?.proxy} />
+								<AddNewOwnerBtn disabled={!selectedMultisig?.proxy} />
 							</section>
 						) : (
 							!['alephzero'].includes(network) && (
@@ -99,16 +164,21 @@ const ManageMultisig = () => {
 							)
 						)}
 						<section>
-							<ListOwners disabled={!multisig?.proxy} />
+							{selectedMultisig && (
+								<ListOwners
+									multisig={selectedMultisig}
+									disabled={!selectedMultisig?.proxy}
+								/>
+							)}
 						</section>
 					</div>
 				</>
 			)}
-			{userAddress && (
+			{userID && (
 				<div className='mt-[30px] flex gap-x-[30px]'>
-					{multisigAddresses && activeMultisig && multisig && (
+					{selectedMultisig && (
 						<section className='w-full'>
-							<Details />
+							<Details multisig={selectedMultisig} />
 						</section>
 					)}
 					<section className='w-full max-w-[50%]'>

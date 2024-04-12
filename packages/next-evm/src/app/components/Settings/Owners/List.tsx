@@ -5,8 +5,6 @@ import { Button, Divider, Modal } from 'antd';
 import React, { useState } from 'react';
 import { MetaMaskAvatar } from 'react-metamask-avatar';
 import EditAddress from '@next-evm/app/components/AddressBook/Edit';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import {
@@ -17,21 +15,24 @@ import {
 	OutlineCloseIcon
 } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-evm/utils/copyText';
-import styled from 'styled-components';
 
 import { chainProperties } from '@next-common/global/evm-network-constants';
+import { IMultisigAddress } from '@next-common/types';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import RemoveOwner from './Remove';
 
 const RemoveSignatoryModal = ({
 	address,
 	className,
 	signatoriesLength,
-	threshold
+	threshold,
+	multisig
 }: {
 	address: string;
 	className?: string;
 	signatoriesLength: number;
 	threshold: number;
+	multisig: IMultisigAddress;
 }) => {
 	const [openRemoveSignatoryModal, setOpenRemoveSignatoryModal] = useState(false);
 	return (
@@ -58,6 +59,7 @@ const RemoveSignatoryModal = ({
 				className={`${className} w-auto md:min-w-[500px]`}
 			>
 				<RemoveOwner
+					multisig={multisig}
 					onCancel={() => setOpenRemoveSignatoryModal(false)}
 					oldSignatoriesLength={signatoriesLength}
 					oldThreshold={threshold}
@@ -128,19 +130,19 @@ const EditAddressModal = ({
 	);
 };
 
-const ListOwners = ({ className, disabled }: { className?: string; disabled?: boolean }) => {
-	const { network } = useGlobalApiContext();
-	const {
-		multisigAddresses,
-		activeMultisig,
-		addressBook,
-		address: userAddress,
-		activeMultisigData
-	} = useGlobalUserDetailsContext();
-	const multisig = multisigAddresses?.find((item: any) => item.address === activeMultisig);
-	const signatories = activeMultisigData?.signatories || multisig?.signatories;
-	const userAddressObject = addressBook.find((item) => item.address === userAddress);
-	const { records } = useActiveMultisigContext();
+const ListOwners = ({
+	className,
+	disabled,
+	multisig
+}: {
+	className?: string;
+	disabled?: boolean;
+	multisig: IMultisigAddress;
+}) => {
+	const { address: userAddress } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const signatories = multisig?.signatories;
+	const userAddressObject = activeOrg?.addressBook?.find((item) => item?.address === userAddress);
 
 	return (
 		<div className='text-sm font-medium leading-[15px] '>
@@ -152,7 +154,7 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 			<article>
 				<div className='grid grid-cols-4 gap-x-5 py-6 px-4 text-white'>
 					<p className=' sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-base'>
-						{addressBook.find((item: any) => item.address === userAddress)?.name || DEFAULT_ADDRESS_NAME}
+						{activeOrg?.addressBook?.find((item: any) => item?.address === userAddress)?.name || DEFAULT_ADDRESS_NAME}
 					</p>
 					<div className='col-span-2 flex items-center'>
 						<MetaMaskAvatar
@@ -173,7 +175,7 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 								<CopyIcon />
 							</button>
 							<a
-								href={`${chainProperties[network].blockExplorer}/address/${userAddress}`}
+								href={`${chainProperties[multisig?.network]?.blockExplorer}/address/${userAddress}`}
 								target='_blank'
 								rel='noreferrer'
 							>
@@ -199,13 +201,13 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 			{signatories
 				?.filter((item: any) => item !== userAddress)
 				.map((address: any, index: any) => {
-					const addressObject = addressBook.find((item) => item.address === address);
+					const addressObject = activeOrg?.addressBook?.find((item) => item?.address === address);
 					const encodedAddress = address;
 					return (
 						<article key={index}>
 							<div className='grid grid-cols-4 gap-x-5 py-6 px-4 text-white'>
 								<p className='sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-base'>
-									{addressObject?.nickName || records?.[address]?.name || addressObject?.name || DEFAULT_ADDRESS_NAME}
+									{addressObject?.nickName || addressObject?.name || DEFAULT_ADDRESS_NAME}
 								</p>
 								<div className='col-span-2 flex items-center'>
 									<MetaMaskAvatar
@@ -226,7 +228,7 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 											<CopyIcon />
 										</button>
 										<a
-											href={`${chainProperties[network].blockExplorer}/address/${encodedAddress}`}
+											href={`${chainProperties[multisig?.network]?.blockExplorer}/address/${encodedAddress}`}
 											target='_blank'
 											rel='noreferrer'
 										>
@@ -247,6 +249,7 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 									/>
 									{signatories.length > 1 && !disabled && (
 										<RemoveSignatoryModal
+											multisig={multisig}
 											threshold={multisig?.threshold || 2}
 											className={className}
 											signatoriesLength={signatories.length || 2}
@@ -263,11 +266,4 @@ const ListOwners = ({ className, disabled }: { className?: string; disabled?: bo
 	);
 };
 
-export default styled(ListOwners)`
-	.ant-spin-nested-loading .ant-spin-blur {
-		opacity: 0 !important;
-	}
-	.ant-spin-nested-loading .ant-spin-blur::after {
-		opacity: 1 !important;
-	}
-`;
+export default ListOwners;

@@ -16,6 +16,7 @@ export interface IQueuedTransactions {
 	type: string;
 	dataDecoded: any;
 	advancedDetails?: any;
+	threshold: number;
 }
 export const convertSafePendingData = (data: any) => {
 	const advancedDetails = {
@@ -29,6 +30,7 @@ export const convertSafePendingData = (data: any) => {
 	};
 	const convertedData: IQueuedTransactions = {
 		advancedDetails,
+		threshold: data?.confirmationsRequired || 0,
 		amount_token: data?.value || '0',
 		created_at: data?.submissionDate,
 		data: data?.data,
@@ -40,7 +42,7 @@ export const convertSafePendingData = (data: any) => {
 			data?.confirmations?.map((user: any) => ({ address: user?.owner || '', signature: user?.signature || '' })) || [],
 		to: data?.to,
 		txHash: data?.safeTxHash,
-		type: data?.dataDecoded?.method || 'Custom'
+		type: data?.dataDecoded?.method || data?.value !== '0' ? 'Sent' : 'Custom'
 	};
 	return convertedData;
 };

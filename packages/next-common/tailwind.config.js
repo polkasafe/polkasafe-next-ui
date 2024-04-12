@@ -17,7 +17,9 @@ module.exports = {
                 'text_main': '#FFFFFF',
                 'text_placeholder' : '#505050',
                 'text_secondary': '#8B8B8B',
-                'waiting': '#FF9F1C'
+                'waiting': '#FF9F1C',
+                'network_badge': '#5065E4',
+                'proxy-pink': '#FF79F2'
             },
             fontFamily: {
                 // add new font family

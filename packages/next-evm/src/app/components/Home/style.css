@@ -42,3 +42,36 @@
 		transform: scale(0.9) !important;
 		transform-origin: center !important;
 	} */
+
+.circle_1 {
+	width: 255.516px;
+	height: 255.518px;
+	flex-shrink: 0;
+	background-color: #34449A;
+	z-index: -1;
+	filter: blur(45.5px);
+}
+
+.circle_2 {
+	width: 238.548px;
+	height: 319.832px;
+	flex-shrink: 0;
+	border-radius: 319.832px;
+	background: rgba(157, 69, 153, 0.80);
+	left: 30%;
+	top: 50%;
+	z-index: -1;
+	filter: blur(60px);
+}
+
+.circle_3 {
+	width: 305.422px;
+	height: 340.69px;
+	flex-shrink: 0;
+	border-radius: 340.69px;
+	right: 0;
+	top: 30%;
+	background: linear-gradient(0deg, #3337AA 0%, #3337AA 100%), linear-gradient(0deg, #221289 0%, #221289 100%), #3219F8;
+	z-index: -2;
+	filter: blur(45.5px);
+}

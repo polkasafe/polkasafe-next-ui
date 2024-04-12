@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import dayjs from 'dayjs';
-import React, { useEffect, useState, FC } from 'react';
+import React, { useEffect, useState, FC, useCallback } from 'react';
 import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { usePagination } from '@next-evm/hooks/usePagination';
@@ -11,8 +11,15 @@ import Loader from '@next-common/ui-components/Loader';
 import Pagination from '@next-common/ui-components/Pagination';
 import { convertSafeHistoryData } from '@next-evm/utils/convertSafeData/convertSafeHistory';
 import updateDB, { UpdateDB } from '@next-evm/utils/updateDB';
-import NoTransactionsHistory from './NoTransactionsHistory';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { NETWORK } from '@next-common/global/evm-network-constants';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { useWallets } from '@privy-io/react-auth';
+import { ethers } from 'ethers';
 import Transaction from './Transaction';
+import NoTransactionsHistory from './NoTransactionsHistory';
 
 interface IHistory {
 	loading: boolean;
@@ -23,9 +30,13 @@ interface IHistory {
 const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 	const { currentPage, setPage, totalDocs } = usePagination();
 	const [transactions, setTransactions] = useState<any[]>([]);
-	const { activeMultisig, gnosisSafe } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeMultisigData } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { network } = useGlobalApiContext();
 	const { address } = useGlobalUserDetailsContext();
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 
 	useEffect(() => {
 		const hash = typeof window !== 'undefined' && window.location.hash.slice(1);
@@ -35,18 +46,60 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 		}
 	}, []);
 
+	const fetchAllTransactions = useCallback(async () => {
+		if (activeMultisig || !activeOrg?.multisigs || activeOrg.multisigs?.length === 0) return;
+
+		const allTxns = [];
+		setLoading(true);
+		await Promise.all(
+			activeOrg.multisigs.map(async (multisig) => {
+				const txUrl = returnTxUrl(multisig.network as NETWORK);
+				const provider = await connectedWallet?.getEthersProvider();
+				const web3Adapter = new EthersAdapter({
+					ethers,
+					signerOrProvider: provider
+				});
+				const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+				const completedSafeData = await gnosisService.getAllTx(multisig.address, {
+					executed: true,
+					trusted: true
+				});
+				const convertedCompletedData = completedSafeData.results.map((safe: any) =>
+					convertSafeHistoryData({ ...safe, network: multisig.network }, multisig?.address)
+				);
+				allTxns.push(...convertedCompletedData);
+			})
+		);
+		setLoading(false);
+		setTransactions(allTxns);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeMultisig, activeOrg?.multisigs, connectedWallet]);
+
 	useEffect(() => {
-		if (!gnosisSafe) {
+		fetchAllTransactions();
+	}, [fetchAllTransactions, refetch]);
+
+	useEffect(() => {
+		if (!activeMultisig || !activeMultisigData) {
 			return;
 		}
 		(async () => {
 			setLoading(true);
 			try {
-				const safeData = await gnosisSafe.getAllTx(activeMultisig, {
+				const txUrl = returnTxUrl(activeMultisigData.network as NETWORK);
+				const provider = await connectedWallet?.getEthersProvider();
+				const web3Adapter = new EthersAdapter({
+					ethers,
+					signerOrProvider: provider
+				});
+				const gnosisService = new GnosisSafeService(web3Adapter, provider.getSigner(), txUrl);
+				const safeData = await gnosisService.getAllTx(activeMultisig, {
 					executed: true,
 					trusted: true
 				});
-				const convertedData = safeData.results.map((safe: any) => convertSafeHistoryData({ ...safe, network }));
+				const convertedData = safeData.results.map((safe: any) =>
+					convertSafeHistoryData({ ...safe, network }, activeMultisig)
+				);
 				setTransactions(convertedData);
 				updateDB(UpdateDB.Update_History_Transaction, { transactions: convertedData }, address, network);
 			} catch (error) {
@@ -56,7 +109,7 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 			}
 		})();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig, address, network, refetch, gnosisSafe]);
+	}, [activeMultisig, address, network, refetch]);
 
 	if (loading) {
 		return (
@@ -65,7 +118,6 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 			</div>
 		);
 	}
-
 	return (
 		<>
 			{transactions && transactions.length > 0 ? (

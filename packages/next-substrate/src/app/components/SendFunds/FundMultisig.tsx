@@ -1,7 +1,7 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
-import { AutoComplete, Form, Spin } from 'antd';
+import { AutoComplete, Dropdown, Form, Spin } from 'antd';
 import { DefaultOptionType } from 'antd/es/select';
 import BN from 'bn.js';
 import React, { useEffect, useState } from 'react';
@@ -9,14 +9,13 @@ import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedT
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import useGetWalletAccounts from '@next-substrate/hooks/useGetWalletAccounts';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import AddressQr from '@next-common/ui-components/AddressQr';
 import Balance from '@next-common/ui-components/Balance';
 import BalanceInput from '@next-common/ui-components/BalanceInput';
-import { CopyIcon, QRIcon } from '@next-common/ui-components/CustomIcons';
+import { CircleArrowDownIcon, CopyIcon, QRIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-substrate/utils/copyText';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
@@ -24,6 +23,10 @@ import setSigner from '@next-substrate/utils/setSigner';
 import transferFunds from '@next-substrate/utils/transferFunds';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
 const FundMultisig = ({
@@ -36,12 +39,16 @@ const FundMultisig = ({
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { api, apiReady, network } = useGlobalApiContext();
-	const { activeMultisig, addressBook, loggedInWallet } = useGlobalUserDetailsContext();
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
+	const { activeMultisig, loggedInWallet, address } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+
+	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
 
 	const { accounts } = useGetWalletAccounts(loggedInWallet);
 
-	const [selectedSender, setSelectedSender] = useState(getEncodedAddress(addressBook[0].address, network) || '');
+	const [selectedSender, setSelectedSender] = useState(getEncodedAddress(address, network) || '');
 	const [amount, setAmount] = useState(new BN(0));
 	const [loading, setLoading] = useState(false);
 	const [showQrModal, setShowQrModal] = useState(false);
@@ -51,6 +58,41 @@ const FundMultisig = ({
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 	const [txnHash, setTxnHash] = useState<string>('');
 	const [selectedAccountBalance, setSelectedAccountBalance] = useState<string>('');
+
+	const [selectedMultisig, setSelectedMultisig] = useState<string>(
+		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
+	);
+
+	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
+		key: JSON.stringify(item),
+		label: (
+			<AddressComponent
+				isMultisig
+				showNetworkBadge
+				network={item.network}
+				withBadge={false}
+				address={item.address}
+			/>
+		)
+	}));
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
 
 	useEffect(() => {
 		if (!getSubstrateAddress(selectedSender)) {
@@ -65,9 +107,10 @@ const FundMultisig = ({
 			<AddressComponent
 				name={account.name}
 				address={account.address}
+				network={network}
 			/>
 		),
-		value: account.address
+		value: getEncodedAddress(account.address, network) || account.address
 	}));
 
 	const addSenderHeading = () => {
@@ -115,6 +158,7 @@ const FundMultisig = ({
 
 	return success ? (
 		<TransactionSuccessScreen
+			network={network}
 			successMessage='Transaction Successful!'
 			amount={amount}
 			sender={selectedSender}
@@ -146,14 +190,39 @@ const FundMultisig = ({
 				<AddressQr address={selectedSender} />
 			</ModalComponent>
 			<div className={className}>
-				<p className='text-primary font-normal text-xs leading-[13px] mb-2'>Recipient</p>
-				{/* TODO: Make into reusable component */}
-				<div className=' p-[10px] border-2 border-dashed border-bg-secondary rounded-lg flex items-center justify-between'>
-					<AddressComponent
-						withBadge={false}
-						address={activeMultisig}
-					/>
-					<Balance address={activeMultisig} />
+				<div>
+					<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
+						Sending from
+						<Balance
+							api={api}
+							apiReady={apiReady}
+							network={network}
+							address={selectedMultisig}
+						/>
+					</p>
+					<Dropdown
+						trigger={['click']}
+						className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-[500px]'
+						menu={{
+							items: multisigOptions,
+							onClick: (e) => {
+								console.log(JSON.parse(e.key));
+								setSelectedMultisig(JSON.parse(e.key)?.address);
+								setNetwork(JSON.parse(e.key)?.network);
+							}
+						}}
+					>
+						<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+							<AddressComponent
+								isMultisig
+								showNetworkBadge
+								network={network}
+								withBadge={false}
+								address={selectedMultisig}
+							/>
+							<CircleArrowDownIcon className='text-primary' />
+						</div>
+					</Dropdown>
 				</div>
 
 				<Form disabled={loading}>
@@ -161,6 +230,9 @@ const FundMultisig = ({
 						<div className='flex items-center justify-between mb-2'>
 							<label className='text-primary font-normal text-xs leading-[13px] block'>Sending from</label>
 							<Balance
+								api={api}
+								network={network}
+								apiReady={apiReady}
 								address={selectedSender}
 								onChange={setSelectedAccountBalance}
 							/>
@@ -183,7 +255,7 @@ const FundMultisig = ({
 											id='sender'
 											placeholder='Send from Address..'
 											onChange={(value) => setSelectedSender(value)}
-											defaultValue={getEncodedAddress(addressBook[0]?.address, network) || ''}
+											defaultValue={getEncodedAddress(address, network) || ''}
 										/>
 										<div className='absolute right-2'>
 											<button onClick={() => copyText(selectedSender, true, network)}>
@@ -201,6 +273,7 @@ const FundMultisig = ({
 					<section className='mt-6'>
 						<label className='text-primary font-normal text-xs leading-[13px] block mb-2'>Amount</label>
 						<BalanceInput
+							network={network}
 							multipleCurrency
 							fromBalance={selectedAccountBalance}
 							placeholder='5'

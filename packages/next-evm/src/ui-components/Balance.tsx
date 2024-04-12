@@ -2,37 +2,48 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { chainProperties } from '@next-common/global/evm-network-constants';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
-import { useSigner } from '@thirdweb-dev/react';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { ethers } from 'ethers';
 import React, { useEffect, useState } from 'react';
+import { useWallets } from '@privy-io/react-auth';
+import { EAssetType } from '@next-common/types';
+import { IMultisigAssets } from '@next-evm/context/MultisigAssetsContext';
 
 interface Props {
 	className?: string;
 	address: string;
+	network: NETWORK;
+	isMultisig?: boolean;
+	allAssets?: IMultisigAssets;
 }
 
-const Balance = ({ address, className }: Props) => {
-	const signer = useSigner();
-	const { network } = useGlobalApiContext();
+const Balance = ({ address, className, network = NETWORK.POLYGON, isMultisig, allAssets }: Props) => {
+	const { wallets } = useWallets();
 
 	const [balance, setBalance] = useState<string>('0');
 
 	const fetchEthBalance = async (a: string) => {
 		try {
-			if (!signer?.provider) {
+			if (!wallets?.[0]) {
 				return;
 			}
-			const accountBalance = ethers?.utils?.formatEther(await signer.provider?.getBalance(a));
-			if (accountBalance) setBalance(accountBalance);
+			const provider = await wallets[0]?.getEthersProvider();
+			const accountBalance = await provider.getBalance(a);
+			if (accountBalance) setBalance(ethers.utils.formatEther(accountBalance));
 		} catch (err) {
 			console.log('Err from fetchEthBalance', err);
 		}
 	};
 
 	useEffect(() => {
-		if (address) fetchEthBalance(address);
+		if (isMultisig && allAssets) {
+			const nativeToken = allAssets[address]?.assets?.find((item) => item.type === EAssetType.NATIVE_TOKEN);
+			setBalance(nativeToken.balance_token);
+		}
+	}, [address, allAssets, isMultisig]);
+
+	useEffect(() => {
+		if (address && !isMultisig) fetchEthBalance(address);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [address]);
 

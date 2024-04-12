@@ -24,8 +24,8 @@ import addNewMultiToProxy from '@next-substrate/utils/addNewMultiToProxy';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import removeOldMultiFromProxy from '@next-substrate/utils/removeOldMultiFromProxy';
 import setSigner from '@next-substrate/utils/setSigner';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 
 const RemoveOwner = ({
 	addressToRemove,
@@ -67,15 +67,21 @@ const RemoveOwner = ({
 				console.log('ERROR');
 			} else {
 				setLoadingMessages('Creating Your Proxy.');
-				const { data: multisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
-					`${SUBSTRATE_API_URL}/createMultisig`,
-					{
+				const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig_substrate`, {
+					body: JSON.stringify({
 						disabled: true,
 						multisigName: multisig?.name,
+						network,
 						signatories: newSignatories,
 						threshold
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
+					data: IMultisigAddress;
+					error: string;
+				};
 
 				if (multisigError) {
 					return;

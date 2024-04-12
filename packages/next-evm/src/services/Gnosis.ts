@@ -174,6 +174,7 @@ export default class GnosisSafeService {
 				isL1SafeMasterCopy: true,
 				safeAddress: multisigAddress
 			});
+			console.log('to, tokens', to, tokens);
 			const signer = await this.ethAdapter.getSignerAddress();
 
 			const safeTransactionData: MetaTransactionData | MetaTransactionData[] = createTokenTransferParams(
@@ -181,6 +182,8 @@ export default class GnosisSafeService {
 				value,
 				tokens
 			);
+
+			console.log('safe data', safeTransactionData);
 
 			if (note) console.log(note);
 
@@ -736,6 +739,10 @@ export default class GnosisSafeService {
 		return this.safeService.getPendingTransactions(multisigAddress);
 	};
 
+	getMultisigTxns = async (multisigAddress: string): Promise<SafeMultisigTransactionListResponse> => {
+		return this.safeService.getMultisigTransactions(multisigAddress);
+	};
+
 	// eslint-disable-next-line class-methods-use-this
 	getMultisigAllAssets = async (network: NETWORK, multisigAddress: string): Promise<any> => {
 		const assets: SafeBalanceResponse = await getBalances(
@@ -748,7 +755,7 @@ export default class GnosisSafeService {
 			}
 		);
 		// eslint-disable-next-line @typescript-eslint/return-await
-		return assets.items;
+		return assets;
 	};
 
 	getAllTx = async (multisigAddress: string, options: any = {}): Promise<AllTransactionsListResponse> => {

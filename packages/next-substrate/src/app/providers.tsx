@@ -14,6 +14,10 @@ import { ApiContextProvider } from '@next-substrate/context/ApiContext';
 import { ReactNode } from 'react';
 import antdTheme from '@next-substrate/styles/antdTheme';
 import { AddMultisigProvider } from '@next-substrate/context/AddMultisigContext';
+import { ActiveOrgProvider } from '@next-substrate/context/ActiveOrgContext';
+import { CreateOrgStepsProvider } from '@next-substrate/context/CreateOrgStepsContext';
+import { MultisigAssetsProvider } from '@next-substrate/context/MultisigAssetsContext';
+import CacheProvider from '@next-substrate/context/CachedDataContext';
 
 export default function Providers({ children }: { children?: ReactNode }) {
 	return (
@@ -25,7 +29,15 @@ export default function Providers({ children }: { children?: ReactNode }) {
 							<UserDetailsProvider>
 								<ActiveMultisigProvider>
 									<AddMultisigProvider>
-										<DAppContextProvider>{children}</DAppContextProvider>
+										<ActiveOrgProvider>
+											<MultisigAssetsProvider>
+												<CacheProvider>
+													<DAppContextProvider>
+														<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
+													</DAppContextProvider>
+												</CacheProvider>
+											</MultisigAssetsProvider>
+										</ActiveOrgProvider>
 									</AddMultisigProvider>
 								</ActiveMultisigProvider>
 							</UserDetailsProvider>

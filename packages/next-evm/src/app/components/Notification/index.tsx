@@ -5,18 +5,16 @@
 import dayjs from 'dayjs';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import NoNotification from '@next-common/assets/icons/no-notification.svg';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { INotification } from '@next-common/types';
 import { NotificationIcon } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
 
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import NotificationCard from './NotificationCard';
 
 const Notification = () => {
-	const { network } = useGlobalApiContext();
 	const { address, setUserDetailsContextState } = useGlobalUserDetailsContext();
 
 	const [loading, setLoading] = useState(true);
@@ -32,11 +30,15 @@ const Notification = () => {
 
 		setLoading(true);
 
-		const { data, error } = await nextApiClientFetch<INotification[]>(
-			`${EVM_API_URL}/getNotificationsEth`,
-			{},
-			{ network }
-		);
+		const updateNotificationTriggerRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getNotificationsEth`, {
+			body: JSON.stringify({}),
+			headers: firebaseFunctionsHeader(),
+			method: 'POST'
+		});
+		const { data, error } = (await updateNotificationTriggerRes.json()) as {
+			data: INotification[];
+			error: string;
+		};
 
 		if (error) {
 			console.log('Error in Fetching notifications: ', error);
@@ -45,7 +47,7 @@ const Notification = () => {
 			setNotifications(data as INotification[]);
 		}
 		setLoading(false);
-	}, [address, network]);
+	}, [address]);
 
 	const markAllRead = useCallback(async () => {
 		const newNotifiedTill = new Date();

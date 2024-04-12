@@ -15,22 +15,28 @@ import formatBalance from '@next-evm/utils/formatBalance';
 
 interface Props {
 	className?: string;
+	multisigAddress?: string;
 	label?: string;
 	onChange: (balance: string) => void;
 	placeholder?: string;
 	defaultValue?: string;
 	token?: IAsset;
 	onTokenChange?: (token: IAsset) => void;
+	requestedAmount?: string;
+	assets?: IAsset[];
 }
 
 const BalanceInput = ({
 	className,
+	multisigAddress,
 	label = '',
 	onChange,
 	placeholder = '',
 	defaultValue = '',
 	token,
-	onTokenChange
+	onTokenChange,
+	requestedAmount,
+	assets
 }: Props) => {
 	const { network } = useGlobalApiContext();
 
@@ -38,6 +44,7 @@ const BalanceInput = ({
 
 	const [isValidInput, setIsValidInput] = useState(true);
 	const [insufficientBalance, setInsufficientBalance] = useState(false);
+	const [amountLessThanReq, setAmountLessThanReq] = useState(false);
 
 	const onBalanceChange = (value: number | string | null): void => {
 		const amount = Number(value);
@@ -53,9 +60,17 @@ const BalanceInput = ({
 			return;
 		}
 		setInsufficientBalance(false);
+
+		if (requestedAmount && amount < Number(requestedAmount)) {
+			setAmountLessThanReq(true);
+			return;
+		}
+		setInsufficientBalance(false);
 	};
 
-	const tokenOptions: ItemType[] = allAssets?.map((item) => ({
+	const selectedAssets = assets || allAssets[multisigAddress]?.assets;
+
+	const tokenOptions: ItemType[] = selectedAssets.map((item) => ({
 		key: item.name,
 		label: (
 			<span className='flex items-center gap-x-2 text-white'>
@@ -77,7 +92,7 @@ const BalanceInput = ({
 	}));
 
 	const onTokenOptionChange = (e: any) => {
-		const selectedToken = allAssets?.find((item) => item.name === e.key);
+		const selectedToken = selectedAssets.find((item) => item.name === e.key);
 		if (selectedToken) onTokenChange?.(selectedToken);
 	};
 
@@ -97,11 +112,13 @@ const BalanceInput = ({
 						className='border-0 outline-0 my-0 p-0'
 						name='balance'
 						rules={[{ required: true }]}
-						validateStatus={!isValidInput || insufficientBalance ? 'error' : 'success'}
+						validateStatus={!isValidInput || insufficientBalance || amountLessThanReq ? 'error' : 'success'}
 						help={
 							!isValidInput
 								? 'Please input a valid value'
-								: insufficientBalance && 'Insufficient Balance in Sender Account.'
+								: insufficientBalance
+								? 'Insufficient Balance in Sender Account.'
+								: amountLessThanReq && `Amount less than Requested ($${formatBalance(requestedAmount)})`
 						}
 					>
 						<div className='flex items-center h-[50px]'>
@@ -115,7 +132,7 @@ const BalanceInput = ({
 								defaultValue={defaultValue}
 								className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white pr-24'
 							/>
-							{allAssets?.length > 0 && token ? (
+							{selectedAssets.length > 0 && token ? (
 								<Dropdown
 									trigger={['click']}
 									className={className}

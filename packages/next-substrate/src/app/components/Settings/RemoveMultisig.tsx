@@ -6,40 +6,46 @@ import { Form } from 'antd';
 import React, { useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
-import { NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import { networks } from '@next-common/global/networkConstants';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
-const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
-	const { activeMultisig, multisigAddresses, multisigSettings, setUserDetailsContextState } =
-		useGlobalUserDetailsContext();
+const RemoveMultisigAddress = ({ onCancel, multisig }: { onCancel: () => void; multisig: IMultisigAddress }) => {
+	const { multisigSettings, setUserDetailsContextState, userID } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const [loading, setLoading] = useState<boolean>(false);
-	const { network } = useGlobalApiContext();
+	const network = multisig.network || networks.POLKADOT;
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const encodedMultisigAddress = getEncodedAddress(multisig.address || '', multisig.network);
 
 	const handleRemoveSafe = async () => {
 		try {
 			setLoading(true);
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !multisig?.address) {
+			if (!userID || !multisig?.address || !activeOrg) {
 				console.log('ERROR');
 				setLoading(false);
 				return;
 			}
 
-			const { data: removeSafeData, error: removeSafeError } = await nextApiClientFetch<string>(
-				`${SUBSTRATE_API_URL}/deleteMultisig`,
-				{
+			const removeSafeRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/deleteMultisig_substrate`, {
+				body: JSON.stringify({
 					multisigAddress: multisig.address
-				}
-			);
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: removeSafeData, error: removeSafeError } = (await removeSafeRes.json()) as {
+				data: string;
+				error: string;
+			};
 
 			if (removeSafeError) {
 				queueNotification({
@@ -53,10 +59,10 @@ const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 
 			if (removeSafeData && removeSafeData === 'Success') {
 				setLoading(false);
-				const copy = [...multisigAddresses];
+				const copy = [...activeOrg.multisigs];
 				setUserDetailsContextState((prevState) => {
 					const newMutlisigArray = copy.filter(
-						(item) => item.address !== activeMultisig || item.proxy === activeMultisig
+						(item) => item.address !== multisig.address || item.proxy === multisig.proxy
 					);
 					if (
 						newMutlisigArray &&
@@ -93,8 +99,9 @@ const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 			<p className='text-white font-medium text-sm leading-[15px]'>
 				Are you sure you want to permanently delete
 				<span className='text-primary mx-1.5'>
-					{multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
-						multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)?.name ||
+					{multisigSettings?.[`${encodedMultisigAddress}_${network}`]?.name ||
+						activeOrg?.multisigs?.find((item) => item.address === multisig.address || item.proxy === multisig.proxy)
+							?.name ||
 						DEFAULT_MULTISIG_NAME}
 				</span>
 				?

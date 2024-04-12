@@ -12,8 +12,9 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { EFieldType, IDropdownOptions, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
 const EditField = ({
 	className,
@@ -35,7 +36,10 @@ const EditField = ({
 	required: boolean;
 }) => {
 	const [loading, setLoading] = useState(false);
-	const { setUserDetailsContextState, transactionFields } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
+
 	const [requiredState, setRequiredState] = useState<boolean>(required);
 	const [newSubfieldName, setNewSubfieldName] = useState<string>(subfieldName || '');
 	const [newOption, setNewOption] = useState<string>('');
@@ -70,16 +74,16 @@ const EditField = ({
 
 	const handleSave = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress) {
+			if (!userID) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
 
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
-					await nextApiClientFetch<string>(`${SUBSTRATE_API_URL}/updateTransactionFields`, {
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields_substrate`, {
+					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -95,7 +99,15 @@ const EditField = ({
 								}
 							}
 						}
-					});
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
 
 				if (updateTransactionFieldsError) {
 					queueNotification({
@@ -113,7 +125,7 @@ const EditField = ({
 						message: 'Transaction Fields Updated.',
 						status: NotificationStatus.SUCCESS
 					});
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

@@ -5,7 +5,6 @@ import { Collapse, Divider, Spin, Timeline } from 'antd';
 import classNames from 'classnames';
 // import { ethers } from 'ethers';
 import React, { FC, useEffect, useState } from 'react';
-import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import {
@@ -24,6 +23,8 @@ import dayjs from 'dayjs';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import getHistoricalNativeTokenPrice from '@next-evm/utils/getHistoricalNativeTokenPrice';
+import { ITxnCategory } from '@next-common/types';
+import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -38,7 +39,7 @@ interface ISentInfoProps {
 	loading?: boolean;
 	from: string;
 	txType?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	tokenSymbol?: string;
 	tokenDecimals?: number;
 	tokenAddress?: string;
@@ -53,6 +54,10 @@ interface ISentInfoProps {
 	isCustomTxn?: boolean;
 	isContractInteraction?: boolean;
 	network: NETWORK;
+	multisigAddress: string;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -76,47 +81,36 @@ const SentInfo: FC<ISentInfoProps> = ({
 	isCustomTxn,
 	tokenAddress,
 	network,
-	isContractInteraction
+	isContractInteraction,
+	category,
+	setCategory,
+	setTransactionFields,
+	multisigAddress
 }) => {
 	const [showDetails, setShowDetails] = useState<boolean>(false);
-	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
-	const threshold =
-		multisigAddresses?.find((item: any) => item.address === activeMultisig || item.proxy === activeMultisig)
-			?.threshold || 0;
+	const threshold = approvals?.length || 0;
 
 	const [usdValue, setUsdValue] = useState<string | string[]>('0');
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
 		if (tokenAddress) {
-			getHistoricalTokenPrice(network, tokenAddress, date).then((res) => {
-				const prices: any[] = res?.prices || [];
-				prices.forEach((item, i) => {
-					if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
-						setUsdValue(Number(item[1]).toFixed(4));
-					}
-				});
+			getHistoricalTokenPrice(network, tokenAddress, date).then((usd) => {
+				setUsdValue(Number(usd).toFixed(4));
 			});
 		} else if (amount && !Array.isArray(amount)) {
-			getHistoricalNativeTokenPrice(network, date).then((res) => {
-				const currentPrice = res?.market_data?.current_price?.usd || '0';
-				setUsdValue(Number(currentPrice).toFixed(4));
+			getHistoricalNativeTokenPrice(network, date).then((usd) => {
+				setUsdValue(Number(usd).toFixed(4));
 			});
 		} else if (multiSendTokens && multiSendTokens.length > 0) {
 			multiSendTokens.forEach((token) => {
 				if (!token.tokenAddress) {
-					getHistoricalNativeTokenPrice(network, date).then((res) => {
-						const currentPrice = res?.market_data?.current_price?.usd || '0';
-						setUsdValue((prev) => [...prev, Number(currentPrice).toFixed(4)]);
+					getHistoricalNativeTokenPrice(network, date).then((usd) => {
+						setUsdValue((prev) => [...prev, Number(usd).toFixed(4)]);
 					});
 					return;
 				}
-				getHistoricalTokenPrice(network, token.tokenAddress, date).then((res) => {
-					const prices: any[] = res?.prices || [];
-					prices.forEach((item, i) => {
-						if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
-							setUsdValue((prev) => [...prev, Number(item[1]).toFixed(4)]);
-						}
-					});
+				getHistoricalTokenPrice(network, token.tokenAddress, date).then((usd) => {
+					setUsdValue((prev) => [...prev, Number(usd).toFixed(4)]);
 				});
 			});
 		}
@@ -163,7 +157,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 								<span>To:</span>
 							</p>
 							<div className='mt-3'>
-								<AddressComponent address={recipientAddress} />
+								<AddressComponent
+									network={network}
+									address={recipientAddress}
+								/>
 							</div>
 						</>
 					) : (
@@ -203,7 +200,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 											<span>To:</span>
 										</p>
 										<div className='mt-3'>
-											<AddressComponent address={item} />
+											<AddressComponent
+												network={network}
+												address={item}
+											/>
 										</div>
 										{recipientAddress.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
 									</>
@@ -223,13 +223,19 @@ const SentInfo: FC<ISentInfoProps> = ({
 				{isContractInteraction && recipientAddress && typeof recipientAddress === 'string' && (
 					<div className='mt-3 flex flex-col gap-y-2 text-white font-medium text-sm'>
 						<span>Interact with: </span>
-						<AddressComponent address={recipientAddress} />
+						<AddressComponent
+							network={network}
+							address={recipientAddress}
+						/>
 					</div>
 				)}
 				<Divider className='bg-text_secondary my-5' />
 				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Executed By:</span>
-					<AddressComponent address={from} />
+					<AddressComponent
+						network={network}
+						address={from}
+					/>
 				</div>
 				<div className='flex items-center justify-between mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
@@ -255,7 +261,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 							{txType === 'addOwnerWithThreshold' ? 'Added Owner' : 'Removed Owner'}:
 						</span>
 						<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-							<AddressComponent address={addressAddOrRemove} />
+							<AddressComponent
+								network={network}
+								address={addressAddOrRemove}
+							/>
 						</p>
 					</div>
 				)}
@@ -263,36 +272,37 @@ const SentInfo: FC<ISentInfoProps> = ({
 					<Spin className='mt-3' />
 				) : (
 					<>
-						{!!transactionFields &&
-							Object.keys(transactionFields).length !== 0 &&
-							transactionFields.category !== 'none' && (
-								<>
-									<div className='flex items-center justify-between mt-3'>
-										<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
-										<span className='text-primary border border-solid border-primary rounded-xl px-[6px] py-1'>
-											{transactionFields?.category}
-										</span>
-									</div>
-									{transactionFields &&
-										transactionFields?.subfields &&
-										Object.keys(transactionFields?.subfields).map((key) => {
-											const subfield = transactionFields?.subfields[key];
-											return (
-												<div
-													key={key}
-													className='flex items-center justify-between mt-3'
-												>
-													<span className='text-text_secondary font-normal text-sm leading-[15px]'>
-														{subfield?.name}:
-													</span>
-													<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
-														{subfield?.value}
-													</span>
-												</div>
-											);
-										})}
-								</>
-							)}
+						{!!transactionFields && Object.keys(transactionFields).length !== 0 && (
+							<>
+								<div className='flex items-center justify-between mt-3'>
+									<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
+									<TransactionFields
+										callHash={callHash}
+										category={category}
+										setCategory={setCategory}
+										transactionFieldsObject={transactionFields}
+										setTransactionFieldsObject={setTransactionFields}
+										multisigAddress={multisigAddress}
+									/>
+								</div>
+								{transactionFields &&
+									transactionFields.subfields &&
+									Object.keys(transactionFields?.subfields).map((key) => {
+										const subfield = transactionFields.subfields[key];
+										return (
+											<div
+												key={key}
+												className='flex items-center justify-between mt-3'
+											>
+												<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield.name}:</span>
+												<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
+													{subfield.value}
+												</span>
+											</div>
+										);
+									})}
+							</>
+						)}
 						{note && (
 							<div className='flex items-center justify-between mt-3'>
 								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Note:</span>
@@ -397,7 +407,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 													className={`${i === 0 && 'mt-4'} success bg-transaparent`}
 												>
 													<div className='mb-3 flex items-center gap-x-4'>
-														<AddressComponent address={address} />
+														<AddressComponent
+															network={network}
+															address={address}
+														/>
 													</div>
 												</Timeline.Item>
 											))}

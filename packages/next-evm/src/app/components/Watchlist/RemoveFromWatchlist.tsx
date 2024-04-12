@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { NotificationStatus } from '@next-common/types';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useWallets } from '@privy-io/react-auth';
 import RemoveBtn from '../Settings/RemoveBtn';
 import CancelBtn from '../Settings/CancelBtn';
 
@@ -20,17 +21,26 @@ const RemoveFromWatchlist = ({
 }) => {
 	const { setUserDetailsContextState, watchlists } = useGlobalUserDetailsContext();
 	const [loading, setLoading] = useState(false);
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
+
 	const removeAddress = async () => {
 		if (!address || !network) return;
 
 		setLoading(true);
-		const { data: watchlistData, error: watchlistError } = await nextApiClientFetch<string>(
-			`${EVM_API_URL}/removeFromWatchlist`,
-			{
+		const watchlistRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/removeFromWatchlist`, {
+			body: JSON.stringify({
 				address,
 				network
-			}
-		);
+			}),
+			headers: firebaseFunctionsHeader(connectedWallet.address),
+			method: 'POST'
+		});
+		const { data: watchlistData, error: watchlistError } = (await watchlistRes.json()) as {
+			data: string;
+			error: string;
+		};
 
 		if (watchlistData && !watchlistError) {
 			setLoading(false);

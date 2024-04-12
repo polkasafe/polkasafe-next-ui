@@ -16,6 +16,7 @@ import SendFundsForm, { ETransactionTypeEVM } from '../../SendFunds/SendFundsFor
 import DeleteStream from './DeleteStream';
 
 export interface IStreamedData {
+	multisigAddress: string;
 	receiver: string;
 	sender: string;
 	flowRate: bigint;
@@ -39,7 +40,8 @@ const Transaction: FC<IStreamedData> = ({
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	txHash,
 	incoming,
-	tokenSymbol
+	tokenSymbol,
+	multisigAddress
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { allAssets } = useMultisigAssetsContext();
@@ -49,7 +51,7 @@ const Transaction: FC<IStreamedData> = ({
 	const monthlyAmount = ethers.utils.formatEther(amountInWei.toString());
 	const flowRatePerMonth = Number(monthlyAmount) * 3600 * 24 * (365 / 12);
 
-	const token = allAssets.find((item) => item.name === tokenSymbol);
+	const token = allAssets[multisigAddress]?.assets?.find((item) => item.name === tokenSymbol);
 
 	return (
 		<div className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'>
@@ -78,7 +80,7 @@ const Transaction: FC<IStreamedData> = ({
 				/>
 			</ModalComponent>
 			<div className='grid items-center grid-cols-9 text-white font-normal text-sm leading-[15px]'>
-				<p className='col-span-3 flex items-center gap-x-3'>
+				<p className='col-span-3 flex items-center gap-x-3 px-2'>
 					{!incoming ? (
 						<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-red-500'>
 							<ArrowUpRightIcon />

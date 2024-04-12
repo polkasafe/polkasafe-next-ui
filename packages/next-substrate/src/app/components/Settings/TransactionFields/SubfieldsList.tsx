@@ -10,8 +10,9 @@ import { DeleteIcon, EditIcon, OutlineCloseIcon } from '@next-common/ui-componen
 import styled from 'styled-components';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import AddSubfield from './AddSubfield';
 import DeleteField from './DeleteField';
 import EditField from './EditField';
@@ -119,23 +120,25 @@ const DeleteFieldModal = ({
 };
 
 const SubfieldsList = ({ className, category }: { className?: string; category: string }) => {
-	const { transactionFields, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
+
 	const [loading, setLoading] = useState<boolean>(false);
 	const [openAddSubfieldModal, setOpenAddSubfieldModal] = useState(false);
 
 	const handleRequiredChange = async (key: string, requiredState: boolean) => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress) {
+			if (!userID) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
 
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } = await nextApiClientFetch(
-					`${SUBSTRATE_API_URL}/updateTransactionFields`,
-					{
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields_substrate`, {
+					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -149,8 +152,15 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 								}
 							}
 						}
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
 
 				if (updateTransactionFieldsError) {
 					console.log(updateTransactionFieldsError);
@@ -159,7 +169,7 @@ const SubfieldsList = ({ className, category }: { className?: string; category: 
 				}
 
 				if (updateTransactionFieldsData) {
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

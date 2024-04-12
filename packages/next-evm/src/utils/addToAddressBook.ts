@@ -4,19 +4,19 @@
 
 import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from './nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from './firebaseFunctionHeaders';
 
 const addToAddressBook = async ({
 	address,
 	name,
 	addressBook,
-	network
+	organisationId
 }: {
 	address: string;
 	name?: string;
 	addressBook: IAddressBookItem[];
-	network: string;
+	organisationId: string;
 }) => {
 	if (!address) return null;
 
@@ -25,13 +25,6 @@ const addToAddressBook = async ({
 	}
 
 	try {
-		const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-		const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-
-		if (!userAddress || !signature) {
-			console.log('ERROR');
-			return null;
-		}
 		if (addressBook.some((item) => item.address === address)) {
 			queueNotification({
 				header: 'Error!',
@@ -41,14 +34,19 @@ const addToAddressBook = async ({
 			return null;
 		}
 
-		const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
-			`${EVM_API_URL}/addToAddressBookEth`,
-			{
+		const addToAddressBookRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBookEth`, {
+			body: JSON.stringify({
 				address,
-				name
-			},
-			{ network }
-		);
+				name,
+				organisationId
+			}),
+			headers: firebaseFunctionsHeader(),
+			method: 'POST'
+		});
+		const { data: addAddressData, error: addAddressError } = (await addToAddressBookRes.json()) as {
+			data: IAddressBookItem[];
+			error: string;
+		};
 		if (addAddressError) {
 			return null;
 		}

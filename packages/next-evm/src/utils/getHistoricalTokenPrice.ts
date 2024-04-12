@@ -6,17 +6,28 @@ import { NETWORK, chainProperties } from '@next-common/global/evm-network-consta
 import dayjs from 'dayjs';
 
 // of the Apache-2.0 license. See the LICENSE file for details.
-const getHistoricalTokenPrice = async (network: NETWORK, contractAddress: string, date: Date | string) => {
-	const days = dayjs(new Date()).diff(dayjs(date), 'day');
-	const platformId = chainProperties[network].coingeckoId;
+const getHistoricalTokenPrice = async (
+	network: NETWORK,
+	contractAddress: string,
+	date: Date | string
+): Promise<string | number> => {
+	const formattedDate = dayjs(date).format('YYYY-MM-DD');
 	const data = await fetch(
-		`https://api.coingecko.com/api/v3/coins/${platformId}/contract/${contractAddress}/market_chart?vs_currency=usd&days=${
-			days + 1
-		}&x_cg_demo_api_key=${process.env.NEXT_PUBLIC_POLKASAFE_COINGECKO_API_KEY}`,
+		`https://api.covalenthq.com/v1/pricing/historical_by_addresses_v2/${
+			chainProperties[network].covalentNetworkName || ''
+		}/USD/${contractAddress}/?key=${
+			process.env.NEXT_PUBLIC_COVALENT_API_KEY
+		}&from=${formattedDate}&to=${formattedDate}`,
 		{ method: 'GET' }
 	);
 
-	return data.json();
+	const res = await data.json();
+
+	if (res.data && !res.error) {
+		return res?.data[0]?.prices?.[0]?.price || 0;
+	}
+
+	return 0;
 };
 
 export default getHistoricalTokenPrice;

@@ -7,13 +7,12 @@ import classNames from 'classnames';
 import React, { FC, useEffect, useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Multisig/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { ITxNotification } from '@next-common/types';
+import { IMultisigAddress, ITxNotification, ITxnCategory } from '@next-common/types';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,
@@ -34,13 +33,15 @@ import shortenAddress from '@next-substrate/utils/shortenAddress';
 import styled from 'styled-components';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { ApiPromise } from '@polkadot/api';
 import ArgumentsTable from './ArgumentsTable';
 import EditNote from './EditNote';
 import NotifyButton from './NotifyButton';
+import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	amount: string | string[];
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	amountUSD: string;
 	date: string;
 	// time: string;
@@ -65,6 +66,13 @@ interface ISentInfoProps {
 	customTx?: boolean;
 	decodedCallData: any;
 	txnParams: any;
+	network: string;
+	multisig: IMultisigAddress;
+	api: ApiPromise;
+	apiReady: boolean;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -92,45 +100,42 @@ const SentInfo: FC<ISentInfoProps> = ({
 	handleApproveTransaction,
 	handleCancelTransaction,
 	notifications,
-	customTx
+	customTx,
+	network,
+	multisig,
+	api,
+	apiReady,
+	category,
+	setCategory,
+	setTransactionFields
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { api, apiReady, network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
-	const {
-		address: userAddress,
-		addressBook,
-		multisigAddresses,
-		activeMultisig,
-		notOwnerOfMultisig
-	} = useGlobalUserDetailsContext();
+	const { address: userAddress, addressBook, activeMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const [openCancelModal, setOpenCancelModal] = useState<boolean>(false);
 	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
-	const activeMultisigObject = multisigAddresses?.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
-	);
 
 	const [updatedNote, setUpdatedNote] = useState(note);
 	const [depositor, setDepositor] = useState<string>('');
 
 	useEffect(() => {
 		const getDepositor = async () => {
-			if (!api || !apiReady) return;
-			const multisigInfos = await getMultisigInfo(activeMultisigObject?.address || activeMultisig, api);
+			if (!api) return;
+			const multisigInfos = await getMultisigInfo(multisig?.address || activeMultisig, api);
 			const [, multisigInfo] = multisigInfos?.find(([h]) => h.eq(callHash)) || [null, null];
 			setDepositor(multisigInfo?.depositor?.toString() || '');
 		};
 		getDepositor();
-	}, [activeMultisig, activeMultisigObject?.address, api, apiReady, callHash]);
+	}, [activeMultisig, multisig?.address, api, callHash]);
 
 	const approvalReminder = async (address: string) => {
 		const res = await notify({
 			args: {
 				address,
 				callHash,
-				multisigAddress: activeMultisigObject?.address || activeMultisig,
+				multisigAddress: multisig?.address || activeMultisig,
 				network
 			},
 			network,
@@ -359,12 +364,17 @@ const SentInfo: FC<ISentInfoProps> = ({
 					Object.keys(transactionFields).length !== 0 &&
 					transactionFields.category !== 'none' && (
 						<>
-							<div className='flex items-center justify-between mt-3'>
-								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
-								<span className='text-primary border border-solid border-primary rounded-xl px-[6px] py-1'>
-									{transactionFields?.category}
-								</span>
-							</div>
+							<p className='flex items-center justify-between mt-3'>
+								<span className='text-text_secondary font-normal text-sm'>Category:</span>
+								<TransactionFields
+									callHash={callHash}
+									category={category}
+									setCategory={setCategory}
+									transactionFieldsObject={transactionFields}
+									setTransactionFieldsObject={setTransactionFields}
+									multisigAddress={multisig.address}
+								/>
+							</p>
 							{transactionFields &&
 								transactionFields.subfields &&
 								Object.keys(transactionFields?.subfields).map((key) => {
@@ -462,7 +472,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 								>
 									Decoded Call
 								</Divider>
-								<ArgumentsTable callData={callDataString} />
+								<ArgumentsTable
+									api={api}
+									apiReady={apiReady}
+									network={network}
+									callData={callDataString}
+								/>
 							</>
 						)}
 					</>
@@ -551,12 +566,15 @@ const SentInfo: FC<ISentInfoProps> = ({
 												className={`${i === 0 && 'mt-4'} success bg-transaparent`}
 											>
 												<div className='mb-3 flex items-center gap-x-4'>
-													<AddressComponent address={address} />
+													<AddressComponent
+														address={address}
+														network={network}
+													/>
 												</div>
 											</Timeline.Item>
 										))}
 
-										{activeMultisigObject?.signatories
+										{multisig?.signatories
 											.filter((item) => {
 												const encodedApprovals = approvals.map((a) => getEncodedAddress(a, network));
 												return !encodedApprovals.includes(getEncodedAddress(item, network));
@@ -580,7 +598,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 														className='warning bg-transaparent'
 													>
 														<div className='mb-3 flex items-center gap-x-4 relative'>
-															<AddressComponent address={address} />
+															<AddressComponent
+																address={address}
+																network={network}
+															/>
 															{depositor === getEncodedAddress(userAddress, network) && (
 																<NotifyButton
 																	address={address}

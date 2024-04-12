@@ -42,7 +42,7 @@ export const ParachainIcon = ({
 
 interface INetworkCardProps {
 	selectedNetwork: string;
-	onClick: () => void;
+	onClick?: () => void;
 	isCardToken?: boolean;
 	network: string;
 }
@@ -53,12 +53,13 @@ const NetworkCard: FC<INetworkCardProps> = ({ isCardToken, onClick, selectedNetw
 	return (
 		<button
 			onClick={onClick}
-			className={`border-none outline-none shadow-none flex items-center gap-x-4 justify-between rounded-lg p-2 min-w-[190px] ${
-				isSelected && 'bg-highlight'
-			}`}
+			className='border-none outline-none flex items-center justify-between w-full mb-1 min-w-[150px]'
 		>
 			<p className='flex items-center gap-x-[6px]'>
-				<ParachainIcon src={chainProperties[network].logo} />
+				<ParachainIcon
+					size={15}
+					src={chainProperties[network].logo}
+				/>
 				<span className={`font-medium text-sm capitalize ${isSelected ? 'text-primary' : 'text-white'}`}>
 					{isCardToken ? chainProperties[network].tokenSymbol : chainProperties[network].displayName}
 				</span>

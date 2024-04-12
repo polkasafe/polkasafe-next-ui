@@ -96,6 +96,11 @@ import PolkassemblySVG from '~assets/polkassembly-logo.svg';
 import SubIDSVG from '~assets/subid.svg';
 import WatchIconSVG from '~assets/icons/watch-icon.svg';
 import StarSVG from '~assets/icons/star-icon.svg';
+import ArrowLeftCircleSVG from '~assets/icons/arrow-left-circle.svg';
+import ArrowRightCircleSVG from '~assets/icons/arrow-right-circle.svg';
+import TreasuryAnalyticsSVG from '~assets/icons/treasury-analytics-icon.svg';
+import SendMoneySVG from '~assets/icons/money-send-circle.svg';
+import InvoicesSVG from '~assets/icons/invoice.svg';
 
 export const AddIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
@@ -798,6 +803,49 @@ export const WatchIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Pa
 export const StarIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
 	<Icon
 		component={StarSVG}
+		{...props}
+	/>
+);
+
+export const ArrowLeftCircle: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
+	<Icon
+		component={ArrowLeftCircleSVG}
+		{...props}
+	/>
+);
+
+export const ArrowRightCircle: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
+	<Icon
+		component={ArrowRightCircleSVG}
+		{...props}
+	/>
+);
+
+export const TreasuryAnalyticsIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
+	<Icon
+		component={TreasuryAnalyticsSVG}
+		{...props}
+	/>
+);
+
+export const SendMoneyIcon: React.FC<Partial<CustomIconComponentProps>> = (
+	props: Partial<CustomIconComponentProps>
+) => (
+	<Icon
+		component={SendMoneySVG}
+		{...props}
+	/>
+);
+
+export const InvoicesIcon: React.FC<Partial<CustomIconComponentProps>> = (props: Partial<CustomIconComponentProps>) => (
+	<Icon
+		component={InvoicesSVG}
 		{...props}
 	/>
 );

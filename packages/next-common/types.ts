@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -5,6 +6,7 @@
 // eslint-disable-next-line import/no-cycle
 import GnosisSafeService from '@next-evm/services/Gnosis';
 import { Dispatch, SetStateAction } from 'react';
+import { StaticImageData } from 'next/image';
 import { NETWORK } from './global/evm-network-constants';
 
 export enum CHANNEL {
@@ -14,6 +16,38 @@ export enum CHANNEL {
 	ELEMENT = 'element',
 	SLACK = 'slack',
 	IN_APP = 'in_app'
+}
+
+export interface ITransactionFields {
+	[field: string]: {
+		fieldName: string;
+		fieldDesc: string;
+		subfields: ITransactionCategorySubfields;
+	};
+}
+
+export interface IMultisigAndNetwork {
+	name?: string;
+	address: string;
+	network: string;
+}
+
+export interface IOrganisation {
+	id: string;
+	imageURI?: string;
+	name: string;
+	desc?: string;
+	multisigs: IMultisigAddress[];
+	addressBook: IAddressBookItem[];
+	members: string[];
+	transactionFields: ITransactionFields;
+	userFullName?: string;
+	country?: string;
+	state?: string;
+	city?: string;
+	postalCode?: string;
+	organisationAddress?: string;
+	taxNumber?: string;
 }
 
 export interface IUserNotificationChannelPreferences {
@@ -71,14 +105,6 @@ export interface ITransactionCategorySubfields {
 	};
 }
 
-export interface ITransactionFields {
-	[field: string]: {
-		fieldName: string;
-		fieldDesc: string;
-		subfields: ITransactionCategorySubfields;
-	};
-}
-
 export interface IWatchlist {
 	name: string;
 	address: string;
@@ -86,6 +112,9 @@ export interface IWatchlist {
 }
 
 export interface UserDetailsContextType {
+	organisations?: IOrganisation[];
+	userID: string;
+	loading?: boolean;
 	loggedInWallet: Wallet;
 	activeMultisig: string;
 	isProxy: boolean;
@@ -108,7 +137,39 @@ export interface UserDetailsContextType {
 	watchlists?: { [address: string]: IWatchlist };
 }
 
+export interface IInvoice {
+	id: string;
+	created_at: string;
+	organisationId: string;
+	title: string;
+	from: string;
+	to: Array<string>;
+	network: string;
+	amount: string;
+	note: string;
+	status: {
+		current_status: string;
+		history: Array<{ status: string; updated_at: Date }>;
+	};
+	paid_from: null | [{ token: string; amount: number }];
+	files: string;
+	transactionHash: string;
+}
+
+export enum EINVOICE_STATUS {
+	PENDING = 'pending',
+	REJECTED = 'rejected',
+	APPROVED = 'approved',
+	PAID = 'paid'
+}
+
 export interface UserDetailsContextTypeEVM {
+	organisations?: IOrganisation[];
+	invoices?: {
+		sentInvoices: Array<IInvoice>;
+		recivedInvoices: Array<IInvoice>;
+	};
+	userID: string;
 	loggedInWallet: any;
 	activeMultisig: string;
 	address: string;
@@ -119,7 +180,7 @@ export interface UserDetailsContextTypeEVM {
 	multisigSettings: { [multisigAddress: string]: IMultisigSettings };
 	addressBook: IAddressBookItem[];
 	setUserDetailsContextState: Dispatch<SetStateAction<UserDetailsContextTypeEVM>>;
-	activeMultisigData?: any;
+	activeMultisigData: IMultisigAndNetwork;
 	activeMultisigTxs?: any[];
 	setLoading?: any;
 	loading?: boolean;
@@ -190,6 +251,12 @@ export interface I2FAToken {
 }
 
 export interface IUser {
+	organisations?: IOrganisation[];
+	invoices?: {
+		sentInvoices: Array<IInvoice>;
+		recivedInvoices: Array<IInvoice>;
+	};
+	userId: string;
 	address: string;
 	email: string | null;
 	addressBook?: IAddressBookItem[];
@@ -208,7 +275,7 @@ export interface IMultisigAddress {
 	name: string;
 	signatories: string[];
 	network: string;
-	created_at: Date;
+	created_at?: Date;
 	updated_at?: Date;
 	threshold: number;
 	proxy?: string;
@@ -232,6 +299,7 @@ export interface IAsset {
 }
 
 export interface INFTAsset {
+	network: string;
 	name: string;
 	tokenNameWithID: string;
 	logoURI?: string;
@@ -252,9 +320,14 @@ export interface ITxNotification {
 	};
 }
 
+export interface ITxnCategory {
+	category: string;
+	subfields: { [subfield: string]: { name: string; value: string } };
+}
+
 export interface IQueueItem {
 	totalAmount?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	callData: string;
 	callHash: string;
 	network: string;
@@ -264,6 +337,7 @@ export interface IQueueItem {
 	threshold: number;
 	note?: string;
 	notifications?: ITxNotification;
+	multisigAddress?: string;
 }
 
 export interface ITransaction {
@@ -278,9 +352,10 @@ export interface ITransaction {
 	token: string;
 	amount_usd: number;
 	amount_token: string;
+	multisigAddress?: string;
 	network: string;
 	note?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	notifications?: {
 		[address: string]: {
 			lastNotified: Date;
@@ -402,4 +477,31 @@ export interface IContactFormResponse {
 export enum EExportType {
 	QUICKBOOKS = 'quickbooks',
 	XERO = 'xero'
+}
+
+export enum ETxnType {
+	INCOMING = 'INCOMING',
+	OUTGOING = 'OUTGOING'
+}
+
+export interface ITreasuryTxns {
+	type: ETxnType;
+	balance_usd: string;
+	balance_token: string;
+	txHash: string;
+	timestamp: string;
+	multisigAddress: string;
+	network: string;
+	tokenSymbol?: string;
+	tokenAddress?: string;
+	tokenLogoUri?: string | StaticImageData;
+}
+
+export interface ITreasury {
+	[id: string]: {
+		totalIncomingUSD: number;
+		totalOutgoingUSD: number;
+		incomingTransactions: ITreasuryTxns[];
+		outgoingTransactions: ITreasuryTxns[];
+	};
 }

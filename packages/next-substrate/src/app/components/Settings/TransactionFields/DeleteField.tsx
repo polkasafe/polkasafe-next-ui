@@ -9,8 +9,9 @@ import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
 const DeleteField = ({
 	onCancel,
@@ -21,15 +22,17 @@ const DeleteField = ({
 	category: string;
 	subfield: string;
 }) => {
-	const { transactionFields, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { transactionFields } = activeOrg;
+
 	const [loading, setLoading] = useState<boolean>(false);
 
 	const handleDeleteField = async () => {
 		try {
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 			// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress) {
+			if (!userID || !activeOrg?.id) {
 				console.log('ERROR');
 			} else {
 				setLoading(true);
@@ -38,9 +41,9 @@ const DeleteField = ({
 				const newSubfields = { ...newTransactionFields[category].subfields };
 				delete newSubfields[subfield];
 
-				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } = await nextApiClientFetch(
-					`${SUBSTRATE_API_URL}/updateTransactionFields`,
-					{
+				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields_substrate`, {
+					body: JSON.stringify({
+						organisationId: activeOrg.id,
 						transactionFields: {
 							...transactionFields,
 							[category]: {
@@ -48,8 +51,15 @@ const DeleteField = ({
 								subfields: newSubfields
 							}
 						}
-					}
-				);
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
+				});
+				const { data: updateTransactionFieldsData, error: updateTransactionFieldsError } =
+					(await updateTransactionFieldsRes.json()) as {
+						data: string;
+						error: string;
+					};
 
 				if (updateTransactionFieldsError) {
 					queueNotification({
@@ -67,7 +77,7 @@ const DeleteField = ({
 						message: 'Transaction Fields Updated.',
 						status: NotificationStatus.SUCCESS
 					});
-					setUserDetailsContextState((prev) => ({
+					setActiveOrg((prev) => ({
 						...prev,
 						transactionFields: {
 							...prev.transactionFields,

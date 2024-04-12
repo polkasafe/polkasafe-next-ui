@@ -7,18 +7,20 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import RemoveBtn from '@next-evm/app/components/Settings/RemoveBtn';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
+import { useWallets } from '@privy-io/react-auth';
 
 const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
-	const { activeMultisig, multisigAddresses, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { userID, activeMultisig, multisigAddresses, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const [loading, setLoading] = useState<boolean>(false);
-	const { network } = useGlobalApiContext();
+
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 
 	const router = useRouter();
 
@@ -30,22 +32,24 @@ const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 	const handleRemoveSafe = async () => {
 		try {
 			setLoading(true);
-			const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
-			const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 
-			if (!userAddress || !signature || !multisig?.address) {
+			if (!userID || !activeMultisig) {
 				console.log('ERROR');
 				setLoading(false);
 				return;
 			}
 
-			const { data: removeSafeData, error: removeSafeError } = await nextApiClientFetch<string>(
-				`${EVM_API_URL}/deleteMultisigEth`,
-				{
-					multisigAddress: multisig.address
-				},
-				{ network }
-			);
+			const removeSafeRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/deleteMultisigEth`, {
+				body: JSON.stringify({
+					multisigAddress: activeMultisig
+				}),
+				headers: firebaseFunctionsHeader(connectedWallet.address),
+				method: 'POST'
+			});
+			const { data: removeSafeData, error: removeSafeError } = (await removeSafeRes.json()) as {
+				data: string;
+				error: string;
+			};
 
 			if (removeSafeError) {
 				queueNotification({
@@ -76,7 +80,7 @@ const RemoveMultisigAddress = ({ onCancel }: { onCancel: () => void }) => {
 						activeMultisig: (typeof window !== 'undefined' && localStorage.getItem('active_multisig')) || '',
 						multisigSettings: {
 							...prevState.multisigSettings,
-							[multisig.address]: {
+							[activeMultisig]: {
 								...prevState.multisigSettings[multisig.address],
 								deleted: true
 							}

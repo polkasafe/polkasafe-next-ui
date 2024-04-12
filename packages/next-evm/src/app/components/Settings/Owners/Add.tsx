@@ -10,14 +10,19 @@ import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import AddProxySuccessScreen from '@next-evm/app/components/Multisig/AddProxySuccessScreen';
 import CancelBtn from '@next-evm/app/components/Settings/CancelBtn';
 import AddBtn from '@next-evm/app/components/Settings/ModalBtn';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
-import { NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import addNewTransaction from '@next-evm/utils/addNewTransaction';
 import styled from 'styled-components';
-import { chainProperties } from '@next-common/global/evm-network-constants';
+import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import GnosisSafeService from '@next-evm/services/Gnosis';
+import returnTxUrl from '@next-common/global/gnosisService';
+import { EthersAdapter } from '@safe-global/protocol-kit';
+import { ethers } from 'ethers';
+import { useWallets } from '@privy-io/react-auth';
 
 interface ISignatory {
 	name: string;
@@ -41,13 +46,20 @@ const addRecipientHeading = () => {
 	}
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: string }) => {
-	const { multisigAddresses, activeMultisig, addressBook, address, gnosisSafe } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
-	const multisig = multisigAddresses.find(
-		(item: any) => item.address === activeMultisig || item.proxy === activeMultisig
-	);
+const AddOwner = ({
+	onCancel,
+	className,
+	multisig
+}: {
+	onCancel?: () => void;
+	className?: string;
+	multisig: IMultisigAddress;
+	// eslint-disable-next-line sonarjs/cognitive-complexity
+}) => {
+	const { address } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { wallets } = useWallets();
+	const connectedWallet = wallets?.[0];
 	const [loading, setLoading] = useState(false);
 	const [success] = useState<boolean>(false);
 	const [failure] = useState<boolean>(false);
@@ -83,27 +95,34 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 	};
 
 	const handleAddOwner = async () => {
-		if (!gnosisSafe) {
-			return;
-		}
+		if (!connectedWallet || !connectedWallet.address) return;
 		setLoading(true);
 		try {
-			const safeTxHash = await gnosisSafe.createAddOwner(
-				activeMultisig,
-				address,
+			const txUrl = returnTxUrl(multisig.network as NETWORK);
+			await connectedWallet.switchChain(chainProperties[multisig.network].chainId);
+			const provider = await connectedWallet.getEthersProvider();
+			const web3Adapter = new EthersAdapter({
+				ethers,
+				signerOrProvider: provider.getSigner(connectedWallet.address)
+			});
+			const gnosisService = new GnosisSafeService(web3Adapter, web3Adapter.getSigner(), txUrl);
+			const safeTxHash = await gnosisService.createAddOwner(
+				multisig.address,
+				connectedWallet.address,
 				signatoriesArray?.[0].address,
 				newThreshold,
-				chainProperties[network].contractNetworks
+				chainProperties[multisig.network].contractNetworks
 			);
 			if (safeTxHash) {
 				addNewTransaction({
+					address: connectedWallet?.address || address,
 					amount: '0',
 					callData: safeTxHash,
 					callHash: safeTxHash,
 					executed: false,
-					network,
+					network: multisig.network,
 					note: 'Adding New Owner',
-					safeAddress: activeMultisig,
+					safeAddress: multisig.address,
 					to: '',
 					type: 'sent'
 				});
@@ -136,7 +155,7 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 
 	return success ? (
 		<AddProxySuccessScreen
-			createdBy={address}
+			createdBy={connectedWallet.address || address}
 			signatories={multisig?.signatories || []}
 			threshold={multisig?.threshold || 2}
 			txnHash={txnHash}
@@ -189,13 +208,13 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 										<label className='text-primary text-xs leading-[13px] font-normal'>Address</label>
 										<AutoComplete
 											onClick={addRecipientHeading}
-											options={addressBook
-												.filter(
+											options={activeOrg?.addressBook
+												?.filter(
 													(item: any) =>
 														!signatoriesArray.some((e) => e.address === item.address) &&
 														!multisig?.signatories.includes(item.address)
 												)
-												.map((item: any) => ({
+												?.map((item: any) => ({
 													label: item.name,
 													value: item.address
 												}))}

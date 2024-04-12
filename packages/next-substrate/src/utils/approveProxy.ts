@@ -18,14 +18,14 @@ import {
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { calcWeight } from './calcWeight';
 import getEncodedAddress from './getEncodedAddress';
 import getMultisigInfo from './getMultisigInfo';
 import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
 import updateTransactionNote from './updateTransactionNote';
-import nextApiClientFetch from './nextApiClientFetch';
 
 interface Args {
 	api: ApiPromise;
@@ -109,16 +109,22 @@ export default async function approveProxy({
 				return;
 			}
 			setLoadingMessages('Creating Your Proxy.');
-			const { data: multisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
-				`${SUBSTRATE_API_URL}/createMultisig`,
-				{
+			const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig_substrate`, {
+				body: JSON.stringify({
 					signatories: multisig.signatories,
 					threshold: multisig.threshold,
 					multisigName: multisig.name,
+					network,
 					proxyAddress,
 					addressBook: records
-				}
-			);
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data: multisigData, error: multisigError } = (await createMultisigRes.json()) as {
+				data: IMultisigAddress;
+				error: string;
+			};
 
 			if (multisigError) {
 				queueNotification({

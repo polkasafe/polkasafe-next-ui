@@ -5,9 +5,9 @@
 import BN from 'bn.js';
 import { ITransaction } from '@next-common/types';
 
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import formatBnBalance from './formatBnBalance';
-import nextApiClientFetch from './nextApiClientFetch';
 
 type Args = Omit<ITransaction, 'created_at' | 'amount_usd' | 'amount_token' | 'id' | 'token'> & {
 	amount: BN;
@@ -42,5 +42,14 @@ export default async function addNewTransaction({
 		transactionFields
 	};
 
-	return nextApiClientFetch<ITransaction>(`${SUBSTRATE_API_URL}/addTransaction`, newTransactionData);
+	const addTransactionRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addTransaction_substrate`, {
+		body: JSON.stringify(newTransactionData),
+		headers: firebaseFunctionsHeader(),
+		method: 'POST'
+	});
+
+	return (await addTransactionRes.json()) as {
+		data: string;
+		error: string;
+	};
 }

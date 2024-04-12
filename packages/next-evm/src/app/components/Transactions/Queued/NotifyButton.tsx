@@ -3,12 +3,11 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Button, Tooltip as AntDTooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-evm/context/ApiContext';
 import { CircleCheckIcon, NotificationIcon } from '@next-common/ui-components/CustomIcons';
 import styled from 'styled-components';
-import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import { IUserNotificationPreferences } from '@next-common/types';
-import { EVM_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 
 type Props = {
 	address: string;
@@ -23,20 +22,23 @@ const Tooltip = styled(AntDTooltip)`
 `;
 
 export default function NotifyButton({ address, onClick, canNotificationSend }: Props) {
-	const { network } = useGlobalApiContext();
 	const [loading, setLoading] = useState<boolean>(true);
 	const [showNotificationIcon, setShowNotificationIcon] = useState<boolean>(canNotificationSend);
 	const [canSendNotification, setCanSendNotification] = useState<boolean>(false);
 
 	useEffect(() => {
 		const canSendReminder = async () => {
-			const { data } = await nextApiClientFetch<IUserNotificationPreferences>(
-				`${EVM_API_URL}/getNotificationPreferencesForAddressEth`,
-				{
+			const watchlistRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getNotificationPreferencesForAddressEth`, {
+				body: JSON.stringify({
 					address
-				},
-				{ network }
-			);
+				}),
+				headers: firebaseFunctionsHeader(),
+				method: 'POST'
+			});
+			const { data } = (await watchlistRes.json()) as {
+				data: IUserNotificationPreferences;
+				error: string;
+			};
 			if (data && data?.triggerPreferences?.approvalReminder?.enabled) {
 				setCanSendNotification(true);
 			}

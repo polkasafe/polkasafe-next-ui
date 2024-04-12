@@ -7,34 +7,31 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import AddAddrIcon from '@next-common/assets/icons/add-addr-icon.svg';
 import AddAdress from '@next-evm/app/components/AddressBook/AddAddress';
-import { useActiveMultisigContext } from '@next-evm/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-evm/context/UserDetailsContext';
 import AddressComponent from '@next-evm/ui-components/AddressComponent';
 import { RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 
 const AddressCard = ({ className }: { className?: string }) => {
-	const { records } = useActiveMultisigContext();
-	const { addressBook, notOwnerOfSafe } = useGlobalUserDetailsContext();
+	const { notOwnerOfSafe } = useGlobalUserDetailsContext();
+
+	const { activeOrg } = useActiveOrgContext();
 
 	const [addresses, setAddresses] = useState<string[]>([]);
 	const [openAddressModal, setOpenAddressModal] = useState<boolean>(false);
 
 	useEffect(() => {
+		if (!activeOrg || !activeOrg.addressBook) return;
 		const allAddresses: string[] = [];
-		if (records) {
-			Object.keys(records).forEach((address) => {
-				allAddresses.push(address);
-			});
-		}
-		addressBook.forEach((item) => {
+		activeOrg.addressBook?.forEach((item) => {
 			if (!allAddresses.includes(item.address)) {
 				allAddresses.push(item.address);
 			}
 		});
 		setAddresses(allAddresses);
-	}, [addressBook, records]);
+	}, [activeOrg]);
 
 	return (
 		<div>

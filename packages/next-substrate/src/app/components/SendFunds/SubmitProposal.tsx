@@ -6,19 +6,23 @@ import { Dropdown, Form, Input, Radio } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import BN from 'bn.js';
 import React, { useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import networkTrackInfo from '@next-common/global/networkTrackInfo';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
+import { ApiPromise } from '@polkadot/api';
 
 const SubmitProposal = ({
 	className,
-	setCallData
+	setCallData,
+	api,
+	apiReady,
+	network
 }: {
 	className?: string;
+	api: ApiPromise;
+	apiReady: boolean;
+	network: string;
 	setCallData: React.Dispatch<React.SetStateAction<string>>;
 }) => {
-	const { network, api, apiReady } = useGlobalApiContext();
-
 	const [preimageHash, setPreimageHash] = useState<string>('');
 	const [preimageLength, setPreimageLength] = useState<number>(0);
 	const [track, setTrack] = useState('');
@@ -27,7 +31,7 @@ const SubmitProposal = ({
 
 	const trackArr: string[] = [];
 
-	if (network && networkTrackInfo) {
+	if (network && networkTrackInfo && networkTrackInfo[network]) {
 		Object.entries(networkTrackInfo[network]).forEach(([key, value]) => {
 			if (value.group === 'Treasury') {
 				trackArr.push(key);

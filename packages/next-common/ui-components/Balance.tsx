@@ -5,18 +5,19 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import formatBnBalance from '@next-substrate/utils/formatBnBalance';
+import { ApiPromise } from '@polkadot/api';
 
 interface Props {
 	className?: string;
 	address: string;
 	onChange?: (balance: string) => void;
+	api: ApiPromise;
+	apiReady?: boolean;
+	network: string;
 }
 
-const Balance: React.FC<Props> = ({ address, className, onChange }: Props) => {
-	const { api, apiReady, network } = useGlobalApiContext();
-
+const Balance: React.FC<Props> = ({ address, className, onChange, api, apiReady, network }: Props) => {
 	const [balance, setBalance] = useState<string>('0');
 
 	useEffect(() => {
@@ -33,7 +34,7 @@ const Balance: React.FC<Props> = ({ address, className, onChange }: Props) => {
 			})
 			.catch((e) => console.error(e));
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [address, api, apiReady]);
+	}, [address, api, apiReady, network]);
 
 	return (
 		<div

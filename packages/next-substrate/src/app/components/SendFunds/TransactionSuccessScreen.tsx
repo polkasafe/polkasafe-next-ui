@@ -6,7 +6,6 @@ import dayjs from 'dayjs';
 import React from 'react';
 import SuccessTransactionLottie from '@next-common/assets/lottie-graphics/SuccessTransaction';
 import ModalBtn from '@next-substrate/app/components/Multisig/ModalBtn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { CopyIcon } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-substrate/utils/copyText';
@@ -23,6 +22,7 @@ interface ITransactionSuccessScreen {
 	successMessage: string;
 	waitMessage?: string;
 	txnParams?: { method: string; section: string };
+	network: string;
 }
 
 const TransactionSuccessScreen = ({
@@ -34,9 +34,9 @@ const TransactionSuccessScreen = ({
 	onDone,
 	successMessage,
 	waitMessage,
-	txnParams
+	txnParams,
+	network
 }: ITransactionSuccessScreen) => {
-	const { network } = useGlobalApiContext();
 	return (
 		<div className='flex flex-col items-center'>
 			<SuccessTransactionLottie
@@ -101,12 +101,14 @@ const TransactionSuccessScreen = ({
 					</div>
 				)}
 			</div>
-			<div className='flex justify-center mt-2'>
-				<ModalBtn
-					title='Done'
-					onClick={onDone}
-				/>
-			</div>
+			{onDone && (
+				<div className='flex justify-center mt-2'>
+					<ModalBtn
+						title='Done'
+						onClick={onDone}
+					/>
+				</div>
+			)}
 		</div>
 	);
 };

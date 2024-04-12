@@ -11,10 +11,11 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 import { NETWORK, chainProperties } from '@next-common/global/evm-network-constants';
 import { StaticImageData } from 'next/image';
 import getHistoricalTokenPrice from '@next-evm/utils/getHistoricalTokenPrice';
-import dayjs from 'dayjs';
 import FiatCurrencyValue from '@next-evm/ui-components/FiatCurrencyValue';
 import tokenToUSDConversion from '@next-evm/utils/tokenToUSDConversion';
 import getHistoricalNativeTokenPrice from '@next-evm/utils/getHistoricalNativeTokenPrice';
+import { ITxnCategory } from '@next-common/types';
+import TransactionFields from '../TransactionFields';
 
 interface IReceivedInfoProps {
 	addedOwner?: string;
@@ -31,6 +32,11 @@ interface IReceivedInfoProps {
 		tokenAddress: string;
 	}[];
 	network: NETWORK;
+	transactionFields?: ITxnCategory;
+	multisigAddress: string;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
 const ReceivedInfo: FC<IReceivedInfoProps> = ({
@@ -41,27 +47,26 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 	loading,
 	addedOwner,
 	tokenDetialsArray,
-	network
+	network,
+	transactionFields,
+	multisigAddress,
+	category,
+	setCategory,
+	setTransactionFields
 }) => {
 	const [usdValue, setUsdValue] = useState<string[]>([]);
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
 		if (!tokenDetialsArray || tokenDetialsArray.length === 0) return;
 		tokenDetialsArray.forEach((token) => {
 			if (!token.tokenAddress) {
-				getHistoricalNativeTokenPrice(network, date).then((res) => {
-					const currentPrice = res?.market_data?.current_price?.usd || '0';
-					setUsdValue((prev) => [...prev, Number(currentPrice).toFixed(4)]);
+				getHistoricalNativeTokenPrice(network, date).then((usd) => {
+					setUsdValue((prev) => [...prev, Number(usd).toFixed(4)]);
 				});
 				return;
 			}
-			getHistoricalTokenPrice(network, token.tokenAddress, date).then((res) => {
-				console.log('res', res);
-				const prices: any[] = res?.prices || [];
-				prices.forEach((item, i) => {
-					if (i > 0 && dayjs(date).isBefore(dayjs(item[0])) && dayjs(date).isAfter(prices[i - 1][0])) {
-						setUsdValue((prev) => [...prev, Number(item[1]).toFixed(4)]);
-					}
-				});
+			getHistoricalTokenPrice(network, token.tokenAddress, date).then((usd) => {
+				setUsdValue((prev) => [...prev, Number(usd).toFixed(4)]);
 			});
 		});
 	}, [date, network, tokenDetialsArray]);
@@ -101,7 +106,10 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 								<span>From:</span>
 							</p>
 							<div className='mt-3'>
-								<AddressComponent address={item.from} />
+								<AddressComponent
+									network={network}
+									address={item.from}
+								/>
 							</div>
 							{transfers.length - 1 !== i && <Divider className='bg-text_secondary mt-1' />}
 						</>
@@ -110,7 +118,10 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 			<Divider className='bg-text_secondary my-5' />
 			<div className=' flex items-center gap-x-7 mb-3'>
 				<span className='text-text_secondary font-normal text-sm leading-[15px]'>To:</span>
-				<AddressComponent address={transfers?.[0]?.to?.toString()} />
+				<AddressComponent
+					network={network}
+					address={transfers?.[0]?.to?.toString()}
+				/>
 			</div>
 			<div className='w-full max-w-[418px] flex items-center gap-x-5'>
 				<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
@@ -136,9 +147,43 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 				<div className='w-full max-w-[418px] flex items-center  gap-x-5 mt-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Added Owner:</span>
 					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-						<AddressComponent address={addedOwner} />
+						<AddressComponent
+							network={network}
+							address={addedOwner}
+						/>
 					</p>
 				</div>
+			)}
+			{!!transactionFields && Object.keys(transactionFields).length !== 0 && (
+				<>
+					<div className='flex items-center gap-x-5 mt-3'>
+						<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
+						<TransactionFields
+							callHash={callHash}
+							category={category}
+							setCategory={setCategory}
+							transactionFieldsObject={transactionFields}
+							setTransactionFieldsObject={setTransactionFields}
+							multisigAddress={multisigAddress}
+						/>
+					</div>
+					{transactionFields &&
+						transactionFields.subfields &&
+						Object.keys(transactionFields?.subfields).map((key) => {
+							const subfield = transactionFields.subfields[key];
+							return (
+								<div
+									key={key}
+									className='flex items-center gap-x-5 mt-3'
+								>
+									<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield.name}:</span>
+									<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
+										{subfield.value}
+									</span>
+								</div>
+							);
+						})}
+				</>
 			)}
 			{loading ? (
 				<Spin className='mt-3' />

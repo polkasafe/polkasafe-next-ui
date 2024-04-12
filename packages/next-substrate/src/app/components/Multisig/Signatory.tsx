@@ -5,10 +5,7 @@
 import { SwapOutlined } from '@ant-design/icons';
 import { Badge, Tooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
-import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { chainProperties } from '@next-common/global/networkConstants';
 import useGetWalletAccounts from '@next-substrate/hooks/useGetWalletAccounts';
 import { WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
@@ -16,6 +13,9 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import inputToBn from '@next-substrate/utils/inputToBn';
 
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import shortenAddress from '@next-substrate/utils/shortenAddress';
+import { ApiPromise } from '@polkadot/api';
 import NewUserModal from '../Home/ConnectWallet/NewUserModal';
 
 interface ISignature {
@@ -30,64 +30,49 @@ interface ISignatoryProps {
 	signatories: string[];
 	filterAddress?: string;
 	homepage: boolean;
+	network: string;
+	api: ApiPromise;
+	apiReady: boolean;
 }
 
-const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISignatoryProps) => {
-	const { address: userAddress, addressBook } = useGlobalUserDetailsContext();
-	const { records } = useActiveMultisigContext();
-	const { network, api, apiReady } = useGlobalApiContext();
+const Signatory = ({
+	filterAddress,
+	setSignatories,
+	signatories,
+	homepage,
+	network,
+	api,
+	apiReady
+}: ISignatoryProps) => {
+	const { address: userAddress } = useGlobalUserDetailsContext();
 	const { accounts } = useGetWalletAccounts();
 
 	const [addWalletAddress, setAddWalletAddress] = useState<boolean>(false);
 
+	const { activeOrg } = useActiveOrgContext();
+
 	const [addresses, setAddresses] = useState<ISignature[]>([]);
-	const [filteredAddresses, setFilteredAddresses] = useState<ISignature[]>([]);
 
 	useEffect(() => {
-		const allAddresses: ISignature[] = [];
-		if (records) {
-			Object.keys(records).forEach((address, i) => {
-				const personal = addressBook.find((item) => getSubstrateAddress(item.address) === getSubstrateAddress(address));
-				if (address !== getSubstrateAddress(userAddress)) {
-					allAddresses.push({
-						address: getEncodedAddress(address, network) || address,
-						key: i,
-						name: personal?.nickName || records[address]?.name || personal?.name || DEFAULT_ADDRESS_NAME
-					});
-				}
-			});
-		}
-		addressBook
-			.filter(
-				(item) =>
-					getSubstrateAddress(item.address) !== getSubstrateAddress(userAddress) &&
-					!allAddresses.some((a) => getSubstrateAddress(a.address) === getSubstrateAddress(item.address))
-			)
-			.forEach((item, i) => {
-				allAddresses.push({
-					address: getEncodedAddress(item.address, network) || item.address,
-					key: i,
+		if (!activeOrg || !activeOrg.addressBook) return;
+
+		console.log('signa', signatories);
+
+		setAddresses(
+			activeOrg.addressBook
+				?.filter(
+					(item) =>
+						!signatories.includes(item.address) &&
+						(filterAddress ? item.address.includes(filterAddress, 0) || item.name.includes(filterAddress, 0) : true)
+				)
+				.map((item, i) => ({
+					address: item.address,
+					key: signatories.length + i,
 					name: item.nickName || item.name
-				});
-			});
-
-		setAddresses(allAddresses);
-		setFilteredAddresses(allAddresses);
-	}, [addressBook, network, records, userAddress]);
-
-	useEffect(() => {
-		if (!addresses) {
-			return;
-		}
-		setFilteredAddresses(
-			addresses.filter((item) =>
-				filterAddress
-					? item.address.includes(getEncodedAddress(filterAddress, network) || filterAddress, 0) ||
-					  item.name.includes(filterAddress, 0)
-					: true
-			)
+				}))
 		);
-	}, [addresses, filterAddress, network]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeOrg, signatories]);
 
 	useEffect(() => {
 		if (!api || !apiReady || !addresses) {
@@ -110,7 +95,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 			});
 		};
 		fetchBalances();
-	}, [api, apiReady, addressBook, addresses]);
+	}, [api, addresses, apiReady]);
 
 	const dragStart = (event: any) => {
 		event.dataTransfer.setData('text', event.target.id);
@@ -135,10 +120,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 			return [...prevState, address];
 		});
 
-		const drop2 = document.getElementById(`drop2${homepage && '-home'}`);
-		if (data) {
-			drop2?.appendChild(document.getElementById(data)!);
-		}
+		// const drop2 = document.getElementById(`drop2${homepage && '-home'}`);
+		// if (data) {
+		// drop2?.appendChild(document.getElementById(data)!);
+		// }
 	};
 
 	const dropReturn = (event: any) => {
@@ -156,10 +141,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 				return copyState;
 			});
 		}
-		const drop1 = document.getElementById(`drop1${homepage && '-home'}`);
-		if (data) {
-			drop1?.appendChild(document.getElementById(data)!);
-		}
+		// const drop1 = document.getElementById(`drop1${homepage && '-home'}`);
+		// if (data) {
+		// drop1?.appendChild(document.getElementById(data)!);
+		// }
 	};
 
 	const clickDropReturn = (event: any) => {
@@ -177,10 +162,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 				return copyState;
 			});
 		}
-		const drop1 = document.getElementById(`drop1${homepage && '-home'}`);
-		if (data) {
-			drop1?.appendChild(document.getElementById(data)!);
-		}
+		// const drop1 = document.getElementById(`drop1${homepage && '-home'}`);
+		// if (data) {
+		// drop1?.appendChild(document.getElementById(data)!);
+		// }
 	};
 
 	const clickDrop = async (event: any) => {
@@ -188,7 +173,7 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 		const data = event.target.id;
 		const address = `${data}`.split('-')[1];
 
-		if (!address || !api || !apiReady) return; // is invalid
+		if (!address) return; // is invalid
 
 		setSignatories((prevState) => {
 			if (prevState.includes(address)) {
@@ -198,10 +183,10 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 			return [...prevState, address];
 		});
 
-		const drop2 = document.getElementById(`drop2${homepage && '-home'}`);
-		if (data) {
-			drop2?.appendChild(document.getElementById(data)!);
-		}
+		// const drop2 = document.getElementById(`drop2${homepage && '-home'}`);
+		// if (data) {
+		// drop2?.appendChild(document.getElementById(data)!);
+		// }
 	};
 
 	return (
@@ -222,8 +207,8 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 						id={`drop1${homepage && '-home'}`}
 						className='flex flex-col bg-bg-secondary p-4 rounded-lg my-1 h-[30vh] overflow-y-auto'
 					>
-						{filteredAddresses.length > 0 ? (
-							filteredAddresses.map((address) => {
+						{addresses.length > 0 ? (
+							addresses.map((address) => {
 								const lowBalance =
 									address.balance &&
 									(Number(address.balance) <
@@ -232,15 +217,15 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 								return (
 									// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
 									<p
-										onClick={signatories.includes(address.address) ? clickDropReturn : clickDrop}
-										title={getEncodedAddress(address.address, network) || ''}
+										onClick={clickDrop}
+										title={address.address || ''}
 										id={`${address.key}-${address.address}`}
 										key={`${address.key}-${address.address}`}
 										className='bg-bg-main p-2 m-1 rounded-md text-white flex items-center gap-x-2'
 										draggable
 										onDragStart={dragStart}
 									>
-										{address.name}
+										{address.name || shortenAddress(getEncodedAddress(address.address, network) || address.address)}
 										{lowBalance && signatories.includes(address.address) && (
 											<Tooltip
 												title={
@@ -271,12 +256,12 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 									Addresses imported directly from your Polkadot.js wallet
 								</div>
 								{accounts
-									.filter((item) => item.address !== getEncodedAddress(userAddress, network))
+									.filter((item) => !signatories.includes(item.address))
 									.map((account, i) => (
 										// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
 										<p
-											onClick={signatories.includes(account.address) ? clickDropReturn : clickDrop}
-											title={getEncodedAddress(account.address, network) || ''}
+											onClick={clickDrop}
+											title={account.address || ''}
 											id={`${i + 1}-${account.address}`}
 											key={`${i + 1}-${account.address}`}
 											className='bg-bg-main p-2 m-1 rounded-md text-white'
@@ -302,17 +287,23 @@ const Signatory = ({ filterAddress, setSignatories, signatories, homepage }: ISi
 						onDrop={drop}
 						onDragOver={dragOver}
 					>
-						<p
-							title={getEncodedAddress(userAddress, network) || ''}
-							id={`0-${signatories[0]}`}
-							key={`0-${signatories[0]}`}
-							className='bg-bg-main p-2 m-1 rounded-md text-white cursor-default flex items-center gap-x-2'
-						>
-							{addressBook[0]?.name}{' '}
-							<Tooltip title={<span className='text-sm text-text_secondary'>Your Wallet Address</span>}>
-								<Badge status='success' />
-							</Tooltip>
-						</p>
+						{signatories.map((a, i) => (
+							<p
+								onClick={a !== userAddress && clickDropReturn}
+								title={a || ''}
+								id={`${i}-${a}`}
+								key={`${i}-${a}`}
+								className='bg-bg-main p-2 m-1 rounded-md text-white cursor-default flex items-center gap-x-2'
+							>
+								{activeOrg?.addressBook?.find((item) => getSubstrateAddress(item.address) === getSubstrateAddress(a))
+									?.name || shortenAddress(getEncodedAddress(a, network) || a)}{' '}
+								{getSubstrateAddress(a) === getSubstrateAddress(userAddress) && (
+									<Tooltip title={<span className='text-sm text-text_secondary'>Your Wallet Address</span>}>
+										<Badge status='success' />
+									</Tooltip>
+								)}
+							</p>
+						))}
 					</div>
 				</div>
 			</div>

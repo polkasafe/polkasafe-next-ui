@@ -15,26 +15,51 @@ import { AddMultisigProvider } from '@next-evm/context/AddMultisigContext';
 import { MultisigAssetsProvider } from '@next-evm/context/MultisigAssetsContext';
 import { CurrencyContextProvider } from '@next-evm/context/CurrencyContext';
 import { SuperfluidProvider } from '@next-evm/context/SuperfluidContext';
+import { PrivyProvider } from '@privy-io/react-auth';
+import { CreateOrgStepsProvider } from '@next-evm/context/CreateOrgStepsContext';
+import { ActiveOrgProvider } from '@next-evm/context/ActiveOrgContext';
+import LayoutWrapper from './components/LayoutWrapper';
+// import PolkasafeLogo from '@next-common/assets/icons/polkasafe.svg';
 
 export default function Providers({ children }: { children?: ReactNode }) {
+	const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 	return (
 		<ConfigProvider theme={antdTheme}>
 			{
 				(
 					<ApiContextProvider>
-						<UserDetailsProvider>
-							<SuperfluidProvider>
-								<ActiveMultisigProvider>
-									<AddMultisigProvider>
-										<MultisigAssetsProvider>
-											<CurrencyContextProvider>
-												<DAppContextProvider>{children}</DAppContextProvider>
-											</CurrencyContextProvider>
-										</MultisigAssetsProvider>
-									</AddMultisigProvider>
-								</ActiveMultisigProvider>
-							</SuperfluidProvider>
-						</UserDetailsProvider>
+						<PrivyProvider
+							appId={appId}
+							config={{
+								appearance: {
+									accentColor: '#38A1FF',
+									logo: '/TreasurEase-logo.svg',
+									theme: '#1B2028',
+									walletList: ['metamask', 'detected_wallets']
+								},
+								loginMethods: ['wallet', 'email']
+							}}
+						>
+							<LayoutWrapper>
+								<UserDetailsProvider>
+									<SuperfluidProvider>
+										<ActiveMultisigProvider>
+											<AddMultisigProvider>
+												<ActiveOrgProvider>
+													<MultisigAssetsProvider>
+														<CurrencyContextProvider>
+															<DAppContextProvider>
+																<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
+															</DAppContextProvider>
+														</CurrencyContextProvider>
+													</MultisigAssetsProvider>
+												</ActiveOrgProvider>
+											</AddMultisigProvider>
+										</ActiveMultisigProvider>
+									</SuperfluidProvider>
+								</UserDetailsProvider>
+							</LayoutWrapper>
+						</PrivyProvider>
 					</ApiContextProvider>
 				) as React.ReactNode
 			}

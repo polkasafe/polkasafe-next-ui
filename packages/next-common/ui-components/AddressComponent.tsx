@@ -6,8 +6,6 @@
 
 import Identicon from '@polkadot/react-identicon';
 import { Badge } from 'antd';
-import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import copyText from '@next-substrate/utils/copyText';
@@ -15,6 +13,9 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
+import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { ParachainIcon } from '@next-substrate/app/components/NetworksDropdown/NetworkCard';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { CopyIcon, ExternalLinkIcon } from './CustomIcons';
 
 interface IAddressComponent {
@@ -23,26 +24,47 @@ interface IAddressComponent {
 	withBadge?: boolean;
 	name?: string;
 	onlyAddress?: boolean;
+	isMultisig?: boolean;
+	isProxy?: boolean;
+	signatories?: number;
+	threshold?: number;
+	network?: string;
+	showNetworkBadge?: boolean;
+	addressLength?: number;
 }
 
 const AddressComponent: React.FC<IAddressComponent> = ({
 	address,
 	name,
 	withBadge = true,
-	iconSize = 30,
-	onlyAddress
+	iconSize = 28,
+	onlyAddress,
+	isMultisig,
+	isProxy,
+	signatories,
+	threshold,
+	network,
+	addressLength,
+	showNetworkBadge // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IAddressComponent) => {
-	const { network } = useGlobalApiContext();
-	const { addressBook, multisigAddresses, activeMultisig } = useGlobalUserDetailsContext();
-	const { records } = useActiveMultisigContext();
+	const { multisigSettings } = useGlobalUserDetailsContext();
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const { activeOrg } = useActiveOrgContext();
 
-	const addressObj = addressBook?.find((item) => item.address === address);
+	const addressBook = activeOrg?.addressBook || [];
+
+	const multisig = activeOrg?.multisigs?.find((item) => item.address === address || item.proxy === address);
+
+	const addressObj = addressBook?.find((item) => item?.address === address);
+
+	const displayAddress = network ? getEncodedAddress(address, network) : getSubstrateAddress(address);
+
+	const encodedMultisigAddress =
+		getEncodedAddress(address, network || multisig?.network || networks.POLKADOT) || address;
 
 	return (
 		<div className=' flex items-center gap-x-3'>
-			{multisig?.proxy && getSubstrateAddress(multisig.proxy) === getSubstrateAddress(address) ? (
+			{(multisig?.proxy && getSubstrateAddress(multisig.proxy) === getSubstrateAddress(address)) || isProxy ? (
 				withBadge ? (
 					<Badge
 						count='Proxy'
@@ -51,7 +73,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 						color='#FF79F2'
 					>
 						<Identicon
-							className='rounded-full border-2 border-[#FF79F2] bg-transparent p-1'
+							className='rounded-full border-2 border-proxy-pink bg-transparent p-1'
 							value={address}
 							size={iconSize}
 							theme='polkadot'
@@ -59,13 +81,13 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 					</Badge>
 				) : (
 					<Identicon
-						className='rounded-full border-2 border-[#FF79F2] bg-transparent p-1'
+						className='rounded-full border-2 border-proxy-pink bg-transparent p-1'
 						value={address}
 						size={iconSize}
 						theme='polkadot'
 					/>
 				)
-			) : multisig?.address === address ? (
+			) : multisig?.address === address || isMultisig ? (
 				withBadge ? (
 					<Badge
 						count='Multisig'
@@ -81,12 +103,18 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 						/>
 					</Badge>
 				) : (
-					<Identicon
-						className='border-primary rounded-full border-2 bg-transparent p-1'
-						value={address}
-						size={iconSize}
-						theme='polkadot'
-					/>
+					<div className='border-2 border-primary p-1 rounded-full flex justify-center items-center relative'>
+						<Identicon
+							value={address}
+							size={iconSize}
+							theme='polkadot'
+						/>
+						{!!threshold && !!signatories && (
+							<div className=' bg-primary text-white text-xs rounded-md absolute bottom-0 px-2'>
+								{threshold}/{signatories}
+							</div>
+						)}
+					</div>
 				)
 			) : (
 				<Identicon
@@ -97,13 +125,18 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 			)}
 			{onlyAddress ? (
 				<div className='text-text_secondary flex items-center gap-x-3 text-sm font-normal'>
-					<span className='text-white'>{shortenAddress(getEncodedAddress(address, network) || '', 10)}</span>
+					<span className='text-white'>
+						{addressObj?.nickName ||
+							addressObj?.name ||
+							multisigSettings[`${address}_${network}`]?.name ||
+							shortenAddress(address || '', addressLength || 10)}
+					</span>
 					<span className='flex items-center gap-x-2'>
 						<button onClick={() => copyText(address, true, network)}>
 							<CopyIcon className='hover:text-primary' />
 						</button>
 						<a
-							href={`https://${network}.subscan.io/account/${getEncodedAddress(address, network)}`}
+							href={`https://${network || 'polkadot'}.subscan.io/account/${displayAddress}`}
 							target='_blank'
 							rel='noreferrer'
 						>
@@ -113,22 +146,34 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 				</div>
 			) : (
 				<div>
-					<div className='flex text-sm font-medium text-white'>
+					<div className='font-medium text-sm flex items-center gap-x-3 text-white'>
 						{name ||
 							addressObj?.nickName ||
 							addressObj?.name ||
-							multisigAddresses.find((item) => item.address === address || item.proxy === address)?.name ||
-							records?.[getSubstrateAddress(address) || address]?.name ||
+							multisigSettings[`${encodedMultisigAddress}_${network}`]?.name ||
+							activeOrg?.multisigs.find((item) => item.address === address || item.proxy === address)?.name ||
 							DEFAULT_ADDRESS_NAME}
+						{network && showNetworkBadge && (
+							<div
+								style={{ backgroundColor: '#5065E4', fontSize: '9px' }}
+								className='rounded-[4px] py-[0px] px-1 text-white flex items-center gap-x-1 bg-network_badge capitalize'
+							>
+								<ParachainIcon
+									size={6}
+									src={chainProperties[network].logo}
+								/>
+								{network}
+							</div>
+						)}
 					</div>
 					<div className='text-text_secondary flex items-center gap-x-3 text-xs font-normal'>
-						<span>{shortenAddress(getEncodedAddress(address, network) || '')}</span>
+						<span>{shortenAddress(displayAddress || '')}</span>
 						<span className='flex items-center gap-x-2'>
 							<button onClick={() => copyText(address, true, network)}>
 								<CopyIcon className='hover:text-primary' />
 							</button>
 							<a
-								href={`https://${network}.subscan.io/account/${getEncodedAddress(address, network)}`}
+								href={`https://${network || 'polkadot'}.subscan.io/account/${displayAddress}`}
 								target='_blank'
 								rel='noreferrer'
 							>

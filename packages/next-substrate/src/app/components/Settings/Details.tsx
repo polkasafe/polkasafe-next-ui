@@ -9,14 +9,20 @@ import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import { DeleteIcon, EditIcon } from '@next-common/ui-components/CustomIcons';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { IMultisigAddress } from '@next-common/types';
+import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import RemoveMultisigAddress from './RemoveMultisig';
 import RenameMultisig from './RenameMultisig';
 
-const Details = () => {
-	const { activeMultisig, multisigAddresses, multisigSettings } = useGlobalUserDetailsContext();
+const Details = ({ multisig }: { multisig: IMultisigAddress }) => {
+	const { multisigSettings } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { network } = useGlobalApiContext();
 	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
 	const [openRenameModal, setOpenRenameModal] = useState<boolean>(false);
+
+	const encodedMultisigAddress = getEncodedAddress(multisig.address || '', multisig.network);
 
 	return (
 		<div className='h-full flex flex-col'>
@@ -25,7 +31,10 @@ const Details = () => {
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Remove Multisig</h3>}
 				open={openRemoveModal}
 			>
-				<RemoveMultisigAddress onCancel={() => setOpenRemoveModal(false)} />
+				<RemoveMultisigAddress
+					multisig={multisig}
+					onCancel={() => setOpenRemoveModal(false)}
+				/>
 			</ModalComponent>
 			<ModalComponent
 				onCancel={() => setOpenRenameModal(false)}
@@ -33,9 +42,12 @@ const Details = () => {
 				open={openRenameModal}
 			>
 				<RenameMultisig
+					multisig={multisig}
 					name={
-						multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
-						multisigAddresses.find((item) => item.address === activeMultisig)?.name ||
+						multisigSettings?.[`${encodedMultisigAddress}_${network}`]?.name ||
+						activeOrg?.multisigs?.find(
+							(item) => item.address === multisig.address || item.address === encodedMultisigAddress
+						)?.name ||
 						DEFAULT_MULTISIG_NAME
 					}
 					onCancel={() => setOpenRenameModal(false)}
@@ -54,12 +66,12 @@ const Details = () => {
 					<span>Blockchain:</span>
 					<span className='text-white capitalize'>{network}</span>
 				</div>
-				{activeMultisig && (
+				{encodedMultisigAddress && (
 					<div className='flex items-center justify-between gap-x-5 mt-7'>
 						<span>Safe Name:</span>
 						<span className='text-white flex items-center gap-x-3'>
-							{multisigSettings?.[`${activeMultisig}_${network}`]?.name ||
-								multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+							{multisigSettings?.[`${encodedMultisigAddress}_${network}`]?.name ||
+								activeOrg?.multisigs?.find((item) => item.address === multisig.address || item.proxy === multisig.proxy)
 									?.name ||
 								DEFAULT_MULTISIG_NAME}
 							<button onClick={() => setOpenRenameModal(true)}>
@@ -70,7 +82,7 @@ const Details = () => {
 				)}
 				<div className='flex-1' />
 				<Button
-					disabled={!activeMultisig}
+					disabled={!encodedMultisigAddress}
 					size='large'
 					onClick={() => setOpenRemoveModal(true)}
 					className='border-none outline-none text-failure bg-failure bg-opacity-10 flex items-center gap-x-3 justify-center rounded-lg p-[10px] w-full mt-7'

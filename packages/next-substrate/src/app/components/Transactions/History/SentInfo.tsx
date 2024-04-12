@@ -5,7 +5,6 @@ import Identicon from '@polkadot/react-identicon';
 import { Collapse, Divider, Timeline } from 'antd';
 import classNames from 'classnames';
 import React, { FC, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
@@ -26,7 +25,10 @@ import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 import styled from 'styled-components';
 
+import { ApiPromise } from '@polkadot/api';
+import { ITxnCategory } from '@next-common/types';
 import ArgumentsTable from '../Queued/ArgumentsTable';
+import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	approvals?: string[];
@@ -38,11 +40,18 @@ interface ISentInfoProps {
 	className?: string;
 	callHash: string;
 	note?: string;
-	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
+	transactionFields?: ITxnCategory;
 	amount_usd: number;
 	from: string;
 	txnParams?: { method: string; section: string };
 	customTx: boolean;
+	network: string;
+	api: ApiPromise;
+	apiReady: boolean;
+	multisigAddress: string;
+	category: string;
+	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -58,10 +67,16 @@ const SentInfo: FC<ISentInfoProps> = ({
 	date,
 	callHash,
 	transactionFields,
-	note
+	note,
+	network,
+	api,
+	apiReady,
+	category,
+	setCategory,
+	setTransactionFields,
+	multisigAddress
 }) => {
 	const { addressBook, activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
-	const { network } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 	const threshold =
 		multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)?.threshold || 0;
@@ -218,36 +233,39 @@ const SentInfo: FC<ISentInfoProps> = ({
 						<span className='text-white font-normal text-sm leading-[15px]'>{date}</span>
 					</p>
 				</div>
-				{!!transactionFields &&
-					Object.keys(transactionFields).length !== 0 &&
-					transactionFields.category !== 'none' && (
-						<>
-							<div className='flex items-center justify-between mt-3'>
-								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
-								<span className='text-primary border border-solid border-primary rounded-xl px-[6px] py-1'>
-									{transactionFields?.category}
-								</span>
-							</div>
-							{transactionFields &&
-								transactionFields?.subfields &&
-								Object.keys(transactionFields?.subfields).map((key) => {
-									const subfield = transactionFields?.subfields[key];
-									return (
-										<div
-											key={key}
-											className='flex items-center justify-between mt-3'
-										>
-											<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield?.name}:</span>
-											<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
-												{subfield?.value}
-											</span>
-										</div>
-									);
-								})}
-						</>
-					)}
+				{!!transactionFields && Object.keys(transactionFields).length !== 0 && (
+					<>
+						<div className='flex items-center justify-between mt-3'>
+							<span className='text-text_secondary font-normal text-sm leading-[15px]'>Category:</span>
+							<TransactionFields
+								callHash={callHash}
+								category={category}
+								setCategory={setCategory}
+								transactionFieldsObject={transactionFields}
+								setTransactionFieldsObject={setTransactionFields}
+								multisigAddress={multisigAddress}
+							/>
+						</div>
+						{transactionFields &&
+							transactionFields.subfields &&
+							Object.keys(transactionFields?.subfields).map((key) => {
+								const subfield = transactionFields.subfields[key];
+								return (
+									<div
+										key={key}
+										className='flex items-center justify-between mt-3'
+									>
+										<span className='text-text_secondary font-normal text-sm leading-[15px]'>{subfield.name}:</span>
+										<span className='text-waiting bg-waiting bg-opacity-5 border border-solid border-waiting rounded-lg px-[6px] py-[3px]'>
+											{subfield.value}
+										</span>
+									</div>
+								);
+							})}
+					</>
+				)}
 				{note && (
-					<div className='flex items-center justify-between gap-x-5 mt-3'>
+					<div className='flex items-center justify-between mt-3'>
 						<span className='text-text_secondary font-normal text-sm leading-[15px]'>Note:</span>
 						<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
 							<span className='text-white font-normal text-sm leading-[15px] whitespace-pre'>{note}</span>
@@ -297,7 +315,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 								>
 									Decoded Call
 								</Divider>
-								<ArgumentsTable callData={callData} />
+								<ArgumentsTable
+									api={api}
+									apiReady={apiReady}
+									network={network}
+									callData={callData}
+								/>
 							</>
 						)}
 					</>

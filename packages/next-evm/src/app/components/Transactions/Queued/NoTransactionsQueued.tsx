@@ -8,7 +8,7 @@ const NoTransactionsQueued = () => {
 	return (
 		<div className='flex flex-col gap-y-10 items-center justify-center'>
 			<NoTransactionsQueuedSVG />
-			<p className='font-normal text-sm leading-[15px] text-text_secondary'>No queued transactions</p>
+			<p className='font-normal text-sm leading-[15px] text-text_secondary'>No pending transactions in queue</p>
 		</div>
 	);
 };

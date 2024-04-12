@@ -5,18 +5,20 @@
 import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import getSubstrateAddress from './getSubstrateAddress';
-import nextApiClientFetch from './nextApiClientFetch';
 
 export default async function addToAddressBook({
 	address,
 	name,
-	addressBook
+	addressBook,
+	organisationId
 }: {
 	address: string;
 	name?: string;
 	addressBook: IAddressBookItem[];
+	organisationId: string;
 }): Promise<IAddressBookItem[] | undefined> {
 	if (!address) return undefined;
 
@@ -41,13 +43,19 @@ export default async function addToAddressBook({
 			return undefined;
 		}
 
-		const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
-			`${SUBSTRATE_API_URL}/addToAddressBook`,
-			{
+		const addToAddressBookRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addToAddressBook_substrate`, {
+			body: JSON.stringify({
 				address,
-				name
-			}
-		);
+				name,
+				organisationId
+			}),
+			headers: firebaseFunctionsHeader(),
+			method: 'POST'
+		});
+		const { data: addAddressData, error: addAddressError } = (await addToAddressBookRes.json()) as {
+			data: IAddressBookItem[];
+			error: string;
+		};
 
 		if (addAddressData && !addAddressError) {
 			return addAddressData;

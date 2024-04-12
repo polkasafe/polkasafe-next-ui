@@ -15,7 +15,7 @@ import {
 	Polygon,
 	ZetachainAthens3Testnet
 } from '@thirdweb-dev/chains';
-import { metamaskWallet, ThirdwebProvider, walletConnect } from '@thirdweb-dev/react';
+// import { metamaskWallet, ThirdwebProvider, walletConnect } from '@thirdweb-dev/react';
 import React, { useContext, useMemo, useState } from 'react';
 import { NETWORK } from '@next-common/global/evm-network-constants';
 import getNetwork from '@next-evm/utils/getNetwork';
@@ -32,6 +32,7 @@ export interface ApiContextProviderProps {
 	children?: React.ReactElement;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const chains: any = {
 	arbitrum: Arbitrum,
 	astar: Astar,
@@ -51,18 +52,7 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 
 	const value = useMemo(() => ({ network, setNetwork }), [network]);
 
-	return (
-		<ApiContext.Provider value={value}>
-			<ThirdwebProvider
-				activeChain={chains?.[network || 'astar']}
-				clientId={process.env.THIRDWEB_CLIENT_ID}
-				supportedChains={Object.values(chains) as any}
-				supportedWallets={[metamaskWallet(), walletConnect()]}
-			>
-				{children}
-			</ThirdwebProvider>
-		</ApiContext.Provider>
-	);
+	return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
 }
 
 export function useGlobalApiContext() {

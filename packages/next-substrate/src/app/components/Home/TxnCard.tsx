@@ -8,11 +8,10 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import NoTransactionsHistory from '@next-common/assets/icons/no-transaction-home.svg';
 import NoTransactionsQueued from '@next-common/assets/icons/no-transaction-queued-home.svg';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import { IQueueItem, ITransaction } from '@next-common/types';
 import { ArrowUpRightIcon, ArrowDownLeftIcon, RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
@@ -23,10 +22,12 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import getMultisigQueueTransactions from '@next-substrate/utils/getMultisigQueueTransactions';
 import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisigHistoricalTransactions';
+import { ApiPromise, WsProvider } from '@polkadot/api';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 
 const TxnCard = ({
 	newTxn,
@@ -37,9 +38,11 @@ const TxnCard = ({
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, addressBook, isSharedMultisig, notOwnerOfMultisig, multisigAddresses } =
-		useGlobalUserDetailsContext();
-	const { api, apiReady, network } = useGlobalApiContext();
+	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+
+	const { activeOrg } = useActiveOrgContext();
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
 	const [transactions, setTransactions] = useState<ITransaction[]>();
@@ -50,7 +53,31 @@ const TxnCard = ({
 
 	const [amountUSD, setAmountUSD] = useState<string>('');
 
-	const multisig = multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = activeOrg?.multisigs?.find(
+		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+	);
+
+	const network = multisig.network || networks.POLKADOT;
+
+	const addressBook = activeOrg && activeOrg?.addressBook ? activeOrg.addressBook : [];
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
 
 	useEffect(() => {
 		if (!api || !apiReady) return;
@@ -97,22 +124,30 @@ const TxnCard = ({
 				return;
 			}
 			try {
-				const {
-					data: { transactions: multisigTransactions },
-					error: multisigError
-				} = await nextApiClientFetch<{ transactions: ITransaction[] }>(`${SUBSTRATE_API_URL}/getMultisigHistory`, {
-					limit: 10,
-					multisigAddress: activeMultisig,
-					page: 1
+				const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
+					body: JSON.stringify({
+						limit: 10,
+						multisigAddress: activeMultisig,
+						network,
+						page: 1
+					}),
+					headers: firebaseFunctionsHeader(),
+					method: 'POST'
 				});
+				const { data: multisigTransactions, error: multisigError } = (await createOrgRes.json()) as {
+					data: { count: number; transactions: ITransaction[] };
+					error: string;
+				};
+
+				console.log('HISTORY', multisigTransactions);
 
 				if (multisigError) {
 					setHistoryLoading(false);
 					console.log('Error in Fetching Transactions: ', multisigError);
 				}
-				if (multisigTransactions) {
+				if (multisigTransactions.transactions) {
 					setHistoryLoading(false);
-					setTransactions(multisigTransactions);
+					setTransactions(multisigTransactions.transactions);
 				}
 			} catch (error) {
 				console.log(error);
@@ -150,15 +185,20 @@ const TxnCard = ({
 						setQueueLoading(false);
 					}
 				} else {
-					const { data: queueTransactions, error: queueTransactionsError } = await nextApiClientFetch<IQueueItem[]>(
-						`${SUBSTRATE_API_URL}/getMultisigQueue`,
-						{
+					const queueTxnsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getQueueTransaction_substrate`, {
+						body: JSON.stringify({
 							limit: 10,
 							multisigAddress: multisig?.address || activeMultisig,
 							network,
 							page: 1
-						}
-					);
+						}),
+						headers: firebaseFunctionsHeader(),
+						method: 'POST'
+					});
+					const { data: queueTransactions, error: queueTransactionsError } = (await queueTxnsRes.json()) as {
+						data: IQueueItem[];
+						error: string;
+					};
 
 					if (queueTransactionsError) {
 						setQueueLoading(false);
@@ -530,9 +570,9 @@ const TxnCard = ({
 															+{transaction.amount_token} {transaction.token}
 														</h1>
 													)}
-													{Number(transaction.amount_token) ? (
+													{transaction.amount_token ? (
 														<p className='text-text_secondary text-right text-xs'>
-															{!Number.isNaN(transaction.amount_usd)
+															{!Number.isNaN(Number(transaction.amount_usd))
 																? (Number(transaction.amount_usd) * Number(currencyPrice)).toFixed(3)
 																: Number.isNaN(Number(amountUSD))
 																? '0.00'

@@ -7,10 +7,8 @@ import classNames from 'classnames';
 import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { ITransaction } from '@next-common/types';
+import { ITransaction, ITxnCategory } from '@next-common/types';
 import {
 	ArrowDownLeftIcon,
 	ArrowUpRightIcon,
@@ -19,10 +17,13 @@ import {
 } from '@next-common/ui-components/CustomIcons';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import ReceivedInfo from './ReceivedInfo';
 import SentInfo from './SentInfo';
+import TransactionFields, { generateCategoryKey } from '../TransactionFields';
 
 dayjs.extend(LocalizedFormat);
 
@@ -37,22 +38,52 @@ const Transaction: FC<ITransaction> = ({
 	callHash,
 	amount_usd,
 	note,
-	transactionFields
+	transactionFields,
+	multisigAddress,
+	network
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const { network, api, apiReady } = useGlobalApiContext();
-
+	const [api, setApi] = useState<ApiPromise>();
+	const [apiReady, setApiReady] = useState(false);
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
+	const { activeOrg } = useActiveOrgContext();
 	const [txnParams, setTxnParams] = useState<{ method: string; section: string }>({} as any);
 	const [customTx, setCustomTx] = useState<boolean>(false);
 	const [isProxyApproval, setIsProxyApproval] = useState<boolean>(false);
 	const [decodedCallData, setDecodedCallData] = useState<any>();
-	const { activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = activeOrg?.multisigs?.find(
+		(item) => item.address === multisigAddress || item.proxy === multisigAddress
+	);
 	const type: 'Sent' | 'Received' =
-		activeMultisig === from || multisig?.address === from || multisig?.proxy === from ? 'Sent' : 'Received';
+		multisigAddress === from || multisig?.address === from || multisig?.proxy === from ? 'Sent' : 'Received';
 	const pathname = usePathname();
 	const hash = pathname.slice(1);
+
+	const [category, setCategory] = useState<string>(
+		transactionFields?.category ? generateCategoryKey(transactionFields?.category) : 'none'
+	);
+
+	const [transactionFieldsObject, setTransactionFieldsObject] = useState<ITxnCategory>(
+		transactionFields || { category: 'none', subfields: {} }
+	);
+
+	useEffect(() => {
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
+		setApi(new ApiPromise({ provider }));
+	}, [network]);
+
+	useEffect(() => {
+		if (api) {
+			api.isReady
+				.then(() => {
+					setApiReady(true);
+					console.log('API ready');
+				})
+				.catch((error) => {
+					console.error(error);
+				});
+		}
+	}, [api]);
 
 	useEffect(() => {
 		if (!api || !apiReady || !callData) return;
@@ -99,10 +130,10 @@ const Transaction: FC<ITransaction> = ({
 					<div
 						onClick={() => toggleTransactionVisible(!transactionInfoVisible)}
 						className={classNames(
-							'grid items-center grid-cols-9 cursor-pointer text-white font-normal text-sm leading-[15px]'
+							'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px]'
 						)}
 					>
-						<p className='col-span-3 flex items-center gap-x-3'>
+						<p className='col-span-2 flex items-center gap-x-3'>
 							{type === 'Sent' || customTx ? (
 								<span
 									className={`flex items-center justify-center w-9 h-9 ${
@@ -140,6 +171,19 @@ const Transaction: FC<ITransaction> = ({
 							<p className='col-span-2'>-</p>
 						)}
 						<p className='col-span-2'>{dayjs(created_at).format('lll')}</p>
+						<p
+							className='col-span-2'
+							onClick={(e) => e.stopPropagation()}
+						>
+							<TransactionFields
+								callHash={callHash}
+								category={category}
+								setCategory={setCategory}
+								transactionFieldsObject={transactionFieldsObject}
+								setTransactionFieldsObject={setTransactionFieldsObject}
+								multisigAddress={multisigAddress}
+							/>
+						</p>
 						<p className='col-span-2 flex items-center justify-end gap-x-4'>
 							<span className='text-success'>Success</span>
 							<span className='text-white text-sm'>
@@ -160,6 +204,12 @@ const Transaction: FC<ITransaction> = ({
 							callHash={callHash}
 							amount_usd={amount_usd}
 							to={String(to)}
+							transactionFields={transactionFieldsObject}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
+							multisigAddress={multisig?.address || ''}
+							note={note || ''}
 						/>
 					) : (
 						<SentInfo
@@ -180,6 +230,9 @@ const Transaction: FC<ITransaction> = ({
 							txnParams={txnParams}
 							customTx={customTx}
 							callData={callData}
+							network={network}
+							api={api}
+							apiReady={apiReady}
 							recipientAddresses={
 								decodedCallData?.args?.dest?.id ||
 								decodedCallData?.args?.call?.args?.dest?.id ||

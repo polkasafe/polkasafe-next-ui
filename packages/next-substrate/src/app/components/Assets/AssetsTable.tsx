@@ -2,30 +2,28 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Divider } from 'antd';
-import React, { FC, useState } from 'react';
+import React, { useState } from 'react';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
-import { IAsset } from '@next-common/types';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
-import formatUSDWithUnits from '@next-substrate/utils/formatUSDWithUnits';
 
-import Image from 'next/image';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
+import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import SendFundsForm from '../SendFunds/SendFundsForm';
 import NoAssets from './NoAssets';
+import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
-interface IAssetsProps {
-	assets: IAsset[];
-}
-
-const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
+const AssetsTable = () => {
 	const [openTransactionModal, setOpenTransactionModal] = useState(false);
-	const { currency, currencyPrice } = useGlobalCurrencyContext();
-	const { notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
+	const { allAssets, organisationBalance } = useMultisigAssetsContext();
+	const { activeOrg } = useActiveOrgContext();
+	const { activeMultisig } = useGlobalUserDetailsContext();
 
 	return (
-		<div className='text-sm font-medium leading-[15px] scale-[80%] w-[125%] h-[125%] origin-top-left'>
+		<div className='text-sm font-medium leading-[15px]'>
 			<ModalComponent
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
 				open={openTransactionModal}
@@ -39,58 +37,120 @@ const AssetsTable: FC<IAssetsProps> = ({ assets }) => {
 				<span className='col-span-1'>Value</span>
 				<span className='col-span-1'>Action</span>
 			</article>
-			{assets && assets.length > 0 ? (
-				assets.map(({ balance_token, balance_usd, logoURI, name, symbol }, index) => {
+			{activeMultisig ? (
+				allAssets && allAssets[activeMultisig]?.assets?.length > 0 ? (
+					allAssets[activeMultisig]?.assets.map((asset, index) => {
+						const { balance_token, balance_usd, logoURI, name, symbol } = asset;
+						return (
+							<>
+								<article
+									className='grid grid-cols-4 gap-x-5 py-6 px-4 text-white'
+									key={index}
+								>
+									<div className='col-span-1 flex items-center'>
+										<ParachainIcon src={logoURI} />
+										<span
+											title={symbol}
+											className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
+										>
+											{symbol}
+										</span>
+									</div>
+									<p
+										title={balance_token}
+										className='sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
+									>
+										{!Number.isNaN(balance_token) &&
+											Number(balance_token)
+												.toFixed(2)
+												.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+										{name}
+									</p>
+									<p
+										title={balance_usd}
+										className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
+									>
+										{!Number.isNaN(balance_usd)
+											? (allCurrencyPrices[currencyProperties[currency].symbol]
+													? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+													: Number(balance_usd)
+											  )
+													.toFixed(2)
+													.replace(/\d(?=(\d{3})+\.)/g, '$&,')
+											: '-'}
+									</p>
+									<PrimaryButton
+										onClick={() => {
+											setOpenTransactionModal(true);
+										}}
+										className='text-white w-fit'
+										// disabled={notOwnerOfSafe}
+									>
+										<p className='font-normal text-sm'>Send</p>
+									</PrimaryButton>
+								</article>
+								{allAssets[activeMultisig].assets.length - 1 !== index ? (
+									<Divider className='bg-text_secondary my-0' />
+								) : null}
+							</>
+						);
+					})
+				) : (
+					<NoAssets />
+				)
+			) : activeOrg && organisationBalance && organisationBalance.tokens ? (
+				Object.keys(organisationBalance.tokens).map((item, index) => {
+					const { tokens } = organisationBalance;
 					return (
 						<>
 							<article
 								className='grid grid-cols-4 gap-x-5 py-6 px-4 text-white'
-								key={index}
+								key={item}
 							>
 								<div className='col-span-1 flex items-center'>
-									<div className='flex items-center justify-center overflow-hidden rounded-full w-4 h-4'>
-										<Image
-											src={logoURI}
-											alt='profile img'
-											width={20}
-											height={20}
-										/>
-									</div>
+									<ParachainIcon src={tokens[item].logo} />
 									<span
-										title={name}
+										title={tokens[item].name}
 										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
 									>
-										{name}
+										{tokens[item].name}
 									</span>
 								</div>
 								<p
-									title={balance_token}
-									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
+									title={tokens[item].balance_token}
+									className='sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
-									{balance_token} {symbol}
+									{!Number.isNaN(tokens[item].balance_token) &&
+										Number(tokens[item].balance_token)
+											.toFixed(2)
+											.replace(/\d(?=(\d{3})+\.)/g, '$&,')}{' '}
+									{tokens[item].tokenSymbol}
 								</p>
 								<p
-									title={balance_usd}
+									title={tokens[item].balance_usd}
 									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
-									{balance_usd ? (
-										<>
-											{formatUSDWithUnits(String((Number(balance_usd) * Number(currencyPrice)).toFixed(2)))}{' '}
-											{currencyProperties[currency].symbol}
-										</>
-									) : (
-										'-'
-									)}
+									{!Number.isNaN(tokens[item].balance_usd)
+										? (allCurrencyPrices[currencyProperties[currency].symbol]
+												? Number(tokens[item].balance_usd) *
+												  Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+												: Number(tokens[item].balance_usd)
+										  )
+												.toFixed(2)
+												.replace(/\d(?=(\d{3})+\.)/g, '$&,')
+										: '-'}
 								</p>
 								<PrimaryButton
-									disabled={notOwnerOfMultisig}
-									onClick={() => setOpenTransactionModal(true)}
-									className='bg-primary text-white w-fit'
+									onClick={() => {
+										setOpenTransactionModal(true);
+									}}
+									className='text-white w-fit'
+									// disabled={notOwnerOfSafe}
 								>
 									<p className='font-normal text-sm'>Send</p>
 								</PrimaryButton>
 							</article>
-							{assets.length - 1 !== index ? <Divider className='bg-text_secondary my-0' /> : null}
+							{Object.keys(tokens).length - 1 !== index ? <Divider className='bg-text_secondary my-0' /> : null}
 						</>
 					);
 				})
