@@ -122,13 +122,13 @@ const SentInfo: FC<ISentInfoProps> = ({
 
 	useEffect(() => {
 		const getDepositor = async () => {
-			if (!api) return;
+			if (!api || !apiReady) return;
 			const multisigInfos = await getMultisigInfo(multisig?.address || activeMultisig, api);
 			const [, multisigInfo] = multisigInfos?.find(([h]) => h.eq(callHash)) || [null, null];
 			setDepositor(multisigInfo?.depositor?.toString() || '');
 		};
 		getDepositor();
-	}, [activeMultisig, multisig?.address, api, callHash]);
+	}, [activeMultisig, multisig?.address, api, callHash, apiReady]);
 
 	const approvalReminder = async (address: string) => {
 		const res = await notify({

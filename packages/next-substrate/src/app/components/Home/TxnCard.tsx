@@ -16,7 +16,6 @@ import { IQueueItem, ITransaction } from '@next-common/types';
 import { ArrowUpRightIcon, ArrowDownLeftIcon, RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
-import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
@@ -60,6 +59,8 @@ const TxnCard = ({
 	const network = multisig.network || networks.POLKADOT;
 
 	const addressBook = activeOrg && activeOrg?.addressBook ? activeOrg.addressBook : [];
+
+	const { tokensUsdPrice } = useGlobalCurrencyContext();
 
 	useEffect(() => {
 		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
@@ -222,10 +223,8 @@ const TxnCard = ({
 	useEffect(() => {
 		if (!userAddress || !activeMultisig) return;
 
-		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
-			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
-		});
-	}, [activeMultisig, network, userAddress]);
+		setAmountUSD(parseFloat(tokensUsdPrice[network]?.value?.toString()).toFixed(2));
+	}, [activeMultisig, network, tokensUsdPrice, userAddress]);
 
 	return (
 		<div>

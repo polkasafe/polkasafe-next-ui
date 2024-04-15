@@ -25,11 +25,11 @@ import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import setSigner from '@next-substrate/utils/setSigner';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
+import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -76,6 +76,7 @@ const Transaction: FC<ITransactionProps> = ({
 	const pathname = usePathname();
 
 	const { multisigAddresses, address, setUserDetailsContextState, loggedInWallet } = useGlobalUserDetailsContext();
+	const { tokensUsdPrice } = useGlobalCurrencyContext();
 	const { records } = useActiveMultisigContext();
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState(false);
@@ -116,10 +117,8 @@ const Transaction: FC<ITransactionProps> = ({
 	);
 
 	useEffect(() => {
-		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
-			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
-		});
-	}, [network]);
+		setAmountUSD(parseFloat(tokensUsdPrice[network]?.value?.toString())?.toFixed(2));
+	}, [network, tokensUsdPrice]);
 
 	useEffect(() => {
 		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
@@ -128,14 +127,10 @@ const Transaction: FC<ITransactionProps> = ({
 
 	useEffect(() => {
 		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
+			api.isReady.then(() => {
+				setApiReady(true);
+				console.log('API ready');
+			});
 		}
 	}, [api]);
 

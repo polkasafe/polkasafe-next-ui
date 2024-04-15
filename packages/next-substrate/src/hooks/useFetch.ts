@@ -37,7 +37,7 @@ export default function useFetch<T = any>({
 
 	const { activeOrg } = useActiveOrgContext();
 
-	const refetch = (hard: boolean = false) => {
+	const refetch = async (hard: boolean = false) => {
 		setLoading(true);
 		setError(undefined);
 		if (cache?.enabled && getCache(key) !== undefined && !hard) {
@@ -46,28 +46,22 @@ export default function useFetch<T = any>({
 			setError(undefined);
 			return;
 		}
-		fetch(url, {
+		const res = await fetch(url, {
 			body: JSON.stringify(body),
 			headers,
 			method
-		})
-			.then((res) => {
-				res.json().then(({ data: resData, error: resError }: { data: T; error: string }) => {
-					if (resData) {
-						setData(resData as T);
-					}
-					if (resError) {
-						setError(resError);
-					}
-					if (cache?.enabled) setCache(key, resData, cache.tte);
-				});
-			})
-			.catch((err) => {
-				setError(err);
-			})
-			.finally(() => {
-				setLoading(false);
-			});
+		});
+		const { data: resData, error: resError } = (await res.json()) as { data: T; error: string };
+
+		if (resData) {
+			setData(resData);
+			if (cache?.enabled) setCache(key, resData, cache.tte);
+		}
+		if (resError) {
+			setError(resError);
+		}
+
+		setLoading(false);
 	};
 
 	function inValidate(invalidationKey: string) {

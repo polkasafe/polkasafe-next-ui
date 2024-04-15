@@ -6,6 +6,7 @@ import React, { ReactNode, createContext, useCallback, useContext, useEffect, us
 import { IAsset } from '@next-common/types';
 import getAssetsForAddress from '@next-substrate/utils/getAssetsForAddress';
 import { useActiveOrgContext } from './ActiveOrgContext';
+import { useGlobalCurrencyContext } from './CurrencyContext';
 
 interface IOrganisationBalance {
 	total: string;
@@ -63,6 +64,10 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 
 	const { activeOrg } = useActiveOrgContext();
 
+	const { tokensUsdPrice } = useGlobalCurrencyContext();
+
+	console.log('tokens', tokensUsdPrice);
+
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleGetAssets = useCallback(async () => {
 		if (!activeOrg || !activeOrg.id || !activeOrg.multisigs) {
@@ -83,7 +88,11 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 			// eslint-disable-next-line no-restricted-syntax
 			for (const account of allMultisigs) {
 				// eslint-disable-next-line no-await-in-loop
-				const { data, error } = await getAssetsForAddress(account.address, account.network);
+				const { data, error } = await getAssetsForAddress(
+					account.address,
+					account.network,
+					parseFloat(tokensUsdPrice[account.network]?.value?.toString())?.toFixed(2)
+				);
 
 				if (data && !error) {
 					setAllAssets((prev) => ({
@@ -126,7 +135,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 			console.log('ERROR', error);
 			setLoading(false);
 		}
-	}, [activeOrg]);
+	}, [activeOrg, tokensUsdPrice]);
 
 	useEffect(() => {
 		handleGetAssets();
