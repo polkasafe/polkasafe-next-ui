@@ -41,7 +41,6 @@ interface ITransactionProps {
 	// eslint-disable-next-line react/no-unused-prop-types
 	status: 'Approval' | 'Cancelled' | 'Executed';
 	date: string;
-	approvals: string[];
 	threshold: number;
 	callData: string;
 	callHash: string;
@@ -52,13 +51,13 @@ interface ITransactionProps {
 	notifications?: ITxNotification;
 	multisigAddress: string;
 	network: string;
+	multi_id: string;
 }
 
 const Transaction: FC<ITransactionProps> = ({
 	note,
 	transactionFields,
 	totalAmount,
-	approvals,
 	refetch,
 	callData,
 	callHash,
@@ -68,6 +67,7 @@ const Transaction: FC<ITransactionProps> = ({
 	threshold,
 	notifications,
 	multisigAddress,
+	multi_id,
 	network
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
@@ -98,6 +98,9 @@ const Transaction: FC<ITransactionProps> = ({
 	const [customTx, setCustomTx] = useState<boolean>(false);
 
 	const [txnParams, setTxnParams] = useState<{ method: string; section: string }>({} as any);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [approvals, setApprovals] = useState<string[]>([]);
 
 	const token = chainProperties[network].tokenSymbol;
 	const hash = pathname.slice(1);
@@ -146,6 +149,7 @@ const Transaction: FC<ITransactionProps> = ({
 		}
 
 		setDecodedCallData(data.extrinsicCall?.toJSON());
+		console.log(data.extrinsicCall?.toJSON());
 
 		const callDataFunc = data.extrinsicFn;
 		setTxnParams({ method: `${callDataFunc?.method}`, section: `${callDataFunc?.section}` });
@@ -467,10 +471,14 @@ const Transaction: FC<ITransactionProps> = ({
 									/>
 								</p>
 								<p className='col-span-2 flex items-center justify-end gap-x-4'>
-									<span className='text-waiting'>
-										{!approvals.includes(getEncodedAddress(address, network)) && 'Awaiting your Confirmation'} (
-										{approvals.length}/{threshold})
-									</span>
+									{approvals && approvals.length > 0 ? (
+										<span className='text-waiting'>
+											{!approvals.includes(getEncodedAddress(address, network)) && 'Awaiting your Confirmation'} (
+											{approvals.length}/{threshold})
+										</span>
+									) : (
+										<span className='text-waiting'>Pending</span>
+									)}
 									<span className='text-white text-sm'>
 										{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}
 									</span>
@@ -540,6 +548,8 @@ const Transaction: FC<ITransactionProps> = ({
 							category={category}
 							setCategory={setCategory}
 							setTransactionFields={setTransactionFieldsObject}
+							multi_id={multi_id}
+							setApprovals={setApprovals}
 						/>
 					</div>
 				</Collapse.Panel>

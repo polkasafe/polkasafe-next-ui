@@ -173,7 +173,6 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 							setQueuedTransactions={setQueuedTransactions}
 							date={dayjs(transaction.created_at).format('llll')}
 							status={transaction.status}
-							approvals={transaction.approvals}
 							threshold={transaction?.threshold || multisig?.threshold || 0}
 							callData={transaction.callData}
 							callHash={transaction.callHash}
@@ -182,6 +181,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 							numberOfTransactions={queuedTransactions.length || 0}
 							notifications={transaction?.notifications}
 							transactionFields={transaction?.transactionFields}
+							multi_id={transaction.multi_id || ''}
 						/>
 					</section>
 				);

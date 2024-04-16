@@ -27,8 +27,8 @@ interface IMultisigProps {
 
 const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddress, className }) => {
 	const [messageApi, contextHolder] = message.useMessage();
-	const { userID, setUserDetailsContextState } = useGlobalUserDetailsContext();
-	const { activeOrg } = useActiveOrgContext();
+	const { userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 
 	const [address, setAddress] = useState<string>(addAddress || '');
 	const [addressValid, setAddressValid] = useState<boolean>(true);
@@ -114,7 +114,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 			}
 
 			if (addAddressData) {
-				setUserDetailsContextState((prevState) => {
+				setActiveOrg((prevState) => {
 					return {
 						...prevState,
 						addressBook: addAddressData

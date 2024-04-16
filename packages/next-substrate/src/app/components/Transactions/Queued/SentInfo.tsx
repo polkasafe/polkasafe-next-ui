@@ -4,7 +4,7 @@
 import Identicon from '@polkadot/react-identicon';
 import { Button, Collapse, Divider, Input, Timeline } from 'antd';
 import classNames from 'classnames';
-import React, { FC, useEffect, useState } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Multisig/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
@@ -34,6 +34,7 @@ import styled from 'styled-components';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { ApiPromise } from '@polkadot/api';
+import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import ArgumentsTable from './ArgumentsTable';
 import EditNote from './EditNote';
 import NotifyButton from './NotifyButton';
@@ -71,7 +72,9 @@ interface ISentInfoProps {
 	api: ApiPromise;
 	apiReady: boolean;
 	category: string;
+	multi_id: string;
 	setCategory: React.Dispatch<React.SetStateAction<string>>;
+	setApprovals: React.Dispatch<React.SetStateAction<string[]>>;
 	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
 
@@ -106,7 +109,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 	api,
 	apiReady,
 	category,
+	multi_id,
 	setCategory,
+	setApprovals,
 	setTransactionFields
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
@@ -119,6 +124,32 @@ const SentInfo: FC<ISentInfoProps> = ({
 
 	const [updatedNote, setUpdatedNote] = useState(note);
 	const [depositor, setDepositor] = useState<string>('');
+
+	const fetchApprovals = useCallback(async () => {
+		if (!multi_id || !callHash) return;
+
+		const multisigDataRes = await fetch(`https://${network}.api.subscan.io/api/scan/multisig`, {
+			body: JSON.stringify({
+				call_hash: callHash,
+				multi_id
+			}),
+			headers: SUBSCAN_API_HEADERS,
+			method: 'POST'
+		});
+
+		const { data } = await multisigDataRes.json();
+		const a: string[] = data?.process
+			?.filter((item: any) => item.status === 'Approval')
+			.map((item: any) => item.account_display.address);
+
+		setApprovals(a || []);
+		console.log('mulsig data', data);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [callHash, multi_id, network]);
+
+	useEffect(() => {
+		fetchApprovals();
+	}, [fetchApprovals]);
 
 	useEffect(() => {
 		const getDepositor = async () => {

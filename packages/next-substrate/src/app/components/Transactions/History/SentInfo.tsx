@@ -4,9 +4,8 @@
 import Identicon from '@polkadot/react-identicon';
 import { Collapse, Divider, Timeline } from 'antd';
 import classNames from 'classnames';
-import React, { FC, useState } from 'react';
+import React, { FC, useCallback, useEffect, useState } from 'react';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
-import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { chainProperties } from '@next-common/global/networkConstants';
@@ -27,11 +26,12 @@ import styled from 'styled-components';
 
 import { ApiPromise } from '@polkadot/api';
 import { ITxnCategory } from '@next-common/types';
+import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import ArgumentsTable from '../Queued/ArgumentsTable';
 import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
-	approvals?: string[];
 	callData?: string;
 	recipientAddresses?: string | string[];
 	amount: string | string[];
@@ -50,6 +50,7 @@ interface ISentInfoProps {
 	apiReady: boolean;
 	multisigAddress: string;
 	category: string;
+	multi_id: string;
 	setCategory: React.Dispatch<React.SetStateAction<string>>;
 	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
 }
@@ -57,7 +58,6 @@ interface ISentInfoProps {
 const SentInfo: FC<ISentInfoProps> = ({
 	amount,
 	callData,
-	approvals,
 	customTx,
 	txnParams,
 	recipientAddresses,
@@ -74,13 +74,40 @@ const SentInfo: FC<ISentInfoProps> = ({
 	category,
 	setCategory,
 	setTransactionFields,
-	multisigAddress
+	multisigAddress,
+	multi_id
 }) => {
-	const { addressBook, activeMultisig, multisigAddresses } = useGlobalUserDetailsContext();
+	const { activeOrg } = useActiveOrgContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
-	const threshold =
-		multisigAddresses?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)?.threshold || 0;
 	const [showDetails, setShowDetails] = useState<boolean>(false);
+
+	const [approvals, setApprovals] = useState<string[]>([]);
+
+	const fetchApprovals = useCallback(async () => {
+		if (!multi_id || !callHash) return;
+
+		const multisigDataRes = await fetch(`https://${network}.api.subscan.io/api/scan/multisig`, {
+			body: JSON.stringify({
+				call_hash: callHash,
+				multi_id
+			}),
+			headers: SUBSCAN_API_HEADERS,
+			method: 'POST'
+		});
+
+		const { data } = await multisigDataRes.json();
+		const a: string[] = data?.process
+			?.filter((item: any) => item.status === 'Approval' || item.status === 'Executed')
+			.map((item: any) => item.account_display.address);
+
+		setApprovals(a || []);
+		console.log('mulsig data', data);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [callHash, multi_id, network]);
+
+	useEffect(() => {
+		fetchApprovals();
+	}, [fetchApprovals]);
 
 	return (
 		<div className={classNames('flex gap-x-4', className)}>
@@ -127,7 +154,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<div className='flex flex-col gap-y-[6px]'>
 								<p className='font-medium text-sm leading-[15px] text-white'>
 									{recipientAddresses
-										? addressBook?.find((item) => item.address === recipientAddresses)?.name || DEFAULT_ADDRESS_NAME
+										? activeOrg?.addressBook?.find((item) => item.address === recipientAddresses)?.name ||
+										  DEFAULT_ADDRESS_NAME
 										: '?'}
 								</p>
 								{recipientAddresses && (
@@ -196,7 +224,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 										<div className='flex flex-col gap-y-[6px]'>
 											<p className='font-medium text-sm leading-[15px] text-white'>
 												{recipientAddresses
-													? addressBook?.find((a) => a.address === item)?.name || DEFAULT_ADDRESS_NAME
+													? activeOrg?.addressBook?.find((a) => a.address === item)?.name || DEFAULT_ADDRESS_NAME
 													: '?'}
 											</p>
 											{recipientAddresses && (
@@ -350,7 +378,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<div className='text-white font-normal text-sm leading-[15px]'>
 								Confirmations{' '}
 								<span className='text-text_secondary'>
-									{threshold} of {threshold}
+									{approvals.length} of {approvals.length}
 								</span>
 							</div>
 						</Timeline.Item>
