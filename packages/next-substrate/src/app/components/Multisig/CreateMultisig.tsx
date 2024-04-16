@@ -5,7 +5,7 @@
 
 import { Dropdown, Form, Input, InputNumber, Spin, Switch } from 'antd';
 import classNames from 'classnames';
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedTransaction';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import SuccessTransactionLottie from '@next-common/assets/lottie-graphics/SuccessTransaction';
@@ -29,10 +29,10 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
 import { usePathname } from 'next/navigation';
-import { ApiPromise, WsProvider } from '@polkadot/api';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import AddAddress from '../AddressBook/AddAddress';
 import DragDrop from './DragDrop';
 import Search from './Search';
@@ -64,8 +64,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 	const [signatories, setSignatories] = useState<string[]>([userAddress]);
 
 	const [network, setNetwork] = useState<string>(networks.POLKADOT);
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState<boolean>(false);
+	const { apis } = useGlobalApiContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -81,24 +80,6 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 	const [form] = Form.useForm();
 
 	const [createMultisigData, setCreateMultisigData] = useState<IMultisigAddress>({} as any);
-
-	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
-
-	useEffect(() => {
-		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [api]);
 
 	const networkOptions: ItemType[] = Object.values(networks).map((item) => ({
 		key: item,
@@ -153,9 +134,9 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 	};
 
 	const addExistentialDeposit = async (multisigData: IMultisigAddress) => {
-		if (!api || !apiReady) return;
+		if (!apis || !apis[network] || !apis[network].apiReady) return;
 
-		await setSigner(api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet);
 
 		setLoading(true);
 		setLoadingMessages(
@@ -164,7 +145,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 		try {
 			await transferFunds({
 				amount: inputToBn(`${chainProperties[network].existentialDeposit}`, network, false)[0],
-				api,
+				api: apis[network].api,
 				network,
 				recepientAddress: multisigData.address,
 				senderAddress: getSubstrateAddress(userAddress) || userAddress,
@@ -398,8 +379,8 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 											filterAddress={addAddress}
 											setSignatories={setSignatories}
 											signatories={signatories}
-											api={api}
-											apiReady={apiReady}
+											api={apis?.[network]?.api}
+											apiReady={apis?.[network]?.apiReady}
 										/>
 									) : (
 										<DragDrop setSignatories={setSignatories} />
