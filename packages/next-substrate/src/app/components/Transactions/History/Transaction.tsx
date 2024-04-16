@@ -30,7 +30,6 @@ dayjs.extend(LocalizedFormat);
 const Transaction: FC<ITransaction> = ({
 	amount_token,
 	callData,
-	approvals,
 	token,
 	created_at,
 	to,
@@ -40,7 +39,8 @@ const Transaction: FC<ITransaction> = ({
 	note,
 	transactionFields,
 	multisigAddress,
-	network
+	network,
+	multi_id
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const [api, setApi] = useState<ApiPromise>();
@@ -220,10 +220,10 @@ const Transaction: FC<ITransaction> = ({
 								decodedCallData?.args?.call?.args?.calls?.map((item: any) => item?.args?.value) ||
 								''
 							}
-							approvals={approvals}
 							date={dayjs(created_at).format('llll')}
+							multi_id={multi_id || ''}
 							callHash={callHash}
-							transactionFields={transactionFields}
+							transactionFields={transactionFieldsObject}
 							note={note}
 							from={from}
 							amount_usd={amount_usd}
@@ -233,6 +233,9 @@ const Transaction: FC<ITransaction> = ({
 							network={network}
 							api={api}
 							apiReady={apiReady}
+							category={category}
+							setCategory={setCategory}
+							setTransactionFields={setTransactionFieldsObject}
 							recipientAddresses={
 								decodedCallData?.args?.dest?.id ||
 								decodedCallData?.args?.call?.args?.dest?.id ||

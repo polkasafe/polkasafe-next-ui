@@ -326,6 +326,7 @@ export interface ITxnCategory {
 }
 
 export interface IQueueItem {
+	multi_id?: string;
 	totalAmount?: string;
 	transactionFields?: ITxnCategory;
 	callData: string;
@@ -333,7 +334,6 @@ export interface IQueueItem {
 	network: string;
 	status: 'Approval' | 'Cancelled' | 'Executed';
 	created_at: Date;
-	approvals: string[];
 	threshold: number;
 	note?: string;
 	notifications?: ITxNotification;
@@ -341,6 +341,7 @@ export interface IQueueItem {
 }
 
 export interface ITransaction {
+	multi_id?: string;
 	approvals?: string[];
 	callData?: string;
 	callHash: string;

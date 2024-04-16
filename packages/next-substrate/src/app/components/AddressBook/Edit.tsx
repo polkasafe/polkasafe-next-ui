@@ -40,8 +40,8 @@ const EditAddress = ({
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const [loading, setLoading] = useState<boolean>(false);
-	const { activeOrg } = useActiveOrgContext();
-	const { userID, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
+	const { userID } = useGlobalUserDetailsContext();
 	const [newName, setNewName] = useState<string>(nameToEdit || '');
 	const [nickName, setNickName] = useState<string>(nickNameToEdit || '');
 	const [showNickNameField, setShowNickNameField] = useState<boolean>(!!nickNameToEdit);
@@ -128,7 +128,7 @@ const EditAddress = ({
 			}
 
 			if (addAddressData) {
-				setUserDetailsContextState((prevState) => {
+				setActiveOrg((prevState) => {
 					return {
 						...prevState,
 						addressBook: addAddressData
