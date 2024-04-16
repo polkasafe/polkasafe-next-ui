@@ -63,9 +63,6 @@ export default async function getMultisigQueueByAddress(
 				const transaction: ITransaction = transactionDoc.data() as ITransaction;
 
 				const newQueueItem: IQueueItem = {
-					approvals: multisigData?.process
-						?.filter((item: any) => item.status === 'Approval')
-						.map((item: any) => item.account_display.address),
 					callData: transactionDoc.exists && transaction?.callData ? transaction?.callData : '',
 					callHash: multisigQueueItem.call_hash,
 					created_at: dayjs(
