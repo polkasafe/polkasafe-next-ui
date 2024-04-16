@@ -11,6 +11,7 @@ import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
 import useFetch from '@next-substrate/hooks/useFetch';
+import { useCache } from '@next-substrate/context/CachedDataContext';
 import MembersTable from './Members';
 import TransactionHistory from './TransactionHistory';
 import TransactionQueue from './TransactionQueue';
@@ -33,6 +34,10 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 	// const [historyLoading, setHistoryLoading] = useState<boolean>(false);
 
 	const multisigs = activeOrg?.multisigs?.map((item) => ({ address: item.address, network: item.network }));
+
+	const { getCache } = useCache();
+
+	const queueItems = getCache(`all-queue-txns-${activeOrg?.id}`);
 
 	const {
 		data: historyData,
@@ -106,7 +111,7 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 
 	useEffect(() => {
 		fetchBoth();
-	}, [fetchBoth]);
+	}, [fetchBoth, queueItems]);
 
 	return (
 		<div className={`w-full h-[400px] bg-bg-main rounded-xl p-8 flex flex-col ${className}`}>
@@ -135,7 +140,11 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 							tab === ETab.QUEUE && 'text-white bg-primary'
 						} rounded-full flex items-center justify-center h-5 w-5 font-normal text-sm`}
 					>
-						{pendingTxns?.length || 0}
+						{queueLoading || historyLoading ? (
+							<SyncOutlined spin={queueLoading || historyLoading} />
+						) : (
+							pendingTxns?.length || 0
+						)}
 					</span>
 				</Button>
 				<Button
@@ -174,7 +183,7 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 					/>
 				) : (
 					<TransactionQueue
-						loading={queueLoading}
+						loading={queueLoading || historyLoading}
 						pendingTxns={pendingTxns}
 					/>
 				)}

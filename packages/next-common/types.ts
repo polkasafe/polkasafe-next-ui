@@ -327,6 +327,7 @@ export interface ITxnCategory {
 
 export interface IQueueItem {
 	multi_id?: string;
+	approvals?: string[];
 	totalAmount?: string;
 	transactionFields?: ITxnCategory;
 	callData: string;

@@ -5,11 +5,11 @@ import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { ArrowDownLeftIcon, ArrowUpRightIcon } from '@next-common/ui-components/CustomIcons';
 import shortenAddress from '@next-evm/utils/shortenAddress';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
-import { ApiPromise, WsProvider } from '@polkadot/api';
 import dayjs from 'dayjs';
 import Link from 'next/link';
 import React, { useEffect, useState } from 'react';
@@ -24,17 +24,12 @@ const SingleTxn = ({
 	network,
 	transaction // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IHistoryTransactions) => {
+	const { apis } = useGlobalApiContext();
 	const { currency, currencyPrice, tokensUsdPrice } = useGlobalCurrencyContext();
 	const { activeOrg } = useActiveOrgContext();
 	const [amountUSD, setAmountUSD] = useState<string>('');
-	const [api, setApi] = useState<ApiPromise>();
 
 	const addressBook = (activeOrg && activeOrg.addressBook) || [];
-
-	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
 
 	useEffect(() => {
 		setAmountUSD(parseFloat(tokensUsdPrice[network]?.value?.toString()).toFixed(2));
@@ -44,8 +39,8 @@ const SingleTxn = ({
 	let decodedCallData = null;
 	let callDataFunc = null;
 
-	if (transaction.callData) {
-		const { data, error } = decodeCallData(transaction.callData, api) as { data: any; error: any };
+	if (transaction.callData && apis && apis[network]?.apiReady) {
+		const { data, error } = decodeCallData(transaction.callData, apis[network].api) as { data: any; error: any };
 		if (!error && data) {
 			decodedCallData = data.extrinsicCall?.toJSON();
 			callDataFunc = data.extrinsicFn;

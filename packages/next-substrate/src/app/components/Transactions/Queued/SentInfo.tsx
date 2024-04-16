@@ -143,7 +143,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 			.map((item: any) => item.account_display.address);
 
 		setApprovals(a || []);
-		console.log('mulsig data', data);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [callHash, multi_id, network]);
 

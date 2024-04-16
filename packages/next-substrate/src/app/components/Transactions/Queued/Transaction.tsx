@@ -25,17 +25,18 @@ import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import setSigner from '@next-substrate/utils/setSigner';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { ApiPromise, WsProvider } from '@polkadot/api';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
 import TransactionFields, { generateCategoryKey } from '../TransactionFields';
 
 interface ITransactionProps {
+	approvalsArray?: string[];
 	totalAmount?: string;
 	transactionFields?: ITxnCategory;
 	// eslint-disable-next-line react/no-unused-prop-types
@@ -55,6 +56,7 @@ interface ITransactionProps {
 }
 
 const Transaction: FC<ITransactionProps> = ({
+	approvalsArray,
 	note,
 	transactionFields,
 	totalAmount,
@@ -75,7 +77,8 @@ const Transaction: FC<ITransactionProps> = ({
 	const router = useRouter();
 	const pathname = usePathname();
 
-	const { multisigAddresses, address, setUserDetailsContextState, loggedInWallet } = useGlobalUserDetailsContext();
+	const { apis } = useGlobalApiContext();
+	const { address, setUserDetailsContextState, loggedInWallet } = useGlobalUserDetailsContext();
 	const { tokensUsdPrice } = useGlobalCurrencyContext();
 	const { records } = useActiveMultisigContext();
 	const [loading, setLoading] = useState(false);
@@ -85,8 +88,6 @@ const Transaction: FC<ITransactionProps> = ({
 	const [getMultiDataLoading, setGetMultisigDataLoading] = useState(false);
 	const [loadingMessages, setLoadingMessages] = useState('');
 	const [openLoadingModal, setOpenLoadingModal] = useState(false);
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState(false);
 
 	const { activeOrg } = useActiveOrgContext();
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
@@ -100,7 +101,7 @@ const Transaction: FC<ITransactionProps> = ({
 	const [txnParams, setTxnParams] = useState<{ method: string; section: string }>({} as any);
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	const [approvals, setApprovals] = useState<string[]>([]);
+	const [approvals, setApprovals] = useState<string[]>(approvalsArray || []);
 
 	const token = chainProperties[network].tokenSymbol;
 	const hash = pathname.slice(1);
@@ -124,23 +125,9 @@ const Transaction: FC<ITransactionProps> = ({
 	}, [network, tokensUsdPrice]);
 
 	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
+		if (!apis || !apis[network] || !apis[network].apiReady) return;
 
-	useEffect(() => {
-		if (api) {
-			api.isReady.then(() => {
-				setApiReady(true);
-				console.log('API ready');
-			});
-		}
-	}, [api]);
-
-	useEffect(() => {
-		if (!api || !apiReady) return;
-
-		const { data, error } = decodeCallData(callDataString, api);
+		const { data, error } = decodeCallData(callDataString, apis[network].api);
 		if (error || !data) return;
 
 		if (data?.extrinsicCall?.hash.toHex() !== callHash) {
@@ -149,7 +136,6 @@ const Transaction: FC<ITransactionProps> = ({
 		}
 
 		setDecodedCallData(data.extrinsicCall?.toJSON());
-		console.log(data.extrinsicCall?.toJSON());
 
 		const callDataFunc = data.extrinsicFn;
 		setTxnParams({ method: `${callDataFunc?.method}`, section: `${callDataFunc?.section}` });
@@ -165,7 +151,7 @@ const Transaction: FC<ITransactionProps> = ({
 			});
 		})();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, callData, callDataString, callHash, network]);
+	}, [apis, callData, callDataString, callHash, network]);
 
 	useEffect(() => {
 		const fetchMultisigData = async (newMultisigAddress: string) => {
@@ -205,15 +191,15 @@ const Transaction: FC<ITransactionProps> = ({
 		) {
 			setCustomTx(true);
 		}
-	}, [decodedCallData, multisig, multisigAddresses, network]);
+	}, [decodedCallData, multisig, network]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleApproveTransaction = async () => {
-		if (!api || !apiReady || !address) {
+		if (!apis || !apis[network] || !apis[network].apiReady || !address) {
 			return;
 		}
 
-		await setSigner(api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet);
 
 		if (!multisig) return;
 
@@ -235,7 +221,7 @@ const Transaction: FC<ITransactionProps> = ({
 			}
 			if (decodedCallData?.args?.proxy_type) {
 				await approveProxy({
-					api,
+					api: apis[network].api,
 					approvingAddress: address,
 					callDataHex: callDataString,
 					callHash,
@@ -249,7 +235,7 @@ const Transaction: FC<ITransactionProps> = ({
 				});
 			} else if (decodedCallData?.args?.call?.args?.delegate) {
 				await approveAddProxy({
-					api,
+					api: apis[network].api,
 					approvingAddress: address,
 					callDataHex: callDataString,
 					callHash,
@@ -273,7 +259,7 @@ const Transaction: FC<ITransactionProps> = ({
 										decodedCallData?.args?.call?.args?.calls?.[0]?.args?.value ||
 										0
 							  ),
-					api,
+					api: apis[network].api,
 					approvals,
 					approvingAddress: address,
 					callDataHex: callDataString,
@@ -312,11 +298,11 @@ const Transaction: FC<ITransactionProps> = ({
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleCancelTransaction = async () => {
-		if (!api || !apiReady || !address) {
+		if (!apis || !apis[network] || !apis[network].apiReady || !address) {
 			return;
 		}
 
-		await setSigner(api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet);
 
 		if (!multisig) return;
 
@@ -338,7 +324,7 @@ const Transaction: FC<ITransactionProps> = ({
 			}
 			if (decodedCallData?.args?.proxy_type) {
 				await cancelProxy({
-					api,
+					api: apis[network].api,
 					approvingAddress: address,
 					callHash,
 					multisig,
@@ -348,7 +334,7 @@ const Transaction: FC<ITransactionProps> = ({
 				return;
 			}
 			await cancelMultisigTransfer({
-				api,
+				api: apis[network].api,
 				approvingAddress: address,
 				callHash,
 				multisig,
@@ -543,8 +529,8 @@ const Transaction: FC<ITransactionProps> = ({
 							txnParams={txnParams}
 							multisig={multisig}
 							network={network}
-							api={api}
-							apiReady={apiReady}
+							api={apis?.[network]?.api}
+							apiReady={apis?.[network]?.apiReady}
 							category={category}
 							setCategory={setCategory}
 							setTransactionFields={setTransactionFieldsObject}

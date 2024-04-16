@@ -18,7 +18,7 @@ import {
 import decodeCallData from '@next-substrate/utils/decodeCallData';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import ReceivedInfo from './ReceivedInfo';
@@ -43,8 +43,7 @@ const Transaction: FC<ITransaction> = ({
 	multi_id
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState(false);
+	const { apis } = useGlobalApiContext();
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const { activeOrg } = useActiveOrgContext();
 	const [txnParams, setTxnParams] = useState<{ method: string; section: string }>({} as any);
@@ -68,27 +67,9 @@ const Transaction: FC<ITransaction> = ({
 	);
 
 	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
+		if (!apis || !apis[network] || !apis[network].apiReady || !callData) return;
 
-	useEffect(() => {
-		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [api]);
-
-	useEffect(() => {
-		if (!api || !apiReady || !callData) return;
-
-		const { data, error } = decodeCallData(callData, api);
+		const { data, error } = decodeCallData(callData, apis[network].api);
 		if (error || !data) return;
 
 		if (data?.extrinsicCall?.hash.toHex() !== callHash) {
@@ -101,7 +82,7 @@ const Transaction: FC<ITransaction> = ({
 		setTxnParams({ method: `${callDataFunc?.method}`, section: `${callDataFunc?.section}` });
 
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, callData, callHash, network]);
+	}, [apis, callData, callHash, network]);
 
 	useEffect(() => {
 		if (decodedCallData && decodedCallData?.args?.proxy_type) {
@@ -231,8 +212,8 @@ const Transaction: FC<ITransaction> = ({
 							customTx={customTx}
 							callData={callData}
 							network={network}
-							api={api}
-							apiReady={apiReady}
+							api={apis?.[network]?.api}
+							apiReady={apis?.[network]?.apiReady}
 							category={category}
 							setCategory={setCategory}
 							setTransactionFields={setTransactionFieldsObject}

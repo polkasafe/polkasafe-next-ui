@@ -32,8 +32,6 @@ export default async function getAssetsForAddress(
 
 		const { data: response } = await res.json();
 
-		console.log('get address  after tokens called');
-
 		const assets: IAsset[] = [];
 
 		if (response?.native) {
