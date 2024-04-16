@@ -18,7 +18,7 @@ import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
-import { EFieldType, IMultisigAddress, NotificationStatus } from '@next-common/types';
+import { EFieldType, IMultisigAddress, IQueueItem, ITxnCategory, NotificationStatus } from '@next-common/types';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import Balance from '@next-common/ui-components/Balance';
 import BalanceInput from '@next-common/ui-components/BalanceInput';
@@ -47,7 +47,8 @@ import inputToBn from '@next-substrate/utils/inputToBn';
 import setSigner from '@next-substrate/utils/setSigner';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { useCache } from '@next-substrate/context/CachedDataContext';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 import ArgumentsTable from '../Transactions/Queued/ArgumentsTable';
@@ -88,9 +89,9 @@ const SendFundsForm = ({
 	transactionType = ETransactionType.SEND_TOKEN,
 	setTransactionType // eslint-disable-next-line sonarjs/cognitive-complexity
 }: ISendFundsFormProps) => {
+	const { getCache, setCache } = useCache();
 	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState(false);
+	const { apis } = useGlobalApiContext();
 	const [note, setNote] = useState<string>('');
 	const [loading, setLoading] = useState(false);
 	const [amount, setAmount] = useState(new BN(0));
@@ -248,34 +249,23 @@ const SendFundsForm = ({
 	}, [activeOrg, selectedMultisig]);
 
 	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
+		if (
+			!apis ||
+			!apis[network] ||
+			!apis[network].apiReady ||
+			transactionType === ETransactionType.SEND_TOKEN ||
+			!callData
+		)
+			return;
 
-	useEffect(() => {
-		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [api]);
-
-	useEffect(() => {
-		if (!api || !apiReady || transactionType === ETransactionType.SEND_TOKEN || !callData) return;
-
-		const { data, error } = decodeCallData(callData, api);
+		const { data, error } = decodeCallData(callData, apis[network].api);
 		if (error || !data) return;
 
 		setCallHash(data.decoded?.method.hash.toHex() || '');
 
 		const callDataFunc = data.extrinsicFn;
 		setTxnParams({ method: `${callDataFunc?.method}`, section: `${callDataFunc?.section}` });
-	}, [api, apiReady, callData, network, transactionType]);
+	}, [apis, callData, network, transactionType]);
 
 	// Set address options for recipient
 	useEffect(() => {
@@ -333,46 +323,47 @@ const SendFundsForm = ({
 
 	useEffect(() => {
 		if (
-			!api ||
-			!apiReady ||
+			!apis ||
+			!apis[network] ||
+			!apis[network].apiReady ||
 			transactionType !== ETransactionType.SEND_TOKEN ||
 			!recipientAndAmount ||
 			recipientAndAmount.some((item) => item.recipient === '' || item.amount.isZero())
 		)
 			return;
 
-		const batch = api.tx.utility.batch(
+		const batch = apis[network].api.tx.utility.batch(
 			recipientAndAmount.map((item) =>
 				transferKeepAlive
-					? api.tx.balances.transferKeepAlive(item.recipient, item.amount.toString())
-					: api.tx.balances.transfer(item.recipient, item.amount.toString())
+					? apis[network].api.tx.balances.transferKeepAlive(item.recipient, item.amount.toString())
+					: apis[network].api.tx.balances.transfer(item.recipient, item.amount.toString())
 			)
 		);
 		let tx: SubmittableExtrinsic<'promise'>;
 		if (isProxy && multisig?.proxy) {
-			tx = api.tx.proxy.proxy(multisig.proxy, null, batch);
+			tx = apis[network].api.tx.proxy.proxy(multisig.proxy, null, batch);
 			setCallData(tx.method.toHex());
 		} else {
 			setCallData(batch.method.toHex());
 		}
-	}, [amount, api, apiReady, isProxy, multisig, recipientAndAmount, transactionType, transferKeepAlive]);
+	}, [amount, apis, isProxy, multisig, network, recipientAndAmount, transactionType, transferKeepAlive]);
 
 	useEffect(() => {
 		const fetchBalanceInfos = async () => {
-			if (!api || !apiReady || !address || !recipientAndAmount[0].recipient) {
+			if (!apis || !apis[network] || !apis[network].apiReady || !address || !recipientAndAmount[0].recipient) {
 				return;
 			}
 			setFetchBalancesLoading(true);
 			// deposit balance
-			const depositBase = api.consts.multisig.depositBase.toString();
-			const depositFactor = api.consts.multisig.depositFactor.toString();
+			const depositBase = apis[network].api.consts.multisig.depositBase.toString();
+			const depositFactor = apis[network].api.consts.multisig.depositFactor.toString();
 			setTotalDeposit(new BN(depositBase).add(new BN(depositFactor)));
 
 			// gas fee
 			if (!['westend', 'rococo', 'kusama'].includes(network)) {
 				const txn = transferKeepAlive
-					? api.tx.balances.transferKeepAlive(recipientAndAmount[0].recipient, amount)
-					: api.tx.balances.transfer(recipientAndAmount[0].recipient, amount);
+					? apis[network].api.tx.balances.transferKeepAlive(recipientAndAmount[0].recipient, amount)
+					: apis[network].api.tx.balances.transfer(recipientAndAmount[0].recipient, amount);
 				const gasInfo = await txn.paymentInfo(address);
 				setTotalGas(new BN(gasInfo.partialFee.toString()));
 			} else {
@@ -380,12 +371,12 @@ const SendFundsForm = ({
 			}
 
 			// initiator balance
-			const initiatorAccountBalance = await api.query.system.account(address);
+			const initiatorAccountBalance = await apis[network].api.query.system.account(address);
 			setInitiatorBalance(new BN(initiatorAccountBalance.data.free.toString()));
 			setFetchBalancesLoading(false);
 		};
 		fetchBalanceInfos();
-	}, [address, amount, api, apiReady, network, recipientAndAmount, transferKeepAlive]);
+	}, [address, amount, apis, network, recipientAndAmount, transferKeepAlive]);
 
 	// calculate total amount
 	useEffect(() => {
@@ -393,12 +384,50 @@ const SendFundsForm = ({
 		setAmount(total);
 	}, [recipientAndAmount]);
 
+	const addToQueue = ({
+		approvals,
+		txHash,
+		txData,
+		totalAmount,
+		multisigNetwork,
+		multisigAddress,
+		txFields,
+		multisigThreshold
+	}: {
+		totalAmount: string;
+		txHash: string;
+		txData: string;
+		multisigAddress: string;
+		multisigNetwork: string;
+		txFields: ITxnCategory;
+		multisigThreshold: number;
+		approvals: string[];
+	}) => {
+		if (!txHash || !txData || !activeOrg?.id) return;
+		const prevQueue = getCache(`all-queue-txns-${activeOrg?.id}`);
+		console.log('old queue', prevQueue);
+		const newQueueItem: IQueueItem = {
+			approvals,
+			callData: txData,
+			callHash: txHash,
+			created_at: new Date(),
+			multisigAddress,
+			network: multisigNetwork,
+			status: 'Approval',
+			threshold: multisigThreshold,
+			totalAmount,
+			transactionFields: txFields
+		};
+		const newQueue: IQueueItem[] = [newQueueItem, ...prevQueue];
+		setCache(`all-queue-txns-${activeOrg?.id}`, newQueue, 1800);
+	};
+
 	const handleSubmit = async () => {
-		if (!api || !apiReady || !address) {
+		if (!apis || !apis[network] || !apis[network].apiReady || !address) {
 			return;
 		}
 
-		await setSigner(api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet);
 
 		if (!multisig) return;
 
@@ -416,7 +445,8 @@ const SendFundsForm = ({
 					return;
 				}
 				queueItemData = await initMultisigTransfer({
-					api,
+					addToQueue,
+					api: apis[network].api,
 					attachments: subfieldAttachments,
 					initiatorAddress: address,
 					isProxy,
@@ -431,7 +461,7 @@ const SendFundsForm = ({
 				});
 			} else {
 				queueItemData = await customCallDataTransaction({
-					api,
+					api: apis[network].api,
 					attachments: subfieldAttachments,
 					callDataString: callData,
 					initiatorAddress: address,
@@ -493,7 +523,7 @@ const SendFundsForm = ({
 		>
 			{
 				<>
-					{initiatorBalance.lte(totalDeposit.add(totalGas)) && !fetchBalancesLoading && apiReady ? (
+					{initiatorBalance.lte(totalDeposit.add(totalGas)) && !fetchBalancesLoading && apis?.[network]?.apiReady ? (
 						<section className='mb-4 text-[13px] w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg font-normal flex items-center gap-x-2'>
 							<WarningCircleIcon />
 							<p>
@@ -555,8 +585,8 @@ const SendFundsForm = ({
 									<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
 										Sending from
 										<Balance
-											api={api}
-											apiReady={apiReady}
+											api={apis?.[network]?.api}
+											apiReady={apis?.[network]?.apiReady || false}
 											network={network}
 											onChange={setMultisigBalance}
 											address={selectedMultisig}
@@ -572,9 +602,6 @@ const SendFundsForm = ({
 												setSelectedMultisig(data?.isProxy ? data?.proxy : data?.address);
 												setNetwork(data?.network);
 												setIsProxy(data?.isProxy);
-												if (data?.network !== network) {
-													setApiReady(false);
-												}
 											}
 										}}
 									>
@@ -630,39 +657,39 @@ const SendFundsForm = ({
 							</section>
 						) : transactionType === ETransactionType.MANUAL_EXTRINSIC ? (
 							<ManualExtrinsics
-								apiReady={apiReady}
-								api={api}
+								apiReady={apis?.[network]?.apiReady || false}
+								api={apis?.[network]?.api}
 								network={network}
 								setCallData={setCallData}
 							/>
 						) : transactionType === ETransactionType.SUBMIT_PREIMAGE ? (
 							<SubmitPreimage
-								apiReady={apiReady}
+								apiReady={apis?.[network]?.apiReady || false}
 								network={network}
-								api={api}
+								api={apis?.[network]?.api}
 								setCallData={setCallData}
 								className={className}
 							/>
 						) : transactionType === ETransactionType.SUBMIT_PROPOSAL ? (
 							<SubmitProposal
-								apiReady={apiReady}
+								apiReady={apis?.[network]?.apiReady || false}
 								network={network}
-								api={api}
+								api={apis?.[network]?.api}
 								className={className}
 								setCallData={setCallData}
 							/>
 						) : transactionType === ETransactionType.SET_IDENTITY ? (
 							<SetIdentity
 								multisigAddress={multisig.address || activeMultisig}
-								api={api}
-								apiReady={apiReady}
+								api={apis?.[network]?.api}
+								apiReady={apis?.[network]?.apiReady || false}
 								className={className}
 								setCallData={setCallData}
 							/>
 						) : transactionType === ETransactionType.DELEGATE ? (
 							<Delegate
-								api={api}
-								apiReady={apiReady}
+								api={apis?.[network]?.api}
+								apiReady={apis?.[network]?.apiReady || false}
 								className={className}
 								setCallData={setCallData}
 								autocompleteAddresses={autocompleteAddresses}
@@ -858,8 +885,8 @@ const SendFundsForm = ({
 											Decoded Call
 										</Divider>
 										<ArgumentsTable
-											api={api}
-											apiReady={apiReady}
+											api={apis?.[network]?.api}
+											apiReady={apis?.[network]?.apiReady || false}
 											network={network}
 											className='w-[500px]'
 											callData={callData}

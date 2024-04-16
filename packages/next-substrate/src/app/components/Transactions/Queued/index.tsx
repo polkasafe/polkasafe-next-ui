@@ -167,6 +167,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 							{created_at}
 						</h4> */}
 						<Transaction
+							approvalsArray={transaction.approvals}
 							multisigAddress={transaction.multisigAddress}
 							network={transaction.network}
 							totalAmount={transaction.totalAmount}

@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-syntax */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -7,12 +8,21 @@
 import '@polkadot/api-augment';
 
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { createContext, useContext, useEffect, useMemo, useState, Context, ReactNode } from 'react';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { createContext, useContext, useEffect, useMemo, useState, Context, ReactNode, useCallback } from 'react';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import getNetwork from '@next-substrate/utils/getNetwork';
+
+export interface AllNetworkApi {
+	[network: string]: {
+		api: ApiPromise | undefined;
+		apiReady: boolean;
+		network: string;
+	};
+}
 
 export interface ApiContextType {
 	api: ApiPromise | undefined;
+	apis: AllNetworkApi;
 	apiReady: boolean;
 	network: string;
 	setNetwork: React.Dispatch<React.SetStateAction<string>>;
@@ -28,6 +38,8 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 	const [api, setApi] = useState<ApiPromise>();
 	const [apiReady, setApiReady] = useState(false);
 	const [network, setNetwork] = useState(getNetwork());
+
+	const [apis, setApis] = useState<AllNetworkApi>();
 
 	useEffect(() => {
 		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
@@ -49,7 +61,47 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 		}
 	}, [api]);
 
-	const value = useMemo(() => ({ api, apiReady, network, setNetwork }), [api, apiReady, network]);
+	const setApiForAllNetworks = useCallback(async () => {
+		for (const n of Object.values(networks)) {
+			const provider = new WsProvider(chainProperties[n].rpcEndpoint);
+			setApis((prev) => ({
+				...prev,
+				[n]: {
+					api: new ApiPromise({ provider }),
+					apiReady: false,
+					network: n
+				}
+			}));
+		}
+	}, []);
+
+	useEffect(() => {
+		setApiForAllNetworks();
+	}, [setApiForAllNetworks]);
+
+	useEffect(() => {
+		for (const n of Object.values(networks)) {
+			if (apis && apis[n]?.api && !apis[n].apiReady) {
+				const a = apis[n].api;
+				a.isReady
+					.then(() => {
+						setApis((prev) => ({
+							...prev,
+							[n]: {
+								...prev[n],
+								apiReady: true
+							}
+						}));
+						console.log(`API ready for network - ${n}`);
+					})
+					.catch((error) => {
+						console.error(error);
+					});
+			}
+		}
+	}, [apis]);
+
+	const value = useMemo(() => ({ api, apiReady, apis, network, setNetwork }), [api, apiReady, apis, network]);
 
 	return <ApiContext.Provider value={value}>{children}</ApiContext.Provider>;
 }

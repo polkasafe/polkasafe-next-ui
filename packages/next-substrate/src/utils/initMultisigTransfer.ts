@@ -16,6 +16,7 @@ import { calcWeight } from './calcWeight';
 import getEncodedAddress from './getEncodedAddress';
 import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
+import parseDecodedValue from './parseDecodedValue';
 
 export interface IMultiTransferResponse {
 	callData: string;
@@ -41,11 +42,13 @@ interface Args {
 	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
 	attachments?: any;
 	tip: BN;
+	addToQueue: (obj: any) => void;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export default async function initMultisigTransfer({
 	api,
+	addToQueue,
 	recipientAndAmount,
 	initiatorAddress,
 	multisig,
@@ -341,6 +344,21 @@ export default async function initMultisigTransfer({
 									header: 'Success!',
 									message: 'Transaction Successful.',
 									status: NotificationStatus.SUCCESS
+								});
+
+								addToQueue({
+									approvals: [encodedInitiatorAddress],
+									multisigAddress: multisig.address,
+									multisigNetwork: network,
+									multisigThreshold: multisig.threshold,
+									totalAmount: parseDecodedValue({
+										network,
+										value: totalAmount.toString(),
+										withUnit: false
+									}),
+									txData: transferBatchCall.method.toHex(),
+									txFields: transactionFields,
+									txHash: transferBatchCall.method.hash.toHex()
 								});
 
 								notify({
