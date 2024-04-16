@@ -57,9 +57,6 @@ export default async function getMultisigQueueTransactions(
 				const { data: multisigData } = await multisigRes.json();
 
 				const newQueueItem: IQueueItem = {
-					approvals: multisigData?.process
-						?.filter((item: any) => item.status === 'Approval')
-						.map((item: any) => item.account_display.address),
 					callData: '',
 					callHash: multisigQueueItem.call_hash,
 					created_at: dayjs(
