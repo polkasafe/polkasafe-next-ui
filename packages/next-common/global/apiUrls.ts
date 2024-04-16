@@ -7,3 +7,4 @@ export const SUBSTRATE_API_AUTH_URL = 'api/v1/substrate/auth';
 export const EVM_API_URL = 'api/v1/evm';
 export const EVM_API_AUTH_URL = 'api/v1/evm/auth';
 export const FIREBASE_FUNCTIONS_URL = 'https://us-central1-polkasafe-a8042.cloudfunctions.net';
+export const FIREBASE_FUNCTIONS_LOCAL_URL = 'http://127.0.0.1:5001/polkasafe-a8042/us-central1';

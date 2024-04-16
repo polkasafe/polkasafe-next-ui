@@ -5,7 +5,7 @@ import { responseMessages } from '@next-common/constants/response_messages';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import { IAsset } from '@next-common/types';
 import { tokenProperties } from '@next-common/constants/token_constants';
-import fetchTokenUSDValue from './fetchTokentoUSDPrice';
+// import fetchTokenUSDValue from './fetchTokentoUSDPrice';
 import formatBnBalance from './formatBnBalance';
 
 interface IResponse {
@@ -13,7 +13,11 @@ interface IResponse {
 	data: IAsset[];
 }
 
-export default async function getAssetsForAddress(address: string, network: string): Promise<IResponse> {
+export default async function getAssetsForAddress(
+	address: string,
+	network: string,
+	usdValue: string
+): Promise<IResponse> {
 	const returnValue: IResponse = {
 		data: [],
 		error: ''
@@ -35,8 +39,6 @@ export default async function getAssetsForAddress(address: string, network: stri
 		if (response?.native) {
 			await Promise.all(
 				response.native.map(async (asset) => {
-					const usdValue = await fetchTokenUSDValue(1, network);
-
 					const newAsset: IAsset = {
 						balance_token: formatBnBalance(
 							asset.balance,

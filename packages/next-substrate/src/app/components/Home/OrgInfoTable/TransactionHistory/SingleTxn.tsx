@@ -7,7 +7,6 @@ import shortenAddress from '@next-evm/utils/shortenAddress';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
-import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import { ApiPromise, WsProvider } from '@polkadot/api';
@@ -25,7 +24,7 @@ const SingleTxn = ({
 	network,
 	transaction // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IHistoryTransactions) => {
-	const { currency, currencyPrice } = useGlobalCurrencyContext();
+	const { currency, currencyPrice, tokensUsdPrice } = useGlobalCurrencyContext();
 	const { activeOrg } = useActiveOrgContext();
 	const [amountUSD, setAmountUSD] = useState<string>('');
 	const [api, setApi] = useState<ApiPromise>();
@@ -38,10 +37,8 @@ const SingleTxn = ({
 	}, [network]);
 
 	useEffect(() => {
-		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
-			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
-		});
-	}, [network]);
+		setAmountUSD(parseFloat(tokensUsdPrice[network]?.value?.toString()).toFixed(2));
+	}, [network, tokensUsdPrice]);
 
 	const sent = transaction.from === multisigAddress;
 	let decodedCallData = null;

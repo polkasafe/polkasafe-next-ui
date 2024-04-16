@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import dayjs from 'dayjs';
-import React, { useEffect, useState, FC, useCallback } from 'react';
+import React, { useEffect, useState, FC } from 'react';
 import { usePathname } from 'next/navigation';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
@@ -12,12 +12,12 @@ import usePagination from '@next-substrate/hooks/usePagination';
 import { ITransaction } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import Pagination from '@next-common/ui-components/Pagination';
-import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisigHistoricalTransactions';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import useFetch from '@next-substrate/hooks/useFetch';
 import ExportTransactionsHistory, { EExportType } from './ExportTransactionsHistory';
 
 import NoTransactionsHistory from './NoTransactionsHistory';
@@ -45,11 +45,13 @@ const History: FC<IHistory> = ({
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
 	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
-	const { currencyPrice } = useGlobalCurrencyContext();
+	const { currencyPrice, tokensUsdPrice } = useGlobalCurrencyContext();
 	const { activeOrg } = useActiveOrgContext();
 	const multisig = activeOrg?.multisigs?.find(
 		(item) => item.address === activeMultisig || item.proxy === activeMultisig
 	);
+
+	const multisigs = activeOrg?.multisigs?.map((item) => ({ address: item.address, network: item.network }));
 
 	const network = multisig?.network || networks.POLKADOT;
 
@@ -58,13 +60,50 @@ const History: FC<IHistory> = ({
 	const [transactions, setTransactions] = useState<ITransaction[]>();
 	const [amountUSD, setAmountUSD] = useState<string>('');
 
+	const {
+		data: historyData,
+		// error,
+		loading: historyLoading,
+		refetch: historyRefetch
+	} = useFetch<{ count: number; transactions: ITransaction[] }>({
+		body: {
+			limit: 10,
+			multisigs: multisigs && multisigs.length > 0 ? multisigs : null,
+			page: 1
+		},
+		cache: {
+			enabled: true,
+			tte: 3600
+		},
+		headers: firebaseFunctionsHeader(),
+		initialEnabled: false,
+		key: `all-history-txns-${activeOrg?.id}`,
+		url: `${FIREBASE_FUNCTIONS_URL}/getHistoryTransactionForOrg_substrate`
+	});
+
+	useEffect(
+		() => {
+			if (activeMultisig || !activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0) return;
+			historyRefetch();
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[activeOrg, activeOrg?.id]
+	);
+
+	useEffect(() => {
+		if (!historyData || !historyData.transactions) return;
+
+		const sorted = historyData.transactions.sort((a, b) =>
+			dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1
+		);
+		setTransactions(sorted);
+	}, [historyData]);
+
 	useEffect(() => {
 		if (!userAddress || !activeMultisig) return;
 
-		fetchTokenToUSDPrice(1, network).then((formattedUSD) => {
-			setAmountUSD(parseFloat(formattedUSD).toFixed(2));
-		});
-	}, [activeMultisig, network, userAddress]);
+		setAmountUSD(parseFloat(tokensUsdPrice[network]?.value?.toString())?.toFixed(2));
+	}, [activeMultisig, network, tokensUsdPrice, userAddress]);
 
 	useEffect(() => {
 		const hash = pathname.slice(1);
@@ -73,44 +112,6 @@ const History: FC<IHistory> = ({
 			elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
 	}, [pathname, transactions]);
-
-	const fetchAllTransactions = useCallback(async () => {
-		if (activeMultisig || !activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0) return;
-
-		const allTxns = [];
-		setLoading(true);
-		await Promise.all(
-			// eslint-disable-next-line @typescript-eslint/no-shadow
-			activeOrg.multisigs.map(async (multisig) => {
-				const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
-					body: JSON.stringify({
-						limit: multisig.proxy ? 5 : 10,
-						multisigAddress: multisig?.address,
-						network: multisig?.network,
-						page: 1
-					}),
-					headers: firebaseFunctionsHeader(),
-					method: 'POST'
-				});
-				const { data: historyData, error: historyError } = (await createOrgRes.json()) as {
-					data: { count: number; transactions: ITransaction[] };
-					error: string;
-				};
-				if (historyData?.transactions && !historyError) {
-					historyData.transactions.forEach((item) =>
-						allTxns.push({ ...item, multisigAddress: multisig.address, network: multisig.network })
-					);
-				}
-			})
-		);
-		setLoading(false);
-		setTransactions(allTxns);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig, activeOrg]);
-
-	useEffect(() => {
-		fetchAllTransactions();
-	}, [fetchAllTransactions]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
@@ -215,7 +216,7 @@ const History: FC<IHistory> = ({
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [transactions]);
 
-	if (loading) return <Loader size='large' />;
+	if (loading || historyLoading) return <Loader size='large' />;
 
 	return (
 		<>

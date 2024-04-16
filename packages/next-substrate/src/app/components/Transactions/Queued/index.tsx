@@ -14,6 +14,7 @@ import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import getMultisigQueueTransactions from '@next-substrate/utils/getMultisigQueueTransactions';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import useFetch from '@next-substrate/hooks/useFetch';
 import NoTransactionsQueued from './NoTransactionsQueued';
 import Transaction from './Transaction';
 
@@ -33,9 +34,48 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueueItem[]>([]);
 	const pathname = usePathname();
 
+	const multisigs = activeOrg?.multisigs?.map((item) => ({ address: item.address, network: item.network }));
+
 	const multisig = activeOrg?.multisigs?.find(
 		(item) => item.address === activeMultisig || item.proxy === activeMultisig
 	);
+
+	const {
+		data: queueData,
+		// error,
+		loading: queueLoading,
+		refetch: queueRefetch
+	} = useFetch<IQueueItem[]>({
+		body: {
+			limit: 10,
+			multisigs: multisigs && multisigs.length > 0 ? multisigs : null,
+			page: 1
+		},
+		cache: {
+			enabled: true,
+			tte: 3600
+		},
+		headers: firebaseFunctionsHeader(),
+		initialEnabled: false,
+		key: `all-queue-txns-${activeOrg?.id}`,
+		url: `${FIREBASE_FUNCTIONS_URL}/getQueueTransactionForOrg_substrate`
+	});
+
+	useEffect(
+		() => {
+			if (activeMultisig || !activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0) return;
+			queueRefetch();
+		},
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+		[activeOrg, activeOrg?.id]
+	);
+
+	useEffect(() => {
+		if (!queueData) return;
+
+		const sorted = queueData.sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1));
+		setQueuedTransactions(sorted);
+	}, [queueData]);
 
 	useEffect(() => {
 		const hash = pathname.slice(1);
@@ -44,49 +84,6 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 			elem.scrollIntoView({ behavior: 'smooth', block: 'start' });
 		}
 	}, [queuedTransactions, pathname]);
-
-	const fetchAllTransactions = useCallback(async () => {
-		if (activeMultisig || !activeOrg || !activeOrg.multisigs || activeOrg.multisigs?.length === 0) return;
-		const allTxns = [];
-		setLoading(true);
-		await Promise.all(
-			// eslint-disable-next-line @typescript-eslint/no-shadow
-			activeOrg.multisigs.map(async (multisig) => {
-				const queueTxnsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getQueueTransaction_substrate`, {
-					body: JSON.stringify({
-						limit: 10,
-						multisigAddress: multisig?.address,
-						network: multisig.network,
-						page: 1
-					}),
-					headers: firebaseFunctionsHeader(),
-					method: 'POST'
-				});
-				const { data: queueTransactions, error: queueTransactionsError } = (await queueTxnsRes.json()) as {
-					data: IQueueItem[];
-					error: string;
-				};
-				if (queueTransactionsError) {
-					setLoading(false);
-					return;
-				}
-
-				if (queueTransactions) {
-					queueTransactions.forEach((item) =>
-						allTxns.push({ ...item, multisigAddress: multisig.address, network: multisig.network })
-					);
-					setLoading(false);
-				}
-			})
-		);
-		setLoading(false);
-		const sorted = [...allTxns].sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1));
-		setQueuedTransactions(sorted);
-	}, [activeMultisig, activeOrg, setLoading]);
-
-	useEffect(() => {
-		fetchAllTransactions();
-	}, [fetchAllTransactions, refetch]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const fetchQueuedTransactions = useCallback(async () => {
@@ -156,7 +153,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 		fetchQueuedTransactions();
 	}, [fetchQueuedTransactions, refetch]);
 
-	if (loading) return <Loader size='large' />;
+	if (queueLoading || loading) return <Loader size='large' />;
 
 	return queuedTransactions && queuedTransactions.length > 0 ? (
 		<div className='flex flex-col gap-y-[10px]'>

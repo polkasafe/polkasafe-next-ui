@@ -30,13 +30,13 @@ export default function Providers({ children }: { children?: ReactNode }) {
 								<ActiveMultisigProvider>
 									<AddMultisigProvider>
 										<ActiveOrgProvider>
-											<MultisigAssetsProvider>
-												<CacheProvider>
+											<CacheProvider>
+												<MultisigAssetsProvider>
 													<DAppContextProvider>
 														<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
 													</DAppContextProvider>
-												</CacheProvider>
-											</MultisigAssetsProvider>
+												</MultisigAssetsProvider>
+											</CacheProvider>
 										</ActiveOrgProvider>
 									</AddMultisigProvider>
 								</ActiveMultisigProvider>
