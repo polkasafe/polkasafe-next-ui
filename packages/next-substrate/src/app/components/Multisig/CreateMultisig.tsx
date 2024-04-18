@@ -348,7 +348,16 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 												!getSubstrateAddress(addAddress) ||
 												activeOrg?.addressBook?.some((item) => item.address === getEncodedAddress(addAddress, network))
 											}
-											onClick={() => setShowAddressModal(true)}
+											onClick={
+												activeOrg && activeOrg.id
+													? () => setShowAddressModal(true)
+													: () => {
+															if (!signatories.includes(addAddress) && getSubstrateAddress(addAddress)) {
+																setSignatories((prev) => [...prev, addAddress]);
+																setAddAddress('');
+															}
+													  }
+											}
 										>
 											<p className='font-normal text-sm'>Add</p>
 										</PrimaryButton>

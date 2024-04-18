@@ -19,7 +19,7 @@ const SearchMultisig = ({
 				value={addAddress}
 				onChange={(e) => setAddAddress(e.target.value)}
 				className='bg-bg-secondary placeholder-text_placeholder text-white outline-none py-2 border-none min-w-[300px]'
-				placeholder='Search by name, address or account index'
+				placeholder='Search by name, address OR Add New Address'
 			/>
 		</div>
 	);
