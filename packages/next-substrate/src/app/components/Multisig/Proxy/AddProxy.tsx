@@ -20,8 +20,8 @@ import setSigner from '@next-substrate/utils/setSigner';
 import transferAndProxyBatchAll from '@next-substrate/utils/transferAndProxyBatchAll';
 
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { ApiPromise, WsProvider } from '@polkadot/api';
-import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { networks } from '@next-common/global/networkConstants';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import Loader from '../../UserFlow/Loader';
 import AddProxySuccessScreen from './AddProxySuccessScreen';
 import AddProxyFailedScreen from './AddProxyFailedScreen';
@@ -37,8 +37,7 @@ interface IMultisigProps {
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, homepage, setProxyInProcess }) => {
 	const { address: userAddress, activeMultisig, loggedInWallet } = useGlobalUserDetailsContext();
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState(false);
+	const { apis } = useGlobalApiContext();
 	const { activeOrg } = useActiveOrgContext();
 
 	const [loading, setLoading] = useState<boolean>(false);
@@ -57,25 +56,9 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 	const [totalDeposit, setTotalDeposit] = useState<BN>(new BN(0));
 
 	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
+		if (!apis || !apis[network] || !apis[network].apiReady || !activeMultisig) return;
 
-	useEffect(() => {
-		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [api]);
-
-	useEffect(() => {
-		if (!api || !apiReady || !activeMultisig) return;
+		const { api } = apis[network];
 
 		const depositBase = api.consts.multisig.depositBase.toString();
 		const depositFactor = api.consts.multisig.depositFactor.toString();
@@ -95,12 +78,12 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 				.iadd(api.consts.proxy.proxyDepositBase as unknown as BN)
 				.add((api.consts.balances.existentialDeposit as unknown as BN).muln(2))
 		);
-	}, [activeMultisig, api, apiReady]);
+	}, [activeMultisig, apis, network]);
 
 	const createProxy = async () => {
-		if (!api || !apiReady) return;
+		if (!apis || !apis[network] || !apis[network].apiReady) return;
 
-		await setSigner(api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet);
 
 		setLoading(true);
 		console.log(formatBnBalance(reservedProxyDeposit, { numberAfterComma: 7, withUnit: true }, network));
@@ -116,7 +99,7 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 		try {
 			await transferAndProxyBatchAll({
 				amount: multisigBalance.lt(reservedProxyDeposit) ? reservedProxyDeposit.sub(multisigBalance) : new BN(0),
-				api,
+				api: apis[network].api,
 				multisigAddress: multisig?.address || activeMultisig,
 				network,
 				recepientAddress: activeMultisig,
@@ -194,8 +177,8 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 				</div>
 				<Balance
 					network={network}
-					api={api}
-					apiReady={apiReady}
+					api={apis?.[network]?.api}
+					apiReady={apis?.[network]?.apiReady}
 					address={userAddress}
 				/>
 			</div>

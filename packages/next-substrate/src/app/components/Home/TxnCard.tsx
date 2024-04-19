@@ -24,9 +24,9 @@ import shortenAddress from '@next-substrate/utils/shortenAddress';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import getMultisigQueueTransactions from '@next-substrate/utils/getMultisigQueueTransactions';
 import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisigHistoricalTransactions';
-import { ApiPromise, WsProvider } from '@polkadot/api';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 
 const TxnCard = ({
 	newTxn,
@@ -40,8 +40,7 @@ const TxnCard = ({
 	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 
 	const { activeOrg } = useActiveOrgContext();
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState(false);
+	const { apis } = useGlobalApiContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
 	const [transactions, setTransactions] = useState<ITransaction[]>();
@@ -63,30 +62,12 @@ const TxnCard = ({
 	const { tokensUsdPrice } = useGlobalCurrencyContext();
 
 	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
-
-	useEffect(() => {
-		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [api]);
-
-	useEffect(() => {
-		if (!api || !apiReady) return;
+		if (!apis || !apis[network] || !apis[network].apiReady) return;
 		if (
 			queuedTransactions.some((transaction) => {
 				let decodedCallData = null;
 				if (transaction.callData) {
-					const { data, error } = decodeCallData(transaction.callData, api) as { data: any; error: any };
+					const { data, error } = decodeCallData(transaction.callData, apis[network].api) as { data: any; error: any };
 					if (!error && data) {
 						decodedCallData = data.extrinsicCall?.toJSON();
 					}
@@ -97,7 +78,7 @@ const TxnCard = ({
 			setProxyInProcess(true);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [api, apiReady, queuedTransactions]);
+	}, [apis, network, queuedTransactions]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
@@ -244,7 +225,7 @@ const TxnCard = ({
 
 					<div className='flex flex-col bg-bg-main px-5 py-3 shadow-lg rounded-lg h-60 overflow-auto scale-90 w-[111%] origin-top-left'>
 						<h1 className='text-primary text-sm mb-4'>Pending Transactions</h1>
-						{!queueLoading && api && apiReady ? (
+						{!queueLoading && apis && apis[network] && apis[network].apiReady ? (
 							queuedTransactions && queuedTransactions.length > 0 ? (
 								queuedTransactions
 									.filter((_, i) => i < 10)
@@ -254,7 +235,10 @@ const TxnCard = ({
 										let callDataFunc = null;
 
 										if (transaction.callData) {
-											const { data, error } = decodeCallData(transaction.callData, api) as { data: any; error: any };
+											const { data, error } = decodeCallData(transaction.callData, apis[network].api) as {
+												data: any;
+												error: any;
+											};
 											if (!error && data) {
 												decodedCallData = data.extrinsicCall?.toJSON();
 												callDataFunc = data.extrinsicFn;
@@ -439,7 +423,7 @@ const TxnCard = ({
 					<div className='flex flex-col bg-bg-main px-5 py-3 shadow-lg rounded-lg h-60 scale-90 w-[111%] origin-top-left overflow-auto'>
 						<h1 className='text-primary text-sm mb-4'>Completed Transactions</h1>
 
-						{!historyLoading && api && apiReady ? (
+						{!historyLoading && apis && apis[network] && apis[network].apiReady ? (
 							transactions && transactions.length > 0 ? (
 								transactions
 									.filter((_, i) => i < 10)
@@ -450,7 +434,10 @@ const TxnCard = ({
 										let callDataFunc = null;
 
 										if (transaction.callData) {
-											const { data, error } = decodeCallData(transaction.callData, api) as { data: any; error: any };
+											const { data, error } = decodeCallData(transaction.callData, apis[network].api) as {
+												data: any;
+												error: any;
+											};
 											if (!error && data) {
 												decodedCallData = data.extrinsicCall?.toJSON();
 												callDataFunc = data.extrinsicFn;

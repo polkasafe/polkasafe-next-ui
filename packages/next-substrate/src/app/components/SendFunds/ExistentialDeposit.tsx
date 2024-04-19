@@ -25,7 +25,7 @@ import transferFunds from '@next-substrate/utils/transferFunds';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
@@ -39,8 +39,7 @@ const ExistentialDeposit = ({
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState(false);
+	const { apis } = useGlobalApiContext();
 	const { activeMultisig, loggedInWallet, address } = useGlobalUserDetailsContext();
 
 	const { activeOrg } = useActiveOrgContext();
@@ -61,25 +60,6 @@ const ExistentialDeposit = ({
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 	const [txnHash, setTxnHash] = useState<string>('');
 	const [selectedAccountBalance, setSelectedAccountBalance] = useState<string>('');
-
-	useEffect(() => {
-		console.log('netwokr', network);
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
-
-	useEffect(() => {
-		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [api]);
 
 	useEffect(() => {
 		if (!getSubstrateAddress(selectedSender)) {
@@ -117,15 +97,15 @@ const ExistentialDeposit = ({
 	};
 
 	const handleSubmit = async () => {
-		if (!api || !apiReady) return;
+		if (!apis || !apis[network] || !apis[network].apiReady) return;
 
-		await setSigner(api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet);
 
 		setLoading(true);
 		try {
 			await transferFunds({
 				amount,
-				api,
+				api: apis[network].api,
 				network,
 				recepientAddress: multisig?.address || activeMultisig,
 				senderAddress: getSubstrateAddress(selectedSender) || selectedSender,
@@ -191,8 +171,8 @@ const ExistentialDeposit = ({
 					/>
 					<Balance
 						network={network}
-						api={api}
-						apiReady={apiReady}
+						api={apis?.[network]?.api}
+						apiReady={apis?.[network]?.apiReady}
 						address={multisig?.address || activeMultisig}
 					/>
 				</div>
@@ -203,8 +183,8 @@ const ExistentialDeposit = ({
 							<label className='text-primary font-normal text-xs leading-[13px] block'>Sending from</label>
 							<Balance
 								network={network}
-								api={api}
-								apiReady={apiReady}
+								api={apis?.[network]?.api}
+								apiReady={apis?.[network]?.apiReady}
 								address={selectedSender}
 								onChange={setSelectedAccountBalance}
 							/>

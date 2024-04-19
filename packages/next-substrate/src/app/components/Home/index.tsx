@@ -27,10 +27,10 @@ import hasExistentialDeposit from '@next-substrate/utils/hasExistentialDeposit';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
-import { chainProperties, networks } from '@next-common/global/networkConstants';
-import { ApiPromise, WsProvider } from '@polkadot/api';
+import { networks } from '@next-common/global/networkConstants';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import AddMultisigModal from '../Multisig/AddMultisigModal';
 import OrganisationAssets from './OrganisationAssetsCard';
 import OrgInfoTable from './OrgInfoTable';
@@ -46,8 +46,7 @@ const Home = ({ className }: { className?: string }) => {
 		sharedMultisigInfo,
 		setUserDetailsContextState
 	} = useGlobalUserDetailsContext();
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState(false);
+	const { apis } = useGlobalApiContext();
 	const { openProxyModal, setOpenProxyModal } = useAddMultisigContext();
 	const [newTxn, setNewTxn] = useState<boolean>(false);
 	const [openNewUserModal, setOpenNewUserModal] = useState(false);
@@ -69,24 +68,6 @@ const Home = ({ className }: { className?: string }) => {
 		const m = activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
 		setNetwork(m?.network || networks.POLKADOT);
 	}, [activeMultisig, activeOrg?.multisigs]);
-
-	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
-
-	useEffect(() => {
-		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [api]);
 
 	const handleMultisigCreate = async (proxyAddress: string) => {
 		try {
@@ -189,11 +170,15 @@ const Home = ({ className }: { className?: string }) => {
 
 	useEffect(() => {
 		const handleNewTransaction = async () => {
-			if (!api || !apiReady || !activeMultisig) return;
+			if (!apis || !apis[network] || !apis[network].apiReady || !activeMultisig) return;
 
 			setTransactionLoading(true);
 			// check if wallet has existential deposit
-			const hasExistentialDepositRes = await hasExistentialDeposit(api, multisig?.address || activeMultisig, network);
+			const hasExistentialDepositRes = await hasExistentialDeposit(
+				apis[network].api,
+				multisig?.address || activeMultisig,
+				network
+			);
 
 			if (!hasExistentialDepositRes) {
 				setIsOnchain(false);
@@ -204,7 +189,7 @@ const Home = ({ className }: { className?: string }) => {
 			setTransactionLoading(false);
 		};
 		handleNewTransaction();
-	}, [activeMultisig, api, apiReady, network, multisig, newTxn]);
+	}, [activeMultisig, network, multisig, newTxn, apis]);
 
 	useEffect(() => {
 		if (!isOnchain && userAddress && activeMultisig) {

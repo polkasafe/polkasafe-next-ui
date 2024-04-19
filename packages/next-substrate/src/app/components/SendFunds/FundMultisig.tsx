@@ -23,10 +23,10 @@ import setSigner from '@next-substrate/utils/setSigner';
 import transferFunds from '@next-substrate/utils/transferFunds';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { ApiPromise, WsProvider } from '@polkadot/api';
-import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { networks } from '@next-common/global/networkConstants';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
 const FundMultisig = ({
@@ -39,8 +39,7 @@ const FundMultisig = ({
 	setNewTxn?: React.Dispatch<React.SetStateAction<boolean>>;
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
-	const [api, setApi] = useState<ApiPromise>();
-	const [apiReady, setApiReady] = useState(false);
+	const { apis } = useGlobalApiContext();
 	const { activeMultisig, loggedInWallet, address } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
@@ -75,24 +74,6 @@ const FundMultisig = ({
 			/>
 		)
 	}));
-
-	useEffect(() => {
-		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
-		setApi(new ApiPromise({ provider }));
-	}, [network]);
-
-	useEffect(() => {
-		if (api) {
-			api.isReady
-				.then(() => {
-					setApiReady(true);
-					console.log('API ready');
-				})
-				.catch((error) => {
-					console.error(error);
-				});
-		}
-	}, [api]);
 
 	useEffect(() => {
 		if (!getSubstrateAddress(selectedSender)) {
@@ -131,17 +112,25 @@ const FundMultisig = ({
 	};
 
 	const handleSubmit = async () => {
-		if (!api || !apiReady) return;
+		if (!apis || !apis[network] || !apis[network].apiReady || !selectedMultisig || !amount) return;
 
-		await setSigner(api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet);
+
+		console.log('obj', {
+			amount,
+			api: apis[network].apiReady,
+			network,
+			recepientAddress: selectedMultisig,
+			senderAddress: getSubstrateAddress(selectedSender) || selectedSender
+		});
 
 		setLoading(true);
 		try {
 			await transferFunds({
 				amount,
-				api,
+				api: apis[network].api,
 				network,
-				recepientAddress: activeMultisig,
+				recepientAddress: selectedMultisig,
 				senderAddress: getSubstrateAddress(selectedSender) || selectedSender,
 				setLoadingMessages,
 				setTxnHash
@@ -194,8 +183,8 @@ const FundMultisig = ({
 					<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
 						Sending from
 						<Balance
-							api={api}
-							apiReady={apiReady}
+							api={apis?.[network]?.api}
+							apiReady={apis?.[network]?.apiReady}
 							network={network}
 							address={selectedMultisig}
 						/>
@@ -230,9 +219,9 @@ const FundMultisig = ({
 						<div className='flex items-center justify-between mb-2'>
 							<label className='text-primary font-normal text-xs leading-[13px] block'>Sending from</label>
 							<Balance
-								api={api}
+								api={apis?.[network]?.api}
 								network={network}
-								apiReady={apiReady}
+								apiReady={apis?.[network]?.apiReady}
 								address={selectedSender}
 								onChange={setSelectedAccountBalance}
 							/>
