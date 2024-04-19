@@ -23,6 +23,7 @@
     "@transak/transak-sdk": "^2.0.0",
     "@types/jest": "^27.0.1",
     "antd": "5.10.1",
+    "avail-js-sdk": "^0.2.11",
     "chartjs-adapter-date-fns": "^3.0.0",
     "date-fns": "^3.3.1",
     "dayjs": "^1.11.9",

@@ -31,6 +31,8 @@ import Image from 'next/image';
 import { IMultisigAndNetwork, IOrganisation } from '@next-common/types';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import { chainProperties } from '@next-common/global/networkConstants';
+import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface Props {
 	className?: string;
@@ -292,12 +294,20 @@ const Menu: FC<Props> = ({ className }) => {
 											setSelectedMultisigAddress(multisig.address);
 										}}
 									>
-										<Identicon
-											className='image identicon mx-2'
-											value={multisig.address}
-											size={23}
-											theme='polkadot'
-										/>
+										<div className='relative'>
+											<Identicon
+												className='image identicon mx-2'
+												value={multisig.address}
+												size={23}
+												theme='polkadot'
+											/>
+											<div className='absolute top-[-4px] right-0'>
+												<ParachainIcon
+													size={10}
+													src={chainProperties[multisig.network].logo}
+												/>
+											</div>
+										</div>
 										<span className='truncate'>
 											{multisigSettings?.[`${multisig.address}_${multisig.network}`]?.name || multisig.name}
 										</span>

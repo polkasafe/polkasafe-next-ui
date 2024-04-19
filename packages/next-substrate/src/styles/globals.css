@@ -318,7 +318,6 @@ input {
   color: white !important;
   padding: 12px;
   display: block !important;
-  height: auto !important;
 }
 .ant-select-selector {
   border: none !important;
