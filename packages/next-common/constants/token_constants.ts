@@ -21,13 +21,6 @@ export const tokenProperties = {
         "symbol": "ASTR",
         "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/12885.png"
     },
-    "AVL": {
-        "chainId": 1,
-        "name": "Avail Testnet",
-        "decimals": 18,
-        "symbol": "AVL",
-        "logoURI": "https://www.google.com/url?sa=i&url=https%3A%2F%2Fwww.availproject.org%2F&psig=AOvVaw0QboSRKwTK-j7M3k38hkbw&ust=1713953995566000&source=images&cd=vfe&opi=89978449&ved=0CBIQjRxqFwoTCIiIqKqO2IUDFQAAAAAdAAAAABAE"
-    },
     "WND": {
         "chainId": 1,
         "name": "Westend",
