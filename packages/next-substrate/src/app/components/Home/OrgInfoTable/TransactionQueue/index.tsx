@@ -1,19 +1,10 @@
 import NoTransactionsHistory from '@next-common/assets/icons/no-transaction-home.svg';
-import React, { useEffect } from 'react';
+import React from 'react';
 import Loader from '@next-common/ui-components/Loader';
 import { IQueueItem } from '@next-common/types';
 import SingleTxn from './SingleTxn';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
-import { networks } from '@next-common/global/networkConstants';
-import { ApiPromise } from 'avail-js-sdk';
 
 const TransactionHistory = ({ pendingTxns, loading }: { loading: boolean; pendingTxns: IQueueItem[] }) => {
-
-	const { apis } = useGlobalApiContext();
-	useEffect(() => {
-		console.log((apis[networks.AVAIL].api as ApiPromise).query.multisig.multisigs('5CzCHfzoVjwCdxTiJdksxqS3EJWchjVkQ2NsRKG9q6b6ZG8g', {}));
-	}, []);
-
 	return (
 		<div className='flex flex-col h-full'>
 			<div className='bg-bg-secondary mb-2 rounded-lg p-3 scale-90 w-[111%] origin-top-left text-text_secondary grid items-center grid-cols-9'>

@@ -249,16 +249,15 @@ const Transaction: FC<ITransactionProps> = ({
 				});
 			} else {
 				await approveMultisigTransfer({
-					amount:
-						[networks.ASTAR, networks.AVAIL].includes(network)
-							? bnToBn(decodedCallData.args.calls?.[0]?.args.value as number)
-							: new BN(
-									decodedCallData.args.value ||
-										decodedCallData?.args?.call?.args?.value ||
-										decodedCallData?.args?.calls?.[0]?.args.value ||
-										decodedCallData?.args?.call?.args?.calls?.[0]?.args?.value ||
-										0
-							  ),
+					amount: [networks.ASTAR, networks.AVAIL].includes(network)
+						? bnToBn(decodedCallData.args.calls?.[0]?.args.value as number)
+						: new BN(
+								decodedCallData.args.value ||
+									decodedCallData?.args?.call?.args?.value ||
+									decodedCallData?.args?.calls?.[0]?.args.value ||
+									decodedCallData?.args?.call?.args?.calls?.[0]?.args?.value ||
+									0
+						  ),
 					api: apis[network].api,
 					approvals,
 					approvingAddress: address,
