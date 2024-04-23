@@ -64,9 +64,10 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 
 	const setApiForAllNetworks = useCallback(async () => {
 		for (const n of Object.values(networks)) {
+			console.log(n);
 			const provider = n === networks.AVAIL ? null : new WsProvider(chainProperties[n].rpcEndpoint);
 			// eslint-disable-next-line no-await-in-loop
-			const availApi = await initialize(chainProperties[n].rpcEndpoint);
+			const availApi = n === networks.AVAIL && (await initialize(chainProperties[n].rpcEndpoint));
 			setApis((prev) => ({
 				...prev,
 				[n]: {
@@ -87,7 +88,7 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 			if (apis && apis[n]?.api && !apis[n].apiReady) {
 				const a = apis[n].api;
 				a.isReady
-					?.then(() => {
+					.then(() => {
 						setApis((prev) => ({
 							...prev,
 							[n]: {
