@@ -167,7 +167,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 						)}
 					</div>
 					<div className='text-text_secondary flex items-center gap-x-3 text-xs font-normal'>
-						<span>{shortenAddress(displayAddress || '')}</span>
+						<span>{shortenAddress(displayAddress || '', addressLength)}</span>
 						<span className='flex items-center gap-x-2'>
 							<button onClick={() => copyText(address, true, network)}>
 								<CopyIcon className='hover:text-primary' />

@@ -40,7 +40,7 @@ const BalanceInput: React.FC<Props> = ({
 	network
 }: Props) => {
 	const [isValidInput, setIsValidInput] = useState(true);
-	const [balance, setBalance] = useState<string>('');
+	const [balance, setBalance] = useState<string>(defaultValue || '');
 	const [bnBalance, setBnBalance] = useState(new BN(0));
 	const { allCurrencyPrices, tokensUsdPrice } = useGlobalCurrencyContext();
 
@@ -48,7 +48,8 @@ const BalanceInput: React.FC<Props> = ({
 
 	useEffect(() => {
 		setCurrency(network);
-	}, [network]);
+		setBalance(defaultValue || '');
+	}, [defaultValue, network]);
 
 	const tokenCurrencyPrice = !Object.values(networks).includes(currency)
 		? Number(tokensUsdPrice[network].value) * allCurrencyPrices[currencyProperties[currency]?.symbol].value
