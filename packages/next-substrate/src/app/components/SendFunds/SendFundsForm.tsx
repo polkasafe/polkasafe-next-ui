@@ -353,14 +353,18 @@ const SendFundsForm = ({
 			if (!apis || !apis[network] || !apis[network].apiReady || !address || !recipientAndAmount[0].recipient) {
 				return;
 			}
+
 			setFetchBalancesLoading(true);
 			// deposit balance
 			const depositBase = apis[network].api.consts.multisig.depositBase.toString();
 			const depositFactor = apis[network].api.consts.multisig.depositFactor.toString();
+
+			console.log({ api: apis[network].apiReady, network }, { depositBase, depositFactor });
+
 			setTotalDeposit(new BN(depositBase).add(new BN(depositFactor)));
 
 			// gas fee
-			if (!['westend', 'rococo', 'kusama'].includes(network)) {
+			if (!['westend', 'rococo', 'kusama', 'avail-testnet'].includes(network)) {
 				const txn = transferKeepAlive
 					? apis[network].api.tx.balances.transferKeepAlive(recipientAndAmount[0].recipient, amount)
 					: apis[network].api.tx.balances.transfer(recipientAndAmount[0].recipient, amount);
@@ -427,7 +431,7 @@ const SendFundsForm = ({
 			return;
 		}
 
-		await setSigner(apis[network].api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet, network);
 
 		if (!multisig) return;
 

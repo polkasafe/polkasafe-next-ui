@@ -11,7 +11,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { chainProperties } from '@next-common/global/networkConstants';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 import { IMultisigAddress, IQueueItem, ITxnCategory, ITxNotification } from '@next-common/types';
 import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';
@@ -199,7 +199,7 @@ const Transaction: FC<ITransactionProps> = ({
 			return;
 		}
 
-		await setSigner(apis[network].api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet, network);
 
 		if (!multisig) return;
 
@@ -249,16 +249,15 @@ const Transaction: FC<ITransactionProps> = ({
 				});
 			} else {
 				await approveMultisigTransfer({
-					amount:
-						network === 'astar'
-							? bnToBn(decodedCallData.args.calls?.[0]?.args.value as number)
-							: new BN(
-									decodedCallData.args.value ||
-										decodedCallData?.args?.call?.args?.value ||
-										decodedCallData?.args?.calls?.[0]?.args.value ||
-										decodedCallData?.args?.call?.args?.calls?.[0]?.args?.value ||
-										0
-							  ),
+					amount: [networks.ASTAR, networks.AVAIL].includes(network)
+						? bnToBn(decodedCallData.args.calls?.[0]?.args.value as number)
+						: new BN(
+								decodedCallData.args.value ||
+									decodedCallData?.args?.call?.args?.value ||
+									decodedCallData?.args?.calls?.[0]?.args.value ||
+									decodedCallData?.args?.call?.args?.calls?.[0]?.args?.value ||
+									0
+						  ),
 					api: apis[network].api,
 					approvals,
 					approvingAddress: address,
@@ -302,7 +301,7 @@ const Transaction: FC<ITransactionProps> = ({
 			return;
 		}
 
-		await setSigner(apis[network].api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet, network);
 
 		if (!multisig) return;
 

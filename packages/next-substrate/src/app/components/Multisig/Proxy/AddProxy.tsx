@@ -83,7 +83,7 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 	const createProxy = async () => {
 		if (!apis || !apis[network] || !apis[network].apiReady) return;
 
-		await setSigner(apis[network].api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet, network);
 
 		setLoading(true);
 		console.log(formatBnBalance(reservedProxyDeposit, { numberAfterComma: 7, withUnit: true }, network));

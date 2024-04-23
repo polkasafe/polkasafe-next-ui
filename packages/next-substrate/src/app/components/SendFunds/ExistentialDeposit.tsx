@@ -99,7 +99,7 @@ const ExistentialDeposit = ({
 	const handleSubmit = async () => {
 		if (!apis || !apis[network] || !apis[network].apiReady) return;
 
-		await setSigner(apis[network].api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet, network);
 
 		setLoading(true);
 		try {

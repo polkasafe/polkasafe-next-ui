@@ -17,7 +17,7 @@ import { BN_ZERO } from '@polkadot/util';
 import sendNotificationToAddresses from '@next-substrate/utils/sendNotificationToAddresses';
 
 interface Props {
-	api: ApiPromise;
+	api: ApiPromise | any;
 	apiReady: boolean;
 	network: string;
 	tx: SubmittableExtrinsic<'promise'>;

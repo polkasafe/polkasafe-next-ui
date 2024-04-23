@@ -6,6 +6,7 @@ import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import { IAsset } from '@next-common/types';
 import { tokenProperties } from '@next-common/constants/token_constants';
 // import fetchTokenUSDValue from './fetchTokentoUSDPrice';
+import { chainProperties } from '@next-common/global/networkConstants';
 import formatBnBalance from './formatBnBalance';
 
 interface IResponse {
@@ -62,8 +63,11 @@ export default async function getAssetsForAddress(
 										)
 								  }`
 								: '',
-						logoURI: tokenProperties[asset.symbol as keyof typeof tokenProperties]?.logoURI || '',
-						name: tokenProperties[asset.symbol as keyof typeof tokenProperties]?.name || '',
+						logoURI:
+							tokenProperties[asset.symbol as keyof typeof tokenProperties]?.logoURI ||
+							chainProperties[network].logo ||
+							'',
+						name: tokenProperties[asset.symbol as keyof typeof tokenProperties]?.name || network || '',
 						symbol: asset.symbol
 						// TODO: cache token usd value
 					};

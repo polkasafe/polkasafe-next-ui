@@ -51,7 +51,7 @@ const AssetsTable = () => {
 										<ParachainIcon src={logoURI} />
 										<span
 											title={symbol}
-											className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
+											className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden capitalize'
 										>
 											{symbol}
 										</span>
@@ -111,7 +111,7 @@ const AssetsTable = () => {
 									<ParachainIcon src={tokens[item].logo} />
 									<span
 										title={tokens[item].name}
-										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
+										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden capitalize'
 									>
 										{tokens[item].name}
 									</span>

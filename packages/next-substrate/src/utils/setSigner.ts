@@ -2,12 +2,29 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { ApiPromise } from '@polkadot/api';
 import { Injected, InjectedWindow } from '@polkadot/extension-inject/types';
 import APP_NAME from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
+import { isNumber } from '@polkadot/util';
+import { signedExtensions, types } from 'avail-js-sdk';
+import { networks } from '@next-common/global/networkConstants';
 
-export default async function setSigner(api: ApiPromise, chosenWallet: Wallet) {
+const getInjectorMetadata = (api: any) => {
+	return {
+		chain: api.runtimeChain.toString(),
+		chainType: 'substrate' as const,
+		genesisHash: api.genesisHash.toHex(),
+		icon: 'substrate',
+		specVersion: api.runtimeVersion.specVersion.toNumber(),
+		ss58Format: isNumber(api.registry.chainSS58) ? api.registry.chainSS58 : 0,
+		tokenDecimals: api.registry.chainDecimals[0] || 18,
+		tokenSymbol: api.registry.chainTokens[0] || 'AVAIL',
+		types: types as any,
+		userExtensions: signedExtensions
+	};
+};
+
+export default async function setSigner(api: any, chosenWallet: Wallet, network?: string) {
 	const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 	const wallet = injectedWindow.injectedWeb3[chosenWallet];
@@ -40,6 +57,15 @@ export default async function setSigner(api: ApiPromise, chosenWallet: Wallet) {
 	}
 	if (!injected) {
 		return;
+	}
+	if (network === networks.AVAIL) {
+		const metadata = getInjectorMetadata(api);
+		await injected.metadata.provide(metadata);
+		const inj = injected;
+		if (inj?.signer) {
+			api.setSigner(inj.signer);
+			return;
+		}
 	}
 	api.setSigner(injected.signer);
 }

@@ -16,7 +16,7 @@ import { StaticImageData } from 'next/image';
 import rococoLogo from '~assets/parachains-logos/rococo-logo.jpeg';
 import phalaLogo from '~assets/parachains-logos/phala-logo.png';
 import khalaLogo from '~assets/parachains-logos/khala-logo.png';
-// import availLogo from '~assets/parachains-logos/avail-logo.png';
+import availLogo from '~assets/parachains-logos/avail-logo.png';
 
 export type Network = (typeof networks)[keyof typeof networks];
 export type TokenSymbol = (typeof tokenSymbol)[keyof typeof tokenSymbol];
@@ -39,7 +39,7 @@ export type ChainPropType = {
 export const networks = {
 	ALEPHZERO: 'alephzero',
 	ASTAR: 'astar',
-	// AVAIL: 'avail-testnet',
+	AVAIL: 'avail-testnet',
 	KHALA: 'khala',
 	KUSAMA: 'kusama',
 	// PASEO: 'paseo',
@@ -53,7 +53,7 @@ export const networks = {
 
 export const tokenSymbol = {
 	ASTR: 'ASTR',
-	// AVL: 'AVL',
+	AVL: 'AVL',
 	AZERO: 'AZERO',
 	DOT: 'DOT',
 	KSM: 'KSM',
@@ -163,17 +163,17 @@ export const chainProperties: ChainPropType = {
 		ss58Format: 30,
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.PHA
+	},
+	[networks.AVAIL]: {
+		blockTime: 1000,
+		chainId: 0,
+		existentialDeposit: '0.00001',
+		logo: availLogo,
+		rpcEndpoint: 'wss://rpc-testnet.avail.tools/ws',
+		ss58Format: 42,
+		tokenDecimals: 18,
+		tokenSymbol: tokenSymbol.AVL
 	}
-	// [networks.AVAIL]: {
-	// blockTime: 1000,
-	// chainId: 0,
-	// existentialDeposit: '0.00001',
-	// logo: availLogo,
-	// rpcEndpoint: 'wss://rpc-testnet.avail.tools/ws',
-	// ss58Format: 42,
-	// tokenDecimals: 18,
-	// tokenSymbol: tokenSymbol.AVL
-	// }
 	// [networks.PASEO]: {
 	// blockTime: 1000,
 	// chainId: 0,
