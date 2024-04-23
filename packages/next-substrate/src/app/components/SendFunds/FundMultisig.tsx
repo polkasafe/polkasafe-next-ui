@@ -114,7 +114,7 @@ const FundMultisig = ({
 	const handleSubmit = async () => {
 		if (!apis || !apis[network] || !apis[network].apiReady || !selectedMultisig || !amount) return;
 
-		await setSigner(apis[network].api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet, network);
 
 		console.log('obj', {
 			amount,

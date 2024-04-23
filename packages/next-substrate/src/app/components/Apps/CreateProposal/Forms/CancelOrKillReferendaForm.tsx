@@ -82,7 +82,7 @@ export default function CancelOrKillReferendaForm({
 				{ Lookup: { hash: proposalPreImage.preimageHash, len: proposalPreImage.preimageLength } },
 				{ After: BN_HUNDRED }
 			);
-			const mainTx = api.tx.utility.batchAll([preImageTx, proposalTx]);
+			const mainTx = api.tx.utility.batchAll([preImageTx, proposalTx as any]);
 
 			const data = await executeTx({
 				address,
@@ -94,7 +94,7 @@ export default function CancelOrKillReferendaForm({
 				setLoadingMessages: (message: string) => {
 					setLoadingStatus({ isLoading: true, message });
 				},
-				tx: mainTx
+				tx: mainTx as any
 			});
 			seTransactionData({ ...data, network: currentMultisig?.network });
 		} catch (err) {
@@ -169,7 +169,7 @@ export default function CancelOrKillReferendaForm({
 	useEffect(() => {
 		if (!api || !apiReady) return;
 		const userSubmissionDeposit = api?.consts?.referenda?.submissionDeposit || ZERO_BN;
-		setSubmissionDeposit(userSubmissionDeposit);
+		setSubmissionDeposit(userSubmissionDeposit as any);
 	}, [api, apiReady]);
 
 	return (

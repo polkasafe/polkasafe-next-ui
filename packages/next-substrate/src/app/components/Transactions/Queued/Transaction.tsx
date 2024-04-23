@@ -199,7 +199,7 @@ const Transaction: FC<ITransactionProps> = ({
 			return;
 		}
 
-		await setSigner(apis[network].api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet, network);
 
 		if (!multisig) return;
 
@@ -302,7 +302,7 @@ const Transaction: FC<ITransactionProps> = ({
 			return;
 		}
 
-		await setSigner(apis[network].api, loggedInWallet);
+		await setSigner(apis[network].api, loggedInWallet, network);
 
 		if (!multisig) return;
 
