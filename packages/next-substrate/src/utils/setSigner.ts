@@ -61,6 +61,11 @@ export default async function setSigner(api: any, chosenWallet: Wallet, network?
 	if (network === networks.AVAIL) {
 		const metadata = getInjectorMetadata(api);
 		await injected.metadata.provide(metadata);
+		const inj = injected;
+		if (inj?.signer) {
+			api.setSigner(inj.signer);
+			return;
+		}
 	}
 	api.setSigner(injected.signer);
 }

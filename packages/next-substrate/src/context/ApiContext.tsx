@@ -11,7 +11,7 @@ import { ApiPromise, WsProvider } from '@polkadot/api';
 import { createContext, useContext, useEffect, useMemo, useState, Context, ReactNode, useCallback } from 'react';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
 import getNetwork from '@next-substrate/utils/getNetwork';
-import { initialize, ApiPromise as AvailApiPromise } from 'avail-js-sdk';
+import { initialize } from 'avail-js-sdk';
 
 export interface AllNetworkApi {
 	[network: string]: {
@@ -22,7 +22,7 @@ export interface AllNetworkApi {
 }
 
 export interface ApiContextType {
-	api: ApiPromise | undefined | AvailApiPromise;
+	api: ApiPromise | undefined;
 	apis: AllNetworkApi;
 	apiReady: boolean;
 	network: string;
@@ -64,12 +64,13 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 
 	const setApiForAllNetworks = useCallback(async () => {
 		for (const n of Object.values(networks)) {
-			const provider = network === networks.AVAIL ? null : new WsProvider(chainProperties[n].rpcEndpoint);
-			const availApi = initialize(chainProperties[n].rpcEndpoint);
+			const provider = n === networks.AVAIL ? null : new WsProvider(chainProperties[n].rpcEndpoint);
+			// eslint-disable-next-line no-await-in-loop
+			const availApi = await initialize(chainProperties[n].rpcEndpoint);
 			setApis((prev) => ({
 				...prev,
 				[n]: {
-					api: network === networks.AVAIL ? availApi : new ApiPromise({ provider }),
+					api: n === networks.AVAIL ? availApi : new ApiPromise({ provider }),
 					apiReady: false,
 					network: n
 				}
@@ -86,7 +87,7 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 			if (apis && apis[n]?.api && !apis[n].apiReady) {
 				const a = apis[n].api;
 				a.isReady
-					.then(() => {
+					?.then(() => {
 						setApis((prev) => ({
 							...prev,
 							[n]: {
