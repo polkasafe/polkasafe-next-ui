@@ -10,7 +10,7 @@ const LayoutWrapper = ({ children }: { children: React.ReactNode }) => {
 	const { ready, authenticated } = usePrivy();
 	const router = useRouter();
 
-	const disabled = typeof window !== 'undefined' && window.innerWidth <= 800;
+	const disabled = typeof window !== 'undefined';
 
 	useEffect(() => {
 		if (ready && !!router.push) {
