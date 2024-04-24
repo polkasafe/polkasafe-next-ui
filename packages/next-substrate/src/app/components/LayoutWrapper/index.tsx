@@ -8,7 +8,7 @@ const LayoutWrapper = ({ children }: { children: React.ReactNode }) => {
 	const [isLayoutReady, setIsLayoutReady] = useState<boolean>(false);
 	const router = useRouter();
 
-	const disabled = typeof window !== 'undefined' && window.innerWidth <= 800;
+	const disabled = typeof window !== 'undefined';
 
 	useEffect(() => {
 		if (router.push) {
