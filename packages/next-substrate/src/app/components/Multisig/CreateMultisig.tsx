@@ -33,6 +33,7 @@ import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import _createMultisig from '@next-substrate/utils/_createMultisig';
 import AddAddress from '../AddressBook/AddAddress';
 import DragDrop from './DragDrop';
 import Search from './Search';
@@ -47,12 +48,7 @@ interface IMultisigProps {
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, onComplete }) => {
-	const {
-		setUserDetailsContextState,
-		address: userAddress,
-		multisigAddresses,
-		loggedInWallet
-	} = useGlobalUserDetailsContext();
+	const { setUserDetailsContextState, address: userAddress, loggedInWallet } = useGlobalUserDetailsContext();
 	const { setOpenProxyModal } = useAddMultisigContext();
 	const { activeOrg } = useActiveOrgContext();
 
@@ -166,6 +162,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 		}
 	};
 
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleMultisigCreate = async () => {
 		try {
 			const address = localStorage.getItem('address');
@@ -174,6 +171,23 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 			if (!address) {
 				console.log('ERROR');
 			} else {
+				const { multisigAddress } = _createMultisig(
+					signatories,
+					Number(threshold),
+					chainProperties[network].ss58Format
+				);
+				if (
+					activeOrg?.multisigs?.some(
+						(item) => item.address === multisigAddress && item.network === network && !item.disabled
+					)
+				) {
+					queueNotification({
+						header: 'Multisig Exists in this Organisation!',
+						message: `${multisigAddress}`,
+						status: NotificationStatus.WARNING
+					});
+					return;
+				}
 				setLoading(true);
 				setLoadingMessages('Creating Your Multisig.');
 				const newRecords: { [address: string]: ISharedAddressBookRecord } = {};
@@ -221,7 +235,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 
 				if (multisigData) {
 					if (
-						multisigAddresses?.some(
+						activeOrg?.multisigs?.some(
 							(item) => item.address === multisigData.address && item.network === multisigData.network && !item.disabled
 						)
 					) {
