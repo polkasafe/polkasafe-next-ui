@@ -92,9 +92,12 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 				);
 
 				if (data && !error) {
+					const fiatTotal = data.reduce((sum, item) => {
+						return sum + Number(item.balance_usd);
+					}, 0);
 					setAllAssets((prev) => ({
 						...prev,
-						[account.address]: { assets: data, fiatTotal: '0' }
+						[account.address]: { assets: data, fiatTotal: String(fiatTotal) }
 					}));
 				}
 
