@@ -108,12 +108,14 @@ const BalanceHistory = ({
 	// labels: sortedIncomingTxns?.map((item) => item.timestamp)
 	// };
 
+	console.log('id', id, allAssets);
+
 	return (
 		<>
 			<div className='mb-4'>
 				<p className='text-xs text-text_secondary mb-1'>Total Balance</p>
 				<p className='text-[22px] font-bold text-white'>
-					$ {formatBalance(Number(allAssets[id]?.fiatTotal || organisationBalance?.total))}
+					$ {formatBalance(Number(allAssets[id.split('_')[0]]?.fiatTotal || organisationBalance?.total))}
 				</p>
 			</div>
 			{/* <Segmented

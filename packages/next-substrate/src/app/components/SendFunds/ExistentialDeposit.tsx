@@ -16,8 +16,7 @@ import AddressComponent from '@next-common/ui-components/AddressComponent';
 import AddressQr from '@next-common/ui-components/AddressQr';
 import Balance from '@next-common/ui-components/Balance';
 import BalanceInput from '@next-common/ui-components/BalanceInput';
-import { CopyIcon, QRIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
-import copyText from '@next-substrate/utils/copyText';
+import { OutlineCloseIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import setSigner from '@next-substrate/utils/setSigner';
@@ -48,7 +47,8 @@ const ExistentialDeposit = ({
 	);
 
 	const { accounts } = useGetWalletAccounts(loggedInWallet);
-	const network = multisig.network || networks.POLKADOT;
+
+	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
 
 	const [selectedSender, setSelectedSender] = useState(getEncodedAddress(address, network) || '');
 	const [amount, setAmount] = useState(new BN(0));
@@ -60,6 +60,12 @@ const ExistentialDeposit = ({
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 	const [txnHash, setTxnHash] = useState<string>('');
 	const [selectedAccountBalance, setSelectedAccountBalance] = useState<string>('');
+
+	useEffect(() => {
+		if (!activeOrg || !activeOrg.multisigs) return;
+		const m = activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+		setNetwork(m?.network);
+	}, [activeMultisig, activeOrg]);
 
 	useEffect(() => {
 		if (!getSubstrateAddress(selectedSender)) {
@@ -74,6 +80,8 @@ const ExistentialDeposit = ({
 			<AddressComponent
 				name={account.name}
 				address={account.address}
+				network={network}
+				addressLength={10}
 			/>
 		),
 		value: account.address
@@ -97,7 +105,9 @@ const ExistentialDeposit = ({
 	};
 
 	const handleSubmit = async () => {
-		if (!apis || !apis[network] || !apis[network].apiReady) return;
+		if (!apis || !apis[network] || !apis[network].apiReady || !network) return;
+
+		console.log('network', network);
 
 		await setSigner(apis[network].api, loggedInWallet, network);
 
@@ -199,23 +209,42 @@ const ExistentialDeposit = ({
 									validateStatus={selectedSender && isValidSender ? 'success' : 'error'}
 								>
 									<div className='flex items-center'>
-										<AutoComplete
-											filterOption
-											onClick={addSenderHeading}
-											options={autocompleteAddresses}
-											id='sender'
-											placeholder='Send from Address..'
-											onChange={(value) => setSelectedSender(value)}
-											defaultValue={getEncodedAddress(address, network) || ''}
-										/>
-										<div className='absolute right-2'>
-											<button onClick={() => copyText(selectedSender, true, network)}>
-												<CopyIcon className='mr-2 text-primary' />
-											</button>
-											<button onClick={() => setShowQrModal(true)}>
-												<QRIcon className='text-text_secondary' />
-											</button>
-										</div>
+										{selectedSender &&
+										autocompleteAddresses.some(
+											(item) =>
+												item.value && getSubstrateAddress(String(item.value)) === getSubstrateAddress(selectedSender)
+										) ? (
+											<div className='border border-solid border-primary rounded-lg px-2 h-[50px] w-full flex justify-between items-center'>
+												{
+													autocompleteAddresses.find(
+														(item) =>
+															item.value &&
+															getSubstrateAddress(String(item.value)) === getSubstrateAddress(selectedSender)
+													)?.label
+												}
+												<button
+													className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center z-100'
+													onClick={() => {
+														setSelectedSender('');
+													}}
+												>
+													<OutlineCloseIcon className='text-primary w-2 h-2' />
+												</button>
+											</div>
+										) : (
+											<AutoComplete
+												autoFocus
+												defaultOpen
+												filterOption
+												className='[&>div>span>input]:px-[12px]'
+												onClick={addSenderHeading}
+												options={autocompleteAddresses}
+												id='sender'
+												placeholder='Send from Address..'
+												onChange={(value) => setSelectedSender(value)}
+												value={selectedSender}
+											/>
+										)}
 									</div>
 								</Form.Item>
 							</div>
@@ -250,11 +279,8 @@ const ExistentialDeposit = ({
 											className='text-sm font-normal leading-[15px] outline-0 p-2.5 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white pr-24'
 											id='existential_deposit'
 										/>
-										<div className='absolute right-0 text-white px-3 flex items-center justify-center'>
-											<ParachainIcon
-												src={chainProperties[network].logo}
-												className='mr-2'
-											/>
+										<div className='absolute right-0 text-white px-3 flex items-center justify-center gap-x-2'>
+											<ParachainIcon src={chainProperties[network].logo} />
 											<span>{chainProperties[network].tokenSymbol}</span>
 										</div>
 									</div>

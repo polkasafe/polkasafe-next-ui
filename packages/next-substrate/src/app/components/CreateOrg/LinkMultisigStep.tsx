@@ -186,7 +186,11 @@ const LinkMultisigStep = ({
 					) : multisigs && multisigs.length > 0 ? (
 						multisigs
 							.filter((multisig) =>
-								selectedOrg ? !selectedOrg?.multisigs?.some((item) => multisig.address === item.address) : true
+								selectedOrg
+									? !selectedOrg?.multisigs?.some(
+											(item) => multisig.address === item.address && item.network === selectedNetwork
+									  )
+									: true
 							)
 							.filter((multisig) => !linkedMultisigs.some((item) => multisig.address === item.address))
 							.map((multisig) => (
