@@ -108,8 +108,6 @@ const BalanceHistory = ({
 	// labels: sortedIncomingTxns?.map((item) => item.timestamp)
 	// };
 
-	console.log('id', id, allAssets);
-
 	return (
 		<>
 			<div className='mb-4'>

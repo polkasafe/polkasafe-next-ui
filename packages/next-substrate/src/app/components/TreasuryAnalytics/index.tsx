@@ -198,7 +198,6 @@ const TreasuryAnalytics = () => {
 								</div>
 							) : (
 								<AddressComponent
-									onlyAddress
 									isMultisig
 									addressLength={5}
 									iconSize={18}
