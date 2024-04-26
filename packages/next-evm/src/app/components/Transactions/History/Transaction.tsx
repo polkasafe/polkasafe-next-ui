@@ -445,6 +445,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								transactionFieldsObject={transactionFieldsObject}
 								setTransactionFieldsObject={setTransactionFieldsObject}
 								multisigAddress={multisig.address}
+								network={network}
 							/>
 						</p>
 						<p className='col-span-1 flex items-center justify-end gap-x-4'>

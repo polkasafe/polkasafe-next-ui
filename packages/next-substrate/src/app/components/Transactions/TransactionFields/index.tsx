@@ -36,7 +36,8 @@ const TransactionFields = ({
 	multisigAddress,
 	setCategory,
 	transactionFieldsObject,
-	setTransactionFieldsObject
+	setTransactionFieldsObject,
+	network
 }: {
 	category: string;
 	callHash: string;
@@ -44,6 +45,7 @@ const TransactionFields = ({
 	setCategory: React.Dispatch<React.SetStateAction<string>>;
 	transactionFieldsObject: ITxnCategory;
 	setTransactionFieldsObject: React.Dispatch<React.SetStateAction<ITxnCategory>>;
+	network: string;
 }) => {
 	const { userID } = useGlobalUserDetailsContext();
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
@@ -130,6 +132,7 @@ const TransactionFields = ({
 					body: JSON.stringify({
 						callHash,
 						multisigAddress,
+						network,
 						transactionFields: { category: c, subfields: {} }
 					}),
 					headers: firebaseFunctionsHeader(),
@@ -189,6 +192,7 @@ const TransactionFields = ({
 				<EditTransactionFieldsModal
 					onCancel={() => setOpenUpdateTransactionCategoryModal(false)}
 					multisigAddress={multisigAddress}
+					network={network}
 					callHash={callHash}
 					defaultCategory={category}
 					defaultTransactionFields={{

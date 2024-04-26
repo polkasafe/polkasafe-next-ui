@@ -163,6 +163,7 @@ const Transaction: FC<ITransaction> = ({
 								transactionFieldsObject={transactionFieldsObject}
 								setTransactionFieldsObject={setTransactionFieldsObject}
 								multisigAddress={multisigAddress}
+								network={network}
 							/>
 						</p>
 						<p className='col-span-2 flex items-center justify-end gap-x-4'>

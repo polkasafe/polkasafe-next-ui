@@ -12,6 +12,7 @@ import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import { useWallets } from '@privy-io/react-auth';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 import EditTransactionFieldsModal from './EditTransactionFieldsModal';
 
 export const generateCategoryKey = (category: string) => {
@@ -35,6 +36,7 @@ const TransactionFields = ({
 	category,
 	callHash,
 	multisigAddress,
+	network,
 	setCategory,
 	transactionFieldsObject,
 	setTransactionFieldsObject
@@ -42,6 +44,7 @@ const TransactionFields = ({
 	category: string;
 	callHash: string;
 	multisigAddress: string;
+	network: NETWORK;
 	setCategory: React.Dispatch<React.SetStateAction<string>>;
 	transactionFieldsObject: ITxnCategory;
 	setTransactionFieldsObject: React.Dispatch<React.SetStateAction<ITxnCategory>>;
@@ -131,6 +134,7 @@ const TransactionFields = ({
 				body: JSON.stringify({
 					callHash,
 					multisigAddress,
+					network,
 					transactionFields: { category: c, subfields: {} }
 				}),
 				headers: firebaseFunctionsHeader(connectedWallet.address),
@@ -190,6 +194,7 @@ const TransactionFields = ({
 				<EditTransactionFieldsModal
 					onCancel={() => setOpenUpdateTransactionCategoryModal(false)}
 					multisigAddress={multisigAddress}
+					network={network}
 					callHash={callHash}
 					defaultCategory={category}
 					defaultTransactionFields={{
