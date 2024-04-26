@@ -271,6 +271,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 								transactionFieldsObject={transactionFields}
 								setTransactionFieldsObject={setTransactionFields}
 								multisigAddress={multisigAddress}
+								network={network}
 							/>
 						</div>
 						{transactionFields &&

@@ -15,11 +15,13 @@ const EditTransactionFieldsModal = ({
 	defaultTransactionFields,
 	setTransactionFields,
 	multisigAddress,
+	network,
 	callHash,
 	onCancel
 }: {
 	onCancel: () => void;
 	multisigAddress: string;
+	network: string;
 	callHash: string;
 	defaultCategory: string;
 	defaultTransactionFields?: ITxnCategory;
@@ -71,6 +73,7 @@ const EditTransactionFieldsModal = ({
 						body: JSON.stringify({
 							callHash,
 							multisigAddress,
+							network,
 							transactionFields: transactionFieldsObject
 						}),
 						headers: firebaseFunctionsHeader(),
