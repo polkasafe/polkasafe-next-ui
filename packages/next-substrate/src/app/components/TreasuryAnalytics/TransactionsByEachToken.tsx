@@ -66,7 +66,7 @@ const TransactionsByEachToken = ({
 				return;
 			}
 			tokensData[item.network] = {
-				tokenLogoUri: chainProperties[item.network].logo,
+				tokenLogoUri: chainProperties[item.network]?.logo,
 				totalTokenAmountIncoming: Number(item.balance_token),
 				totalUsdAmountIncoming: Number(item.balance_usd),
 				totalTokenAmountOutgoing: 0,
@@ -94,7 +94,7 @@ const TransactionsByEachToken = ({
 				return;
 			}
 			tokensData[item.tokenSymbol] = {
-				tokenLogoUri: chainProperties[item.network].logo,
+				tokenLogoUri: chainProperties[item.network]?.logo,
 				totalTokenAmountIncoming: 0,
 				totalUsdAmountIncoming: 0,
 				totalTokenAmountOutgoing: Number(item.balance_token),

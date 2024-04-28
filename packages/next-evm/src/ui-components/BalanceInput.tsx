@@ -153,7 +153,7 @@ const BalanceInput = ({
 							) : (
 								<div className='absolute right-0 text-white px-3 flex gap-x-1 items-center justify-center'>
 									<ParachainIcon
-										src={chainProperties[network].logo}
+										src={chainProperties[network]?.logo}
 										size={15}
 									/>
 									<span>{chainProperties[network].tokenSymbol}</span>

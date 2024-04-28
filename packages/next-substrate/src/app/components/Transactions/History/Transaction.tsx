@@ -140,7 +140,7 @@ const Transaction: FC<ITransaction> = ({
 						</p>
 						{Number(amount_token) ? (
 							<p className='col-span-2 flex items-center gap-x-[6px]'>
-								{Boolean(amount_token) && <ParachainIcon src={chainProperties[network].logo} />}
+								{Boolean(amount_token) && <ParachainIcon src={chainProperties[network]?.logo} />}
 								<span
 									className={`font-normal text-xs leading-[13px] text-success ${type === 'Sent' && 'text-failure'}`}
 								>

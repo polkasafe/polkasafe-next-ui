@@ -319,7 +319,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 										<div className='capitalize flex items-center gap-x-2 text-sm'>
 											<ParachainIcon
 												size={20}
-												src={chainProperties[selectedNetwork].logo}
+												src={chainProperties[selectedNetwork]?.logo}
 											/>
 											{selectedNetwork}
 										</div>

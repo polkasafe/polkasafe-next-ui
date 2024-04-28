@@ -118,7 +118,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 								key={item}
 							>
 								<div className='col-span-1 flex items-center'>
-									<ParachainIcon src={tokens[item].logo} />
+									<ParachainIcon src={tokens[item]?.logo} />
 									<span
 										title={tokens[item].name}
 										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden'
@@ -153,7 +153,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 								<PrimaryButton
 									onClick={() => {
 										setOpenTransactionModal(true);
-										setSeletedToken({ ...tokens[item], logoURI: tokens[item].logo, symbol: tokens[item].tokenSymbol });
+										setSeletedToken({ ...tokens[item], logoURI: tokens[item]?.logo, symbol: tokens[item].tokenSymbol });
 									}}
 									className='text-white w-fit'
 									// disabled={notOwnerOfSafe}

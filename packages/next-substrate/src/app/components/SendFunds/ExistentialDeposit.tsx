@@ -279,8 +279,11 @@ const ExistentialDeposit = ({
 											className='text-sm font-normal leading-[15px] outline-0 p-2.5 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white pr-24'
 											id='existential_deposit'
 										/>
-										<div className='absolute right-0 text-white px-3 flex items-center justify-center gap-x-2'>
-											<ParachainIcon src={chainProperties[network].logo} />
+										<div className='absolute right-0 text-white px-3 flex items-center justify-center'>
+											<ParachainIcon
+												src={chainProperties[network]?.logo}
+												className='mr-2'
+											/>
 											<span>{chainProperties[network].tokenSymbol}</span>
 										</div>
 									</div>

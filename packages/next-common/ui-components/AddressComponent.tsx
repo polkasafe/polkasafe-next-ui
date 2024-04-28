@@ -160,7 +160,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 							>
 								<ParachainIcon
 									size={6}
-									src={chainProperties[network].logo}
+									src={chainProperties[network]?.logo}
 								/>
 								{network}
 							</div>

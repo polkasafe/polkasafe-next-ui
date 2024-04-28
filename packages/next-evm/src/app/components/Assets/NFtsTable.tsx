@@ -152,7 +152,7 @@ const NFTsTable: FC<IAssetsProps> = ({ nfts }) => {
 									>
 										<ParachainIcon
 											size={23}
-											src={chainProperties[network].logo}
+											src={chainProperties[network]?.logo}
 										/>
 									</a>
 									<a

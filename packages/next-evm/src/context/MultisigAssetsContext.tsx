@@ -121,7 +121,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 							),
 							balance_usd: token?.fiatBalance,
 							fiat_conversion: token?.fiatConversion,
-							logoURI: token?.tokenInfo?.logoUri || chainProperties[account.network].logo,
+							logoURI: token?.tokenInfo?.logoUri || chainProperties[account.network]?.logo,
 							name: token?.tokenInfo?.symbol || chainProperties[account.network].tokenSymbol,
 							symbol: token?.tokenInfo?.name || chainProperties[account.network].tokenSymbol,
 							tokenAddress: token?.tokenInfo?.address,
