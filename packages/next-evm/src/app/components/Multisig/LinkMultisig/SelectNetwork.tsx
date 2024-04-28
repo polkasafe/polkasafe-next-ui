@@ -67,7 +67,7 @@ const SelectNetwork = ({
 						<div className='capitalize flex items-center gap-x-2 text-sm'>
 							<ParachainIcon
 								size={15}
-								src={chainProperties[network].logo}
+								src={chainProperties[network]?.logo}
 							/>
 							{network}
 						</div>

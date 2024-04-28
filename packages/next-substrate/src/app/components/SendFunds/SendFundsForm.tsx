@@ -920,7 +920,7 @@ const SendFundsForm = ({
 												id='existential_deposit'
 											/>
 											<div className='absolute right-0 text-white px-3 flex gap-x-1 items-center justify-center'>
-												<ParachainIcon src={chainProperties[network].logo} />
+												<ParachainIcon src={chainProperties[network]?.logo} />
 												<span>{chainProperties[network].tokenSymbol}</span>
 											</div>
 										</div>

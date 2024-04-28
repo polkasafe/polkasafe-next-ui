@@ -118,7 +118,7 @@ const BalanceInput: React.FC<Props> = ({
 			key: c,
 			label: (
 				<span className='flex items-center gap-x-2 text-white'>
-					<CurrencyFlag src={currencyProperties[c].logo} />
+					<CurrencyFlag src={currencyProperties[c]?.logo} />
 					{c} ({currencyProperties[c].symbol})
 				</span>
 			) as any
@@ -191,7 +191,7 @@ const BalanceInput: React.FC<Props> = ({
 										<div className='absolute right-0 flex cursor-pointer items-center justify-center pr-3 text-white'>
 											<CurrencyFlag
 												className='mr-2'
-												src={currencyProperties[currency].logo}
+												src={currencyProperties[currency]?.logo}
 											/>
 											<span>{currencyProperties[currency].symbol}</span>
 											<CircleArrowDownIcon className='text-primary ml-1' />

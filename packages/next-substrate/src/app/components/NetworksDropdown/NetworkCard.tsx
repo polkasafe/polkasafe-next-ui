@@ -58,7 +58,7 @@ const NetworkCard: FC<INetworkCardProps> = ({ isCardToken, onClick, selectedNetw
 			<p className='flex items-center gap-x-[6px]'>
 				<ParachainIcon
 					size={15}
-					src={chainProperties[network].logo}
+					src={chainProperties[network]?.logo}
 				/>
 				<span className={`font-medium text-sm capitalize ${isSelected ? 'text-primary' : 'text-white'}`}>
 					{isCardToken ? chainProperties[network].tokenSymbol : network}

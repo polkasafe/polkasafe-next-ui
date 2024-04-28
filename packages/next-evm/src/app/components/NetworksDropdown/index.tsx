@@ -53,7 +53,7 @@ const NetworksDropdown: FC<INetworksDropdownProps> = ({ className, isCardToken, 
 			>
 				<p className={classNames('flex items-center')}>
 					<span className={classNames('flex items-center w-4 h-4', iconClassName)}>
-						<ParachainIcon src={chainProperties[network].logo} />
+						<ParachainIcon src={chainProperties[network]?.logo} />
 					</span>
 					<span className={classNames('ml-[10px] hidden md:inline-flex capitalize', titleClassName)}>
 						{isCardToken ? chainProperties[network].tokenSymbol : chainProperties[network].displayName}

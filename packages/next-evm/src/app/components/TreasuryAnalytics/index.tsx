@@ -103,8 +103,8 @@ const TreasuryAnalytics = () => {
 								: chainProperties[multisig.network].tokenSymbol;
 
 							const tokenLogoUri = item.tokenInfo
-								? item.tokenInfo.logoUri || chainProperties[multisig.network].logo
-								: chainProperties[multisig.network].logo;
+								? item.tokenInfo.logoUri || chainProperties[multisig.network]?.logo
+								: chainProperties[multisig.network]?.logo;
 
 							let usdValue = '0';
 

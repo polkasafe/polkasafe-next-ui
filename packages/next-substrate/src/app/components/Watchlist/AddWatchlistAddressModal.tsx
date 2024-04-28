@@ -31,7 +31,7 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 		key: n,
 		label: (
 			<span className='text-white flex items-center gap-x-2 capitalize'>
-				<ParachainIcon src={chainProperties[n].logo} />
+				<ParachainIcon src={chainProperties[n]?.logo} />
 				{n}
 			</span>
 		)
@@ -189,7 +189,7 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 				>
 					<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
 						<span className='flex items-center gap-x-2 capitalize'>
-							<ParachainIcon src={chainProperties[selectedNetwork].logo} />
+							<ParachainIcon src={chainProperties[selectedNetwork]?.logo} />
 							{selectedNetwork}
 						</span>
 						<CircleArrowDownIcon className='text-primary' />

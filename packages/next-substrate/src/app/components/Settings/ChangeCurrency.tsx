@@ -42,7 +42,7 @@ const ChangeCurrency = ({
 		key: c,
 		label: (
 			<span className='text-white flex items-center gap-x-2'>
-				<CurrencyFlag src={currencyProperties[c].logo} />
+				<CurrencyFlag src={currencyProperties[c]?.logo} />
 				{small ? currencyProperties[c].symbol : `${c} (${currencyProperties[c].symbol})`}
 			</span>
 		)
@@ -95,7 +95,7 @@ const ChangeCurrency = ({
 					className={`flex justify-between gap-x-4 items-center ${small ? 'text-primary' : 'text-white'} text-[16px]`}
 				>
 					<span className='flex items-center gap-x-2'>
-						<CurrencyFlag src={currencyProperties[currency || globalCurrency].logo} />
+						<CurrencyFlag src={currencyProperties[currency || globalCurrency]?.logo} />
 						{small
 							? currencyProperties[currency || globalCurrency].symbol
 							: `${currency || globalCurrency} (${currencyProperties[currency || globalCurrency].symbol})`}

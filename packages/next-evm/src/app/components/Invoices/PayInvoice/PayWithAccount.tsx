@@ -87,7 +87,7 @@ const PayWithAccount = ({
 						),
 						balance_usd: String(t?.quote),
 						fiat_conversion: String(t?.quote_rate),
-						logoURI: t?.logo_url || chainProperties[network].logo,
+						logoURI: t?.logo_url || chainProperties[network]?.logo,
 						name: t?.contract_ticker_symbol || chainProperties[network].tokenSymbol,
 						symbol: t?.contract_display_name || chainProperties[network].tokenSymbol,
 						tokenAddress: t?.contract_address,

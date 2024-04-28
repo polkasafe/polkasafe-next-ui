@@ -416,7 +416,7 @@ const Transaction: FC<ITransactionProps> = ({
 									</span>
 									{!isProxyApproval && !isProxyAddApproval && !isProxyRemovalApproval && !customTx && (
 										<span className='flex items-center gap-x-[6px]'>
-											<ParachainIcon src={chainProperties[network].logo} />
+											<ParachainIcon src={chainProperties[network]?.logo} />
 											<span className='font-normal text-xs leading-[13px] text-failure'>
 												-{' '}
 												{decodedCallData && (decodedCallData?.args?.value || decodedCallData?.args?.call?.args?.value)
