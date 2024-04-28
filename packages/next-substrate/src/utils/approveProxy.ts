@@ -184,7 +184,7 @@ export default async function approveProxy({
 				throw new Error('error in proxy creation');
 			} else {
 				const params = JSON.parse(responseJSON.data?.events[0]?.params);
-				const proxyAddress = getEncodedAddress(params[0].value, network);
+				const proxyAddress = getEncodedAddress(params[0]?.value, network);
 				await handleMultisigCreate(proxyAddress || '');
 			}
 		} catch (error) {

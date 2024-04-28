@@ -52,7 +52,7 @@ const BalanceInput: React.FC<Props> = ({
 	}, [defaultValue, network]);
 
 	const tokenCurrencyPrice = !Object.values(networks).includes(currency)
-		? Number(tokensUsdPrice[network].value) * allCurrencyPrices[currencyProperties[currency]?.symbol].value
+		? Number(tokensUsdPrice[network]?.value) * allCurrencyPrices[currencyProperties[currency]?.symbol]?.value
 		: 1;
 
 	useEffect(() => {
