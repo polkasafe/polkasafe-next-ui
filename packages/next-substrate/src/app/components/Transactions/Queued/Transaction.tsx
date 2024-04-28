@@ -11,7 +11,7 @@ import React, { FC, useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { chainProperties } from '@next-common/global/networkConstants';
 import { IMultisigAddress, IQueueItem, ITxnCategory, ITxNotification } from '@next-common/types';
 import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';
@@ -30,6 +30,7 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import checkAvailNetwork from '@next-substrate/utils/checkAvailNetwork';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -249,7 +250,7 @@ const Transaction: FC<ITransactionProps> = ({
 				});
 			} else {
 				await approveMultisigTransfer({
-					amount: [networks.ASTAR, networks.AVAIL].includes(network)
+					amount: checkAvailNetwork(network)
 						? bnToBn(decodedCallData.args.calls?.[0]?.args.value as number)
 						: new BN(
 								decodedCallData.args.value ||
