@@ -12,7 +12,6 @@ import { createContext, useContext, useEffect, useMemo, useState, Context, React
 import { chainProperties, networks } from '@next-common/global/networkConstants';
 import getNetwork from '@next-substrate/utils/getNetwork';
 import { initialize } from 'avail-js-sdk';
-import checkAvailNetwork from '@next-substrate/utils/checkAvailNetwork';
 
 export interface AllNetworkApi {
 	[network: string]: {
@@ -65,14 +64,14 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 
 	const setApiForAllNetworks = useCallback(async () => {
 		for (const n of Object.values(networks)) {
-			const isAvail = checkAvailNetwork(network);
-			const provider = isAvail ? null : new WsProvider(chainProperties[n].rpcEndpoint);
+			console.log(n);
+			const provider = n === networks.AVAIL ? null : new WsProvider(chainProperties[n].rpcEndpoint);
 			// eslint-disable-next-line no-await-in-loop
-			const availApi = isAvail && (await initialize(chainProperties[n].rpcEndpoint));
+			const availApi = n === networks.AVAIL && (await initialize(chainProperties[n].rpcEndpoint));
 			setApis((prev) => ({
 				...prev,
 				[n]: {
-					api: isAvail ? availApi : new ApiPromise({ provider }),
+					api: n === networks.AVAIL ? availApi : new ApiPromise({ provider }),
 					apiReady: false,
 					network: n
 				}

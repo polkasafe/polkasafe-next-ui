@@ -48,7 +48,6 @@ export const networks = {
 	ROCOCO: 'rococo',
 	STATEMINE: 'assethub-kusama',
 	STATEMINT: 'assethub-polkadot',
-	TURING: 'avail-turing',
 	WESTEND: 'westend'
 };
 
@@ -61,7 +60,6 @@ export const tokenSymbol = {
 	PHA: 'PHA',
 	// PAS: 'PAS',
 	ROC: 'ROC',
-	T_AVAIL: 'AVAIL',
 	WND: 'WND'
 };
 
@@ -175,16 +173,6 @@ export const chainProperties: ChainPropType = {
 		ss58Format: 42,
 		tokenDecimals: 18,
 		tokenSymbol: tokenSymbol.AVL
-	},
-	[networks.TURING]: {
-		blockTime: 1000,
-		chainId: 0,
-		existentialDeposit: '0.00001',
-		logo: availLogo,
-		rpcEndpoint: 'wss://turing-rpc.avail.so/ws',
-		ss58Format: 42,
-		tokenDecimals: 18,
-		tokenSymbol: tokenSymbol.T_AVAIL
 	}
 	// [networks.PASEO]: {
 	// blockTime: 1000,
