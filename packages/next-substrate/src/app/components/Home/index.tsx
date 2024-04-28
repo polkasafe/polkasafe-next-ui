@@ -153,7 +153,7 @@ const Home = ({ className }: { className?: string }) => {
 				return;
 			}
 			const params = JSON.parse(responseJSON.data?.events[0]?.params);
-			const proxyAddress = getEncodedAddress(params[0].value, network);
+			const proxyAddress = getEncodedAddress(params[0]?.value, network);
 			if (proxyAddress) {
 				console.log('proxy', proxyAddress);
 				await handleMultisigCreate(proxyAddress);

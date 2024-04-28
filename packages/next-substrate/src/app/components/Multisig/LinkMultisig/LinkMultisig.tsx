@@ -93,7 +93,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 				const responseJSON = await response.json();
 				if (responseJSON.data.count !== 0) {
 					const params = JSON.parse(responseJSON.data?.events[0]?.params);
-					proxyAddress = getEncodedAddress(params[0].value, network);
+					proxyAddress = getEncodedAddress(params[0]?.value, network);
 				}
 			}
 			const { data: createMultisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
