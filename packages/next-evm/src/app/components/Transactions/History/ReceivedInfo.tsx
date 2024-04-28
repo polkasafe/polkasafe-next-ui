@@ -165,6 +165,7 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 							transactionFieldsObject={transactionFields}
 							setTransactionFieldsObject={setTransactionFields}
 							multisigAddress={multisigAddress}
+							network={network}
 						/>
 					</div>
 					{transactionFields &&

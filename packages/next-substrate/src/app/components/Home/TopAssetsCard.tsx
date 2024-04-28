@@ -13,29 +13,47 @@ import NoAssetsSVG from '@next-common/assets/icons/no-transaction-home.svg';
 import formatBalance from '@next-substrate/utils/formatBalance';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { currencyProperties } from '@next-common/global/currencyConstants';
+import { chainProperties } from '@next-common/global/networkConstants';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const TopAssetsCard = ({ className }: { className?: string }) => {
-	const { organisationBalance } = useMultisigAssetsContext();
+const TopAssetsCard = ({
+	className,
+	multisigAddress,
+	network
+}: {
+	className?: string;
+	multisigAddress?: string;
+	network?: string;
+}) => {
+	const { organisationBalance, allAssets } = useMultisigAssetsContext();
 	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
 	const dataArray =
-		(organisationBalance &&
-			organisationBalance?.tokens &&
-			Object.keys(organisationBalance.tokens)?.length > 0 &&
-			Object.keys(organisationBalance.tokens)?.map((item) => {
-				const balance = organisationBalance.tokens[item].balance_token;
-				const balanceUSD = organisationBalance.tokens[item].balance_usd;
-				const { name } = organisationBalance.tokens[item];
-				const { tokenSymbol } = organisationBalance.tokens[item];
-				return {
-					balance: Number(balance),
-					balance_usd: Number(balanceUSD),
-					tokenName: name,
-					tokenSymbol
-				};
-			})) ||
-		[];
+		multisigAddress && network
+			? [
+					{
+						balance: allAssets[multisigAddress].assets.reduce((sum, item) => sum + Number(item.balance_token), 0),
+						balance_usd: Number(allAssets[multisigAddress].fiatTotal),
+						tokenName: network,
+						tokenSymbol: chainProperties[network].tokenSymbol
+					}
+			  ]
+			: (organisationBalance &&
+					organisationBalance?.tokens &&
+					Object.keys(organisationBalance.tokens)?.length > 0 &&
+					Object.keys(organisationBalance.tokens)?.map((item) => {
+						const balance = organisationBalance.tokens[item].balance_token;
+						const balanceUSD = organisationBalance.tokens[item].balance_usd;
+						const { name } = organisationBalance.tokens[item];
+						const { tokenSymbol } = organisationBalance.tokens[item];
+						return {
+							balance: Number(balance),
+							balance_usd: Number(balanceUSD),
+							tokenName: name,
+							tokenSymbol
+						};
+					})) ||
+			  [];
 	const sortedData = dataArray
 		?.sort((a, b) => a.balance - b.balance)
 		?.reverse()

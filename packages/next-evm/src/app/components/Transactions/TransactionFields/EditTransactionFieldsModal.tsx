@@ -8,6 +8,7 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 import { useWallets } from '@privy-io/react-auth';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
+import { NETWORK } from '@next-common/global/evm-network-constants';
 import CancelBtn from '../../Settings/CancelBtn';
 import ModalBtn from '../../Settings/ModalBtn';
 
@@ -16,11 +17,13 @@ const EditTransactionFieldsModal = ({
 	defaultTransactionFields,
 	setTransactionFields,
 	multisigAddress,
+	network,
 	callHash,
 	onCancel
 }: {
 	onCancel: () => void;
 	multisigAddress: string;
+	network: NETWORK;
 	callHash: string;
 	defaultCategory: string;
 	defaultTransactionFields?: ITxnCategory;
@@ -72,6 +75,7 @@ const EditTransactionFieldsModal = ({
 					body: JSON.stringify({
 						callHash,
 						multisigAddress,
+						network,
 						transactionFields: transactionFieldsObject
 					}),
 					headers: firebaseFunctionsHeader(connectedWallet.address),

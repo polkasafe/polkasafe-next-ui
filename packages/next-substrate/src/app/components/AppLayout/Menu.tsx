@@ -54,6 +54,7 @@ const Menu: FC<Props> = ({ className }) => {
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [multisigs, setMultisigs] = useState<IMultisigAndNetwork[]>();
 	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState('');
+	const [selectedNetwork, setSelectedNetwork] = useState('');
 	const pathname = usePathname();
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 
@@ -208,6 +209,7 @@ const Menu: FC<Props> = ({ className }) => {
 									if (typeof window !== 'undefined') localStorage.setItem('active-org', org.id);
 									setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: '' }));
 									setSelectedMultisigAddress('');
+									setSelectedNetwork('');
 								}
 							}}
 						>
@@ -278,7 +280,9 @@ const Menu: FC<Props> = ({ className }) => {
 								>
 									<button
 										className={`w-full flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
-											multisig.address === selectedMultisigAddress && 'bg-highlight text-primary'
+											multisig.address === selectedMultisigAddress &&
+											multisig.network === selectedNetwork &&
+											'bg-highlight text-primary'
 										}`}
 										onClick={() => {
 											setUserDetailsContextState((prevState: any) => {
@@ -292,6 +296,7 @@ const Menu: FC<Props> = ({ className }) => {
 												};
 											});
 											setSelectedMultisigAddress(multisig.address);
+											setSelectedNetwork(multisig.network);
 										}}
 									>
 										<div className='relative'>

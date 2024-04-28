@@ -1,7 +1,7 @@
 import './style.css';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { DatePicker, Dropdown, Segmented, TimeRangePickerProps } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Loader from '@next-common/ui-components/Loader';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
@@ -46,7 +46,7 @@ const TreasuryAnalytics = () => {
 			tte: 60
 		},
 		headers: firebaseFunctionsHeader(),
-		key: 'treasury',
+		key: `${activeOrg?.id}-treasury`,
 		url: `${FIREBASE_FUNCTIONS_URL}/getTreasuryAnalyticsForMultisigs_substrate`
 	});
 
@@ -54,6 +54,15 @@ const TreasuryAnalytics = () => {
 	const [startDate, setStartDate] = useState<null | Dayjs>(null);
 	const [endDate, setEndDate] = useState<null | Dayjs>(dayjs());
 	const [outerDateFilter, setOuterDateFilter] = useState<EDateFilters>(EDateFilters.ALL);
+
+	useEffect(() => {
+		refetch(true);
+		setSelectedID(activeOrg?.id || '');
+		setStartDate(null);
+		setEndDate(dayjs());
+		setOuterDateFilter(EDateFilters.ALL);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [activeOrg]);
 
 	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
 		key: `${item.address}_${item.network}`,
@@ -189,7 +198,6 @@ const TreasuryAnalytics = () => {
 								</div>
 							) : (
 								<AddressComponent
-									onlyAddress
 									isMultisig
 									addressLength={5}
 									iconSize={18}
@@ -229,7 +237,11 @@ const TreasuryAnalytics = () => {
 				)}
 			</div>
 			<div className='grid grid-cols-2 gap-x-4'>
-				<TopAssetsCard className='bg-bg-secondary h-[90%]' />
+				<TopAssetsCard
+					className='bg-bg-secondary h-[90%]'
+					multisigAddress={selectedID.split('_')[0]}
+					network={selectedID.split('_')[1]}
+				/>
 				<TransactionsByEachToken
 					className='bg-bg-secondary'
 					incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}

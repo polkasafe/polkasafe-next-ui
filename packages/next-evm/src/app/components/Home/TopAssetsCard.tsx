@@ -16,25 +16,41 @@ import { currencyProperties } from '@next-common/global/currencyConstants';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
-const TopAssetsCard = ({ className }: { className?: string }) => {
-	const { organisationBalance } = useMultisigAssetsContext();
+const TopAssetsCard = ({
+	className,
+	multisigAddress,
+	network
+}: {
+	className?: string;
+	multisigAddress?: string;
+	network?: string;
+}) => {
+	const { organisationBalance, allAssets } = useMultisigAssetsContext();
 	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
+
 	const dataArray =
-		organisationBalance &&
-		organisationBalance?.tokens &&
-		Object.keys(organisationBalance.tokens)?.length > 0 &&
-		Object.keys(organisationBalance.tokens)?.map((item) => {
-			const balance = organisationBalance.tokens[item].balance_token;
-			const balanceUSD = organisationBalance.tokens[item].balance_usd;
-			const { name } = organisationBalance.tokens[item];
-			const { tokenSymbol } = organisationBalance.tokens[item];
-			return {
-				balance: Number(balance),
-				balance_usd: Number(balanceUSD),
-				tokenName: name,
-				tokenSymbol
-			};
-		});
+		multisigAddress && network
+			? allAssets[multisigAddress].assets.map((item) => ({
+					balance: Number(item.balance_token),
+					balance_usd: Number(item.balance_usd),
+					tokenName: item.symbol,
+					tokenSymbol: item.name
+			  }))
+			: organisationBalance &&
+			  organisationBalance?.tokens &&
+			  Object.keys(organisationBalance.tokens)?.length > 0 &&
+			  Object.keys(organisationBalance.tokens)?.map((item) => {
+					const balance = organisationBalance.tokens[item].balance_token;
+					const balanceUSD = organisationBalance.tokens[item].balance_usd;
+					const { name } = organisationBalance.tokens[item];
+					const { tokenSymbol } = organisationBalance.tokens[item];
+					return {
+						balance: Number(balance),
+						balance_usd: Number(balanceUSD),
+						tokenName: name,
+						tokenSymbol
+					};
+			  });
 	const sortedData = dataArray
 		?.sort((a, b) => a.balance - b.balance)
 		?.reverse()

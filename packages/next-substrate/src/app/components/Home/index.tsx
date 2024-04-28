@@ -61,7 +61,7 @@ const Home = ({ className }: { className?: string }) => {
 
 	const multisigs = activeOrg?.multisigs;
 	const multisig = multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
-	const [network, setNetwork] = useState<string>(multisig?.network || networks.POLKADOT);
+	const [network, setNetwork] = useState<string>(multisig?.network);
 
 	useEffect(() => {
 		if (!activeMultisig || !activeOrg?.multisigs) return;
@@ -71,7 +71,7 @@ const Home = ({ className }: { className?: string }) => {
 
 	const handleMultisigCreate = async (proxyAddress: string) => {
 		try {
-			if (!multisig || !multisig.address || !proxyAddress) {
+			if (!multisig || !multisig.address || !proxyAddress || !network) {
 				console.log('ERROR');
 				return;
 			}
@@ -135,7 +135,7 @@ const Home = ({ className }: { className?: string }) => {
 
 	useEffect(() => {
 		const fetchProxyData = async () => {
-			if (!multisig || !activeMultisig || ['alephzero'].includes(network)) return;
+			if (!multisig || !activeMultisig || !network || ['alephzero'].includes(network)) return;
 			const response = await fetch(`https://${network}.api.subscan.io/api/scan/events`, {
 				body: JSON.stringify({
 					row: 1,
@@ -170,7 +170,7 @@ const Home = ({ className }: { className?: string }) => {
 
 	useEffect(() => {
 		const handleNewTransaction = async () => {
-			if (!apis || !apis[network] || !apis[network].apiReady || !activeMultisig) return;
+			if (!apis || !apis[network] || !apis[network].apiReady || !activeMultisig || !network) return;
 
 			setTransactionLoading(true);
 			// check if wallet has existential deposit

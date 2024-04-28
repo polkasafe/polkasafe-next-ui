@@ -421,7 +421,11 @@ const TreasuryAnalytics = () => {
 				)}
 			</div>
 			<div className='grid grid-cols-2 gap-x-4'>
-				<TopAssetsCard className='bg-bg-secondary h-[90%]' />
+				<TopAssetsCard
+					className='bg-bg-secondary h-[90%]'
+					multisigAddress={selectedID.split('_')[0]}
+					network={selectedID.split('_')[1]}
+				/>
 				<TransactionsByEachToken
 					className='bg-bg-secondary'
 					incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}
