@@ -7,7 +7,7 @@ import APP_NAME from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
 import { isNumber } from '@polkadot/util';
 import { signedExtensions, types } from 'avail-js-sdk';
-import { networks } from '@next-common/global/networkConstants';
+import checkAvailNetwork from './checkAvailNetwork';
 
 const getInjectorMetadata = (api: any) => {
 	return {
@@ -58,7 +58,7 @@ export default async function setSigner(api: any, chosenWallet: Wallet, network?
 	if (!injected) {
 		return;
 	}
-	if (network === networks.AVAIL) {
+	if (checkAvailNetwork(network)) {
 		const metadata = getInjectorMetadata(api);
 		await injected.metadata.provide(metadata);
 		const inj = injected;
