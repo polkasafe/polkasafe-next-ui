@@ -39,7 +39,7 @@ export type ChainPropType = {
 export const networks = {
 	ALEPHZERO: 'alephzero',
 	ASTAR: 'astar',
-	AVAIL: 'avail-testnet',
+	AVAIL: 'avail-goldberg',
 	KHALA: 'khala',
 	KUSAMA: 'kusama',
 	// PASEO: 'paseo',
