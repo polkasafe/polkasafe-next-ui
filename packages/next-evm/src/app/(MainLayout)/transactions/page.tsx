@@ -90,7 +90,7 @@ const Transactions = () => {
 									className='text-primary'
 								/>
 							}
-							className='text-primary bg-highlight outline-none border-none font-medium text-sm'
+							className='text-primary bg-highlight outline-none border-none font-medium text-sm max-sm:hidden'
 						>
 							Refresh
 						</Button>

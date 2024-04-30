@@ -584,9 +584,9 @@ const SendFundsForm = ({
 							</section>
 						)}
 						<section>
-							<div className='flex items-center gap-x-[10px] mt-[14px]'>
-								<article className='w-[500px]'>
-									<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
+							<div className='flex items-center gap-x-[10px] mt-[14px] max-sm:flex-col'>
+								<article className='w-[500px] max-sm:w-full'>
+									<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between max-sm:w-full'>
 										Sending from
 										<Balance
 											api={apis?.[network]?.api}
@@ -598,7 +598,7 @@ const SendFundsForm = ({
 									</p>
 									<Dropdown
 										trigger={['click']}
-										className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-[500px]'
+										className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-[500px] max-sm:w-full'
 										menu={{
 											items: multisigOptions,
 											onClick: (e) => {
@@ -621,16 +621,16 @@ const SendFundsForm = ({
 										</div>
 									</Dropdown>
 								</article>
-								<article className='w-[412px] flex items-center'>
-									<span className='-mr-1.5 z-0'>
+								<article className='w-[412px] flex items-center max-sm:w-full'>
+									<span className='-mr-1.5 z-0 max-sm:hidden max-sm:mt-1'>
 										<LineIcon className='text-5xl' />
 									</span>
-									<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px]'>
+									<p className='p-3 bg-bg-secondary rounded-xl font-normal text-sm text-text_secondary leading-[15.23px] max-sm:w-full'>
 										The transferred balance will be subtracted (along with fees) from the sender account.
 									</p>
 								</article>
 							</div>
-							<div className='w-[500px]'>
+							<div className='w-[500px] max-sm:w-full'>
 								<Divider className='border-[#505050]'>
 									<SquareDownArrowIcon />
 								</Divider>
@@ -706,7 +706,7 @@ const SendFundsForm = ({
 											{recipientAndAmount.map(({ recipient }, i) => (
 												<article
 													key={recipient}
-													className='w-[500px] flex items-start gap-x-2'
+													className='w-[500px] flex items-start gap-x-2 max-sm:w-full max-sm:flex-col'
 												>
 													<AddAddressModal
 														setShowAddressModal={setShowAddressModal}
@@ -714,7 +714,7 @@ const SendFundsForm = ({
 														showAddressModal={showAddressModal}
 														defaultAddress={recipient}
 													/>
-													<div className='w-[55%]'>
+													<div className='w-[55%] max-sm:w-full'>
 														<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
 															Recipient*
 														</label>
@@ -822,7 +822,7 @@ const SendFundsForm = ({
 											Add Another Recipient
 										</Button>
 									</div>
-									<div className='flex flex-col gap-y-4'>
+									<div className='flex flex-col gap-y-4 max-sm:hidden'>
 										<article className='w-[412px] flex items-center'>
 											<span className='-mr-1.5 z-0'>
 												<LineIcon className='text-5xl' />
@@ -951,7 +951,7 @@ const SendFundsForm = ({
 							</div>
 						</section>
 
-						<section className='mt-[15px] w-[500px]'>
+						<section className='mt-[15px] w-[500px] max-sm:w-full'>
 							<label className='text-primary font-normal text-xs block mb-[5px]'>Category*</label>
 							<Form.Item
 								name='category'
@@ -1084,7 +1084,7 @@ const SendFundsForm = ({
 						<section className='mt-[15px]'>
 							<label className='text-primary font-normal text-xs block mb-7'>Note</label>
 							<div className=''>
-								<article className='w-[500px]'>
+								<article className='w-[500px] max-sm:w-full'>
 									<Form.Item
 										name='note'
 										rules={[]}
@@ -1105,9 +1105,9 @@ const SendFundsForm = ({
 							</div>
 						</section>
 
-						<section className='mt-[15px]'>
-							<div className='flex items-center gap-x-[10px]'>
-								<article className='w-[500px] flex items-center gap-x-3'>
+						<section className='mt-[30px]'>
+							<div className='flex items-center gap-x-[10px] max-sm:flex-col'>
+								<article className='w-[500px] flex items-center gap-x-3 max-sm:w-full'>
 									<p className='text-white text-sm font-normal leading-[15px]'>
 										Transfer with account keep-alive checks
 									</p>
@@ -1118,7 +1118,7 @@ const SendFundsForm = ({
 										className='text-primary'
 									/>
 								</article>
-								<article className='w-[412px] flex items-center'>
+								<article className='w-[412px] flex items-center max-sm:w-full'>
 									<span className='-mr-1.5 z-0'>
 										<LineIcon className='text-5xl' />
 									</span>

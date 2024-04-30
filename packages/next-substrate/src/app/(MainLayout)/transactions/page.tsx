@@ -67,7 +67,7 @@ const Transactions = () => {
 							size='large'
 							className={`font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
 								tab === ETab.QUEUE && 'text-primary bg-highlight'
-							}`}
+							} max-sm:text-xs max-sm:w-[70px]`}
 						>
 							Queue
 						</Button>
@@ -77,7 +77,7 @@ const Transactions = () => {
 							size='large'
 							className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
 								tab === ETab.HISTORY && 'text-primary bg-highlight'
-							}`}
+							} max-sm:text-xs max-sm:w-[70px]`}
 						>
 							History
 						</Button>
@@ -96,7 +96,7 @@ const Transactions = () => {
 								<Button
 									size='large'
 									icon={<ExportArrowIcon className='text-primary' />}
-									className='text-primary mr-3 bg-highlight outline-none border-none font-medium text-sm'
+									className='text-primary mr-3 bg-highlight outline-none border-none font-medium text-sm max-sm:text-xs'
 								>
 									Export
 								</Button>
@@ -112,9 +112,20 @@ const Transactions = () => {
 									className='text-primary'
 								/>
 							}
-							className='text-primary bg-highlight outline-none border-none font-medium text-sm'
+							className='text-primary bg-highlight outline-none border-none font-medium text-sm max-sm:hidden'
 						>
 							Refresh
+						</Button>
+						<Button
+							size='large'
+							onClick={() => setRefetch((prev) => !prev)}
+							disabled={loading}
+							className='text-primary bg-highlight outline-none border-none font-medium text-sm sm:hidden'
+						>
+							<SyncOutlined
+								spin={loading}
+								className='text-primary'
+							/>
 						</Button>
 					</div>
 					{tab === ETab.HISTORY ? (

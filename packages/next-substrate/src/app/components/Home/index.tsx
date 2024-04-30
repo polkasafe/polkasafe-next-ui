@@ -299,7 +299,7 @@ const Home = ({ className }: { className?: string }) => {
 				</section>
 			) : (
 				<section className='flex flex-col'>
-					<div className='mb-0 grid grid-cols-16 gap-4 grid-row-2 lg:grid-row-1 h-auto'>
+					<div className='mb-0 grid grid-cols-16 gap-4 grid-row-2 lg:grid-row-1 h-auto max-sm:grid-cols-9'>
 						<div className='col-start-1 col-end-13 lg:col-end-10'>
 							<OrganisationAssets
 								transactionLoading={transactionLoading}

@@ -223,7 +223,7 @@ const Enable2FA = ({ className }: { className?: string }) => {
 					</div>
 				</section>
 			</Modal>
-			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-5 text-white'>
+			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-5 text-white max-sm:flex max-sm:flex-col'>
 				<div className='col-span-3 flex gap-x-2'>
 					<div>
 						<span className='flex items-center gap-x-2 text-text_secondary'>

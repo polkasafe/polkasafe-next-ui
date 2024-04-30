@@ -13,12 +13,12 @@ const SearchMultisig = ({
 	setAddAddress: React.Dispatch<React.SetStateAction<string>>;
 }) => {
 	return (
-		<div className='rounded-lg bg-bg-secondary flex items-center text-xs gap-x-2 md:gap-x-4 md:text-sm w-full'>
+		<div className='rounded-lg bg-bg-secondary flex items-center text-xs gap-x-2 md:gap-x-4 md:text-sm w-full max-sm:w-[200px]'>
 			<SearchIcon className='text-primary pl-3 pr-0' />
 			<Input
 				value={addAddress}
 				onChange={(e) => setAddAddress(e.target.value)}
-				className='bg-bg-secondary placeholder-text_placeholder text-white outline-none py-2 border-none min-w-[300px]'
+				className='bg-bg-secondary placeholder-text_placeholder text-white outline-none py-2 border-none min-w-[300px] max-sm:min-w-[150px]'
 				placeholder='Search by name, address OR Add New Address'
 			/>
 		</div>

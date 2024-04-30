@@ -111,7 +111,23 @@ const AllApps = () => {
 							</Link>
 						</div>
 					</div>
-					<section className='grid grid-cols-4 gap-5'>
+					<section className='grid grid-cols-4 gap-5 max-sm:hidden'>
+						{currentApps.map((app) => (
+							<AppCard
+								className='col-span-1'
+								logoComponent={app.logoComponent}
+								logoUrl={app.logoUrl}
+								appUrl={app.appUrl}
+								key={app.name}
+								name={app.name}
+								description={app.description}
+								newTab={app.newTab}
+								modal={app.modal}
+								modalComponent={app.modalComponent}
+							/>
+						))}
+					</section>
+					<section className='flex flex-wrap gap-5 sm:hidden'>
 						{currentApps.map((app) => (
 							<AppCard
 								className='col-span-1'
@@ -136,7 +152,7 @@ const AllApps = () => {
 							<Details />
 						</section>
 					)} */}
-					<section className='w-full max-w-[50%]'>
+					<section className='w-full max-w-[50%] max-sm:max-w-full'>
 						<Feedback />
 					</section>
 				</div>

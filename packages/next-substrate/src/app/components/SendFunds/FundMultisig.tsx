@@ -180,7 +180,7 @@ const FundMultisig = ({
 			</ModalComponent>
 			<div className={className}>
 				<div>
-					<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between'>
+					<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between max-sm:w-full'>
 						Sending from
 						<Balance
 							api={apis?.[network]?.api}
@@ -191,7 +191,7 @@ const FundMultisig = ({
 					</p>
 					<Dropdown
 						trigger={['click']}
-						className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-[500px]'
+						className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-[500px]  max-sm:w-full'
 						menu={{
 							items: multisigOptions,
 							onClick: (e) => {

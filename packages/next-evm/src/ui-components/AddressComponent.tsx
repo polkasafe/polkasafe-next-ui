@@ -125,7 +125,7 @@ const AddressComponent = ({
 							<div className='rounded-[4px] py-[0px] px-1 text-[9px] text-white flex items-center gap-x-1 bg-[#5065E4] capitalize'>
 								<ParachainIcon
 									size={6}
-									src={chainProperties[network]?.logo}
+									src={chainProperties[network].logo}
 								/>
 								{network}
 							</div>

@@ -177,8 +177,8 @@ const Menu: FC<Props> = ({ className }) => {
 	}, [selectedMultisigAddress, isProxy, sharedMultisigInfo, isSharedMultisig, activeOrg?.multisigs]);
 
 	return (
-		<div className={`bg-bg-main flex flex-col h-full py-[25px] px-3 ${className}`}>
-			<div className='flex flex-col mb-3'>
+		<div className={`bg-bg-main flex flex-col h-full py-[25px] px-3 max-sm:px-[0px] max-sm:py-[0px] ${className} `}>
+			<div className='flex flex-col mb-3 max-sm:mb-1'>
 				<section className='flex mb-7 justify-center w-full'>
 					<Link
 						className='text-white'
@@ -238,7 +238,7 @@ const Menu: FC<Props> = ({ className }) => {
 				)}
 				<section>
 					<h2 className='uppercase text-text_secondary ml-3 text-[10px] font-primary'>Menu</h2>
-					<ul className='flex flex-col py-2 text-white list-none'>
+					<ul className='flex flex-col py-2 text-white list-none max-sm:h-[320px] max-sm:overflow-y-auto'>
 						{menuItems.map((item) => {
 							return (
 								<li
@@ -248,7 +248,7 @@ const Menu: FC<Props> = ({ className }) => {
 									<Link
 										className={`flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
 											item.baseURL === pathname && 'bg-highlight text-primary'
-										} ${item.disabled && 'pointer-events-none cursor-disabled text-text_secondary '} `}
+										} ${item.disabled && 'pointer-events-none cursor-disabled text-text_secondary '} max-sm:p-2`}
 										href={item.key}
 									>
 										{item.icon}
@@ -283,7 +283,7 @@ const Menu: FC<Props> = ({ className }) => {
 											multisig.address === selectedMultisigAddress &&
 											multisig.network === selectedNetwork &&
 											'bg-highlight text-primary'
-										}`}
+										} max-sm:p-1`}
 										onClick={() => {
 											setUserDetailsContextState((prevState: any) => {
 												return {

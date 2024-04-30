@@ -349,9 +349,9 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 						})}
 					>
 						<div className='relative'>
-							<div className='flex items-center justify-between'>
+							<div className='flex items-center justify-between max-sm:flex-wrap'>
 								{!uploadSignatoriesJson ? (
-									<div className='flex items-center justify-between w-[45vw] gap-x-4'>
+									<div className='flex items-center justify-between w-[45vw] gap-x-4 max-sm:w-[200px]'>
 										<Search
 											addAddress={addAddress}
 											setAddAddress={setAddAddress}
@@ -377,7 +377,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 										</PrimaryButton>
 									</div>
 								) : null}
-								<div className='flex flex-col items-end justify-center absolute top-1 right-1 z-50'>
+								<div className='flex flex-col items-end justify-center absolute top-1 right-1 z-50 max-sm:relative'>
 									<div className='flex items-center justify-center mb-2'>
 										<p className='mx-2 text-white'>Upload JSON file with signatories</p>
 										<Switch
@@ -394,7 +394,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 								className='border-0 outline-0 my-0 p-0'
 								validateStatus={signatories.length < 2 ? 'error' : 'success'}
 							>
-								<div className='w-full flex items-center justify-between'>
+								<div className='w-full flex items-center justify-between max-sm:flex-col max-sm:items-start'>
 									{!uploadSignatoriesJson ? (
 										<Signatory
 											network={network}
@@ -408,11 +408,11 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 									) : (
 										<DragDrop setSignatories={setSignatories} />
 									)}
-									<DashDotIcon className='mt-5' />
-									<div className='w-[40%] overflow-auto'>
+									<DashDotIcon className='mt-5 max-sm:hidden' />
+									<div className='w-[40%] overflow-auto max-sm:w-[100%]'>
 										<br />
 										{!uploadSignatoriesJson ? (
-											<p className='bg-bg-secondary p-5 rounded-md mx-2 h-fit text-text_secondary'>
+											<p className='bg-bg-secondary p-5 rounded-md mx-2 h-fit text-text_secondary max-sm:mx-0'>
 												The signatories has the ability to create transactions using the multisig and approve
 												transactions sent by others. Once the threshold is reached with approvals, the multisig
 												transaction is enacted on-chain. Since the multisig function like any other account, once
@@ -420,7 +420,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 												use.
 											</p>
 										) : (
-											<p className='bg-bg-secondary p-5 rounded-md mx-2 h-fit text-text_secondary'>
+											<p className='bg-bg-secondary p-5 rounded-md mx-2 h-fit text-text_secondary max-sm:mx-0'>
 												Supply a JSON file with the list of signatories.
 											</p>
 										)}
@@ -449,7 +449,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 									</div>
 								</Dropdown>
 							</div>
-							<div className='flex items-start justify-between'>
+							<div className='flex items-start justify-between max-sm:flex-col'>
 								<Form.Item
 									name='threshold'
 									rules={[{ required: true }]}
@@ -477,15 +477,15 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 										/>
 									</div>
 								</Form.Item>
-								<DashDotIcon className='mt-5' />
-								<div className='w-[40%] overflow-auto'>
-									<p className='bg-bg-secondary py-2 px-5 rounded-md mx-2 mt-5 text-text_secondary'>
+								<DashDotIcon className='mt-5 max-sm:hidden' />
+								<div className='w-[40%] overflow-auto max-sm:w-[80%]'>
+									<p className='bg-bg-secondary py-2 px-5 rounded-md mx-2 mt-5 text-text_secondary max-sm:mx-0'>
 										The threshold for approval should be less or equal to the number of signatories for this multisig.
 									</p>
 								</div>
 							</div>
-							<div className='flex items-center justify-between'>
-								<div className='w-[45vw]'>
+							<div className='flex items-center justify-between max-sm:flex-col max-sm:items-start'>
+								<div className='w-[45vw] max-sm:mt-4'>
 									<p className='text-primary'>Name</p>
 									<Input
 										onChange={(e) => setMultisigName(e.target.value)}
@@ -494,9 +494,9 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 										placeholder='Give the MultiSig a unique name'
 									/>
 								</div>
-								<DashDotIcon className='mt-5' />
-								<div className='w-[40%] overflow-auto'>
-									<p className='bg-bg-secondary py-2 px-5 rounded-md mx-2 mt-5 text-text_secondary'>
+								<DashDotIcon className='mt-5 max-sm:hidden' />
+								<div className='w-[40%] overflow-auto max-sm:w-[80%]'>
+									<p className='bg-bg-secondary py-2 px-5 rounded-md mx-2 mt-5 text-text_secondary max-sm:mx-0'>
 										The name is for unique identification of the account in your owner lists.
 									</p>
 								</div>

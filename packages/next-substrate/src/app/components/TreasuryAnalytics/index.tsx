@@ -122,7 +122,7 @@ const TreasuryAnalytics = () => {
 		<Loader />
 	) : (
 		<div className='flex flex-col gap-y-4'>
-			<div className='flex justify-between items-center'>
+			<div className='flex justify-between items-center max-sm:flex-col'>
 				<Segmented
 					size='small'
 					onChange={(value) => {
@@ -165,16 +165,16 @@ const TreasuryAnalytics = () => {
 						}
 					]}
 				/>
-				<div className='flex gap-x-3'>
+				<div className='flex gap-x-3 w-full max-sm:flex-col max-sm:gap-2 max-sm:mt-2'>
 					<DatePicker.RangePicker
 						onChange={onRangeChange}
 						value={[startDate, endDate]}
-						className='border border-primary shadow-none rounded-lg py-1 pxx-2 bg-highlight min-w-[200px] text-xs'
+						className='border border-primary shadow-none rounded-lg py-1 pxx-2 bg-highlight min-w-[200px] text-xs max-sm:w-full max-sm:min-w-full'
 						presets={rangePresets}
 					/>
 					<Dropdown
 						trigger={['click']}
-						className='border border-primary rounded-lg py-1 px-2 bg-bg-secondary cursor-pointer min-w-[200px] text-xs'
+						className='border border-primary rounded-lg py-1 px-2 bg-bg-secondary cursor-pointer min-w-[200px] text-xs max-sm:w-full max-sm:min-w-full'
 						menu={{
 							items: multisigOptions,
 							onClick: (e) => {
@@ -236,9 +236,21 @@ const TreasuryAnalytics = () => {
 					/>
 				)}
 			</div>
-			<div className='grid grid-cols-2 gap-x-4'>
+			<div className='grid grid-cols-2 gap-x-4 max-sm:hidden'>
 				<TopAssetsCard
 					className='bg-bg-secondary h-[90%]'
+					multisigAddress={selectedID.split('_')[0]}
+					network={selectedID.split('_')[1]}
+				/>
+				<TransactionsByEachToken
+					className='bg-bg-secondary'
+					incomingTransactions={treasury?.[selectedID]?.incomingTransactions || []}
+					outgoingTransactions={treasury?.[selectedID]?.outgoingTransactions || []}
+				/>
+			</div>
+			<div className='flex flex-col gap-x-4 sm:hidden'>
+				<TopAssetsCard
+					className='bg-bg-secondary h-[80%] px-1'
 					multisigAddress={selectedID.split('_')[0]}
 					network={selectedID.split('_')[1]}
 				/>

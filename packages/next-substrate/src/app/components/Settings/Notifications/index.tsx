@@ -682,7 +682,7 @@ const Notifications = () => {
 					</section>
 				)}
 			</div>
-			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-4 text-white'>
+			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-4 text-white max-sm:flex max-sm:flex-col'>
 				<div className='col-span-3 flex items-center gap-x-2'>
 					<span className='flex items-center gap-x-2 text-text_secondary'>
 						<TelegramIcon /> Telegram Notifications
@@ -726,7 +726,7 @@ const Notifications = () => {
 					)}
 				</div>
 			</div>
-			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-4 text-white'>
+			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-4 text-white max-sm:flex max-sm:flex-col'>
 				<div className='col-span-3 flex items-center gap-x-2'>
 					<span className='flex items-center gap-x-2 text-text_secondary'>
 						<DiscordIcon /> Discord Notifications
@@ -770,7 +770,7 @@ const Notifications = () => {
 					)}
 				</div>
 			</div>
-			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-4 text-white'>
+			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-4 text-white max-sm:flex max-sm:flex-col'>
 				<div className='col-span-3 flex items-center gap-x-2'>
 					<span className='flex items-center gap-x-2 text-text_secondary'>
 						<SlackIcon /> Slack Notifications
@@ -814,7 +814,7 @@ const Notifications = () => {
 					)}
 				</div>
 			</div>
-			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-4 text-white'>
+			<div className='grid grid-cols-10 bg-bg-main rounded-lg p-4 text-white max-sm:flex max-sm:flex-col'>
 				<div className='col-span-3'>
 					<span className='flex items-center gap-x-2 text-text_secondary'>
 						<ElementIcon /> Element Notifications

@@ -121,7 +121,7 @@ const AddressBook = ({ className }: { className?: string }) => {
 			</ModalComponent>
 			{userAddress ? (
 				<div>
-					<div className='flex items-center justify-between'>
+					<div className='flex items-center justify-between max-sm:flex-col max-sm:my-2'>
 						<div className='rounded-lg bg-bg-secondary flex items-center mb-4 p-1 text-xs gap-x-2 md:gap-x-4 md:text-sm'>
 							<SearchIcon className='text-primary pl-3 pr-0' />
 							<Input
