@@ -158,7 +158,7 @@ const SingleTxn = ({
 								: Number.isNaN(Number(amountUSD))
 								? '0.00'
 								: (Number(transaction.amount_token) * Number(amountUSD) * Number(currencyPrice)).toFixed(3)}{' '}
-							{currencyProperties[currency].symbol}
+							{currencyProperties[currency]?.symbol}
 						</p>
 					) : (
 						''

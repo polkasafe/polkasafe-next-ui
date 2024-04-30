@@ -71,8 +71,8 @@ const AssetsTable = () => {
 										className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 									>
 										{!Number.isNaN(balance_usd)
-											? (allCurrencyPrices[currencyProperties[currency].symbol]
-													? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+											? (allCurrencyPrices[currencyProperties[currency]?.symbol]
+													? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value)
 													: Number(balance_usd)
 											  )
 													.toFixed(2)
@@ -131,9 +131,9 @@ const AssetsTable = () => {
 									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
 									{!Number.isNaN(tokens[item].balance_usd)
-										? (allCurrencyPrices[currencyProperties[currency].symbol]
+										? (allCurrencyPrices[currencyProperties[currency]?.symbol]
 												? Number(tokens[item].balance_usd) *
-												  Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+												  Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value)
 												: Number(tokens[item].balance_usd)
 										  )
 												.toFixed(2)

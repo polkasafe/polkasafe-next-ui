@@ -43,7 +43,7 @@ const ChangeCurrency = ({
 		label: (
 			<span className='text-white flex items-center gap-x-2'>
 				<CurrencyFlag src={currencyProperties[c]?.logo} />
-				{small ? currencyProperties[c].symbol : `${c} (${currencyProperties[c].symbol})`}
+				{small ? currencyProperties[c]?.symbol : `${c} (${currencyProperties[c]?.symbol})`}
 			</span>
 		)
 	}));
@@ -71,7 +71,7 @@ const ChangeCurrency = ({
 			>
 				<Form className='my-0 w-[560px]'>
 					<p className='text-white font-medium text-sm leading-[15px]'>
-						Your default Currency has been changed to {currencyProperties[globalCurrency].symbol}
+						Your default Currency has been changed to {currencyProperties[globalCurrency]?.symbol}
 					</p>
 					<div className='flex items-center justify-center gap-x-5 mt-[30px]'>
 						<ModalBtn
@@ -97,8 +97,8 @@ const ChangeCurrency = ({
 					<span className='flex items-center gap-x-2'>
 						<CurrencyFlag src={currencyProperties[currency || globalCurrency]?.logo} />
 						{small
-							? currencyProperties[currency || globalCurrency].symbol
-							: `${currency || globalCurrency} (${currencyProperties[currency || globalCurrency].symbol})`}
+							? currencyProperties[currency || globalCurrency]?.symbol
+							: `${currency || globalCurrency} (${currencyProperties[currency || globalCurrency]?.symbol})`}
 					</span>
 					<CircleArrowDownIcon className='text-primary' />
 				</div>

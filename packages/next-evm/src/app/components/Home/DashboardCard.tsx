@@ -227,9 +227,9 @@ const DashboardCard = ({
 								<div className='text-white'>Total Asset Value</div>
 								<div className='font-bold text-lg text-primary'>
 									{formatBalance(
-										Number(totalAssetValue) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+										Number(totalAssetValue) * Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value)
 									)}{' '}
-									{currencyProperties[currency].symbol}
+									{currencyProperties[currency]?.symbol}
 								</div>
 							</div>
 						</>

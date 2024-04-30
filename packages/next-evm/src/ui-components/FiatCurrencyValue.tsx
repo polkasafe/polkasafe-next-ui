@@ -9,7 +9,7 @@ import formatBalance from '@next-evm/utils/formatBalance';
 const FiatCurrencyValue = ({ value, className }: { value: string | number; className?: string }) => {
 	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
 
-	const currentCurrency = allCurrencyPrices[currencyProperties[currency].symbol];
+	const currentCurrency = allCurrencyPrices[currencyProperties[currency]?.symbol];
 	const fiatValue = Number(value || 0) * Number(currentCurrency?.value || 0);
 	return (
 		<span className={className}>

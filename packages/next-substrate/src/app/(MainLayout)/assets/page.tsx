@@ -62,7 +62,7 @@ const Assets = () => {
 											Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value) ||
 											organisationBalance?.total
 							)}{' '}
-							{currencyProperties[currency].symbol}
+							{currencyProperties[currency]?.symbol}
 						</p>
 					</div>
 					<div className='h-full overflow-y-auto'>

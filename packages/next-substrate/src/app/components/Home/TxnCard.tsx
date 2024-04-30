@@ -350,7 +350,7 @@ const TxnCard = ({
 																{(Number(amountUSD) * Number(transaction.totalAmount) * Number(currencyPrice)).toFixed(
 																	2
 																)}{' '}
-																{currencyProperties[currency].symbol}
+																{currencyProperties[currency]?.symbol}
 															</p>
 														)}
 													</div>
@@ -385,7 +385,7 @@ const TxnCard = ({
 																			})
 																		)
 																	).toFixed(2)}{' '}
-																	{currencyProperties[currency].symbol}
+																	{currencyProperties[currency]?.symbol}
 																</p>
 															)}
 													</div>
@@ -567,7 +567,7 @@ const TxnCard = ({
 																		Number(amountUSD) *
 																		Number(currencyPrice)
 																  ).toFixed(3)}{' '}
-															{currencyProperties[currency].symbol}
+															{currencyProperties[currency]?.symbol}
 														</p>
 													) : (
 														''

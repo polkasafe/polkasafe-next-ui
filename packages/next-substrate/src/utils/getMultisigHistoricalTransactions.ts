@@ -43,11 +43,11 @@ export default async function getMultisigHistoricalTransactions(
 			for (const transaction of otherTransactions.multisig) {
 				// eslint-disable-next-line no-continue
 				if (transaction.status !== 'Executed') continue;
-				// const fetchPriceRes = await fetch(`https://api.currencyapi.com/v3/historical?apikey=${CURRENCY_API_KEY}&currencies=${currencyProperties[currency].symbol}&date=${dayjs(transaction.block_timestamp * 1000).format('YYYY-MM-DD')}`, {
+				// const fetchPriceRes = await fetch(`https://api.currencyapi.com/v3/historical?apikey=${CURRENCY_API_KEY}&currencies=${currencyProperties[currency]?.symbol}&date=${dayjs(transaction.block_timestamp * 1000).format('YYYY-MM-DD')}`, {
 				// method: 'GET'
 				// });
 				// const responseJSON = await fetchPriceRes.json();
-				// const currencyPrice = responseJSON.data?.[currencyProperties[currency].symbol]?.value || '1';
+				// const currencyPrice = responseJSON.data?.[currencyProperties[currency]?.symbol]?.value || '1';
 
 				// eslint-disable-next-line no-await-in-loop
 				const multisigDataRes = await fetch(`https://${network}.api.subscan.io/api/scan/multisig`, {

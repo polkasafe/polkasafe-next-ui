@@ -43,7 +43,7 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 			<article className='grid grid-cols-4 gap-x-5 bg-bg-secondary text-text_secondary py-5 px-4 rounded-lg'>
 				<span className='col-span-1'>Asset</span>
 				<span className='col-span-1'>Balance</span>
-				<span className='col-span-1'>{currencyProperties[currency].symbol} Value</span>
+				<span className='col-span-1'>{currencyProperties[currency]?.symbol} Value</span>
 				<span className='col-span-1'>Action</span>
 			</article>
 			{activeMultisig ? (
@@ -80,8 +80,8 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 										className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 									>
 										{!Number.isNaN(balance_usd)
-											? (allCurrencyPrices[currencyProperties[currency].symbol]
-													? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+											? (allCurrencyPrices[currencyProperties[currency]?.symbol]
+													? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value)
 													: Number(balance_usd)
 											  )
 													.toFixed(2)
@@ -141,9 +141,9 @@ const AssetsTable: FC<IAssetsProps> = ({ assets, currency }) => {
 									className='max-w-[100px] sm:w-auto overflow-hidden text-ellipsis col-span-1 flex items-center text-xs sm:text-sm'
 								>
 									{!Number.isNaN(tokens[item].balance_usd)
-										? (allCurrencyPrices[currencyProperties[currency].symbol]
+										? (allCurrencyPrices[currencyProperties[currency]?.symbol]
 												? Number(tokens[item].balance_usd) *
-												  Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+												  Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value)
 												: Number(tokens[item].balance_usd)
 										  )
 												.toFixed(2)

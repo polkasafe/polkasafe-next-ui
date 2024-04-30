@@ -147,7 +147,7 @@ const SingleTxn = ({
 						{!Number.isNaN(Number(amountUSD)) && (
 							<p className='text-text_secondary text-right text-xs'>
 								{(Number(amountUSD) * Number(transaction.totalAmount) * Number(currencyPrice)).toFixed(2)}{' '}
-								{currencyProperties[currency].symbol}
+								{currencyProperties[currency]?.symbol}
 							</p>
 						)}
 					</div>
@@ -177,7 +177,7 @@ const SingleTxn = ({
 											})
 										)
 									).toFixed(2)}{' '}
-									{currencyProperties[currency].symbol}
+									{currencyProperties[currency]?.symbol}
 								</p>
 							)}
 					</div>

@@ -62,8 +62,8 @@ const TopAssetsCard = ({
 		labels: sortedData?.map(
 			(item) =>
 				`${item?.tokenSymbol} (${formatBalance(
-					Number(item?.balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
-				)} ${allCurrencyPrices[currencyProperties[currency].symbol]?.code})`
+					Number(item?.balance_usd) * Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value)
+				)} ${allCurrencyPrices[currencyProperties[currency]?.symbol]?.code})`
 		),
 		datasets: [
 			{

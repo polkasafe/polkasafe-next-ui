@@ -206,7 +206,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 															})
 														)
 													).toFixed(2)}{' '}
-													{currencyProperties[currency].symbol})
+													{currencyProperties[currency]?.symbol})
 												</span>
 											)}
 										</span>

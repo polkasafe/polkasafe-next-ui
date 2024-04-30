@@ -59,7 +59,7 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 				<span>Received</span>
 				<span className='text-success'>
 					{amount} {amountType} ({(Number(amount_usd) * Number(currencyPrice)).toFixed(2)}{' '}
-					{currencyProperties[currency].symbol})
+					{currencyProperties[currency]?.symbol})
 				</span>
 				<span>from:</span>
 			</p>

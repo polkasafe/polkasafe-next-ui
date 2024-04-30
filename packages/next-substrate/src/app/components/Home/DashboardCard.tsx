@@ -280,7 +280,7 @@ const DashboardCard = ({
 								</div>
 							</div>
 							<div>
-								<div className='text-white'>{currencyProperties[currency].symbol} Amount</div>
+								<div className='text-white'>{currencyProperties[currency]?.symbol} Amount</div>
 								<div className='font-bold text-lg text-primary'>
 									{loadingAssets ? (
 										<Spin size='default' />
