@@ -9,8 +9,8 @@ import { OutlineCloseIcon, PasswordOutlinedIcon } from '@next-common/ui-componen
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import CancelBtn from '../CancelBtn';
-import RemoveBtn from '../RemoveBtn';
+import CancelBtn from '../../CancelBtn';
+import RemoveBtn from '../../RemoveBtn';
 
 const Disable2FA = ({ className }: { className?: string }) => {
 	const [loading, setLoading] = useState<boolean>(false);

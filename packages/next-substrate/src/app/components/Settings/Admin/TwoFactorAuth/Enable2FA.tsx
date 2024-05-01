@@ -18,8 +18,8 @@ import copyText from '@next-substrate/utils/copyText';
 import { SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
 
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import CancelBtn from '../CancelBtn';
-import ModalBtn from '../ModalBtn';
+import CancelBtn from '../../CancelBtn';
+import ModalBtn from '../../ModalBtn';
 
 const Enable2FA = ({ className }: { className?: string }) => {
 	const [loading, setLoading] = useState<boolean>(false);
