@@ -114,7 +114,7 @@ const AddressList = () => {
 		name: watchlists[item]?.name,
 		network: (
 			<div className='capitalize px-1 flex items-center gap-x-2'>
-				<ParachainIcon src={chainProperties[watchlists[item]?.network].logo} /> {watchlists[item]?.network}
+				<ParachainIcon src={chainProperties[watchlists[item]?.network]?.logo} /> {watchlists[item]?.network}
 			</div>
 		)
 	}));

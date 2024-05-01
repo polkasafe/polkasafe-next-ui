@@ -155,14 +155,14 @@ const Transaction: FC<IHistoryTransactions> = ({
 					tokenDetails.push({
 						tokenAddress: assetDetails?.tokenAddress || '',
 						tokenDecimals: assetDetails?.token_decimals || chainProperties[network].decimals,
-						tokenLogo: assetDetails?.logoURI || chainProperties[network].logo,
+						tokenLogo: assetDetails?.logoURI || chainProperties[network]?.logo,
 						tokenSymbol: assetDetails?.name || chainProperties[network].tokenSymbol
 					});
 				} else {
 					tokenDetails.push({
 						tokenAddress: '',
 						tokenDecimals: chainProperties[network].decimals,
-						tokenLogo: chainProperties[network].logo,
+						tokenLogo: chainProperties[network]?.logo,
 						tokenSymbol: chainProperties[network].tokenSymbol
 					});
 				}
@@ -179,14 +179,14 @@ const Transaction: FC<IHistoryTransactions> = ({
 						isFakeToken,
 						tokenAddress: item?.tokenInfo?.address || '',
 						tokenDecimals: item?.tokenInfo?.decimals || chainProperties[network].decimals,
-						tokenLogo: item?.tokenInfo?.logoUri || chainProperties[network].logo,
+						tokenLogo: item?.tokenInfo?.logoUri || chainProperties[network]?.logo,
 						tokenSymbol: item?.tokenInfo?.symbol || chainProperties[network].tokenSymbol
 					});
 				} else {
 					tokenDetails.push({
 						tokenAddress: '',
 						tokenDecimals: chainProperties[network].decimals,
-						tokenLogo: chainProperties[network].logo,
+						tokenLogo: chainProperties[network]?.logo,
 						tokenSymbol: chainProperties[network].tokenSymbol
 					});
 				}
@@ -197,7 +197,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 				{
 					tokenAddress: '',
 					tokenDecimals: chainProperties[network].decimals,
-					tokenLogo: chainProperties[network].logo,
+					tokenLogo: chainProperties[network]?.logo,
 					tokenSymbol: chainProperties[network].tokenSymbol
 				}
 			]);
@@ -324,7 +324,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 									) : (
 										<p className='flex items-center grid grid-cols-8'>
 											<div className='flex items-center col-span-7 gap-x-2'>
-												<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network].logo} />
+												<ParachainIcon src={tokenDetailsArray[0]?.tokenLogo || chainProperties[network]?.logo} />
 												<span className='font-normal text-xs leading-[13px] text-success'>
 													{formatBalance(
 														ethers?.utils?.formatUnits(
@@ -367,7 +367,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 													src={
 														decodedCallData?.method === 'multiSend'
 															? tokenDetailsArray[0]?.tokenLogo
-															: txInfo?.transferInfo?.logoUri || chainProperties[network].logo
+															: txInfo?.transferInfo?.logoUri || chainProperties[network]?.logo
 													}
 												/>
 												<span className='font-normal text-xs leading-[13px] text-failure'>

@@ -309,7 +309,7 @@ const Menu: FC<Props> = ({ className }) => {
 											<div className='absolute top-[-4px] right-0'>
 												<ParachainIcon
 													size={10}
-													src={chainProperties[multisig.network].logo}
+													src={chainProperties[multisig.network]?.logo}
 												/>
 											</div>
 										</div>

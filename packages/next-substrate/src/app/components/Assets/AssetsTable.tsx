@@ -108,7 +108,7 @@ const AssetsTable = () => {
 								key={item}
 							>
 								<div className='col-span-1 flex items-center'>
-									<ParachainIcon src={tokens[item].logo} />
+									<ParachainIcon src={tokens[item]?.logo} />
 									<span
 										title={tokens[item].name}
 										className='hidden sm:block ml-[6px] max-w-md text-ellipsis overflow-hidden capitalize'
