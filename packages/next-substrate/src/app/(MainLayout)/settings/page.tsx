@@ -8,8 +8,8 @@ import React, { useState } from 'react';
 import ManageMultisig from '@next-substrate/app/components/Settings/ManageMultisig';
 import Notifications from '@next-substrate/app/components/Settings/Notifications';
 import TransactionFields from '@next-substrate/app/components/Settings/TransactionFields';
-import TwoFactorAuth from '@next-substrate/app/components/Settings/TwoFactorAuth';
 import MultisigOverview from '@next-substrate/app/components/Settings/Overview';
+import AdminSettings from '@next-substrate/app/components/Settings/Admin';
 import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 
 enum ETab {
@@ -76,7 +76,7 @@ const Settings = () => {
 			) : tab === ETab.TRANSACTIONS ? (
 				<TransactionFields />
 			) : tab === ETab.ADMIN ? (
-				<TwoFactorAuth />
+				<AdminSettings />
 			) : (
 				<MultisigOverview />
 			)}

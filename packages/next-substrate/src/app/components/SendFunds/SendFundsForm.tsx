@@ -546,7 +546,7 @@ const SendFundsForm = ({
 					{transactionType !== ETransactionType.CALL_DATA &&
 						amount.gt(
 							new BN(multisigBalance).sub(
-								inputToBn(`${chainProperties[network].existentialDeposit}`, network, false)[0]
+								inputToBn(`${chainProperties[network]?.existentialDeposit}`, network, false)[0]
 							)
 						) && (
 							<section className='mb-4 text-[13px] w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg font-normal flex items-center gap-x-2'>
@@ -684,7 +684,7 @@ const SendFundsForm = ({
 							/>
 						) : transactionType === ETransactionType.SET_IDENTITY ? (
 							<SetIdentity
-								multisigAddress={multisig.address || activeMultisig}
+								multisigAddress={multisig?.address || activeMultisig}
 								api={apis?.[network]?.api}
 								apiReady={apis?.[network]?.apiReady || false}
 								className={className}
@@ -915,13 +915,13 @@ const SendFundsForm = ({
 											<Input
 												disabled
 												type='number'
-												placeholder={String(chainProperties[network].existentialDeposit)}
+												placeholder={String(chainProperties[network]?.existentialDeposit)}
 												className='text-sm font-normal leading-[15px] outline-0 p-3 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white pr-24'
 												id='existential_deposit'
 											/>
 											<div className='absolute right-0 text-white px-3 flex gap-x-1 items-center justify-center'>
 												<ParachainIcon src={chainProperties[network]?.logo} />
-												<span>{chainProperties[network].tokenSymbol}</span>
+												<span>{chainProperties[network]?.tokenSymbol}</span>
 											</div>
 										</div>
 									</Form.Item>
@@ -1154,7 +1154,7 @@ const SendFundsForm = ({
 										(transferKeepAlive &&
 											amount.gt(
 												new BN(multisigBalance).sub(
-													inputToBn(`${chainProperties[network].existentialDeposit}`, network, false)[0]
+													inputToBn(`${chainProperties[network]?.existentialDeposit}`, network, false)[0]
 												)
 											)) ||
 										amount.gt(new BN(multisigBalance)) ||
