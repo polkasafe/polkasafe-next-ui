@@ -52,7 +52,7 @@ const BalanceInput: React.FC<Props> = ({
 	}, [defaultValue, network]);
 
 	const tokenCurrencyPrice = !Object.values(networks).includes(currency)
-		? Number(tokensUsdPrice[network]?.value) * allCurrencyPrices[currencyProperties[currency]?.symbol]?.value
+		? Number(tokensUsdPrice[network]?.value) * (allCurrencyPrices[currencyProperties[currency]?.symbol]?.value || 1)
 		: 1;
 
 	useEffect(() => {
@@ -120,7 +120,7 @@ const BalanceInput: React.FC<Props> = ({
 			label: (
 				<span className='flex items-center gap-x-2 text-white'>
 					<CurrencyFlag src={currencyProperties[c]?.logo} />
-					{c} ({currencyProperties[c].symbol})
+					{c} ({currencyProperties[c]?.symbol})
 				</span>
 			) as any
 		});
@@ -167,7 +167,7 @@ const BalanceInput: React.FC<Props> = ({
 								placeholder={`${placeholder} ${
 									Object.values(networks).includes(currency)
 										? chainProperties[network]?.tokenSymbol
-										: currencyProperties[currency].symbol
+										: currencyProperties[currency]?.symbol
 								}`}
 								defaultValue={defaultValue}
 								value={balance}
@@ -194,7 +194,7 @@ const BalanceInput: React.FC<Props> = ({
 												className='mr-2'
 												src={currencyProperties[currency]?.logo}
 											/>
-											<span>{currencyProperties[currency].symbol}</span>
+											<span>{currencyProperties[currency]?.symbol}</span>
 											<CircleArrowDownIcon className='text-primary ml-1' />
 										</div>
 									)}
@@ -210,9 +210,9 @@ const BalanceInput: React.FC<Props> = ({
 							<span className='text-waiting mt-1 flex items-center gap-x-1 text-xs'>
 								You send = {formatBnBalance(bnBalance, { numberAfterComma: 3, withUnit: true }, network)}
 								<Tooltip
-									title={`1 ${chainProperties[network]?.tokenSymbol} = ${tokenCurrencyPrice?.toFixed(2)} ${
-										currencyProperties[currency].symbol
-									}`}
+									title={`1 ${chainProperties[network]?.tokenSymbol} = ${tokenCurrencyPrice?.toFixed(
+										2
+									)} ${currencyProperties[currency]?.symbol}`}
 								>
 									<WarningCircleIcon className='text-sm' />
 								</Tooltip>
