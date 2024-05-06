@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import copyText from '@next-substrate/utils/copyText';
 import shortenAddress from '@next-substrate/utils/shortenAddress';
-import { FIREBASE_FUNCTIONS_LOCAL_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { NotificationStatus } from '@next-common/types';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
@@ -30,7 +30,7 @@ const LinkAddressViaRemark = ({ onCancel }: { onCancel: () => void }) => {
 		try {
 			setLoading(true);
 
-			const linkAddressRes = await fetch(`${FIREBASE_FUNCTIONS_LOCAL_URL}/linkAddressWithRemark`, {
+			const linkAddressRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/linkAddressWithRemark`, {
 				body: JSON.stringify({
 					hash: txHash,
 					network: 'polkadot'
