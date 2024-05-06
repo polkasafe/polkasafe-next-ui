@@ -244,8 +244,9 @@ const SendFundsForm = ({
 		const m = activeOrg?.multisigs?.find(
 			(item) => item.address === selectedMultisig || item.proxy === selectedMultisig
 		);
-		setMultisig(m);
-		setNetwork(m?.network);
+		console.log('m', m);
+		setMultisig(m || activeOrg.multisigs[0]);
+		setNetwork(m?.network || activeOrg.multisigs[0].network);
 	}, [activeOrg, selectedMultisig]);
 
 	useEffect(() => {

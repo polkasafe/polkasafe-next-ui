@@ -24,7 +24,8 @@ import {
 	StarIcon,
 	TransactionIcon,
 	UserPlusIcon,
-	TreasuryAnalyticsIcon
+	TreasuryAnalyticsIcon,
+	InvoicesIcon
 } from '@next-common/ui-components/CustomIcons';
 import { useAddMultisigContext } from '@next-substrate/context/AddMultisigContext';
 import Image from 'next/image';
@@ -141,13 +142,13 @@ const Menu: FC<Props> = ({ className }) => {
 				icon: <SettingsIcon />,
 				key: getPath('/settings'),
 				title: 'Settings'
+			},
+			{
+				baseURL: '/invoices',
+				icon: <InvoicesIcon />,
+				key: getPath('/invoices'),
+				title: 'Invoices'
 			}
-			// {
-			// baseURL: '/invoices',
-			// icon: <SettingsIcon />,
-			// key: getPath('/invoices'),
-			// title: 'Invoices'
-			// }
 		);
 	}
 
@@ -236,9 +237,9 @@ const Menu: FC<Props> = ({ className }) => {
 						</Dropdown>
 					</section>
 				)}
-				<section>
+				<section className='flex-1 flex flex-col'>
 					<h2 className='uppercase text-text_secondary ml-3 text-[10px] font-primary'>Menu</h2>
-					<ul className='flex flex-col py-2 text-white list-none'>
+					<ul className='flex-1 flex flex-col py-2 text-white list-none overflow-y-auto [&::-webkit-scrollbar]:hidden'>
 						{menuItems.map((item) => {
 							return (
 								<li

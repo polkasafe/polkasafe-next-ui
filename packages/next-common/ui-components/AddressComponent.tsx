@@ -31,6 +31,8 @@ interface IAddressComponent {
 	network?: string;
 	showNetworkBadge?: boolean;
 	addressLength?: number;
+	fullAddress?: boolean;
+	withEmail?: boolean;
 }
 
 const AddressComponent: React.FC<IAddressComponent> = ({
@@ -45,6 +47,8 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 	threshold,
 	network,
 	addressLength,
+	fullAddress,
+	withEmail,
 	showNetworkBadge // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IAddressComponent) => {
 	const { multisigSettings } = useGlobalUserDetailsContext();
@@ -167,7 +171,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 						)}
 					</div>
 					<div className='text-text_secondary flex items-center gap-x-3 text-xs font-normal'>
-						<span>{shortenAddress(displayAddress || '', addressLength)}</span>
+						<span>{fullAddress ? displayAddress : shortenAddress(displayAddress || '', addressLength)}</span>
 						<span className='flex items-center gap-x-2'>
 							<button onClick={() => copyText(address, true, network)}>
 								<CopyIcon className='hover:text-primary' />
@@ -180,6 +184,11 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 								<ExternalLinkIcon />
 							</a>
 						</span>
+						{withEmail && addressObj?.email && (
+							<div>
+								<span className='text-xs text-text_secondary'>{addressObj.email}</span>
+							</div>
+						)}
 					</div>
 				</div>
 			)}

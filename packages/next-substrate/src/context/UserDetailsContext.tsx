@@ -7,7 +7,7 @@
 
 import dayjs from 'dayjs';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { EFieldType, IUser, Triggers, UserDetailsContextType, Wallet } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import logout from '@next-substrate/utils/logout';
@@ -323,6 +323,9 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	const [loading, setLoading] = useState(true);
 
 	const searchParams = useSearchParams();
+	const pathname = usePathname();
+
+	const path = pathname.split('/')[1];
 
 	const sharedMultisigAddress = searchParams.get('multisig');
 	const sharedMultisigNetwork = searchParams.get('network');
@@ -436,7 +439,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					watchlists: {}
 				};
 			});
-			if (!sharedMultisigAddress) {
+			if (!sharedMultisigAddress && path !== 'invoice') {
 				router.push('/login');
 			}
 		}
@@ -450,7 +453,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 		} else {
 			logout();
 			setLoading(false);
-			if (!sharedMultisigAddress) {
+			if (!sharedMultisigAddress && path !== 'invoice') {
 				router.push('/login');
 			}
 		}
