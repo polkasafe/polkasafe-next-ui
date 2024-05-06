@@ -176,7 +176,7 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 					size='small'
 					onClick={() => fetchBoth(true)}
 					disabled={queueLoading || historyLoading}
-					className='text-primary bg-highlight outline-none border-none font-medium text-xs'
+					className='text-primary bg-highlight outline-none border-none font-medium text-xs hidden max-sm:block'
 				>
 					<SyncOutlined
 						spin={queueLoading || historyLoading}

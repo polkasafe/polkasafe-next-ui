@@ -209,21 +209,25 @@ const TransactionFields = ({
 					items: [
 						...Object.keys(userTransactionFields)
 							.filter((c) => c !== 'none')
-							.map((c) => ({
-								disabled: userTransactionFields[c]?.fieldName === transactionFieldsObject?.category,
-								key: userTransactionFields[c]?.fieldName,
-								label: (
-									<span
-										className={`flex justify-between gap-x-2 items-center ${
-											userTransactionFields[c]?.fieldName === transactionFieldsObject?.category
-												? 'text-text_placeholder'
-												: 'text-white'
-										}`}
-									>
-										{userTransactionFields[c]?.fieldName}{' '}
-									</span>
-								)
-							}))
+							.filter((c) => (newCategory ? c.toLowerCase().includes(newCategory.toLowerCase(), 0) : true))
+							.filter((_, i) => i <= 4)
+							.map((c) => {
+								return {
+									disabled: userTransactionFields[c]?.fieldName === transactionFieldsObject?.category,
+									key: userTransactionFields[c]?.fieldName,
+									label: (
+										<span
+											className={`flex justify-between gap-x-2 items-center ${
+												userTransactionFields[c]?.fieldName === transactionFieldsObject?.category
+													? 'text-text_placeholder'
+													: 'text-white'
+											}`}
+										>
+											{userTransactionFields[c]?.fieldName}{' '}
+										</span>
+									)
+								};
+							})
 					],
 					onClick: (e) => {
 						setTransactionFieldsObject({
