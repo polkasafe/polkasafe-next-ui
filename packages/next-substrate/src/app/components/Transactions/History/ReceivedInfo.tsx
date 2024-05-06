@@ -54,16 +54,17 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
 	return (
-		<article className='p-4 rounded-lg bg-bg-main flex-1'>
-			<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
+		<article className='p-4 rounded-lg bg-bg-main flex-1 max-sm:flex-wrap'>
+			<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px] max-sm:gap-3'>
 				<span>Received</span>
 				<span className='text-success'>
 					{amount} {amountType} ({(Number(amount_usd) * Number(currencyPrice)).toFixed(2)}{' '}
 					{currencyProperties[currency].symbol})
 				</span>
-				<span>from:</span>
+				<span className='max-sm:hidden'>from:</span>
 			</p>
-			<div className='mt-3 flex items-center gap-x-4'>
+			<div className='mt-3 flex items-center gap-x-4 max-sm:hidden'>
+				<span className='sm:hidden'>from:</span>
 				<Identicon
 					size={30}
 					value={from}
@@ -90,16 +91,26 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 					</p>
 				</div>
 			</div>
+			<div className=' flex items-center justify-between gap-x-7 my-3 sm:hidden'>
+				<span className='text-white font-normal text-sm leading-[15px]'>from:</span>
+				<AddressComponent
+					address={from}
+					network={network}
+				/>
+			</div>
 			<Divider className='bg-text_secondary my-5' />
 			<section className='w-[50%]'>
 				<div className=' flex items-center justify-between gap-x-7 mb-3'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>To:</span>
-					<AddressComponent address={to} />
+					<AddressComponent
+						address={to}
+						network={network}
+					/>
 				</div>
 				<div className='w-full flex items-center justify-between gap-x-5'>
-					<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
+					<span className='text-text_secondary font-normal text-sm leading-[15px] max-sm:w-[100xp]'>Txn_Hash:</span>
 					<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-						<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 10)}</span>
+						<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 5)}</span>
 						<span className='flex items-center gap-x-2 text-sm'>
 							<button onClick={() => copyText(callHash)}>
 								<CopyIcon />
@@ -112,7 +123,7 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 					<div className='w-full flex items-center justify-between gap-x-5 mt-3'>
 						<span className='text-text_secondary font-normal text-sm leading-[15px]'>Executed:</span>
 						<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-							<span className='text-white font-normal text-sm leading-[15px]'>{date}</span>
+							<span className='text-white font-normal text-sm leading-[15px] max-sm:w-[120px]'>{date}</span>
 						</p>
 					</div>
 				)}

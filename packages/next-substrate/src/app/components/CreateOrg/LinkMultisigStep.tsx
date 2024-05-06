@@ -154,7 +154,7 @@ const LinkMultisigStep = ({
 				{linkedMultisigs && linkedMultisigs.length > 0 && (
 					<div className='max-h-[250px] overflow-y-auto mb-5'>
 						{linkedMultisigs.map((item, i) => (
-							<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center'>
+							<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center max-sm:flex-wrap max-sm:gap-2'>
 								<AddressComponent
 									address={item?.address}
 									isMultisig
@@ -194,7 +194,7 @@ const LinkMultisigStep = ({
 							)
 							.filter((multisig) => !linkedMultisigs.some((item) => multisig.address === item.address))
 							.map((multisig) => (
-								<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center'>
+								<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center max-sm:flex-wrap max-sm:gap-2'>
 									<AddressComponent
 										address={multisig?.address}
 										isMultisig

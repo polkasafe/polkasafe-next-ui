@@ -109,11 +109,11 @@ const SentInfo: FC<ISentInfoProps> = ({
 	}, [fetchApprovals]);
 
 	return (
-		<div className={classNames('flex gap-x-4', className)}>
-			<article className='p-4 rounded-lg bg-bg-main flex-1'>
+		<div className={classNames('flex gap-x-4 max-sm:flex-wrap max-sm:gap-2', className)}>
+			<article className='p-4 rounded-lg bg-bg-main flex-1 max-sm:flex-wrap'>
 				{customTx ? null : typeof recipientAddresses === 'string' ? (
 					<>
-						<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
+						<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px] max-sm:gap-3'>
 							<span>Sent</span>
 							<span className='text-failure'>
 								{amount
@@ -140,9 +140,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 									</span>
 								)}
 							</span>
-							<span>To:</span>
+							<span className='max-sm:hidden'>To:</span>
 						</p>
-						<div className='mt-3 flex items-center gap-x-4'>
+						<div className='mt-3 flex items-center gap-x-4 max-sm:hidden'>
 							{recipientAddresses && (
 								<Identicon
 									size={30}
@@ -175,6 +175,13 @@ const SentInfo: FC<ISentInfoProps> = ({
 									</p>
 								)}
 							</div>
+						</div>
+						<div className=' flex items-center justify-between gap-x-7 my-3 sm:hidden'>
+							<span className='text-white font-normal text-sm leading-[15px]'>To:</span>
+							<AddressComponent
+								address={recipientAddresses}
+								network={network}
+							/>
 						</div>
 					</>
 				) : (
@@ -250,7 +257,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							))}
 					</div>
 				)}
-				<div className='flex items-center justify-between gap-x-7 mt-3'>
+				<div className='flex items-center justify-between gap-x-7 mt-3 max-sm:gap-x-2'>
 					<span className='text-text_secondary font-normal text-sm leading-[15px]'>From:</span>
 					<AddressComponent address={from} />
 				</div>
@@ -313,7 +320,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 							<div className='flex items-center justify-between gap-x-5 mt-3'>
 								<span className='text-text_secondary font-normal text-sm leading-[15px]'>Call Data:</span>
 								<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-									<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callData, 10)}</span>
+									<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callData, 5)}</span>
 									<span className='flex items-center gap-x-2 text-sm'>
 										<button onClick={() => copyText(callData)}>
 											<CopyIcon />
@@ -326,7 +333,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						<div className='flex items-center justify-between gap-x-5 mt-3'>
 							<span className='text-text_secondary font-normal text-sm leading-[15px]'>Txn Hash:</span>
 							<p className='flex items-center gap-x-3 font-normal text-xs leading-[13px] text-text_secondary'>
-								<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 10)}</span>
+								<span className='text-white font-normal text-sm leading-[15px]'>{shortenAddress(callHash, 5)}</span>
 								<span className='flex items-center gap-x-2 text-sm'>
 									<button onClick={() => copyText(callHash)}>
 										<CopyIcon />
@@ -396,7 +403,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 										showArrow={false}
 										key={1}
 										header={
-											<span className='text-primary font-normal text-sm leading-[15px] px-3 py-2 rounded-md bg-highlight'>
+											<span className='text-primary font-normal text-sm leading-[15px] px-3 py-2 rounded-md bg-highlight max-sm:text-[10px]'>
 												Show All Confirmations
 											</span>
 										}
@@ -407,13 +414,16 @@ const SentInfo: FC<ISentInfoProps> = ({
 													key={i}
 													dot={
 														<span className='bg-success bg-opacity-10 flex items-center justify-center p-1 rounded-md h-6 w-6'>
-															<CircleCheckIcon className='text-success text-sm' />
+															<CircleCheckIcon className='text-success text-sm nax-sm:text-xs' />
 														</span>
 													}
 													className={`${i === 0 && 'mt-4'} success bg-transaparent`}
 												>
 													<div className='mb-3 flex items-center gap-x-4'>
-														<AddressComponent address={address} />
+														<AddressComponent
+															address={address}
+															network={network}
+														/>
 													</div>
 												</Timeline.Item>
 											))}
