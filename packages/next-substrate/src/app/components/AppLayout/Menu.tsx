@@ -70,7 +70,9 @@ const Menu: FC<Props> = ({ className }) => {
 
 	useEffect(() => {
 		if (!activeOrg) return;
-		setMultisigs(activeOrg.multisigs);
+		setMultisigs(
+			activeOrg.multisigs.map((item) => ({ address: item.address, name: item.name, network: item.network }))
+		);
 	}, [activeOrg]);
 
 	const menuItems = [
@@ -274,11 +276,11 @@ const Menu: FC<Props> = ({ className }) => {
 				<section className='overflow-y-auto max-h-full [&::-webkit-scrollbar]:hidden mb-3'>
 					{multisigs && (
 						<ul className='flex flex-col gap-y-2 py-3 text-white list-none'>
-							{multisigs.map((multisig) => {
+							{multisigs.map((multisig, i) => {
 								return (
 									<li
 										className='w-full'
-										key={multisig.address}
+										key={`${multisig.address}_${multisig.network}_${activeOrg.id}_${activeOrg.name}_${i}`}
 									>
 										<button
 											className={`w-full flex items-center gap-x-2 flex-1 rounded-lg p-3 font-medium text-[13px] ${
