@@ -1,3 +1,4 @@
+/* eslint-disable no-tabs */
 /* eslint-disable no-restricted-syntax */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
@@ -69,14 +70,22 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 			const provider = isAvail ? null : new WsProvider(chainProperties[n].rpcEndpoint);
 			// eslint-disable-next-line no-await-in-loop
 			const availApi = isAvail && (await initialize(chainProperties[n].rpcEndpoint));
-			setApis((prev) => ({
-				...prev,
-				[n]: {
-					api: isAvail ? availApi : new ApiPromise({ provider }),
-					apiReady: false,
-					network: n
-				}
-			}));
+			const a = isAvail ? availApi : new ApiPromise({ provider });
+			a.isReady
+				.then(() => {
+					setApis((prev) => ({
+						...prev,
+						[n]: {
+							api: a,
+							apiReady: true,
+							network: n
+						}
+					}));
+					console.log(`API ready for network - ${n}`);
+				})
+				.catch((error) => {
+					console.error(error);
+				});
 		}
 	}, []);
 
@@ -84,27 +93,27 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 		setApiForAllNetworks();
 	}, [setApiForAllNetworks]);
 
-	useEffect(() => {
-		for (const n of Object.values(networks)) {
-			if (apis && apis[n]?.api && !apis[n].apiReady) {
-				const a = apis[n].api;
-				a.isReady
-					.then(() => {
-						setApis((prev) => ({
-							...prev,
-							[n]: {
-								...prev[n],
-								apiReady: true
-							}
-						}));
-						console.log(`API ready for network - ${n}`);
-					})
-					.catch((error) => {
-						console.error(error);
-					});
-			}
-		}
-	}, [apis]);
+	// useEffect(() => {
+	// 	for (const n of Object.values(networks)) {
+	// 		if (apis && apis[n]?.api && !apis[n].apiReady) {
+	// 			const a = apis[n].api;
+	// 			a.isReady
+	// 				.then(() => {
+	// 					setApis((prev) => ({
+	// 						...prev,
+	// 						[n]: {
+	// 							...prev[n],
+	// 							apiReady: true
+	// 						}
+	// 					}));
+	// 					console.log(`API ready for network - ${n}`);
+	// 				})
+	// 				.catch((error) => {
+	// 					console.error(error);
+	// 				});
+	// 		}
+	// 	}
+	// }, [apis]);
 
 	const value = useMemo(() => ({ api, apiReady, apis, network, setNetwork }), [api, apiReady, apis, network]);
 
