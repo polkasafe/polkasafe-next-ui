@@ -5,6 +5,9 @@ import dayjs from 'dayjs';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { IInvoice } from '@next-common/types';
 import formatBalance from '@next-substrate/utils/formatBalance';
+import { CopyIcon } from '@next-common/ui-components/CustomIcons';
+import copyText from '@next-substrate/utils/copyText';
+import { Tooltip } from 'antd';
 
 const SentInvoices = ({ invoices }: { invoices: IInvoice[] }) => {
 	console.log('invoices', invoices);
@@ -38,6 +41,16 @@ const SentInvoices = ({ invoices }: { invoices: IInvoice[] }) => {
 						<p className='col-span-1'>$ {formatBalance(item.amount)}</p>
 						<p className='col-span-1 flex justify-between items-center'>
 							<span className='text-waiting capitalize'>{item.status.current_status}</span>
+							<Tooltip title='Copy Share Link'>
+								<span
+									className='text-lg text-primary cursor-pointer'
+									onClick={() => {
+										copyText(`https://app.polkasafe.xyz/invoice/${item.id}`);
+									}}
+								>
+									<CopyIcon />
+								</span>
+							</Tooltip>
 						</p>
 					</div>
 				))
