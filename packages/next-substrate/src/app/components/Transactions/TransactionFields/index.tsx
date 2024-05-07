@@ -59,7 +59,7 @@ const TransactionFields = ({
 
 	const updateOrgTransactionFields = async (c: string) => {
 		try {
-			if (!userID || !activeOrg?.id) {
+			if (!userID || !activeOrg?.id || Object.keys(userTransactionFields).includes(generateCategoryKey(c))) {
 				console.log('ERROR');
 			} else {
 				const updateTransactionFieldsRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateTransactionFields_substrate`, {
@@ -205,11 +205,16 @@ const TransactionFields = ({
 			<Dropdown
 				disabled={loadingCategoryChange}
 				trigger={['click']}
+				destroyPopupOnHide
 				menu={{
 					items: [
 						...Object.keys(userTransactionFields)
 							.filter((c) => c !== 'none')
-							.filter((c) => (newCategory ? c.toLowerCase().includes(newCategory.toLowerCase(), 0) : true))
+							.filter((c) =>
+								newCategory
+									? userTransactionFields[c].fieldName.toLowerCase().includes(newCategory.toLowerCase(), 0)
+									: true
+							)
 							.filter((_, i) => i <= 4)
 							.map((c) => {
 								return {
@@ -240,11 +245,19 @@ const TransactionFields = ({
 				// eslint-disable-next-line react/no-unstable-nested-components
 				dropdownRender={(menu) => (
 					<div className='custom-dropdown border border-primary rounded-xl bg-bg-secondary'>
-						{React.cloneElement(menu as React.ReactElement)}
+						{newCategory &&
+						!Object.keys(userTransactionFields).some((c) =>
+							userTransactionFields[c].fieldName.toLowerCase().includes(newCategory.toLowerCase(), 0)
+						) ? (
+							<div className='text-primary p-3 text-sm font-medium truncate'>+ {newCategory}</div>
+						) : (
+							React.cloneElement(menu as React.ReactElement)
+						)}
 						<Divider className='m-0 border-text_secondary' />
 						<div className='p-2'>
 							<Input
 								placeholder='Add new category'
+								disabled={loadingCategoryChange}
 								className='w-full text-sm font-normal leading-[15px] border-none outline-none p-2 placeholder:text-[#505050] bg-bg-main rounded-lg text-white resize-none'
 								value={newCategory}
 								onKeyUp={(e) => {
