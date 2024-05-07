@@ -12,14 +12,22 @@ interface IAccountSelectionFormProps {
 	accounts: InjectedAccount[];
 	address: string;
 	onAccountChange: (address: string) => void;
-	title: string;
+	title?: string;
 	disabled?: boolean;
+	className?: string;
 }
 
-const AccountSelectionForm = ({ accounts, address, onAccountChange, title, disabled }: IAccountSelectionFormProps) => {
+const AccountSelectionForm = ({
+	accounts,
+	address,
+	onAccountChange,
+	title,
+	disabled,
+	className
+}: IAccountSelectionFormProps) => {
 	return (
-		<article className={styles.box}>
-			<h3 className='text-primary text-xs font-normal'>{title}</h3>
+		<article className={`${styles.box} ${className}`}>
+			{title && <h3 className='text-primary text-xs font-normal'>{title}</h3>}
 			<AddressDropdown
 				disabled={disabled}
 				accounts={accounts}

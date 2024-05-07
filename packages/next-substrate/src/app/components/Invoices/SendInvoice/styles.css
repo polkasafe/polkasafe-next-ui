@@ -1,0 +1,7 @@
+.ant-checkbox-wrapper span:nth-child(2) {
+    flex: 1 1 0% !important;
+}
+
+.ant-checkbox .ant-checkbox-inner {
+    border-color: white !important;
+}

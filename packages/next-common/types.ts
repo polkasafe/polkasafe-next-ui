@@ -116,6 +116,7 @@ export interface UserDetailsContextType {
 	userID: string;
 	loading?: boolean;
 	loggedInWallet: Wallet;
+	linkedAddresses?: string[];
 	activeMultisig: string;
 	isProxy: boolean;
 	address: string;
@@ -268,6 +269,7 @@ export interface IUser {
 	two_factor_auth?: I2FASettings;
 	tfa_token?: I2FAToken;
 	watchlists?: { [address: string]: IWatchlist };
+	linkedAddresses?: string[];
 }
 
 export interface IMultisigAddress {

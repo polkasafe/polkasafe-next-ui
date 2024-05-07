@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 
 import Identicon from '@polkadot/react-identicon';
-import { Button } from 'antd';
+import { Badge, Button } from 'antd';
 import React, { useRef, useState } from 'react';
 import Link from 'next/link';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
@@ -17,6 +17,7 @@ import shortenAddress from '@next-substrate/utils/shortenAddress';
 import { useRouter } from 'next/navigation';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import AddressComponent from '@next-common/ui-components/AddressComponent';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface IAddress {
@@ -24,7 +25,8 @@ interface IAddress {
 	imgSrc: string;
 }
 const AddressDropdown = () => {
-	const { address, loggedInWallet, setUserDetailsContextState } = useGlobalUserDetailsContext();
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const { address, loggedInWallet, setUserDetailsContextState, linkedAddresses } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
 	const router = useRouter();
@@ -143,10 +145,22 @@ const AddressDropdown = () => {
 						</p>
 					</div>
 					<div className='w-full'>
-						<p className='border-t border-text_secondary flex items-center text-normal text-sm justify-between w-full p-2'>
+						<p className='border-t border-b border-text_secondary flex items-center text-normal text-sm justify-between w-full p-2'>
 							<span className='text-text_secondary'>Wallet</span>
 							<span className='text-white capitalize'>{loggedInWallet}</span>
 						</p>
+						{linkedAddresses && linkedAddresses.length > 0 ? (
+							<>
+								<p className='text-text_secondary text-sm w-full p-2 flex items-center gap-x-2'>
+									Linked Addresses <Badge status='success' />
+								</p>
+								<div className='flex flex-col gap-y-1 p-2 max-h-[150px] overflow-y-auto'>
+									{linkedAddresses.map((a) => (
+										<AddressComponent address={a} />
+									))}
+								</div>
+							</>
+						) : null}
 					</div>
 					<Button
 						onClick={handleDisconnect}

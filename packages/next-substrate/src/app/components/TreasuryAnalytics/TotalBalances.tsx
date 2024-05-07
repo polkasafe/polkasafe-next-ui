@@ -36,45 +36,55 @@ const TotalBalances = ({
 	const totalOutgoing = filterredOutgoingTxns.reduce((sum, item) => sum + Number(item.balance_usd), 0);
 
 	return (
-		<div className='rounded-xl p-5 bg-bg-secondary flex gap-x-5'>
-			<div>
-				<label className='text-text_secondary text-xs mb-1.5'>Incoming</label>
-				<div className='text-success font-bold text-[22px]'>
-					$ {totalIncoming ? formatBalance(totalIncoming) : '0.00'}
-				</div>
-			</div>
-			<div>
-				<Divider
-					type='vertical'
-					orientation='center'
-					className='border border-text_secondary h-full'
-				/>
-			</div>
-			<div>
-				<label className='text-text_secondary text-xs mb-1.5'>Outgoing</label>
-				<div className='text-failure font-bold text-[22px]'>
-					$ {totalOutgoing ? formatBalance(totalOutgoing) : '0.00'}
-				</div>
-			</div>
-			<div>
-				<Divider
-					type='vertical'
-					orientation='center'
-					className='border border-text_secondary h-full'
-				/>
-			</div>
-			<div>
-				<label className='text-text_secondary text-xs mb-1.5'>Net</label>
-				<div className='text-white font-bold text-[22px]'>$ {formatBalance(totalIncoming - totalOutgoing)}</div>
-			</div>
-			<div className='flex-1' />
+		<div className='relative'>
 			<Button
+				size='small'
 				onClick={onReload}
-				icon={<SyncOutlined className='text-primary' />}
-				className='text-primary bg-highlight outline-none border-none font-medium text-sm'
+				className='text-primary outline-none border-none font-medium text-[8px] top-1 right-1 absolute sm:hidden'
 			>
-				Refresh
+				<SyncOutlined className='text-primary' />
 			</Button>
+			<div className='rounded-xl p-5 bg-bg-secondary flex gap-x-5 max-sm:p-3 max-sm:gap-x-2'>
+				<div>
+					<label className='text-text_secondary text-xs mb-1.5'>Incoming</label>
+					<div className='text-success font-bold text-[22px] max-sm:text-[16px]'>
+						$ {totalIncoming ? formatBalance(totalIncoming) : '0.00'}
+					</div>
+				</div>
+				<div>
+					<Divider
+						type='vertical'
+						orientation='center'
+						className='border border-text_secondary h-full'
+					/>
+				</div>
+				<div>
+					<label className='text-text_secondary text-xs mb-1.5'>Outgoing</label>
+					<div className='text-failure font-bold text-[22px] max-sm:text-[16px]'>
+						$ {totalOutgoing ? formatBalance(totalOutgoing) : '0.00'}
+					</div>
+				</div>
+				<div>
+					<Divider
+						type='vertical'
+						orientation='center'
+						className='border border-text_secondary h-full'
+					/>
+				</div>
+				<div>
+					<label className='text-text_secondary text-xs mb-1.5'>Net</label>
+					<div className='text-white font-bold text-[22px] max-sm:text-[16px]'>
+						$ {formatBalance(totalIncoming - totalOutgoing)}
+					</div>
+				</div>
+				<Button
+					onClick={onReload}
+					icon={<SyncOutlined className='text-primary' />}
+					className='text-primary bg-highlight outline-none border-none font-medium text-sm max-sm:hidden'
+				>
+					Refresh
+				</Button>
+			</div>
 		</div>
 	);
 };

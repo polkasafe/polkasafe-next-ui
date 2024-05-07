@@ -31,6 +31,8 @@ interface IAddressComponent {
 	network?: string;
 	showNetworkBadge?: boolean;
 	addressLength?: number;
+	fullAddress?: boolean;
+	withEmail?: boolean;
 }
 
 const AddressComponent: React.FC<IAddressComponent> = ({
@@ -45,6 +47,8 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 	threshold,
 	network,
 	addressLength,
+	fullAddress,
+	withEmail,
 	showNetworkBadge // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IAddressComponent) => {
 	const { multisigSettings } = useGlobalUserDetailsContext();
@@ -131,7 +135,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 							multisigSettings[`${address}_${network}`]?.name ||
 							shortenAddress(address || '', addressLength || 10)}
 					</span>
-					<span className='flex items-center gap-x-2'>
+					<span className='flex items-center gap-x-2 max-sm:gap-0'>
 						<button onClick={() => copyText(address, true, network)}>
 							<CopyIcon className='hover:text-primary' />
 						</button>
@@ -146,7 +150,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 				</div>
 			) : (
 				<div>
-					<div className='font-medium text-sm flex items-center gap-x-3 text-white'>
+					<div className='font-medium text-sm flex items-center gap-x-3 text-white max-sm:text-xs'>
 						{name ||
 							addressObj?.nickName ||
 							addressObj?.name ||
@@ -166,8 +170,8 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 							</div>
 						)}
 					</div>
-					<div className='text-text_secondary flex items-center gap-x-3 text-xs font-normal'>
-						<span>{shortenAddress(displayAddress || '', addressLength)}</span>
+					<div className='text-text_secondary flex items-center gap-x-3 text-xs font-normal max-sm:text-[8px]'>
+						<span>{fullAddress ? displayAddress : shortenAddress(displayAddress || '', addressLength)}</span>
 						<span className='flex items-center gap-x-2'>
 							<button onClick={() => copyText(address, true, network)}>
 								<CopyIcon className='hover:text-primary' />
@@ -180,6 +184,11 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 								<ExternalLinkIcon />
 							</a>
 						</span>
+						{withEmail && addressObj?.email && (
+							<div>
+								<span className='text-xs text-text_secondary'>{addressObj.email}</span>
+							</div>
+						)}
 					</div>
 				</div>
 			)}

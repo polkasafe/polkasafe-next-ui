@@ -65,7 +65,7 @@ const BalanceInput = ({
 			setAmountLessThanReq(true);
 			return;
 		}
-		setInsufficientBalance(false);
+		setAmountLessThanReq(false);
 	};
 
 	const selectedAssets = assets || allAssets[multisigAddress]?.assets;

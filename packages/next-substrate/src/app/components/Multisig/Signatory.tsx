@@ -190,7 +190,7 @@ const Signatory = ({
 	};
 
 	return (
-		<div className='flex w-[45vw]'>
+		<div className='flex w-[45vw] max-sm:w-[100%]'>
 			<NewUserModal
 				open={addWalletAddress}
 				onCancel={() => setAddWalletAddress(false)}
@@ -202,10 +202,10 @@ const Signatory = ({
 					onDrop={dropReturn}
 					onDragOver={dragOver}
 				>
-					<h1 className='text-primary mt-3 mb-2'>Available Signatory</h1>
+					<h1 className='text-primary mt-3 mb-2 max-sm:text-xs'>Available Signatory</h1>
 					<div
 						id={`drop1${homepage && '-home'}`}
-						className='flex flex-col bg-bg-secondary p-4 rounded-lg my-1 h-[30vh] overflow-y-auto'
+						className='flex flex-col bg-bg-secondary p-4 rounded-lg my-1 h-[30vh] overflow-y-auto max-sm:p-1'
 					>
 						{addresses.length > 0 ? (
 							addresses.map((address) => {
@@ -221,7 +221,7 @@ const Signatory = ({
 										title={address.address || ''}
 										id={`${address.key}-${address.address}`}
 										key={`${address.key}-${address.address}`}
-										className='bg-bg-main p-2 m-1 rounded-md text-white flex items-center gap-x-2'
+										className='bg-bg-main p-2 m-1 rounded-md text-white flex items-center gap-x-2 max-sm:text-[8px]'
 										draggable
 										onDragStart={dragStart}
 									>
@@ -280,10 +280,10 @@ const Signatory = ({
 					id='div2'
 					className='flex flex-col my-2 pd-2 w-1/2 ml-2'
 				>
-					<h1 className='text-primary mt-3 mb-2'>Selected Signatory</h1>
+					<h1 className='text-primary mt-3 mb-2 max-sm:text-xs'>Selected Signatory</h1>
 					<div
 						id={`drop2${homepage && '-home'}`}
-						className='flex flex-col bg-bg-secondary p-2 rounded-lg my-1 h-[30vh] overflow-auto cursor-grab'
+						className='flex flex-col bg-bg-secondary p-2 rounded-lg my-1 h-[30vh] overflow-auto cursor-grab max-sm:p-1'
 						onDrop={drop}
 						onDragOver={dragOver}
 					>
@@ -293,7 +293,7 @@ const Signatory = ({
 								title={a || ''}
 								id={`${i}-${a}`}
 								key={`${i}-${a}`}
-								className='bg-bg-main p-2 m-1 rounded-md text-white cursor-default flex items-center gap-x-2'
+								className='bg-bg-main p-2 m-1 rounded-md text-white cursor-default flex items-center gap-x-2 max-sm:text-[8px]'
 							>
 								{activeOrg?.addressBook?.find((item) => getSubstrateAddress(item.address) === getSubstrateAddress(a))
 									?.name || shortenAddress(getEncodedAddress(a, network) || a)}{' '}

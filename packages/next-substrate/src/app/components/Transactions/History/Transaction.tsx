@@ -111,7 +111,7 @@ const Transaction: FC<ITransaction> = ({
 					<div
 						onClick={() => toggleTransactionVisible(!transactionInfoVisible)}
 						className={classNames(
-							'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px]'
+							'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px] max-sm:flex max-sm:flex-wrap max-sm:gap-2'
 						)}
 					>
 						<p className='col-span-2 flex items-center gap-x-3'>

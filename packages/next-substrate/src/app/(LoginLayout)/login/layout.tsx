@@ -12,14 +12,14 @@ export default function LoginLayout({ children }: { children: React.ReactNode })
 		<Layout className='h-screen'>
 			<NextTopLoader />
 			<div className='grid grid-cols-11 bg-bg-secondary h-full'>
-				<div className='relative col-span-4 h-full'>
+				<div className='relative col-span-4 h-full max-sm:hidden'>
 					<Image
 						src={loginFrame}
 						alt='Login'
 						className='absolute w-full h-full'
 					/>
 				</div>
-				<div className='col-span-7 p-[30px] flex flex-col'>
+				<div className='col-span-7 p-[30px] flex flex-col max-sm:col-span-11 max-sm:p-3'>
 					<div className='flex justify-end w-full mb-5'>
 						<div className=''>
 							<PolkasafeLogo />

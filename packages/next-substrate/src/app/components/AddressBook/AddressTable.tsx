@@ -243,6 +243,54 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 		}
 	];
 
+	const smallColumns: ColumnsType<DataType> = [
+		{
+			dataIndex: 'name',
+			fixed: 'left',
+			key: 'name',
+			title: 'Name',
+			width: 150
+		},
+		{
+			dataIndex: 'address',
+			fixed: 'left',
+			key: 'address',
+			title: 'Address',
+			width: 150
+		},
+		{
+			dataIndex: 'email',
+			key: 'email',
+			title: 'Email',
+			width: 150
+		},
+		{
+			dataIndex: 'discord',
+			key: 'discord',
+			title: 'Discord',
+			width: 100
+		},
+		{
+			dataIndex: 'telegram',
+			key: 'telegram',
+			title: 'Telegram',
+			width: 100
+		},
+		{
+			dataIndex: 'roles',
+			key: 'roles',
+			title: 'Roles',
+			width: 100
+		},
+		{
+			dataIndex: 'actions',
+			fixed: 'right',
+			key: 'actions',
+			title: 'Actions',
+			width: 50
+		}
+	];
+
 	const addressBookData: DataType[] = Object.keys(addresses)?.map((address) => {
 		const encodedAddress = getSubstrateAddress(address);
 		return {
@@ -390,14 +438,24 @@ const AddressTable: FC<IAddressProps> = ({ addresses, className }) => {
 	});
 
 	return (
-		<div className='text-sm font-medium overflow-y-auto'>
-			<Table
-				columns={columns}
-				pagination={false}
-				dataSource={addressBookData}
-				scroll={{ x: 1000, y: 500 }}
-			/>
-		</div>
+		<>
+			<div className='text-sm font-medium overflow-y-auto max-sm:hidden'>
+				<Table
+					columns={columns}
+					pagination={false}
+					dataSource={addressBookData}
+					scroll={{ x: 1000, y: 500 }}
+				/>
+			</div>
+			<div className='text-sm font-medium overflow-y-auto sm:hidden'>
+				<Table
+					columns={smallColumns}
+					pagination={false}
+					dataSource={addressBookData}
+					scroll={{ x: 2000, y: 500 }}
+				/>
+			</div>
+		</>
 	);
 };
 

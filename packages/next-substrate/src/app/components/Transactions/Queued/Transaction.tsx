@@ -369,7 +369,7 @@ const Transaction: FC<ITransactionProps> = ({
 			{contextHolder}
 
 			<Collapse
-				className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'
+				className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left max-sm:p-1'
 				bordered={false}
 				defaultActiveKey={[`${hash}`]}
 			>
@@ -389,7 +389,7 @@ const Transaction: FC<ITransactionProps> = ({
 									toggleTransactionVisible(!transactionInfoVisible);
 								}}
 								className={classNames(
-									'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px]'
+									'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px] max-sm:flex max-sm:flex-wrap max-sm:gap-2'
 								)}
 							>
 								<p className='col-span-2 flex items-center gap-x-3'>

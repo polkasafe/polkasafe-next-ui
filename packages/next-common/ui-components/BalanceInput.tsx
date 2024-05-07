@@ -16,6 +16,7 @@ import inputToBn from '@next-substrate/utils/inputToBn';
 import { CurrencyFlag } from '@next-substrate/app/components/Settings/ChangeCurrency';
 import { ParachainIcon } from '@next-substrate/app/components/NetworksDropdown/NetworkCard';
 
+import formatBalance from '@next-substrate/utils/formatBalance';
 import { CircleArrowDownIcon, WarningCircleIcon } from './CustomIcons';
 
 interface Props {
@@ -26,6 +27,7 @@ interface Props {
 	placeholder?: string;
 	defaultValue?: string;
 	multipleCurrency?: boolean;
+	requestedAmount?: string;
 	network: string;
 }
 
@@ -37,12 +39,15 @@ const BalanceInput: React.FC<Props> = ({
 	placeholder = '',
 	defaultValue,
 	multipleCurrency = false,
-	network
+	requestedAmount,
+	network // eslint-disable-next-line sonarjs/cognitive-complexity
 }: Props) => {
 	const [isValidInput, setIsValidInput] = useState(true);
 	const [balance, setBalance] = useState<string>(defaultValue || '');
 	const [bnBalance, setBnBalance] = useState(new BN(0));
 	const { allCurrencyPrices, tokensUsdPrice } = useGlobalCurrencyContext();
+
+	const [amountLessThanReq, setAmountLessThanReq] = useState(false);
 
 	const [currency, setCurrency] = useState<string>(network);
 
@@ -100,6 +105,12 @@ const BalanceInput: React.FC<Props> = ({
 			setBnBalance(inputBalance);
 			onChange(inputBalance);
 		}
+
+		if (requestedAmount && balanceInput * tokenCurrencyPrice < Number(requestedAmount)) {
+			setAmountLessThanReq(true);
+			return;
+		}
+		setAmountLessThanReq(false);
 	};
 
 	const currencyOptions: ItemType[] = [
@@ -146,14 +157,19 @@ const BalanceInput: React.FC<Props> = ({
 						className='my-0 border-0 p-0 outline-0'
 						name='balance'
 						rules={[{ required: true }]}
-						validateStatus={!isValidInput || (fromBalance && bnBalance?.gte(new BN(fromBalance))) ? 'error' : 'success'}
+						validateStatus={
+							!isValidInput || (fromBalance && bnBalance?.gte(new BN(fromBalance))) || amountLessThanReq
+								? 'error'
+								: 'success'
+						}
 						help={
 							!isValidInput
 								? 'Please input a valid value'
-								: fromBalance &&
-								  !bnBalance?.isZero() &&
-								  bnBalance?.gte(new BN(fromBalance)) &&
-								  'Insufficient Balance in Sender Account.'
+								: fromBalance && !bnBalance?.isZero() && bnBalance?.gte(new BN(fromBalance))
+								? 'Insufficient Balance in Sender Account.'
+								: requestedAmount &&
+								  amountLessThanReq &&
+								  `Amount less than Requested ($${formatBalance(requestedAmount)})`
 						}
 						initialValue={chainProperties[network]?.existentialDeposit}
 					>
