@@ -98,11 +98,11 @@ const ManageMultisig = () => {
 							</div>
 						</Dropdown>
 					</div>
-					<div className='bg-bg-main p-5 rounded-xl relative overflow-hidden'>
+					<div className='bg-bg-main p-5 rounded-xl relative overflow-hidden max-sm:'>
 						{selectedMultisig?.proxy ? (
 							<section className='flex items-center justify-between flex-col gap-5 md:flex-row mb-6'>
-								<div className='bg-bg-secondary rounded-lg p-3 w-auto flex items-center gap-x-4'>
-									<div className='flex flex-col items-start'>
+								<div className='bg-bg-secondary rounded-lg p-3 w-auto flex items-center gap-x-4 max-sm:flex-col max-sm:w-full'>
+									<div className='flex flex-col items-start max-sm:w-full'>
 										<div className='px-2 mb-1 py-[2px] rounded-md text-xs font-medium bg-primary text-white'>
 											Multisig
 										</div>
@@ -126,10 +126,10 @@ const ManageMultisig = () => {
 											</a>
 										</div>
 									</div>
-									<div className='h-[50px] w-[50px] rounded-full flex items-center justify-center bg-text_secondary text-bg-main text-xl'>
+									<div className='h-[50px] w-[50px] rounded-full flex items-center justify-center bg-text_secondary text-bg-main text-xl max-sm:my-2'>
 										<ArrowRightOutlined />
 									</div>
-									<div className='flex flex-col items-start'>
+									<div className='flex flex-col items-start max-sm:w-full'>
 										<div className='px-2 mb-1 py-[2px] rounded-md text-xs font-medium bg-[#FF79F2] text-highlight'>
 											Proxy
 										</div>
@@ -175,13 +175,13 @@ const ManageMultisig = () => {
 				</>
 			)}
 			{userID && (
-				<div className='mt-[30px] flex gap-x-[30px]'>
+				<div className='mt-[30px] flex gap-x-[30px] max-sm:flex-col'>
 					{selectedMultisig && (
 						<section className='w-full'>
 							<Details multisig={selectedMultisig} />
 						</section>
 					)}
-					<section className='w-full max-w-[50%]'>
+					<section className='w-full max-w-[50%] max-sm:max-w-full'>
 						<Feedback />
 					</section>
 				</div>

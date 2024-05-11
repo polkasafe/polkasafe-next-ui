@@ -19,7 +19,7 @@ const TokenFlow = ({
 	const outgoingPercent = (numberOfOutgoing / (numberOfIncoming + numberOfOutgoing)) * 100;
 
 	return (
-		<div className='w-full flex gap-x-12 items-center'>
+		<div className='w-full flex gap-x-12 items-center max-sm:flex-col'>
 			<CircularProgressBar
 				incomingPercent={incomingPercent}
 				outgoingPercent={outgoingPercent}
@@ -27,8 +27,8 @@ const TokenFlow = ({
 				innerWidth={200}
 				netBalance={incomingAmount - outgoingAmount}
 			/>
-			<div className='flex flex-col items-center'>
-				<div className='w-full'>
+			<div className='flex flex-col items-center max-sm:mt-2'>
+				<div className='w-full max-sm:flex max-sm:gap-2'>
 					<label className='text-text_secondary text-sm mb-1'>Incoming</label>
 					<div className='text-success font-bold text-[18px] xl:text-[22px]'>
 						$ {formatBalance(incomingAmount || 0)}
@@ -38,7 +38,7 @@ const TokenFlow = ({
 					orientation='center'
 					className='border border-text_secondary my-2'
 				/>
-				<div className='w-full'>
+				<div className='w-full max-sm:flex max-sm:gap-2'>
 					<label className='text-text_secondary text-sm mb-1'>Outgoing</label>
 					<div className='text-failure font-bold text-[18px] xl:text-[22px]'>
 						$ {formatBalance(outgoingAmount || 0)}

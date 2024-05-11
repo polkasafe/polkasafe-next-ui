@@ -85,7 +85,7 @@ const Feedback = () => {
 				/>
 			</ModalComponent>
 			<h2 className='font-semibold text-lg leading-[22px] text-white mb-4'>Feedback</h2>
-			<article className='bg-bg-main p-5 rounded-xl text-text_secondary text-sm font-normal leading-[15px]'>
+			<article className='bg-bg-main p-5 rounded-xl text-text_secondary text-sm font-normal leading-[15px] max-sm:w-full'>
 				<div className='flex items-center gap-x-5 justify-between text-sm font-normal leading-[15px]'>
 					<p className='text-white'>What do you think of PolkaSafe?</p>
 					<button
@@ -95,7 +95,7 @@ const Feedback = () => {
 						Write a Review
 					</button>
 				</div>
-				<div className='my-[34.5px] flex items-center justify-center gap-x-5'>
+				<div className='my-[34.5px] flex items-center justify-center gap-x-5 max-sm:gap-x-1 max-sm:my-[14.5px]'>
 					{emojis.map((emoji, i) => {
 						return (
 							// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions

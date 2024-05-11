@@ -178,7 +178,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 	};
 
 	return (
-		<div className={classNames('flex gap-x-4', className)}>
+		<div className={classNames('flex gap-x-4 max-sm:flex-wrap max-sm:gap-2', className)}>
 			<ModalComponent
 				onCancel={() => setOpenCancelModal(false)}
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Cancel Transaction</h3>}
@@ -214,7 +214,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 					onCancel={() => setOpenEditNoteModal(false)}
 				/>
 			</ModalComponent>
-			<article className='p-4 rounded-lg bg-bg-main flex-1'>
+			<article className='p-4 rounded-lg bg-bg-main flex-1 max-sm:flex-wrap'>
 				{isProxyApproval ||
 				isProxyAddApproval ||
 				isProxyRemovalApproval ||
@@ -580,7 +580,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 									showArrow={false}
 									key={1}
 									header={
-										<span className='text-primary font-normal text-sm leading-[15px] px-3 py-2 rounded-md bg-highlight'>
+										<span className='text-primary font-normal text-sm leading-[15px] px-3 py-2 rounded-md bg-highlight max-sm:text-xs'>
 											Show All Confirmations
 										</span>
 									}
@@ -596,7 +596,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 												}
 												className={`${i === 0 && 'mt-4'} success bg-transaparent`}
 											>
-												<div className='mb-3 flex items-center gap-x-4'>
+												<div className='mb-3 flex items-center gap-x-4 max-sm:text-xs'>
 													<AddressComponent
 														address={address}
 														network={network}

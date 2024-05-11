@@ -50,7 +50,7 @@ const ManageMultisig = () => {
 						</p>
 					</section>
 					<section className='flex items-center justify-between flex-col gap-5 md:flex-row mb-6'>
-						<div className='flex-1 flex items-center gap-x-3'>
+						<div className='flex-1 flex items-center gap-x-3 max-sm:flex-wrap'>
 							{Object.keys(transactionFields)
 								.filter((field) => field !== 'none')
 								.map((field) => (

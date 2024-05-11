@@ -108,6 +108,7 @@ const TopAssetsCard = ({
 					<div className='h-[190px] w-[400px]'>
 						<Doughnut
 							data={data}
+							className='max-sm:h-[150px] max-sm:w-[310px]'
 							options={{
 								maintainAspectRatio: false,
 								plugins: {

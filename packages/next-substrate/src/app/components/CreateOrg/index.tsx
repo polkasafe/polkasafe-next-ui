@@ -111,7 +111,7 @@ const CreateOrg = () => {
 	};
 
 	return (
-		<div className='w-[50%] h-full'>
+		<div className='w-[50%] h-full max-sm:w-full'>
 			{steps.map((item, i) =>
 				i === step ? (
 					<div>

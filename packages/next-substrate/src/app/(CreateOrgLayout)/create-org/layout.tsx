@@ -18,7 +18,7 @@ export default function CreateOrgLayout({ children }: { children: React.ReactNod
 				hasSider
 				className='min-h-[100vh]'
 			>
-				<div className='w-[260px] p-[30px] bg-bg-main top-0 bottom-0 left-0 h-screen fixed'>
+				<div className='w-[260px] p-[30px] bg-bg-main top-0 bottom-0 left-0 h-screen fixed max-sm:hidden'>
 					<div className='mb-12 h-[30px] w-[180px]'>
 						<PolkasafeLogo />
 					</div>

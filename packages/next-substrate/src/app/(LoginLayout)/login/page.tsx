@@ -163,6 +163,7 @@ const ConnectWallet = () => {
 							address: userData?.address?.[0],
 							addressBook: userData?.addressBook || [],
 							createdAt: userData?.created_at,
+							linkedAddresses: userData?.linkedAddresses || [],
 							loggedInWallet: selectedWallet,
 							multisigAddresses: userData?.multisigAddresses,
 							multisigSettings: userData?.multisigSettings || {},

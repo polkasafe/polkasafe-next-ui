@@ -114,15 +114,15 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 	}, [fetchBoth, queueItems]);
 
 	return (
-		<div className={`w-full h-[400px] bg-bg-main rounded-xl p-8 flex flex-col ${className}`}>
-			<div className='flex items-center gap-x-4 mb-4 scale-90 w-[110%] origin-top-left'>
+		<div className={`w-full h-[400px] bg-bg-main rounded-xl p-8 flex flex-col ${className} max-sm:overflow-x-auto`}>
+			<div className='flex items-center gap-x-4 mb-4 scale-90 w-[110%] origin-top-left max-sm:w-[300px]'>
 				<Button
 					onClick={() => setTab(ETab.HISTORY)}
 					// icon={<HistoryIcon />}
 					size='large'
 					className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none ${
 						tab === ETab.HISTORY ? 'bg-highlight border-primary' : 'border border-text_placeholder hover:border-primary'
-					}`}
+					} max-sm:text-xs max-sm:p-3`}
 				>
 					History
 				</Button>
@@ -132,7 +132,7 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 					size='large'
 					className={`flex items-center gap-x-2 rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none ${
 						tab === ETab.QUEUE ? 'bg-highlight border-primary' : 'border border-text_placeholder hover:border-primary'
-					}`}
+					} max-sm:text-xs max-sm:p-3`}
 				>
 					Queue{' '}
 					<span
@@ -153,11 +153,11 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 					size='large'
 					className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none ${
 						tab === ETab.MEMBERS ? 'bg-highlight border-primary' : 'border border-text_placeholder hover:border-primary'
-					}`}
+					} max-sm:text-xs max-sm:p-3`}
 				>
 					Members
 				</Button>
-				<div className='flex-1' />
+				<div className='flex-1 max-sm:hidden' />
 				<Button
 					size='large'
 					onClick={() => fetchBoth(true)}
@@ -168,9 +168,20 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 							className='text-primary'
 						/>
 					}
-					className='text-primary bg-highlight outline-none border-none font-medium text-sm'
+					className='text-primary bg-highlight outline-none border-none font-medium text-sm max-sm:hidden'
 				>
 					Refresh
+				</Button>
+				<Button
+					size='small'
+					onClick={() => fetchBoth(true)}
+					disabled={queueLoading || historyLoading}
+					className='text-primary bg-highlight outline-none border-none font-medium text-xs hidden max-sm:block'
+				>
+					<SyncOutlined
+						spin={queueLoading || historyLoading}
+						className='text-primary'
+					/>
 				</Button>
 			</div>
 			<div className='overflow-hidden flex-1'>

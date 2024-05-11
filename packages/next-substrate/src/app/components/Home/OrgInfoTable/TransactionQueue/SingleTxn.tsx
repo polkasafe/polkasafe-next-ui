@@ -102,7 +102,7 @@ const SingleTxn = ({
 	return (
 		<Link
 			href={`/transactions?tab=Queue#${transaction.callHash}`}
-			className='pb-2 mb-2 gap-x-3 grid grid-cols-9'
+			className='pb-2 mb-2 gap-x-3 grid grid-cols-9 max-sm:flex max-sm:flex-wrap max-sm:gap-2 max-sm:mb-5 max-sm:bg-bg-secondary max-sm:p-3 max-sm:rounded-lg'
 		>
 			<p className='flex items-center col-span-5 pr-5'>
 				<div className='flex flex-1 items-center'>
