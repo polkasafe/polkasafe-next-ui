@@ -42,6 +42,7 @@ const NameAddress = ({ className, multisigAddress, setMultisigAddress, multisigN
 			});
 
 			const responseJSON = await response.json();
+			console.log(responseJSON.data);
 			if (responseJSON?.data && responseJSON?.data?.account?.multisig?.multi_account) {
 				const multiAddresses = responseJSON.data.account.multisig.multi_account;
 				if (multiAddresses?.length > 0) {

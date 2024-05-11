@@ -278,7 +278,7 @@ export interface IMultisigAddress {
 	created_at?: Date;
 	updated_at?: Date;
 	threshold: number;
-	proxy?: string;
+	proxy?: string | Array<{ address: string; name?: string }>;
 	disabled?: boolean;
 }
 

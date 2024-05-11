@@ -79,11 +79,15 @@ const CreateOrg = () => {
 			multisigs: linkedMultisigs,
 			name: orgName
 		});
+		const linkedMultisigsWithProxy = linkedMultisigs.map((lm) => ({
+			...lm,
+			proxy: lm.proxy.filter((mp) => mp.linked).map((mp) => ({ address: mp.address, name: mp.name || '' }))
+		}));
 		setLoading(true);
 		const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createOrganization_substrate`, {
 			body: JSON.stringify({
 				imageURI: orgImageUrl,
-				multisigs: linkedMultisigs,
+				multisigs: linkedMultisigsWithProxy,
 				name: orgName
 			}),
 			headers: firebaseFunctionsHeader(),

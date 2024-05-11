@@ -52,7 +52,10 @@ const TxnCard = ({
 	const [amountUSD, setAmountUSD] = useState<string>('');
 
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+		(item) =>
+			item.address === activeMultisig ||
+			item.proxy === activeMultisig ||
+			(typeof item.proxy !== 'string' ? item.proxy : [])?.map((mp) => mp.address).includes(activeMultisig)
 	);
 
 	const network = multisig.network || networks.POLKADOT;

@@ -4,7 +4,7 @@
 
 import { PlusCircleOutlined, SyncOutlined, ShareAltOutlined } from '@ant-design/icons';
 import Identicon from '@polkadot/react-identicon';
-import { Button, Dropdown, Skeleton, Tooltip, Spin } from 'antd';
+import { Button, Dropdown, Skeleton, Tooltip, Spin, Popover } from 'antd';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import React, { useEffect, useState } from 'react';
 import BrainIcon from '@next-common/assets/icons/brain-icon.svg';
@@ -28,6 +28,7 @@ import AddressQr from '@next-common/ui-components/AddressQr';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
+import AddressComponent from '@next-common/ui-components/AddressComponent';
 import ExistentialDeposit from '../SendFunds/ExistentialDeposit';
 import FundMultisig from '../SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
@@ -73,7 +74,12 @@ const DashboardCard = ({
 			setCurrentMultisig(sharedMultisigInfo as any);
 		} else {
 			setCurrentMultisig(
-				activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+				activeOrg?.multisigs?.find(
+					(item) =>
+						item.address === activeMultisig ||
+						item.proxy === activeMultisig ||
+						(typeof item.proxy !== 'string' ? item.proxy : [])?.map((mp) => mp.address).includes(activeMultisig)
+				)
 			);
 		}
 	}, [activeMultisig, activeOrg?.multisigs, isSharedMultisig, sharedMultisigInfo]);
@@ -94,6 +100,51 @@ const DashboardCard = ({
 			label: <span className='text-white flex items-center gap-x-2'>{item}</span>
 		}));
 
+	const getMultipleProxy = (proxy: Array<{ address: string; name?: string }>) => {
+		console.log({ currentMultisig });
+		if (typeof proxy === 'string') {
+			return [];
+		}
+		return (
+			<>
+				<span
+					onClick={(e) => {
+						e.stopPropagation();
+						setUserDetailsContextState((prev) => ({
+							...prev,
+							activeMultisig: currentMultisig.address,
+							isProxy: false
+						}));
+					}}
+					className='cursor-pointer'
+				>
+					<AddressComponent
+						address={currentMultisig.address}
+						showNetworkBadge
+						withBadge={false}
+						network={currentMultisig?.network}
+					/>
+				</span>
+				{proxy?.map(({ address }) => (
+					<span
+						onClick={(e) => {
+							e.stopPropagation();
+							setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: address, isProxy: true }));
+						}}
+					>
+						<AddressComponent
+							address={address}
+							isProxy
+							showNetworkBadge
+							withBadge={false}
+							network={currentMultisig?.network}
+						/>
+					</span>
+				))}
+			</>
+		);
+	};
+	console.log(activeMultisig);
 	return (
 		<>
 			<ModalComponent
@@ -221,12 +272,27 @@ const DashboardCard = ({
 								</div>
 								{hasProxy && (
 									<Tooltip title='Switch Account'>
-										<Button
-											className='border-none outline-none w-auto rounded-full p-0'
-											onClick={() => setUserDetailsContextState((prev) => ({ ...prev, isProxy: !prev.isProxy }))}
-										>
-											<SyncOutlined className='text-text_secondary text-base' />
-										</Button>
+										{hasProxy &&
+										typeof currentMultisig.proxy !== 'string' &&
+										currentMultisig.proxy.length &&
+										currentMultisig.proxy.length > 0 ? (
+											<Popover
+												placement='bottomLeft'
+												trigger='click'
+												content={<>{getMultipleProxy(currentMultisig.proxy as { address: string; name?: string }[])}</>}
+											>
+												<Button className='border-none outline-none w-auto rounded-full p-0'>
+													<SyncOutlined className='text-text_secondary text-base' />
+												</Button>
+											</Popover>
+										) : (
+											<Button
+												className='border-none outline-none w-auto rounded-full p-0'
+												onClick={() => setUserDetailsContextState((prev) => ({ ...prev, isProxy: !prev.isProxy }))}
+											>
+												<SyncOutlined className='text-text_secondary text-base' />
+											</Button>
+										)}
 									</Tooltip>
 								)}
 							</div>

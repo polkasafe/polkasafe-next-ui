@@ -141,29 +141,32 @@ const LinkMultisigStep = ({
 				{linkedMultisigs && linkedMultisigs.length > 0 && (
 					<div className='max-h-[250px] overflow-y-auto mb-5'>
 						{linkedMultisigs.map((item, i) => (
-							<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center'>
-								<AddressComponent
-									address={item?.address}
-									isMultisig
-									showNetworkBadge
-									withBadge={false}
-									signatories={item?.signatories?.length}
-									threshold={item?.threshold}
-									network={item?.network as NETWORK}
-								/>
-								<button
-									className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center z-100'
-									onClick={() =>
-										setLinkedMultisigs((prev) => {
-											const copyArray = [...prev];
-											copyArray.splice(i, 1);
-											return copyArray;
-										})
-									}
-								>
-									<OutlineCloseIcon className='text-primary w-2 h-2' />
-								</button>
-							</div>
+							<>
+								<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center'>
+									<AddressComponent
+										address={item?.address}
+										isMultisig
+										showNetworkBadge
+										withBadge={false}
+										signatories={item?.signatories?.length}
+										threshold={item?.threshold}
+										network={item?.network as NETWORK}
+									/>
+									<button
+										className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center z-100'
+										onClick={() =>
+											setLinkedMultisigs((prev) => {
+												const copyArray = [...prev];
+												copyArray.splice(i, 1);
+												return copyArray;
+											})
+										}
+									>
+										<OutlineCloseIcon className='text-primary w-2 h-2' />
+									</button>
+								</div>
+								<div />
+							</>
 						))}
 					</div>
 				)}

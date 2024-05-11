@@ -56,17 +56,37 @@ const ReviewOrgStep = ({
 			{linkedMultisigs && linkedMultisigs.length > 0 && (
 				<div className='max-h-[250px] overflow-y-auto mb-5'>
 					{linkedMultisigs.map((item) => (
-						<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center'>
-							<AddressComponent
-								address={item?.address}
-								isMultisig
-								showNetworkBadge
-								withBadge={false}
-								signatories={item?.signatories?.length}
-								threshold={item?.threshold}
-								network={item?.network}
-							/>
-						</div>
+						<>
+							<div className='p-2 mb-2 border border-text_placeholder rounded-xl flex justify-between items-center'>
+								<AddressComponent
+									address={item?.address}
+									isMultisig
+									showNetworkBadge
+									withBadge={false}
+									signatories={item?.signatories?.length}
+									threshold={item?.threshold}
+									network={item?.network}
+								/>
+							</div>
+							{item.proxy &&
+								item.proxy.length > 0 &&
+								item.proxy.map(
+									(multiProxy) =>
+										multiProxy.linked && (
+											<div className='p-2 mb-2 ml-5 border border-proxy-pink rounded-xl flex justify-between items-center'>
+												<AddressComponent
+													address={multiProxy?.address}
+													isProxy
+													showNetworkBadge
+													withBadge={false}
+													signatories={item?.signatories?.length}
+													threshold={item?.threshold}
+													network={item?.network}
+												/>
+											</div>
+										)
+								)}
+						</>
 					))}
 				</div>
 			)}
