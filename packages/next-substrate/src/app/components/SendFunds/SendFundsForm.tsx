@@ -49,6 +49,7 @@ import shortenAddress from '@next-substrate/utils/shortenAddress';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useCache } from '@next-substrate/context/CachedDataContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 import ArgumentsTable from '../Transactions/Queued/ArgumentsTable';
@@ -99,9 +100,12 @@ const SendFundsForm = ({
 	const { transactionFields } = activeOrg;
 
 	const [isProxy, setIsProxy] = useState<boolean>(false);
+	const [selectedProxyName, setSelectedProxyName] = useState<string>('');
 
 	const [multisig, setMultisig] = useState<IMultisigAddress>(
-		activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+		activeOrg?.multisigs?.find(
+			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+		)
 	);
 	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
 	const [recipientAndAmount, setRecipientAndAmount] = useState<IRecipientAndAmount[]>([
@@ -160,19 +164,29 @@ const SendFundsForm = ({
 
 	activeOrg?.multisigs?.forEach((item) => {
 		if (item.proxy) {
-			multisigOptionsWithProxy.push(item);
+			if (typeof item.proxy === 'string') {
+				multisigOptionsWithProxy.push({ ...item, proxy: item.proxy });
+			} else {
+				item.proxy.map((mp) =>
+					multisigOptionsWithProxy.push({ ...item, name: mp.name || item.name, proxy: mp.address })
+				);
+			}
 		}
 	});
+
+	console.log(multisigOptionsWithProxy);
 
 	const multisigOptions: ItemType[] = multisigOptionsWithProxy?.map((item) => ({
 		key: JSON.stringify({ ...item, isProxy: true }),
 		label: (
 			<AddressComponent
 				isMultisig
+				isProxy
+				name={item.name}
 				showNetworkBadge
 				network={item.network}
 				withBadge={false}
-				address={item.proxy}
+				address={item.proxy as string}
 			/>
 		)
 	}));
@@ -242,7 +256,7 @@ const SendFundsForm = ({
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
 		const m = activeOrg?.multisigs?.find(
-			(item) => item.address === selectedMultisig || item.proxy === selectedMultisig
+			(item) => item.address === selectedMultisig || checkMultisigWithProxy(item.proxy, selectedMultisig)
 		);
 		console.log('m', m);
 		setMultisig(m || activeOrg.multisigs[0]);
@@ -342,12 +356,22 @@ const SendFundsForm = ({
 		);
 		let tx: SubmittableExtrinsic<'promise'>;
 		if (isProxy && multisig?.proxy) {
-			tx = apis[network].api.tx.proxy.proxy(multisig.proxy, null, batch);
+			tx = apis[network].api.tx.proxy.proxy(selectedMultisig, null, batch);
 			setCallData(tx.method.toHex());
 		} else {
 			setCallData(batch.method.toHex());
 		}
-	}, [amount, apis, isProxy, multisig, network, recipientAndAmount, transactionType, transferKeepAlive]);
+	}, [
+		amount,
+		apis,
+		isProxy,
+		multisig,
+		network,
+		recipientAndAmount,
+		selectedMultisig,
+		transactionType,
+		transferKeepAlive
+	]);
 
 	useEffect(() => {
 		const fetchBalanceInfos = async () => {
@@ -459,6 +483,7 @@ const SendFundsForm = ({
 					network,
 					note,
 					recipientAndAmount,
+					selectedProxy: selectedMultisig,
 					setLoadingMessages,
 					tip,
 					transactionFields: transactionFieldsObject,
@@ -474,6 +499,7 @@ const SendFundsForm = ({
 					multisig,
 					network,
 					note,
+					selectedProxy: selectedMultisig,
 					setLoadingMessages,
 					tip,
 					transactionFields: transactionFieldsObject
@@ -607,12 +633,15 @@ const SendFundsForm = ({
 												setSelectedMultisig(data?.isProxy ? data?.proxy : data?.address);
 												setNetwork(data?.network);
 												setIsProxy(data?.isProxy);
+												setSelectedProxyName(data.name);
 											}
 										}}
 									>
 										<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
 											<AddressComponent
 												isMultisig
+												isProxy={isProxy}
+												name={selectedProxyName}
 												showNetworkBadge
 												network={network}
 												withBadge={false}

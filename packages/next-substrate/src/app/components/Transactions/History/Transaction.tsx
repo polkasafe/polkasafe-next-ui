@@ -19,6 +19,7 @@ import decodeCallData from '@next-substrate/utils/decodeCallData';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import ReceivedInfo from './ReceivedInfo';
@@ -51,7 +52,7 @@ const Transaction: FC<ITransaction> = ({
 	const [isProxyApproval, setIsProxyApproval] = useState<boolean>(false);
 	const [decodedCallData, setDecodedCallData] = useState<any>();
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === multisigAddress || item.proxy === multisigAddress
+		(item) => item.address === multisigAddress || checkMultisigWithProxy(item.proxy, multisigAddress)
 	);
 	const type: 'Sent' | 'Received' =
 		multisigAddress === from || multisig?.address === from || multisig?.proxy === from ? 'Sent' : 'Received';

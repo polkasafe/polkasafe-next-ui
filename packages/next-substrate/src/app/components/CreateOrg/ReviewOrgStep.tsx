@@ -69,6 +69,7 @@ const ReviewOrgStep = ({
 								/>
 							</div>
 							{item.proxy &&
+								typeof item.proxy !== 'string' &&
 								item.proxy.length > 0 &&
 								item.proxy.map(
 									(multiProxy) =>

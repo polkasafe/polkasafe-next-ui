@@ -15,6 +15,7 @@ import getMultisigQueueTransactions from '@next-substrate/utils/getMultisigQueue
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import useFetch from '@next-substrate/hooks/useFetch';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import NoTransactionsQueued from './NoTransactionsQueued';
 import Transaction from './Transaction';
 
@@ -37,7 +38,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 	const multisigs = activeOrg?.multisigs?.map((item) => ({ address: item.address, network: item.network }));
 
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
 	);
 
 	const {

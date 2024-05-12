@@ -16,6 +16,7 @@ import shortenAddress from '@next-substrate/utils/shortenAddress';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
 import { ParachainIcon } from '@next-substrate/app/components/NetworksDropdown/NetworkCard';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import { CopyIcon, ExternalLinkIcon } from './CustomIcons';
 
 interface IAddressComponent {
@@ -51,13 +52,15 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 	withEmail,
 	showNetworkBadge // eslint-disable-next-line sonarjs/cognitive-complexity
 }: IAddressComponent) => {
-	const { multisigSettings } = useGlobalUserDetailsContext();
+	const { multisigSettings, selectedProxy } = useGlobalUserDetailsContext();
 
 	const { activeOrg } = useActiveOrgContext();
 
 	const addressBook = activeOrg?.addressBook || [];
 
-	const multisig = activeOrg?.multisigs?.find((item) => item.address === address || item.proxy === address);
+	const multisig = activeOrg?.multisigs?.find(
+		(item) => item.address === address || checkMultisigWithProxy(item.proxy || '', address)
+	);
 
 	const addressObj = addressBook?.find((item) => item?.address === address);
 
@@ -68,7 +71,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 
 	return (
 		<div className=' flex items-center gap-x-3'>
-			{(multisig?.proxy && getSubstrateAddress(multisig.proxy) === getSubstrateAddress(address)) || isProxy ? (
+			{(multisig?.proxy && getSubstrateAddress(selectedProxy || '') === getSubstrateAddress(address)) || isProxy ? (
 				withBadge ? (
 					<Badge
 						count='Proxy'

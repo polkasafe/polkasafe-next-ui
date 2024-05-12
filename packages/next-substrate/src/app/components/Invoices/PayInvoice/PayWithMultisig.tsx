@@ -23,6 +23,7 @@ import BN from 'bn.js';
 import initMultisigTransfer, { IMultiTransferResponse } from '@next-substrate/utils/initMultisigTransfer';
 import setSigner from '@next-substrate/utils/setSigner';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import ModalBtn from '../../Settings/ModalBtn';
 import CancelBtn from '../../Settings/CancelBtn';
 
@@ -50,7 +51,9 @@ const PayWithMultisig = ({
 	const [transactionData, setTransactionData] = useState<any>({});
 
 	const [multisig, setMultisig] = useState<IMultisigAddress>(
-		activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+		activeOrg?.multisigs?.find(
+			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+		)
 	);
 	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
 
@@ -79,7 +82,7 @@ const PayWithMultisig = ({
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
 		const m = activeOrg?.multisigs?.find(
-			(item) => item.address === selectedMultisig || item.proxy === selectedMultisig
+			(item) => item.address === selectedMultisig || checkMultisigWithProxy(item.proxy, selectedMultisig)
 		);
 		setMultisig(m || activeOrg.multisigs[0]);
 		setNetwork(m?.network || activeOrg.multisigs[0].network);
@@ -161,6 +164,7 @@ const PayWithMultisig = ({
 				network,
 				note,
 				recipientAndAmount: [{ amount, recipient: receiverAddress }],
+				selectedProxy: selectedMultisig,
 				setLoadingMessages,
 				tip: new BN(0),
 				transactionFields: transactionFieldsObject,

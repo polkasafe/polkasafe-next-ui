@@ -29,6 +29,7 @@ import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import ExistentialDeposit from '../SendFunds/ExistentialDeposit';
 import FundMultisig from '../SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
@@ -42,6 +43,19 @@ interface IDashboardCard {
 	setOpenTransactionModal: React.Dispatch<React.SetStateAction<boolean>>;
 	isOnchain: boolean;
 }
+
+const getNameByProxy = (multisig: IMultisigAddress, proxy: string) => {
+	if (typeof multisig.proxy === 'string') {
+		return multisig.name || DEFAULT_MULTISIG_NAME;
+	}
+	// eslint-disable-next-line no-restricted-syntax
+	for (const { address, name } of multisig.proxy) {
+		if (address === proxy) {
+			return name || DEFAULT_MULTISIG_NAME;
+		}
+	}
+	return DEFAULT_MULTISIG_NAME;
+};
 
 const DashboardCard = ({
 	className,
@@ -59,7 +73,8 @@ const DashboardCard = ({
 		setUserDetailsContextState,
 		isSharedMultisig,
 		sharedMultisigInfo,
-		notOwnerOfMultisig
+		notOwnerOfMultisig,
+		selectedProxy
 	} = useGlobalUserDetailsContext();
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 	const { activeOrg } = useActiveOrgContext();
@@ -75,10 +90,7 @@ const DashboardCard = ({
 		} else {
 			setCurrentMultisig(
 				activeOrg?.multisigs?.find(
-					(item) =>
-						item.address === activeMultisig ||
-						item.proxy === activeMultisig ||
-						(typeof item.proxy !== 'string' ? item.proxy : [])?.map((mp) => mp.address).includes(activeMultisig)
+					(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
 				)
 			);
 		}
@@ -100,51 +112,7 @@ const DashboardCard = ({
 			label: <span className='text-white flex items-center gap-x-2'>{item}</span>
 		}));
 
-	const getMultipleProxy = (proxy: Array<{ address: string; name?: string }>) => {
-		console.log({ currentMultisig });
-		if (typeof proxy === 'string') {
-			return [];
-		}
-		return (
-			<>
-				<span
-					onClick={(e) => {
-						e.stopPropagation();
-						setUserDetailsContextState((prev) => ({
-							...prev,
-							activeMultisig: currentMultisig.address,
-							isProxy: false
-						}));
-					}}
-					className='cursor-pointer'
-				>
-					<AddressComponent
-						address={currentMultisig.address}
-						showNetworkBadge
-						withBadge={false}
-						network={currentMultisig?.network}
-					/>
-				</span>
-				{proxy?.map(({ address }) => (
-					<span
-						onClick={(e) => {
-							e.stopPropagation();
-							setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: address, isProxy: true }));
-						}}
-					>
-						<AddressComponent
-							address={address}
-							isProxy
-							showNetworkBadge
-							withBadge={false}
-							network={currentMultisig?.network}
-						/>
-					</span>
-				))}
-			</>
-		);
-	};
-	console.log(activeMultisig);
+	console.log(activeMultisig, hasProxy, isProxy);
 	return (
 		<>
 			<ModalComponent
@@ -260,9 +228,11 @@ const DashboardCard = ({
 						</div>
 						<div>
 							<div className='text-base font-bold text-white flex items-center gap-x-2'>
-								{multisigSettings?.[`${activeMultisig}_${currentMultisig?.network}`]?.name ||
-									currentMultisig?.name ||
-									DEFAULT_MULTISIG_NAME}
+								{hasProxy && isProxy
+									? getNameByProxy(currentMultisig, selectedProxy)
+									: multisigSettings?.[`${activeMultisig}_${currentMultisig?.network}`]?.name ||
+									  currentMultisig?.name ||
+									  DEFAULT_MULTISIG_NAME}
 								<div
 									className={`px-2 py-[2px] rounded-md text-xs font-medium ${
 										hasProxy && isProxy ? 'bg-proxy-pink text-highlight' : 'bg-primary text-white'
@@ -273,13 +243,57 @@ const DashboardCard = ({
 								{hasProxy && (
 									<Tooltip title='Switch Account'>
 										{hasProxy &&
+										currentMultisig.proxy &&
 										typeof currentMultisig.proxy !== 'string' &&
-										currentMultisig.proxy.length &&
 										currentMultisig.proxy.length > 0 ? (
 											<Popover
 												placement='bottomLeft'
 												trigger='click'
-												content={<>{getMultipleProxy(currentMultisig.proxy as { address: string; name?: string }[])}</>}
+												content={
+													<>
+														<span
+															onClick={(e) => {
+																e.stopPropagation();
+																setUserDetailsContextState((prev) => ({
+																	...prev,
+																	isProxy: false
+																}));
+															}}
+															className='cursor-pointer'
+														>
+															<AddressComponent
+																address={currentMultisig.address}
+																showNetworkBadge
+																withBadge={false}
+																network={currentMultisig?.network}
+															/>
+														</span>
+														{currentMultisig.proxy?.map(({ address, name }) => (
+															<>
+																<div />
+																<span
+																	onClick={(e) => {
+																		e.stopPropagation();
+																		setUserDetailsContextState((prev) => ({
+																			...prev,
+																			isProxy: true,
+																			selectedProxy: address
+																		}));
+																	}}
+																>
+																	<AddressComponent
+																		address={address}
+																		isProxy
+																		name={name}
+																		showNetworkBadge
+																		withBadge={false}
+																		network={currentMultisig?.network}
+																	/>
+																</span>
+															</>
+														))}
+													</>
+												}
 											>
 												<Button className='border-none outline-none w-auto rounded-full p-0'>
 													<SyncOutlined className='text-text_secondary text-base' />
@@ -288,7 +302,13 @@ const DashboardCard = ({
 										) : (
 											<Button
 												className='border-none outline-none w-auto rounded-full p-0'
-												onClick={() => setUserDetailsContextState((prev) => ({ ...prev, isProxy: !prev.isProxy }))}
+												onClick={() =>
+													setUserDetailsContextState((prev) => ({
+														...prev,
+														isProxy: !prev.isProxy,
+														selectedProxy: currentMultisig.proxy as string
+													}))
+												}
 											>
 												<SyncOutlined className='text-text_secondary text-base' />
 											</Button>
@@ -301,7 +321,10 @@ const DashboardCard = ({
 									title={(activeMultisig && getEncodedAddress(activeMultisig, currentMultisig?.network)) || ''}
 									className=' font-normal text-text_secondary'
 								>
-									{activeMultisig && shortenAddress(getEncodedAddress(activeMultisig, currentMultisig?.network) || '')}
+									{isProxy
+										? shortenAddress(selectedProxy || '')
+										: activeMultisig &&
+										  shortenAddress(getEncodedAddress(activeMultisig, currentMultisig?.network) || '')}
 								</div>
 								<button
 									className='ml-2 mr-1'

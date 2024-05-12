@@ -30,6 +30,7 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -107,7 +108,7 @@ const Transaction: FC<ITransactionProps> = ({
 	const hash = pathname.slice(1);
 
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === multisigAddress || item.proxy === multisigAddress
+		(item) => item.address === multisigAddress || checkMultisigWithProxy(item.proxy, multisigAddress)
 	);
 
 	const [amountUSD, setAmountUSD] = useState<string>('');

@@ -136,6 +136,7 @@ export interface UserDetailsContextType {
 	sharedMultisigAddress?: string;
 	sharedMultisigInfo?: { signatories: string[]; threshold: number; address: string; name?: string };
 	watchlists?: { [address: string]: IWatchlist };
+	selectedProxy?: string;
 }
 
 export interface IInvoice {
@@ -280,7 +281,7 @@ export interface IMultisigAddress {
 	created_at?: Date;
 	updated_at?: Date;
 	threshold: number;
-	proxy?: string | Array<{ address: string; name?: string }>;
+	proxy?: string | Array<{ address: string; name?: string; linked?: boolean }>;
 	disabled?: boolean;
 }
 

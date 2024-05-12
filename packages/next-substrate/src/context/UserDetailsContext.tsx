@@ -307,7 +307,8 @@ export const initialUserDetailsContext: UserDetailsContextType = {
 			fieldName: 'Other',
 			subfields: {}
 		}
-	}
+	},
+	selectedProxy: ''
 };
 
 export const UserDetailsContext = createContext(initialUserDetailsContext);

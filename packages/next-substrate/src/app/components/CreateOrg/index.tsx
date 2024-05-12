@@ -81,7 +81,9 @@ const CreateOrg = () => {
 		});
 		const linkedMultisigsWithProxy = linkedMultisigs.map((lm) => ({
 			...lm,
-			proxy: lm.proxy.filter((mp) => mp.linked).map((mp) => ({ address: mp.address, name: mp.name || '' }))
+			proxy: (typeof lm.proxy !== 'string' ? lm.proxy : [])
+				.filter((mp) => mp.linked)
+				.map((mp) => ({ address: mp.address, name: mp.name || '' }))
 		}));
 		setLoading(true);
 		const createOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createOrganization_substrate`, {
