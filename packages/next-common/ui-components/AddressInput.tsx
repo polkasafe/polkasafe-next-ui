@@ -51,8 +51,10 @@ const AddressInput: React.FC<IAddressInput> = ({
 	useEffect(() => {
 		const allAddresses: string[] =
 			multisig && showMultisigAddresses
-				? multisig.proxy
+				? multisig.proxy && typeof multisig.proxy === 'string'
 					? [multisig.proxy, multisig.address]
+					: multisig.proxy && typeof multisig.proxy !== 'string' && multisig.proxy.length > 0
+					? [...multisig.proxy.map(({ address }) => address), multisig.address]
 					: [multisig.address]
 				: [];
 		if (records) {

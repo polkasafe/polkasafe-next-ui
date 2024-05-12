@@ -102,73 +102,6 @@ const LinkMultisigStep = ({
 		)
 	}));
 
-	const ProxyComponent = (item: any) => {
-		return item.proxy.map((multiProxy) => (
-			<div className='p-2 mb-2 ml-5 border border-text_placeholder rounded-xl flex justify-between items-center'>
-				<ProxyAddress
-					proxyAddress={multiProxy.address}
-					name={multiProxy.name}
-					handleChangeProxyName={(name) => {
-						console.log(name, multiProxy.address);
-						const payload = linkedMultisigs.map((lm) =>
-							lm.address === item.address
-								? {
-										...lm,
-										proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
-											mp.address === multiProxy.address ? { ...mp, name } : mp
-										)
-								  }
-								: lm
-						);
-						setLinkedMultisigs(payload);
-					}}
-				/>
-				{multiProxy.linked ? (
-					<button
-						className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center z-100'
-						onClick={() => {
-							const payload = linkedMultisigs.map((lm) =>
-								lm.address === item.address
-									? {
-											...lm,
-											proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
-												mp.address === multiProxy.address ? { ...mp, linked: false } : mp
-											)
-									  }
-									: lm
-							);
-							setLinkedMultisigs(payload);
-						}}
-					>
-						<OutlineCloseIcon className='text-primary w-2 h-2' />
-					</button>
-				) : (
-					<PrimaryButton
-						onClick={() => {
-							const payload = linkedMultisigs.map((lm) =>
-								lm.address === item.address
-									? {
-											...lm,
-											proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
-												mp.address === multiProxy.address ? { ...mp, linked: true } : mp
-											)
-									  }
-									: lm
-							);
-							setLinkedMultisigs(payload);
-						}}
-						icon={<LinkIcon className='text-proxy-pink' />}
-						secondary
-						className='px-3 h-full border-proxy-pink text-proxy-pink'
-						size='small'
-					>
-						Link Proxy
-					</PrimaryButton>
-				)}
-			</div>
-		));
-	};
-
 	return (
 		<div className='flex flex-col gap-y-5'>
 			<ModalComponent
@@ -247,7 +180,72 @@ const LinkMultisigStep = ({
 										<OutlineCloseIcon className='text-primary w-2 h-2' />
 									</button>
 								</div>
-								{item.proxy && typeof item.proxy !== 'string' && <ProxyComponent item={item} />}
+								{item.proxy &&
+									typeof item.proxy !== 'string' &&
+									item.proxy.map((multiProxy) => (
+										<div className='p-2 mb-2 ml-5 border border-text_placeholder rounded-xl flex justify-between items-center'>
+											<ProxyAddress
+												proxyAddress={multiProxy.address}
+												name={multiProxy.name}
+												handleChangeProxyName={(name) => {
+													console.log(name, multiProxy.address);
+													const payload = linkedMultisigs.map((lm) =>
+														lm.address === item.address
+															? {
+																	...lm,
+																	proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
+																		mp.address === multiProxy.address ? { ...mp, name } : mp
+																	)
+															  }
+															: lm
+													);
+													setLinkedMultisigs(payload);
+												}}
+											/>
+											{multiProxy.linked ? (
+												<button
+													className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center z-100'
+													onClick={() => {
+														const payload = linkedMultisigs.map((lm) =>
+															lm.address === item.address
+																? {
+																		...lm,
+																		proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
+																			mp.address === multiProxy.address ? { ...mp, linked: false } : mp
+																		)
+																  }
+																: lm
+														);
+														setLinkedMultisigs(payload);
+													}}
+												>
+													<OutlineCloseIcon className='text-primary w-2 h-2' />
+												</button>
+											) : (
+												<PrimaryButton
+													onClick={() => {
+														const payload = linkedMultisigs.map((lm) =>
+															lm.address === item.address
+																? {
+																		...lm,
+																		proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
+																			mp.address === multiProxy.address ? { ...mp, linked: true } : mp
+																		)
+																  }
+																: lm
+														);
+														setLinkedMultisigs(payload);
+													}}
+													icon={<LinkIcon className='text-proxy-pink' />}
+													secondary
+													className='px-3 h-full border-proxy-pink text-proxy-pink'
+													size='small'
+												>
+													Link Proxy
+												</PrimaryButton>
+											)}
+										</div>
+									))}
 							</>
 						))}
 					</div>
@@ -321,8 +319,8 @@ const LinkMultisigStep = ({
 													proxyAddress={multisigProxy.address}
 													name={multisigProxy.name}
 													handleChangeProxyName={(name) => {
-														console.log(name, multisigProxy.address);
-														const payload = linkedMultisigs.map((lm) =>
+														console.log(name, multisigs, multisig.address);
+														const payload = multisigs.map((lm) =>
 															lm.address === multisig.address
 																? {
 																		...lm,
@@ -332,7 +330,7 @@ const LinkMultisigStep = ({
 																  }
 																: lm
 														);
-														setLinkedMultisigs(payload);
+														setMultisigs(payload);
 													}}
 												/>
 												<PrimaryButton
