@@ -16,6 +16,7 @@ import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssets
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import formatBalance from '@next-substrate/utils/formatBalance';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 import ChangeCurrency from '../../components/Settings/ChangeCurrency';
 
@@ -27,7 +28,9 @@ const Assets = () => {
 	const { currency: globalCurrency, allCurrencyPrices } = useGlobalCurrencyContext();
 	const [currency, setCurrency] = useState<string>(globalCurrency);
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = multisigAddresses.find(
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
+	);
 
 	if (loadingAssets) return <Loader size='large' />;
 

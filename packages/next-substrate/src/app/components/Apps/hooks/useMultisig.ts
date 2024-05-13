@@ -10,17 +10,25 @@ export default function useMultisig() {
 	const { activeOrg } = useActiveOrgContext();
 
 	const multisigOptionsWithProxy: IMultisigAddress[] = [];
+
 	activeOrg?.multisigs?.forEach((item) => {
 		if (item.proxy) {
-			multisigOptionsWithProxy.push(item);
+			if (typeof item.proxy === 'string') {
+				multisigOptionsWithProxy.push({ ...item, proxy: item.proxy });
+			} else {
+				item.proxy.map((mp) =>
+					multisigOptionsWithProxy.push({ ...item, name: mp.name || item.name, proxy: mp.address })
+				);
+			}
 		}
 	});
 
 	const multisigOptions: ItemType[] = multisigOptionsWithProxy?.map((item) => ({
 		key: JSON.stringify({ ...item, isProxy: true }),
 		label: {
-			address: item.proxy,
+			address: item.proxy as string,
 			isMultisig: true,
+			isProxy: true,
 			network: item.network,
 			showNetworkBadge: true,
 			withBadge: false

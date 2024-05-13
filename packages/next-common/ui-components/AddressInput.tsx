@@ -13,6 +13,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import AddressComponent from './AddressComponent';
 import { OutlineCloseIcon } from './CustomIcons';
 
@@ -38,7 +39,9 @@ const AddressInput: React.FC<IAddressInput> = ({
 	const { addressBook } = useGlobalUserDetailsContext();
 	const { records } = useActiveMultisigContext();
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = multisigAddresses.find(
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
+	);
 
 	useEffect(() => {
 		if (selectedAddress && !getSubstrateAddress(selectedAddress)) {

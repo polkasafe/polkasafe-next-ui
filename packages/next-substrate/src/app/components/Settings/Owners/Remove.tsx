@@ -26,17 +26,20 @@ import removeOldMultiFromProxy from '@next-substrate/utils/removeOldMultiFromPro
 import setSigner from '@next-substrate/utils/setSigner';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 
 const RemoveOwner = ({
 	addressToRemove,
 	oldThreshold,
 	oldSignatoriesLength,
-	onCancel
+	onCancel,
+	selectedProxy
 }: {
 	addressToRemove: string;
 	oldThreshold: number;
 	oldSignatoriesLength: number;
 	onCancel: () => void;
+	selectedProxy: { address: string; name: string };
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const [newThreshold, setNewThreshold] = useState(
@@ -56,7 +59,9 @@ const RemoveOwner = ({
 	const { api, apiReady, network } = useGlobalApiContext();
 	const [txnHash, setTxnHash] = useState<string>('');
 
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = multisigAddresses.find(
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
+	);
 
 	const handleMultisigCreate = async (newSignatories: string[], threshold: number) => {
 		try {
@@ -136,7 +141,7 @@ const RemoveOwner = ({
 				oldMultisigAddress: multisig?.address || activeMultisig,
 				oldSignatories: multisig?.signatories || [],
 				oldThreshold: multisig?.threshold || 2,
-				proxyAddress: multisig?.proxy || '',
+				proxyAddress: selectedProxy.address || '',
 				recepientAddress: activeMultisig,
 				senderAddress: getSubstrateAddress(userAddress) || userAddress,
 				setLoadingMessages,
@@ -149,7 +154,7 @@ const RemoveOwner = ({
 				network,
 				newSignatories,
 				newThreshold,
-				proxyAddress: multisig?.proxy || '',
+				proxyAddress: selectedProxy.address || '',
 				recepientAddress: activeMultisig,
 				senderAddress: getSubstrateAddress(userAddress) || userAddress,
 				setLoadingMessages

@@ -27,12 +27,14 @@ const RemoveSignatoryModal = ({
 	address,
 	className,
 	signatoriesLength,
-	threshold
+	threshold,
+	selectedProxy
 }: {
 	address: string;
 	className?: string;
 	signatoriesLength: number;
 	threshold: number;
+	selectedProxy: { address: string; name: string };
 }) => {
 	const [openRemoveSignatoryModal, setOpenRemoveSignatoryModal] = useState(false);
 	return (
@@ -63,6 +65,7 @@ const RemoveSignatoryModal = ({
 					oldSignatoriesLength={signatoriesLength}
 					oldThreshold={threshold}
 					addressToRemove={address}
+					selectedProxy={selectedProxy}
 				/>
 			</Modal>
 		</>
@@ -131,11 +134,13 @@ const EditAddressModal = ({
 const ListOwners = ({
 	className,
 	disabled,
-	multisig
+	multisig,
+	selectedProxy
 }: {
 	className?: string;
 	disabled?: boolean;
 	multisig: IMultisigAddress;
+	selectedProxy: { address: string; name: string };
 }) => {
 	const { activeOrg } = useActiveOrgContext();
 	const { address: userAddress } = useGlobalUserDetailsContext();
@@ -254,6 +259,7 @@ const ListOwners = ({
 											className={className}
 											signatoriesLength={multisig.signatories.length || 2}
 											address={address}
+											selectedProxy={selectedProxy}
 										/>
 									)}
 								</div>

@@ -19,14 +19,19 @@ import { IMultisigAddress } from '@next-common/types';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { Dropdown } from 'antd';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
+import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import ChangeCurrency from './ChangeCurrency';
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const ManageMultisig = () => {
 	const { activeMultisig, userID } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
 	const activeMultisigData = activeMultisig
-		? activeOrg?.multisigs.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+		? activeOrg?.multisigs.find(
+				(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
+		  )
 		: undefined;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [network, setNetwork] = useState<string>(
@@ -35,6 +40,11 @@ const ManageMultisig = () => {
 	const [selectedMultisig, setSelectedMultisig] = useState<IMultisigAddress>(
 		activeMultisigData || activeOrg?.multisigs?.[0]
 	);
+
+	const [selectedProxy, setSelectedProxy] = useState<{ address: string; name: string }>({
+		address: '',
+		name: DEFAULT_ADDRESS_NAME
+	});
 
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
@@ -46,6 +56,21 @@ const ManageMultisig = () => {
 		}
 		setSelectedMultisig(activeOrg?.multisigs?.[0]);
 	}, [activeMultisig, activeOrg]);
+
+	useEffect(() => {
+		setSelectedProxy({
+			address: selectedMultisig?.proxy
+				? typeof selectedMultisig.proxy !== 'string'
+					? selectedMultisig?.proxy?.[0]?.address
+					: selectedMultisig?.proxy
+				: '',
+			name: selectedMultisig?.proxy
+				? typeof selectedMultisig.proxy !== 'string'
+					? selectedMultisig?.proxy?.[0]?.name
+					: selectedMultisig.name
+				: DEFAULT_ADDRESS_NAME
+		});
+	}, [selectedMultisig]);
 
 	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
 		key: JSON.stringify(item),
@@ -61,6 +86,44 @@ const ManageMultisig = () => {
 			</div>
 		)
 	}));
+
+	const multisigOptionsWithProxy: ItemType[] =
+		selectedMultisig?.proxy && typeof selectedMultisig.proxy === 'string'
+			? [
+					{
+						key: JSON.stringify(selectedMultisig.proxy),
+						label: (
+							<div className='scale-90 origin-top-left'>
+								<AddressComponent
+									isProxy
+									isMultisig
+									showNetworkBadge
+									network={selectedMultisig.network}
+									withBadge={false}
+									address={selectedMultisig.proxy}
+								/>
+							</div>
+						)
+					}
+			  ]
+			: (selectedMultisig?.proxy && typeof selectedMultisig.proxy !== 'string' ? selectedMultisig.proxy : []).map(
+					(mp) => ({
+						key: JSON.stringify({ address: mp.address, name: mp.name }),
+						label: (
+							<div className='scale-90 origin-top-left'>
+								<AddressComponent
+									isProxy
+									name={mp.name}
+									isMultisig
+									showNetworkBadge
+									network={selectedMultisig.network}
+									withBadge={false}
+									address={mp.address}
+								/>
+							</div>
+						)
+					})
+			  );
 
 	return (
 		<div>
@@ -129,32 +192,62 @@ const ManageMultisig = () => {
 									<div className='h-[50px] w-[50px] rounded-full flex items-center justify-center bg-text_secondary text-bg-main text-xl max-sm:my-2'>
 										<ArrowRightOutlined />
 									</div>
-									<div className='flex flex-col items-start max-sm:w-full'>
-										<div className='px-2 mb-1 py-[2px] rounded-md text-xs font-medium bg-[#FF79F2] text-highlight'>
-											Proxy
+									{typeof selectedMultisig.proxy === 'string' ? (
+										<div className='flex flex-col items-start max-sm:w-full'>
+											<div className='px-2 mb-1 py-[2px] rounded-md text-xs font-medium bg-[#FF79F2] text-highlight'>
+												Proxy
+											</div>
+											<div className='flex items-center text-text_secondary'>
+												{shortenAddress(selectedMultisig?.proxy || '', 10)}
+												<button
+													className='ml-2 mr-1'
+													onClick={() => copyText((selectedMultisig?.proxy as string) || '', true, network)}
+												>
+													<CopyIcon />
+												</button>
+												<a
+													href={`https://${network}.subscan.io/account/${getEncodedAddress(
+														selectedMultisig?.proxy || '',
+														network
+													)}`}
+													target='_blank'
+													rel='noreferrer'
+												>
+													<ExternalLinkIcon />
+												</a>
+											</div>
 										</div>
-										<div className='flex items-center text-text_secondary'>
-											{shortenAddress(selectedMultisig?.proxy || '', 10)}
-											<button
-												className='ml-2 mr-1'
-												onClick={() => copyText(selectedMultisig?.proxy || '', true, network)}
-											>
-												<CopyIcon />
-											</button>
-											<a
-												href={`https://${network}.subscan.io/account/${getEncodedAddress(
-													selectedMultisig?.proxy || '',
-													network
-												)}`}
-												target='_blank'
-												rel='noreferrer'
-											>
-												<ExternalLinkIcon />
-											</a>
-										</div>
-									</div>
+									) : selectedMultisig.proxy.length > 0 ? (
+										<Dropdown
+											trigger={['click']}
+											className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-[500px] max-sm:w-full'
+											menu={{
+												items: multisigOptionsWithProxy,
+												onClick: (e) => {
+													const data = JSON.parse(e.key);
+													setSelectedProxy({ address: data.address, name: data.name });
+												}
+											}}
+										>
+											<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+												<AddressComponent
+													isMultisig
+													isProxy
+													name={selectedProxy.name}
+													showNetworkBadge
+													network={network}
+													withBadge={false}
+													address={selectedProxy.address}
+												/>
+												<CircleArrowDownIcon className='text-primary' />
+											</div>
+										</Dropdown>
+									) : null}
 								</div>
-								<AddNewOwnerBtn disabled={!selectedMultisig?.proxy} />
+								<AddNewOwnerBtn
+									disabled={!selectedMultisig?.proxy}
+									selectedProxy={selectedProxy}
+								/>
 							</section>
 						) : (
 							!['alephzero'].includes(network) && (
@@ -168,6 +261,7 @@ const ManageMultisig = () => {
 								<ListOwners
 									multisig={selectedMultisig}
 									disabled={!selectedMultisig?.proxy}
+									selectedProxy={selectedProxy}
 								/>
 							)}
 						</section>
