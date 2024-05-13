@@ -244,7 +244,7 @@ const Transaction: FC<ITransactionProps> = ({
 					network,
 					newMultisigAddress: decodedCallData?.args?.call?.args?.delegate?.id,
 					note: note || '',
-					proxyAddress: multisig.proxy || '',
+					proxyAddress: (multisig.proxy as string) || '',
 					setLoadingMessages,
 					setUserDetailsContextState
 				});
