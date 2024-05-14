@@ -7,10 +7,11 @@ import React from 'react';
 interface Props {
 	proxyAddress: string;
 	name?: string;
+	placeholder?: string;
 	handleChangeProxyName: (name: string) => void;
 }
 
-export default function ProxyAddress({ proxyAddress, name, handleChangeProxyName }: Props) {
+export default function ProxyAddress({ proxyAddress, name, placeholder, handleChangeProxyName }: Props) {
 	return (
 		<div className='flex gap-3 items-center'>
 			<div>
@@ -23,7 +24,7 @@ export default function ProxyAddress({ proxyAddress, name, handleChangeProxyName
 			</div>
 			<div className=' text-[10px] rounded-lg text-white flex flex-col'>
 				<Input
-					placeholder={name || DEFAULT_ADDRESS_NAME}
+					placeholder={placeholder || DEFAULT_ADDRESS_NAME}
 					className='w-[200px] text-xs font-normal leading-[15px] border-0 outline-0 p-1 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white pr-24 resize-none'
 					id={`multisig-proxy-${proxyAddress}`}
 					value={name}

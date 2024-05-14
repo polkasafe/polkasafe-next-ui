@@ -19,6 +19,7 @@ import { chainProperties, networks } from '@next-common/global/networkConstants'
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import NetworkCard, { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import CreateMultisig from '../Multisig/CreateMultisig';
 import ProxyAddress from '../Proxy/ProxyAddress';
@@ -30,13 +31,30 @@ const LinkMultisigStep = ({
 	linkedMultisigs: IMultisigAddress[];
 	setLinkedMultisigs: React.Dispatch<React.SetStateAction<IMultisigAddress[]>>;
 }) => {
-	const { address, multisigSettings, multisigAddresses } = useGlobalUserDetailsContext();
+	const { address, multisigSettings } = useGlobalUserDetailsContext();
 	const [selectedNetwork, setSelectedNetwork] = useState(networks.POLKADOT);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [loading, setLoading] = useState<boolean>(false);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [openCreateMultisigModal, setOpenCreateMultisigModal] = useState<boolean>(false);
 	const [multisigs, setMultisigs] = useState<IMultisigAddress[]>([]);
+	const { activeOrg } = useActiveOrgContext();
+
+	const multisigAddresses = activeOrg.multisigs;
+	const alreadyLinkedProxy = activeOrg.multisigs
+		.map((multisig) => multisig.proxy)
+		.flat()
+		.filter((a) => a);
+
+	const getProxyNameMapByAddress = (proxyAddress: any) => {
+		const result = {};
+		proxyAddress.forEach((px) => {
+			if (px && typeof px !== 'string' && px.address && px.name) {
+				result[px.address] = px.name;
+			}
+		});
+		return result;
+	};
 
 	const fetchMultisigs = async () => {
 		if (!address) return;
@@ -186,6 +204,7 @@ const LinkMultisigStep = ({
 										<div className='p-2 mb-2 ml-5 border border-text_placeholder rounded-xl flex justify-between items-center'>
 											<ProxyAddress
 												proxyAddress={multiProxy.address}
+												placeholder={getProxyNameMapByAddress(alreadyLinkedProxy)?.[multiProxy.address]}
 												name={multiProxy.name}
 												handleChangeProxyName={(name) => {
 													console.log(name, multiProxy.address);
@@ -221,6 +240,14 @@ const LinkMultisigStep = ({
 												>
 													<OutlineCloseIcon className='text-primary w-2 h-2' />
 												</button>
+											) : alreadyLinkedProxy
+													.map((px) => {
+														return typeof px === 'string' ? px : px.address;
+													})
+													.includes(multiProxy.address) ? (
+												<span className='flex items-center justify-center gap-x-2 outline-none border-none text-white bg-highlight rounded-lg p-2.5 shadow-none text-xs font-semibold'>
+													Linked
+												</span>
 											) : (
 												<PrimaryButton
 													onClick={() => {
@@ -236,7 +263,6 @@ const LinkMultisigStep = ({
 														);
 														setLinkedMultisigs(payload);
 													}}
-													icon={<LinkIcon className='text-proxy-pink' />}
 													secondary
 													className='px-3 h-full border-proxy-pink text-proxy-pink'
 													size='small'
@@ -268,7 +294,7 @@ const LinkMultisigStep = ({
 											threshold={multisig?.threshold}
 											network={multisig?.network}
 										/>
-										{multisigAddresses
+										{!multisigAddresses
 											.map(({ address: multiAddress }: { address: string }) => multiAddress)
 											.includes(multisig.address) ? (
 											<PrimaryButton
@@ -318,6 +344,7 @@ const LinkMultisigStep = ({
 												<ProxyAddress
 													proxyAddress={multisigProxy.address}
 													name={multisigProxy.name}
+													placeholder={getProxyNameMapByAddress(alreadyLinkedProxy)?.[multisigProxy.address]}
 													handleChangeProxyName={(name) => {
 														console.log(name, multisigs, multisig.address);
 														const payload = multisigs.map((lm) =>
@@ -333,29 +360,39 @@ const LinkMultisigStep = ({
 														setMultisigs(payload);
 													}}
 												/>
-												<PrimaryButton
-													onClick={() => {
-														setLinkedMultisigs((prev) => [
-															...prev,
-															{
-																address: multisig.address,
-																disabled: false,
-																name: multisig.name || DEFAULT_ADDRESS_NAME,
-																network: multisig.network,
-																proxy: (typeof multisig.proxy !== 'string' ? multisig.proxy : []).map((mp) =>
-																	mp.address === multisigProxy.address ? { ...mp, linked: true } : mp
-																),
-																signatories: multisig.signatories,
-																threshold: multisig.threshold
-															}
-														]);
-													}}
-													secondary
-													className='px-3 h-full border-proxy-pink text-proxy-pink'
-													size='small'
-												>
-													Link Proxy
-												</PrimaryButton>
+												{alreadyLinkedProxy
+													.map((px) => {
+														return typeof px === 'string' ? px : px.address;
+													})
+													.includes(multisigProxy.address) ? (
+													<span className='flex items-center justify-center gap-x-2 outline-none border-none text-white bg-highlight rounded-lg p-2.5 shadow-none text-xs font-semibold'>
+														Linked
+													</span>
+												) : (
+													<PrimaryButton
+														onClick={() => {
+															setLinkedMultisigs((prev) => [
+																...prev,
+																{
+																	address: multisig.address,
+																	disabled: false,
+																	name: multisig.name || DEFAULT_ADDRESS_NAME,
+																	network: multisig.network,
+																	proxy: (typeof multisig.proxy !== 'string' ? multisig.proxy : []).map((mp) =>
+																		mp.address === multisigProxy.address ? { ...mp, linked: true } : mp
+																	),
+																	signatories: multisig.signatories,
+																	threshold: multisig.threshold
+																}
+															]);
+														}}
+														secondary
+														className='px-3 h-full border-proxy-pink text-proxy-pink'
+														size='small'
+													>
+														Link Proxy
+													</PrimaryButton>
+												)}
 											</div>
 										))}
 								</>

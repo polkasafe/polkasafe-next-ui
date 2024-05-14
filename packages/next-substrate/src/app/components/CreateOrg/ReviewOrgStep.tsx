@@ -78,6 +78,7 @@ const ReviewOrgStep = ({
 												<AddressComponent
 													address={multiProxy?.address}
 													isProxy
+													name={multiProxy?.name}
 													showNetworkBadge
 													withBadge={false}
 													signatories={item?.signatories?.length}
