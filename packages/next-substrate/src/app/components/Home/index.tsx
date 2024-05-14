@@ -31,6 +31,8 @@ import { networks } from '@next-common/global/networkConstants';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import getMultisigProxy from '@next-substrate/utils/getMultisigProxy';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import AddMultisigModal from '../Multisig/AddMultisigModal';
 import OrganisationAssets from './OrganisationAssetsCard';
 import OrgInfoTable from './OrgInfoTable';
@@ -60,12 +62,16 @@ const Home = ({ className }: { className?: string }) => {
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 
 	const multisigs = activeOrg?.multisigs;
-	const multisig = multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = multisigs?.find(
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+	);
 	const [network, setNetwork] = useState<string>(multisig?.network);
 
 	useEffect(() => {
 		if (!activeMultisig || !activeOrg?.multisigs) return;
-		const m = activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+		const m = activeOrg?.multisigs?.find(
+			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+		);
 		setNetwork(m?.network || networks.POLKADOT);
 	}, [activeMultisig, activeOrg?.multisigs]);
 
@@ -122,7 +128,7 @@ const Home = ({ className }: { className?: string }) => {
 					copyMultisigAddresses[index] = multisigData;
 					return {
 						...prevState,
-						activeMultisig: multisigData.proxy || multisigData.address,
+						activeMultisig: getMultisigProxy(multisigData.proxy) || multisigData.address,
 						isProxy: true,
 						multisigAddresses: copyMultisigAddresses
 					};

@@ -8,7 +8,13 @@ import { AddIcon } from '@next-common/ui-components/CustomIcons';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import AddOwner from './Add';
 
-const AddNewOwnerBtn = ({ disabled }: { disabled?: boolean }) => {
+const AddNewOwnerBtn = ({
+	disabled,
+	selectedProxy
+}: {
+	disabled?: boolean;
+	selectedProxy: { address: string; name: string };
+}) => {
 	const [openAddOwnerModal, setOpenAddOwnerModal] = useState(false);
 
 	return (
@@ -18,7 +24,10 @@ const AddNewOwnerBtn = ({ disabled }: { disabled?: boolean }) => {
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Add Owners</h3>}
 				open={openAddOwnerModal}
 			>
-				<AddOwner onCancel={() => setOpenAddOwnerModal(false)} />
+				<AddOwner
+					onCancel={() => setOpenAddOwnerModal(false)}
+					selectedProxy={selectedProxy}
+				/>
 			</ModalComponent>
 			<Button
 				disabled={disabled}

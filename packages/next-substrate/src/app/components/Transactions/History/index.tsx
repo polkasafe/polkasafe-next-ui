@@ -18,6 +18,7 @@ import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisig
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import useFetch from '@next-substrate/hooks/useFetch';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import ExportTransactionsHistory, { EExportType } from './ExportTransactionsHistory';
 
 import NoTransactionsHistory from './NoTransactionsHistory';
@@ -48,7 +49,7 @@ const History: FC<IHistory> = ({
 	const { currencyPrice, tokensUsdPrice } = useGlobalCurrencyContext();
 	const { activeOrg } = useActiveOrgContext();
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
 	);
 
 	const multisigs = activeOrg?.multisigs?.map((item) => ({ address: item.address, network: item.network }));

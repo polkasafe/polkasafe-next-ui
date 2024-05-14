@@ -43,6 +43,7 @@ interface Args {
 	attachments?: any;
 	tip: BN;
 	addToQueue: (obj: any) => void;
+	selectedProxy: string;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -58,7 +59,8 @@ export default async function initMultisigTransfer({
 	transferKeepAlive,
 	setLoadingMessages,
 	transactionFields,
-	tip
+	tip,
+	selectedProxy
 }: Args) {
 	const encodedInitiatorAddress = getEncodedAddress(initiatorAddress, network);
 	if (!encodedInitiatorAddress) throw new Error('Invalid initiator address');
@@ -108,8 +110,8 @@ export default async function initMultisigTransfer({
 	const { weight: MAX_WEIGHT } = await calcWeight(callData, api);
 
 	let tx: SubmittableExtrinsic<'promise'>;
-	if (isProxy && multisig.proxy) {
-		tx = api.tx.proxy.proxy(multisig.proxy, null, transferBatchCall);
+	if (isProxy && multisig.proxy && selectedProxy) {
+		tx = api.tx.proxy.proxy(selectedProxy, null, transferBatchCall);
 	}
 
 	let blockHash = '';
@@ -204,7 +206,7 @@ export default async function initMultisigTransfer({
 									block_number: blockNumber,
 									callData: tx.method.toHex(),
 									callHash: tx.method.hash.toHex(),
-									from: multisig.proxy!,
+									from: selectedProxy,
 									network,
 									note,
 									to: recipientAddresses,

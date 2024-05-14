@@ -14,6 +14,7 @@ import { IMultisigAddress } from '@next-common/types';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { Dropdown } from 'antd';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import AddressNode from './AddressNode';
 
 const nodeTypes: NodeTypes = {
@@ -21,11 +22,13 @@ const nodeTypes: NodeTypes = {
 };
 
 const MultisigOverview = () => {
-	const { activeMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, selectedProxy } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
 	const activeMultisigData = activeMultisig
-		? activeOrg?.multisigs.find((item) => item.address === activeMultisig || item.proxy === activeMultisig)
+		? activeOrg?.multisigs.find(
+				(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+		  )
 		: undefined;
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [network, setNetwork] = useState<string>(
@@ -93,8 +96,8 @@ const MultisigOverview = () => {
 
 	if (selectedMultisig.proxy) {
 		nodes.push({
-			data: { address: selectedMultisig.proxy, handle: 'left', network },
-			id: selectedMultisig.proxy,
+			data: { address: selectedProxy, handle: 'left', network },
+			id: selectedProxy,
 			position: { x: 600, y: 0 },
 			type: 'custom'
 		});
@@ -109,7 +112,7 @@ const MultisigOverview = () => {
 			},
 			source: selectedMultisig.address,
 			sourceHandle: 'right',
-			target: selectedMultisig.proxy,
+			target: selectedProxy,
 			targetHandle: 'left'
 		});
 	}

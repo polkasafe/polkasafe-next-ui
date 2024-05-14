@@ -25,6 +25,7 @@ import transferFunds from '@next-substrate/utils/transferFunds';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
@@ -43,7 +44,7 @@ const ExistentialDeposit = ({
 
 	const { activeOrg } = useActiveOrgContext();
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
 	);
 
 	const { accounts } = useGetWalletAccounts(loggedInWallet);
@@ -63,7 +64,9 @@ const ExistentialDeposit = ({
 
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
-		const m = activeOrg?.multisigs?.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+		const m = activeOrg?.multisigs?.find(
+			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+		);
 		setNetwork(m?.network);
 	}, [activeMultisig, activeOrg]);
 

@@ -27,6 +27,7 @@ import getMultisigHistoricalTransactions from '@next-substrate/utils/getMultisig
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 
 const TxnCard = ({
 	newTxn,
@@ -52,7 +53,7 @@ const TxnCard = ({
 	const [amountUSD, setAmountUSD] = useState<string>('');
 
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
 	);
 
 	const network = multisig.network || networks.POLKADOT;

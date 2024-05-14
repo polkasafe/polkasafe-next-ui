@@ -38,6 +38,7 @@ interface Args {
 	transactionFields?: { category: string; subfields: { [subfield: string]: { name: string; value: string } } };
 	attachments?: any;
 	tip: BN;
+	selectedProxy: string;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -51,7 +52,8 @@ export default async function customCallDataTransaction({
 	note,
 	setLoadingMessages,
 	transactionFields,
-	tip
+	tip,
+	selectedProxy
 }: Args) {
 	const encodedInitiatorAddress = getEncodedAddress(initiatorAddress, network);
 	if (!encodedInitiatorAddress) throw new Error('Invalid initiator address');
@@ -83,8 +85,8 @@ export default async function customCallDataTransaction({
 	const extrinsicCall = api.tx(callData);
 
 	let tx: SubmittableExtrinsic<'promise'>;
-	if (isProxy && multisig.proxy) {
-		tx = api.tx.proxy.proxy(multisig.proxy, null, extrinsicCall);
+	if (isProxy && multisig.proxy && selectedProxy) {
+		tx = api.tx.proxy.proxy(selectedProxy, null, extrinsicCall);
 	} else {
 		tx = extrinsicCall;
 	}
@@ -180,7 +182,7 @@ export default async function customCallDataTransaction({
 								block_number: blockNumber,
 								callData: tx.method.toHex(),
 								callHash: tx.method.hash.toHex(),
-								from: isProxy && multisig.proxy ? multisig.proxy : multisig.address,
+								from: isProxy && multisig.proxy && selectedProxy ? selectedProxy : multisig.address,
 								network,
 								note,
 								to: [],

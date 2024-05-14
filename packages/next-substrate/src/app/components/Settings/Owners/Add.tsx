@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/cognitive-complexity */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -26,6 +27,7 @@ import setSigner from '@next-substrate/utils/setSigner';
 import styled from 'styled-components';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 
 interface ISignatory {
 	name: string;
@@ -49,12 +51,21 @@ const addRecipientHeading = () => {
 	}
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
-const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: string }) => {
+const AddOwner = ({
+	onCancel,
+	className,
+	selectedProxy
+}: {
+	onCancel?: () => void;
+	className?: string;
+	selectedProxy: { address: string; name: string };
+}) => {
 	const { multisigAddresses, activeMultisig, addressBook, address, setUserDetailsContextState, loggedInWallet } =
 		useGlobalUserDetailsContext();
 	const { api, apiReady, network } = useGlobalApiContext();
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = multisigAddresses.find(
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
+	);
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState<boolean>(false);
 	const [failure, setFailure] = useState<boolean>(false);
@@ -174,7 +185,7 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 				oldMultisigAddress: multisig?.address || activeMultisig,
 				oldSignatories: multisig?.signatories || [],
 				oldThreshold: multisig?.threshold || 2,
-				proxyAddress: multisig?.proxy || '',
+				proxyAddress: selectedProxy.address || '',
 				recepientAddress: activeMultisig,
 				senderAddress: getSubstrateAddress(address) || address,
 				setLoadingMessages,
@@ -187,7 +198,7 @@ const AddOwner = ({ onCancel, className }: { onCancel?: () => void; className?: 
 				network,
 				newSignatories,
 				newThreshold,
-				proxyAddress: multisig?.proxy || '',
+				proxyAddress: selectedProxy.address || '',
 				recepientAddress: activeMultisig,
 				senderAddress: getSubstrateAddress(address) || address,
 				setLoadingMessages

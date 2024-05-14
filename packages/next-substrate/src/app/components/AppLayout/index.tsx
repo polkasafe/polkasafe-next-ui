@@ -23,6 +23,7 @@ import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import dayjs from 'dayjs';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import Footer from './Footer';
 import Menu from './Menu';
 import NavHeader from './NavHeader';
@@ -47,13 +48,19 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 	const [iframeState, setIframeState] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const pathname = usePathname();
-	const multisig = multisigAddresses.find((item) => item.address === activeMultisig || item.proxy === activeMultisig);
+	const multisig = multisigAddresses.find(
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
+	);
 
 	const isAppsPage = pathname.split('/').pop() === 'apps';
 	const hideSlider = iframeState && isAppsPage;
 
 	useEffect(() => {
-		if (multisigAddresses.some((item) => item.address === activeMultisig || item.proxy === activeMultisig)) {
+		if (
+			multisigAddresses.some(
+				(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
+			)
+		) {
 			setUserDetailsContextState((prev) => ({
 				...prev,
 				notOwnerOfMultisig: false

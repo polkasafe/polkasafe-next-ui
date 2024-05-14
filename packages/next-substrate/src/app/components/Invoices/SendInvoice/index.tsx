@@ -9,6 +9,7 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import { Spin } from 'antd';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import CancelBtn from '../../Settings/CancelBtn';
 import PaymentDetails from './PaymentDetails';
 import ReviewDetails from './ReviewDetails';
@@ -27,7 +28,7 @@ const SendInvoice = ({
 	const { activeOrg } = useActiveOrgContext();
 	const { activeMultisig } = useGlobalUserDetailsContext();
 	const activeMultisigData = activeOrg.multisigs.find(
-		(item) => item.address === activeMultisig || item.proxy === activeMultisig
+		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
 	);
 
 	const [sendInvoiceStep, setSendInvoiceStep] = useState<number>(0);

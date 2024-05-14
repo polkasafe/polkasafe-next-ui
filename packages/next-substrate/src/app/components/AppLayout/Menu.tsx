@@ -33,6 +33,7 @@ import { IMultisigAndNetwork, IOrganisation } from '@next-common/types';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { chainProperties } from '@next-common/global/networkConstants';
+import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 interface Props {
@@ -52,6 +53,7 @@ const Menu: FC<Props> = ({ className }) => {
 		sharedMultisigInfo
 	} = useGlobalUserDetailsContext();
 	const { network } = useGlobalApiContext();
+	const { selectedProxy } = useGlobalUserDetailsContext();
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [multisigs, setMultisigs] = useState<IMultisigAndNetwork[]>();
 	const [selectedMultisigAddress, setSelectedMultisigAddress] = useState('');
@@ -161,10 +163,10 @@ const Menu: FC<Props> = ({ className }) => {
 
 	useEffect(() => {
 		const active = activeOrg?.multisigs.find(
-			(item) => item.address === selectedMultisigAddress || item.proxy === selectedMultisigAddress
+			(item) => item.address === selectedMultisigAddress || checkMultisigWithProxy(item.proxy, selectedMultisigAddress)
 		);
 		if (typeof window !== 'undefined')
-			localStorage.setItem('active_multisig', active?.proxy && isProxy ? active.proxy : selectedMultisigAddress);
+			localStorage.setItem('active_multisig', active?.proxy && isProxy ? selectedProxy : selectedMultisigAddress);
 		setUserDetailsContextState((prevState) => {
 			return {
 				...prevState,
@@ -172,12 +174,12 @@ const Menu: FC<Props> = ({ className }) => {
 					sharedMultisigInfo && isSharedMultisig
 						? sharedMultisigInfo.address
 						: active?.proxy && isProxy
-						? active.proxy
+						? selectedProxy
 						: selectedMultisigAddress
 			};
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [selectedMultisigAddress, isProxy, sharedMultisigInfo, isSharedMultisig, activeOrg?.multisigs]);
+	}, [selectedMultisigAddress, isProxy, sharedMultisigInfo, isSharedMultisig, activeOrg?.multisigs, selectedProxy]);
 
 	return (
 		<div className={`bg-bg-main flex flex-col h-full py-[25px] px-3 max-sm:px-[0px] max-sm:py-[0px] ${className} `}>
