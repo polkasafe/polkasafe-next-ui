@@ -11,7 +11,7 @@ import React, { useEffect, useState } from 'react';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import Loader from '@next-common/ui-components/Loader';
-import { IMultisigAddress } from '@next-common/types';
+import { IMultisigAddress, IOrganisation } from '@next-common/types';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
@@ -19,17 +19,18 @@ import { chainProperties, networks } from '@next-common/global/networkConstants'
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import NetworkCard, { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import CreateMultisig from '../Multisig/CreateMultisig';
 import ProxyAddress from '../Proxy/ProxyAddress';
 
 const LinkMultisigStep = ({
 	linkedMultisigs,
-	setLinkedMultisigs
+	setLinkedMultisigs,
+	activeOrg
 }: {
 	linkedMultisigs: IMultisigAddress[];
 	setLinkedMultisigs: React.Dispatch<React.SetStateAction<IMultisigAddress[]>>;
+	activeOrg?: IOrganisation;
 }) => {
 	const { address, multisigSettings } = useGlobalUserDetailsContext();
 	const [selectedNetwork, setSelectedNetwork] = useState(networks.POLKADOT);
@@ -38,13 +39,13 @@ const LinkMultisigStep = ({
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [openCreateMultisigModal, setOpenCreateMultisigModal] = useState<boolean>(false);
 	const [multisigs, setMultisigs] = useState<IMultisigAddress[]>([]);
-	const { activeOrg } = useActiveOrgContext();
 
-	const multisigAddresses = activeOrg.multisigs;
-	const alreadyLinkedProxy = activeOrg.multisigs
-		.map((multisig) => multisig.proxy)
-		.flat()
-		.filter((a) => a);
+	const multisigAddresses = activeOrg?.multisigs || [];
+	const alreadyLinkedProxy =
+		activeOrg?.multisigs
+			.map((multisig) => multisig?.proxy)
+			.flat()
+			.filter((a) => a) || [];
 
 	const getProxyNameMapByAddress = (proxyAddress: any) => {
 		const result = {};
@@ -294,9 +295,14 @@ const LinkMultisigStep = ({
 											threshold={multisig?.threshold}
 											network={multisig?.network}
 										/>
-										{!multisigAddresses
+										{activeOrg &&
+										multisigAddresses
 											.map(({ address: multiAddress }: { address: string }) => multiAddress)
 											.includes(multisig.address) ? (
+											<span className='flex items-center justify-center gap-x-2 outline-none border-none text-white bg-highlight rounded-lg p-2.5 shadow-none text-xs font-semibold'>
+												Linked
+											</span>
+										) : (
 											<PrimaryButton
 												onClick={() =>
 													setLinkedMultisigs((prev) => [
@@ -322,10 +328,6 @@ const LinkMultisigStep = ({
 											>
 												Link MultiSig
 											</PrimaryButton>
-										) : (
-											<span className='flex items-center justify-center gap-x-2 outline-none border-none text-white bg-highlight rounded-lg p-2.5 shadow-none text-xs font-semibold'>
-												Linked
-											</span>
 										)}
 									</div>
 									{multisig.proxy &&

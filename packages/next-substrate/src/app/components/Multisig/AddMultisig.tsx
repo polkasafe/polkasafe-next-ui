@@ -116,6 +116,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 		{
 			component: (
 				<LinkMultisigStep
+					activeOrg={activeOrg}
 					linkedMultisigs={linkedMultisigs}
 					setLinkedMultisigs={setLinkedMultisigs}
 				/>
