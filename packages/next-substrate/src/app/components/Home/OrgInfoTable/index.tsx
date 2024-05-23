@@ -7,7 +7,8 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import dayjs from 'dayjs';
 import { IQueueItem, ITransaction } from '@next-common/types';
-import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { FIREBASE_FUNCTIONS_LOCAL_URL, FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
 import useFetch from '@next-substrate/hooks/useFetch';
