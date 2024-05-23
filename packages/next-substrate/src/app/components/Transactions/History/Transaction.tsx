@@ -41,7 +41,8 @@ const Transaction: FC<ITransaction> = ({
 	transactionFields,
 	multisigAddress,
 	network,
-	multi_id
+	multi_id,
+	approvals
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { apis } = useGlobalApiContext();
@@ -219,6 +220,7 @@ const Transaction: FC<ITransaction> = ({
 							category={category}
 							setCategory={setCategory}
 							setTransactionFields={setTransactionFieldsObject}
+							approvals={approvals || []}
 							recipientAddresses={
 								decodedCallData?.args?.dest?.id ||
 								decodedCallData?.args?.call?.args?.dest?.id ||

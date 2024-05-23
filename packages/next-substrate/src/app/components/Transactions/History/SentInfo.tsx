@@ -33,6 +33,7 @@ import TransactionFields from '../TransactionFields';
 
 interface ISentInfoProps {
 	callData?: string;
+	approvals: string[];
 	recipientAddresses?: string | string[];
 	amount: string | string[];
 	date: string;
@@ -57,6 +58,7 @@ interface ISentInfoProps {
 
 const SentInfo: FC<ISentInfoProps> = ({
 	amount,
+	approvals,
 	callData,
 	customTx,
 	txnParams,
@@ -81,10 +83,11 @@ const SentInfo: FC<ISentInfoProps> = ({
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 
-	const [approvals, setApprovals] = useState<string[]>([]);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [fetchedApprovals, setFetchedApprovals] = useState<string[]>([]);
 
 	const fetchApprovals = useCallback(async () => {
-		if (!multi_id || !callHash) return;
+		if (!multi_id || !callHash || (approvals && approvals.length > 0)) return;
 
 		const multisigDataRes = await fetch(`https://${network}.api.subscan.io/api/scan/multisig`, {
 			body: JSON.stringify({
@@ -100,12 +103,12 @@ const SentInfo: FC<ISentInfoProps> = ({
 			?.filter((item: any) => item.status === 'Approval' || item.status === 'Executed')
 			.map((item: any) => item.account_display.address);
 
-		setApprovals(a || []);
+		setFetchedApprovals(a || []);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [callHash, multi_id, network]);
 
 	useEffect(() => {
-		fetchApprovals();
+		// fetchApprovals();
 	}, [fetchApprovals]);
 
 	return (

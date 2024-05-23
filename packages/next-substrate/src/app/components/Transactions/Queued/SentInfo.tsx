@@ -126,7 +126,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 	const [depositor, setDepositor] = useState<string>('');
 
 	const fetchApprovals = useCallback(async () => {
-		if (!multi_id || !callHash) return;
+		if (!multi_id || !callHash || (approvals && approvals.length > 0)) return;
 
 		const multisigDataRes = await fetch(`https://${network}.api.subscan.io/api/scan/multisig`, {
 			body: JSON.stringify({

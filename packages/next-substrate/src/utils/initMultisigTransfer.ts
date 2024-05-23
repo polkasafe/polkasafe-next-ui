@@ -1,3 +1,4 @@
+/* eslint-disable no-tabs */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -280,14 +281,34 @@ export default async function initMultisigTransfer({
 			);
 		} else {
 			// for transaction from multisig address
-			api.tx.multisig
-				.approveAsMulti(
-					multisig.threshold,
-					otherSignatoriesSorted,
-					TIME_POINT,
-					transferBatchCall.method.hash,
-					MAX_WEIGHT as any
-				)
+			const multiTx =
+				api.tx.multisig.asMulti.meta.args.length === 6
+					? api.tx.multisig.asMulti(
+							multisig.threshold,
+							otherSignatoriesSorted,
+							null,
+							transferBatchCall.method,
+							MAX_WEIGHT || (0 as any)
+					  )
+					: api.tx.multisig.asMulti(
+							multisig.threshold,
+							otherSignatoriesSorted,
+							null,
+							transferBatchCall.method,
+							(MAX_WEIGHT as any) || {
+								proofSize: 0,
+								refTime: 0
+							}
+					  );
+			// api.tx.multisig
+			// 	.approveAsMulti(
+			// 		multisig.threshold,
+			// 		otherSignatoriesSorted,
+			// 		TIME_POINT,
+			// 		transferBatchCall.method.hash,
+			// 		MAX_WEIGHT as any
+			// 	)
+			multiTx
 				.signAndSend(encodedInitiatorAddress, { tip }, async ({ status, txHash, events, dispatchError }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
