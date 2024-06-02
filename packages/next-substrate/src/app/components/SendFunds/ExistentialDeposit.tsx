@@ -26,6 +26,8 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
+import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
+import { Wallet } from '@next-common/types';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
@@ -41,6 +43,7 @@ const ExistentialDeposit = ({
 }) => {
 	const { apis } = useGlobalApiContext();
 	const { activeMultisig, loggedInWallet, address } = useGlobalUserDetailsContext();
+	const { client, session } = useWalletConnectContext();
 
 	const { activeOrg } = useActiveOrgContext();
 	const multisig = activeOrg?.multisigs?.find(
@@ -112,18 +115,21 @@ const ExistentialDeposit = ({
 
 		console.log('network', network);
 
-		await setSigner(apis[network].api, loggedInWallet, network);
+		if (loggedInWallet !== Wallet.WALLET_CONNECT) await setSigner(apis[network].api, loggedInWallet, network);
 
 		setLoading(true);
 		try {
 			await transferFunds({
 				amount,
 				api: apis[network].api,
+				client,
+				loggedInWallet,
 				network,
 				recepientAddress: multisig?.address || activeMultisig,
 				senderAddress: getSubstrateAddress(selectedSender) || selectedSender,
 				setLoadingMessages,
-				setTxnHash
+				setTxnHash,
+				topic: session?.topic
 			});
 			setLoading(false);
 			setSuccess(true);

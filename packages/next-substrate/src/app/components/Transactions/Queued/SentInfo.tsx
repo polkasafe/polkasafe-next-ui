@@ -35,10 +35,13 @@ import styled from 'styled-components';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { ApiPromise } from '@polkadot/api';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
+import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import ArgumentsTable from './ArgumentsTable';
 import EditNote from './EditNote';
 import NotifyButton from './NotifyButton';
 import TransactionFields from '../TransactionFields';
+import ModalBtn from '../../Settings/ModalBtn';
+import SelectSigner from '../../SelectSigner';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -55,7 +58,7 @@ interface ISentInfoProps {
 	callDataString: string;
 	recipientAddress?: string | string[];
 	setCallDataString: React.Dispatch<React.SetStateAction<string>>;
-	handleApproveTransaction: () => Promise<void>;
+	handleApproveTransaction: (signer: string) => Promise<void>;
 	handleCancelTransaction: () => Promise<void>;
 	note: string;
 	isProxyApproval: boolean;
@@ -117,13 +120,38 @@ const SentInfo: FC<ISentInfoProps> = ({
 }) => {
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
-	const { address: userAddress, addressBook, activeMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const {
+		address: userAddress,
+		addressBook,
+		activeMultisig,
+		notOwnerOfMultisig,
+		linkedAddresses
+	} = useGlobalUserDetailsContext();
+	const [initiatorAddress, setInitiatorAddress] = useState<string>(userAddress);
 	const [showDetails, setShowDetails] = useState<boolean>(false);
+	const [openApproveModal, setOpenApproveModal] = useState<boolean>(false);
 	const [openCancelModal, setOpenCancelModal] = useState<boolean>(false);
 	const [openEditNoteModal, setOpenEditNoteModal] = useState<boolean>(false);
 
 	const [updatedNote, setUpdatedNote] = useState(note);
 	const [depositor, setDepositor] = useState<string>('');
+
+	const [validSignersForMultisig, setValidSignersForMultisig] = useState<string[]>([]);
+
+	useEffect(() => {
+		const validSigners = [];
+
+		multisig.signatories.forEach((item) => {
+			if (
+				[userAddress, ...linkedAddresses].some((a) => getSubstrateAddress(a) === getSubstrateAddress(item)) &&
+				!approvals.some((a) => getSubstrateAddress(a) === getSubstrateAddress(item))
+			) {
+				validSigners.push(getSubstrateAddress(item));
+			}
+		});
+		console.log('valid', validSigners, linkedAddresses, multisig.signatories, approvals);
+		setValidSignersForMultisig(validSigners);
+	}, [approvals, linkedAddresses, multisig.signatories, userAddress]);
 
 	const fetchApprovals = useCallback(async () => {
 		if (!multi_id || !callHash || (approvals && approvals.length > 0)) return;
@@ -179,6 +207,40 @@ const SentInfo: FC<ISentInfoProps> = ({
 
 	return (
 		<div className={classNames('flex gap-x-4 max-sm:flex-wrap max-sm:gap-2', className)}>
+			<ModalComponent
+				onCancel={() => setOpenApproveModal(false)}
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Approve Transaction</h3>}
+				open={openApproveModal}
+			>
+				<div className='flex flex-col h-full'>
+					<section className='mb-[15px]'>
+						<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Select Signer</label>
+						<div className='flex items-center gap-x-[10px]'>
+							<article className='w-[500px] max-sm:w-full'>
+								<SelectSigner
+									approvers={multisig?.signatories || []}
+									setSigner={setInitiatorAddress}
+								/>
+							</article>
+						</div>
+					</section>
+					<div className='flex items-center justify-between mt-[40px]'>
+						<CancelBtn onClick={() => setOpenApproveModal(false)} />
+						<ModalBtn
+							title='Approve'
+							disabled={
+								!validSignersForMultisig ||
+								validSignersForMultisig.length === 0 ||
+								!validSignersForMultisig.includes(initiatorAddress)
+							}
+							onClick={() => {
+								handleApproveTransaction(initiatorAddress);
+								setOpenApproveModal(false);
+							}}
+						/>
+					</div>
+				</div>
+			</ModalComponent>
 			<ModalComponent
 				onCancel={() => setOpenCancelModal(false)}
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Cancel Transaction</h3>}
@@ -694,18 +756,18 @@ const SentInfo: FC<ISentInfoProps> = ({
 						</Timeline.Item>
 					</Timeline>
 					<div className='w-full mt-3 flex flex-col gap-y-2 items-center'>
-						{!approvals.includes(getEncodedAddress(userAddress, network)) && (
+						{validSignersForMultisig && validSignersForMultisig.length > 0 && (
 							<Button
 								disabled={
 									notOwnerOfMultisig ||
-									approvals.includes(getEncodedAddress(userAddress, network)) ||
+									!validSignersForMultisig ||
 									!decodedCallData ||
 									(approvals.length === threshold - 1 && !callDataString)
 								}
 								loading={loading}
-								onClick={handleApproveTransaction}
+								onClick={() => setOpenApproveModal(true)}
 								className={`w-full border-none text-sm font-normal ${
-									approvals.includes(getEncodedAddress(userAddress, network)) ||
+									!validSignersForMultisig ||
 									!decodedCallData ||
 									(approvals.length === threshold - 1 && !callDataString)
 										? 'bg-highlight text-text_secondary'

@@ -12,7 +12,7 @@ import React, { useEffect, useState } from 'react';
 import ConnectWalletImg from '@next-common/assets/connect-wallet.svg';
 import { initialUserDetailsContext, useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import APP_NAME from '@next-common/global/appName';
-import { IUser, NotificationStatus, Triggers, Wallet } from '@next-common/types';
+import { IUser, NotificationStatus, Triggers, WC_POLKADOT_METHODS, Wallet } from '@next-common/types';
 import AccountSelectionForm from '@next-common/ui-components/AccountSelectionForm';
 import { WalletIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
@@ -25,6 +25,9 @@ import getConnectAddressToken from '@next-substrate/utils/getConnectAddressToken
 import { FIREBASE_FUNCTIONS_URL, SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
 import { useRouter } from 'next/navigation';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
+import { signatureVerify, cryptoWaitReady } from '@polkadot/util-crypto';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
 
 const whitelist = [
 	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
@@ -40,6 +43,8 @@ const whitelist = [
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const ConnectWallet = () => {
 	const { setUserDetailsContextState, userID, organisations } = useGlobalUserDetailsContext();
+	const { client, session } = useWalletConnectContext();
+
 	const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
 	const [showAccountsDropdown, setShowAccountsDropdown] = useState(false);
 	const [address, setAddress] = useState<string>('');
@@ -103,7 +108,7 @@ const ConnectWallet = () => {
 				setLoading(false);
 			} else {
 				let signature = '';
-				if (!whitelist.includes(getSubstrateAddress(address))) {
+				if (!whitelist.includes(getSubstrateAddress(address)) && selectedWallet !== Wallet.WALLET_CONNECT) {
 					const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 					const wallet = injectedWindow.injectedWeb3[selectedWallet];
@@ -126,6 +131,29 @@ const ConnectWallet = () => {
 					signature = userSignature;
 
 					setSigning(false);
+				}
+
+				if (selectedWallet === Wallet.WALLET_CONNECT && client && session) {
+					const message = stringToHex(token);
+
+					const result = await client!.request<{ signature: string }>({
+						chainId: chainProperties[networks.POLKADOT].chainId,
+						request: {
+							method: WC_POLKADOT_METHODS.POLKADOT_SIGN_MESSAGE,
+							params: {
+								address,
+								message
+							}
+						},
+						topic: session!.topic
+					});
+
+					// sr25519 signatures need to wait for WASM to load
+					await cryptoWaitReady();
+					const { isValid: valid } = signatureVerify(message, result.signature, address);
+					if (valid) {
+						signature = result.signature;
+					}
 				}
 
 				const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/login_substrate`, {
@@ -437,7 +465,9 @@ const ConnectWallet = () => {
 								setAccounts={setAccounts}
 							/>
 							{fetchAccountsLoading ? (
-								<Loader text='Loading Accounts...' />
+								<div>
+									<Loader text='Loading Accounts...' />
+								</div>
 							) : noExtension ? (
 								<p className='mt-[10px]  text-normal text-sm text-white text-center capitalize'>
 									Please Install {selectedWallet} Extension.
@@ -458,12 +488,12 @@ const ConnectWallet = () => {
 						</div>
 					) : null}
 					<Button
-						disabled={(noExtension || noAccounts || !address) && showAccountsDropdown}
+						disabled={(noExtension || noAccounts || !address || fetchAccountsLoading) && showAccountsDropdown}
 						icon={<WalletIcon />}
 						loading={loading}
 						onClick={async () => (showAccountsDropdown ? handleConnectWallet() : setShowAccountsDropdown(true))}
 						className={`mt-[25px] text-sm border-none outline-none flex items-center justify-center ${
-							(noExtension || noAccounts || !address) && showAccountsDropdown
+							(noExtension || noAccounts || !address || fetchAccountsLoading) && showAccountsDropdown
 								? 'bg-highlight text-text_secondary'
 								: 'bg-primary text-white'
 						} max-w-[320px] w-full`}

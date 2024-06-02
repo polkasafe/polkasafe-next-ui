@@ -27,6 +27,8 @@ import { networks } from '@next-common/global/networkConstants';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
+import { Wallet } from '@next-common/types';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
 const FundMultisig = ({
@@ -41,6 +43,8 @@ const FundMultisig = ({
 }) => {
 	const { apis } = useGlobalApiContext();
 	const { activeMultisig, loggedInWallet, address } = useGlobalUserDetailsContext();
+	const { client, session } = useWalletConnectContext();
+
 	const { activeOrg } = useActiveOrgContext();
 
 	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
@@ -114,7 +118,7 @@ const FundMultisig = ({
 	const handleSubmit = async () => {
 		if (!apis || !apis[network] || !apis[network].apiReady || !selectedMultisig || !amount) return;
 
-		await setSigner(apis[network].api, loggedInWallet, network);
+		if (loggedInWallet !== Wallet.WALLET_CONNECT) await setSigner(apis[network].api, loggedInWallet, network);
 
 		console.log('obj', {
 			amount,
@@ -129,11 +133,14 @@ const FundMultisig = ({
 			await transferFunds({
 				amount,
 				api: apis[network].api,
+				client,
+				loggedInWallet,
 				network,
 				recepientAddress: selectedMultisig,
 				senderAddress: getSubstrateAddress(selectedSender) || selectedSender,
 				setLoadingMessages,
-				setTxnHash
+				setTxnHash,
+				topic: session?.topic
 			});
 			setLoading(false);
 			setSuccess(true);

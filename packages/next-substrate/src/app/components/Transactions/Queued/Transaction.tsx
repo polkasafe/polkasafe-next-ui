@@ -195,8 +195,8 @@ const Transaction: FC<ITransactionProps> = ({
 	}, [decodedCallData, multisig, network]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
-	const handleApproveTransaction = async () => {
-		if (!apis || !apis[network] || !apis[network].apiReady || !address) {
+	const handleApproveTransaction = async (initiatorAddress: string) => {
+		if (!apis || !apis[network] || !apis[network].apiReady || !initiatorAddress) {
 			return;
 		}
 
@@ -223,7 +223,7 @@ const Transaction: FC<ITransactionProps> = ({
 			if (decodedCallData?.args?.proxy_type) {
 				await approveProxy({
 					api: apis[network].api,
-					approvingAddress: address,
+					approvingAddress: initiatorAddress,
 					callDataHex: callDataString,
 					callHash,
 					multisig,
@@ -237,7 +237,7 @@ const Transaction: FC<ITransactionProps> = ({
 			} else if (decodedCallData?.args?.call?.args?.delegate) {
 				await approveAddProxy({
 					api: apis[network].api,
-					approvingAddress: address,
+					approvingAddress: initiatorAddress,
 					callDataHex: callDataString,
 					callHash,
 					multisig,
@@ -261,7 +261,7 @@ const Transaction: FC<ITransactionProps> = ({
 						  ),
 					api: apis[network].api,
 					approvals,
-					approvingAddress: address,
+					approvingAddress: initiatorAddress,
 					callDataHex: callDataString,
 					callHash,
 					multisig,

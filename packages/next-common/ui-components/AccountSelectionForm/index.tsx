@@ -27,7 +27,7 @@ const AccountSelectionForm = ({
 }: IAccountSelectionFormProps) => {
 	return (
 		<article className={`${styles.box} ${className}`}>
-			{title && <h3 className='text-primary text-xs font-normal'>{title}</h3>}
+			{title && <h3 className='text-primary text-xs font-normal mb-1'>{title}</h3>}
 			<AddressDropdown
 				disabled={disabled}
 				accounts={accounts}

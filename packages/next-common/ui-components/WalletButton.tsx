@@ -2,24 +2,30 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { Button } from 'antd';
+import { Button, Tooltip } from 'antd';
 
 interface Props {
 	onClick: React.MouseEventHandler<HTMLAnchorElement> & React.MouseEventHandler<HTMLButtonElement>;
 	icon: any;
 	disabled?: boolean;
 	className?: string;
+	tooltip?: string;
 }
 
-const WalletButton: React.FC<Props> = ({ disabled, onClick, icon, className }: Props) => {
+const WalletButton: React.FC<Props> = ({ disabled, onClick, icon, className, tooltip }: Props) => {
 	return (
-		<Button
-			className={`bg-bg-secondary h-10 w-10 p-2 ${className}`}
-			onClick={onClick}
-			disabled={disabled}
+		<Tooltip
+			title={tooltip && <span className='text-white font-medium'>{tooltip}</span>}
+			className='bg-[#24272E]'
 		>
-			{icon}
-		</Button>
+			<Button
+				className={`bg-bg-secondary h-10 w-10 p-2 ${className}`}
+				onClick={onClick}
+				disabled={disabled}
+			>
+				{icon}
+			</Button>
+		</Tooltip>
 	);
 };
 

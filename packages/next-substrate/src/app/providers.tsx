@@ -18,6 +18,7 @@ import { ActiveOrgProvider } from '@next-substrate/context/ActiveOrgContext';
 import { CreateOrgStepsProvider } from '@next-substrate/context/CreateOrgStepsContext';
 import { MultisigAssetsProvider } from '@next-substrate/context/MultisigAssetsContext';
 import CacheProvider from '@next-substrate/context/CachedDataContext';
+import { WalletConnectProvider } from '@next-substrate/context/WalletConnectProvider';
 
 export default function Providers({ children }: { children?: ReactNode }) {
 	return (
@@ -25,23 +26,25 @@ export default function Providers({ children }: { children?: ReactNode }) {
 			{
 				(
 					<ApiContextProvider>
-						<CurrencyContextProvider>
-							<UserDetailsProvider>
-								<ActiveMultisigProvider>
-									<AddMultisigProvider>
-										<ActiveOrgProvider>
-											<CacheProvider>
-												<MultisigAssetsProvider>
-													<DAppContextProvider>
-														<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
-													</DAppContextProvider>
-												</MultisigAssetsProvider>
-											</CacheProvider>
-										</ActiveOrgProvider>
-									</AddMultisigProvider>
-								</ActiveMultisigProvider>
-							</UserDetailsProvider>
-						</CurrencyContextProvider>
+						<WalletConnectProvider>
+							<CurrencyContextProvider>
+								<UserDetailsProvider>
+									<ActiveMultisigProvider>
+										<AddMultisigProvider>
+											<ActiveOrgProvider>
+												<CacheProvider>
+													<MultisigAssetsProvider>
+														<DAppContextProvider>
+															<CreateOrgStepsProvider>{children}</CreateOrgStepsProvider>
+														</DAppContextProvider>
+													</MultisigAssetsProvider>
+												</CacheProvider>
+											</ActiveOrgProvider>
+										</AddMultisigProvider>
+									</ActiveMultisigProvider>
+								</UserDetailsProvider>
+							</CurrencyContextProvider>
+						</WalletConnectProvider>
 					</ApiContextProvider>
 				) as React.ReactNode
 			}
