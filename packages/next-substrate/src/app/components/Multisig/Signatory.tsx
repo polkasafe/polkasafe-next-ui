@@ -44,7 +44,7 @@ const Signatory = ({
 	api,
 	apiReady
 }: ISignatoryProps) => {
-	const { address: userAddress } = useGlobalUserDetailsContext();
+	const { address: userAddress, linkedAddresses } = useGlobalUserDetailsContext();
 	const { accounts } = useGetWalletAccounts();
 
 	const [addWalletAddress, setAddWalletAddress] = useState<boolean>(false);
@@ -56,23 +56,31 @@ const Signatory = ({
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.addressBook) return;
 
-		console.log('signa', signatories);
+		const allAddresses = activeOrg.addressBook
+			?.filter(
+				(item) =>
+					!signatories.includes(item.address) &&
+					(filterAddress ? item.address.includes(filterAddress, 0) || item.name.includes(filterAddress, 0) : true)
+			)
+			.map((item, i) => ({
+				address: item.address,
+				key: signatories.length + i,
+				name: item.nickName || item.name
+			}));
 
-		setAddresses(
-			activeOrg.addressBook
-				?.filter(
-					(item) =>
-						!signatories.includes(item.address) &&
-						(filterAddress ? item.address.includes(filterAddress, 0) || item.name.includes(filterAddress, 0) : true)
-				)
-				.map((item, i) => ({
-					address: item.address,
-					key: signatories.length + i,
-					name: item.nickName || item.name
-				}))
-		);
+		linkedAddresses.forEach((item, i) => {
+			if (!allAddresses.some((a) => getSubstrateAddress(a.address) === getSubstrateAddress(item))) {
+				allAddresses.push({
+					address: item,
+					key: allAddresses.length + i,
+					name: 'Linked'
+				});
+			}
+		});
+
+		setAddresses(allAddresses);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeOrg, signatories]);
+	}, [activeOrg, linkedAddresses, signatories]);
 
 	useEffect(() => {
 		if (!api || !apiReady || !addresses) {

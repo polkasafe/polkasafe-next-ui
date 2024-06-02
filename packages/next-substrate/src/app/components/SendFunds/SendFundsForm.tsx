@@ -18,7 +18,7 @@ import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
-import { EFieldType, IMultisigAddress, IQueueItem, ITxnCategory, NotificationStatus } from '@next-common/types';
+import { EFieldType, IMultisigAddress, IQueueItem, ITxnCategory, NotificationStatus, Wallet } from '@next-common/types';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import Balance from '@next-common/ui-components/Balance';
 import BalanceInput from '@next-common/ui-components/BalanceInput';
@@ -50,6 +50,7 @@ import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useCache } from '@next-substrate/context/CachedDataContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
+import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 import ArgumentsTable from '../Transactions/Queued/ArgumentsTable';
@@ -62,6 +63,7 @@ import UploadAttachment, { ISubfieldAndAttachment } from './UploadAttachment';
 import AddAddressModal from './AddAddressModal';
 import SetIdentity from './SetIdentity';
 import Delegate from './Delegate';
+import SelectSigner from '../SelectSigner';
 
 export enum ETransactionType {
 	SEND_TOKEN = 'Send Token',
@@ -92,6 +94,10 @@ const SendFundsForm = ({
 }: ISendFundsFormProps) => {
 	const { getCache, setCache } = useCache();
 	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
+	const { client, session } = useWalletConnectContext();
+
+	const [initiatorAddress, setInitiatorAddress] = useState<string>(address);
+
 	const { apis } = useGlobalApiContext();
 	const [note, setNote] = useState<string>('');
 	const [loading, setLoading] = useState(false);
@@ -375,7 +381,7 @@ const SendFundsForm = ({
 
 	useEffect(() => {
 		const fetchBalanceInfos = async () => {
-			if (!apis || !apis[network] || !apis[network].apiReady || !address || !recipientAndAmount[0].recipient) {
+			if (!apis || !apis[network] || !apis[network].apiReady || !initiatorAddress || !recipientAndAmount[0].recipient) {
 				return;
 			}
 
@@ -393,19 +399,19 @@ const SendFundsForm = ({
 				const txn = transferKeepAlive
 					? apis[network].api.tx.balances.transferKeepAlive(recipientAndAmount[0].recipient, amount)
 					: apis[network].api.tx.balances.transfer(recipientAndAmount[0].recipient, amount);
-				const gasInfo = await txn.paymentInfo(address);
+				const gasInfo = await txn.paymentInfo(initiatorAddress);
 				setTotalGas(new BN(gasInfo.partialFee.toString()));
 			} else {
 				setTotalGas(new BN(0));
 			}
 
 			// initiator balance
-			const initiatorAccountBalance = await apis[network].api.query.system.account(address);
+			const initiatorAccountBalance = await apis[network].api.query.system.account(initiatorAddress);
 			setInitiatorBalance(new BN(initiatorAccountBalance.data.free.toString()));
 			setFetchBalancesLoading(false);
 		};
 		fetchBalanceInfos();
-	}, [address, amount, apis, network, recipientAndAmount, transferKeepAlive]);
+	}, [amount, apis, initiatorAddress, network, recipientAndAmount, transferKeepAlive]);
 
 	// calculate total amount
 	useEffect(() => {
@@ -452,11 +458,11 @@ const SendFundsForm = ({
 	};
 
 	const handleSubmit = async () => {
-		if (!apis || !apis[network] || !apis[network].apiReady || !address) {
+		if (!apis || !apis[network] || !apis[network].apiReady || !initiatorAddress) {
 			return;
 		}
 
-		await setSigner(apis[network].api, loggedInWallet, network);
+		if (loggedInWallet !== Wallet.WALLET_CONNECT) await setSigner(apis[network].api, loggedInWallet, network);
 
 		if (!multisig) return;
 
@@ -477,8 +483,9 @@ const SendFundsForm = ({
 					addToQueue,
 					api: apis[network].api,
 					attachments: subfieldAttachments,
-					initiatorAddress: address,
+					initiatorAddress,
 					isProxy,
+					loggedInWallet,
 					multisig,
 					network,
 					note,
@@ -487,14 +494,16 @@ const SendFundsForm = ({
 					setLoadingMessages,
 					tip,
 					transactionFields: transactionFieldsObject,
-					transferKeepAlive
+					transferKeepAlive,
+					wc_client: client,
+					wc_session_topic: session?.topic
 				});
 			} else {
 				queueItemData = await customCallDataTransaction({
 					api: apis[network].api,
 					attachments: subfieldAttachments,
 					callDataString: callData,
-					initiatorAddress: address,
+					initiatorAddress,
 					isProxy,
 					multisig,
 					network,
@@ -525,7 +534,7 @@ const SendFundsForm = ({
 			txnParams={transactionType !== ETransactionType.SEND_TOKEN ? txnParams : undefined}
 			txnHash={transactionData?.callHash}
 			created_at={new Date()}
-			sender={address}
+			sender={initiatorAddress}
 			recipients={
 				transactionType === ETransactionType.SEND_TOKEN ? recipientAndAmount.map((item) => item.recipient) : []
 			}
@@ -541,7 +550,7 @@ const SendFundsForm = ({
 				onCancel?.();
 			}}
 			txnHash={transactionData?.callHash || ''}
-			sender={address}
+			sender={initiatorAddress}
 			failedMessage='Oh no! Something went wrong.'
 			waitMessage='Your transaction has failed due to some technical error. Please try again...Details of the transaction are included below'
 			created_at={new Date()}
@@ -664,6 +673,17 @@ const SendFundsForm = ({
 								<Divider className='border-[#505050]'>
 									<SquareDownArrowIcon />
 								</Divider>
+							</div>
+						</section>
+						<section className='mb-[15px]'>
+							<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Select Signer</label>
+							<div className='flex items-center gap-x-[10px]'>
+								<article className='w-[500px] max-sm:w-full'>
+									<SelectSigner
+										approvers={multisig?.signatories || []}
+										setSigner={setInitiatorAddress}
+									/>
+								</article>
 							</div>
 						</section>
 						{transactionType === ETransactionType.CALL_DATA ? (

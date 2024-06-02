@@ -17,6 +17,7 @@ import { networks } from '@next-common/global/networkConstants';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
+import { useWalletConnectContext } from './WalletConnectProvider';
 
 export const initialUserDetailsContext: UserDetailsContextType = {
 	userID: '',
@@ -321,6 +322,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	const router = useRouter();
 
 	const [userDetailsContextState, setUserDetailsContextState] = useState(initialUserDetailsContext);
+	const { session } = useWalletConnectContext();
+
 	const [loading, setLoading] = useState(true);
 
 	const searchParams = useSearchParams();
@@ -419,7 +422,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					transactionFields: userData?.transactionFields || initialUserDetailsContext.transactionFields,
 					tfa_token: userData?.tfa_token,
 					two_factor_auth: userData?.two_factor_auth,
-					watchlists: userData?.watchlists
+					watchlists: userData?.watchlists,
+					linkedAddresses: userData?.linkedAddresses || []
 				};
 			});
 			if (!userData?.organisations || userData.organisations?.length === 0) {
@@ -450,7 +454,25 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 
 	useEffect(() => {
 		if (typeof window !== 'undefined' && localStorage.getItem('address')) {
-			connectAddress();
+			if (userDetailsContextState.loggedInWallet === Wallet.WALLET_CONNECT && session === undefined) {
+				logout();
+				setUserDetailsContextState((prevState) => {
+					return {
+						...prevState,
+						activeMultisig: '',
+						address: '',
+						addressBook: [],
+						isSharedMultisig: false,
+						loggedInWallet: Wallet.POLKADOT,
+						multisigAddresses: [],
+						sharedMultisigInfo: undefined,
+						userID: ''
+					};
+				});
+				router.push('/login');
+			} else {
+				connectAddress();
+			}
 		} else {
 			logout();
 			setLoading(false);
@@ -459,7 +481,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [connectAddress]);
+	}, [connectAddress, session]);
 
 	const value = useMemo(
 		() => ({ ...userDetailsContextState, loading, setUserDetailsContextState }),

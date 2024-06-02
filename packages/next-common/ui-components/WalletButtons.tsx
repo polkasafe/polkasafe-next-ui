@@ -9,11 +9,14 @@ import React, { useEffect, useState } from 'react';
 import PolkadotWalletIcon from '@next-common/assets/wallet/polkadotjs-icon.svg';
 import SubWalletIcon from '@next-common/assets/wallet/subwallet-icon.svg';
 import TalismanIcon from '@next-common/assets/wallet/talisman-icon.svg';
+import WalletConnectLogo from '@next-common/assets/wallet/wallet-connect-logo.svg';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import APP_NAME from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
 
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
+import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
+import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import WalletButton from './WalletButton';
 
 interface IWalletButtons {
@@ -36,6 +39,8 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 	const { loggedInWallet } = useGlobalUserDetailsContext();
 
 	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.POLKADOT);
+
+	const { connect, session } = useWalletConnectContext();
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const getAccounts = async (chosenWallet: Wallet): Promise<undefined> => {
@@ -111,7 +116,27 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 		event.preventDefault();
 		setSelectedWallet(wallet);
 		setWallet?.(wallet);
-		await getAccounts(wallet);
+		if (wallet === Wallet.WALLET_CONNECT) {
+			if (!session) {
+				setFetchAccountsLoading?.(true);
+				const walletConnectAccounts = await connect();
+				setAccounts(
+					walletConnectAccounts.map((item) => ({
+						address: getSubstrateAddress(item) || item,
+						name: DEFAULT_ADDRESS_NAME
+					})) || []
+				);
+				setFetchAccountsLoading?.(false);
+			} else {
+				const walletConnectAccounts = session.namespaces.polkadot.accounts.map((item) => ({
+					address: item.split(':')[2],
+					name: DEFAULT_ADDRESS_NAME
+				}));
+				setAccounts(walletConnectAccounts);
+			}
+		} else {
+			await getAccounts(wallet);
+		}
 	};
 
 	return (
@@ -124,6 +149,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				// disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.POLKADOT)}
 				icon={<PolkadotWalletIcon />}
+				tooltip='Polkadot'
 			/>
 			<WalletButton
 				className={`${
@@ -132,6 +158,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				// disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.SUBWALLET)}
 				icon={<SubWalletIcon />}
+				tooltip='Subwallet'
 			/>
 			<WalletButton
 				className={`${
@@ -140,6 +167,16 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				// disabled={!apiReady}
 				onClick={(event) => handleWalletClick(event as any, Wallet.TALISMAN)}
 				icon={<TalismanIcon />}
+				tooltip='Talisman'
+			/>
+			<WalletButton
+				className={`${
+					selectedWallet === Wallet.WALLET_CONNECT ? 'border-primary bg-highlight border border-solid' : 'border-none'
+				}`}
+				// disabled={!apiReady}
+				onClick={(event) => handleWalletClick(event as any, Wallet.WALLET_CONNECT)}
+				icon={<WalletConnectLogo />}
+				tooltip='Wallet Connect'
 			/>
 		</div>
 	);
