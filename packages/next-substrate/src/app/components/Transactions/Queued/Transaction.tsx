@@ -12,7 +12,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
-import { IMultisigAddress, IQueueItem, ITxnCategory, ITxNotification } from '@next-common/types';
+import { IMultisigAddress, IQueueItem, ITxnCategory, ITxNotification, Wallet } from '@next-common/types';
 import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';
 import approveAddProxy from '@next-substrate/utils/approveAddProxy';
@@ -31,6 +31,7 @@ import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
+import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import SentInfo from './SentInfo';
@@ -80,6 +81,7 @@ const Transaction: FC<ITransactionProps> = ({
 
 	const { apis } = useGlobalApiContext();
 	const { address, setUserDetailsContextState, loggedInWallet } = useGlobalUserDetailsContext();
+	const { client, session } = useWalletConnectContext();
 	const { tokensUsdPrice } = useGlobalCurrencyContext();
 	const { records } = useActiveMultisigContext();
 	const [loading, setLoading] = useState(false);
@@ -200,7 +202,7 @@ const Transaction: FC<ITransactionProps> = ({
 			return;
 		}
 
-		await setSigner(apis[network].api, loggedInWallet, network);
+		if (loggedInWallet !== Wallet.WALLET_CONNECT) await setSigner(apis[network].api, loggedInWallet, network);
 
 		if (!multisig) return;
 
@@ -226,13 +228,16 @@ const Transaction: FC<ITransactionProps> = ({
 					approvingAddress: initiatorAddress,
 					callDataHex: callDataString,
 					callHash,
+					loggedInWallet,
 					multisig,
 					network,
 					note: note || '',
 					records,
 					router,
 					setLoadingMessages,
-					setUserDetailsContextState
+					setUserDetailsContextState,
+					wc_client: client,
+					wc_session_topic: session?.topic
 				});
 			} else if (decodedCallData?.args?.call?.args?.delegate) {
 				await approveAddProxy({
@@ -240,13 +245,16 @@ const Transaction: FC<ITransactionProps> = ({
 					approvingAddress: initiatorAddress,
 					callDataHex: callDataString,
 					callHash,
+					loggedInWallet,
 					multisig,
 					network,
 					newMultisigAddress: decodedCallData?.args?.call?.args?.delegate?.id,
 					note: note || '',
 					proxyAddress: (multisig.proxy as string) || '',
 					setLoadingMessages,
-					setUserDetailsContextState
+					setUserDetailsContextState,
+					wc_client: client,
+					wc_session_topic: session?.topic
 				});
 			} else {
 				await approveMultisigTransfer({
@@ -264,6 +272,7 @@ const Transaction: FC<ITransactionProps> = ({
 					approvingAddress: initiatorAddress,
 					callDataHex: callDataString,
 					callHash,
+					loggedInWallet,
 					multisig,
 					network,
 					note: note || '',
@@ -273,7 +282,9 @@ const Transaction: FC<ITransactionProps> = ({
 						decodedCallData?.args?.calls?.[0]?.args.dest?.id ||
 						decodedCallData?.args?.call?.args?.calls?.[0]?.args.dest?.id ||
 						'',
-					setLoadingMessages
+					setLoadingMessages,
+					wc_client: client,
+					wc_session_topic: session?.topic
 				});
 			}
 			setLoading(false);

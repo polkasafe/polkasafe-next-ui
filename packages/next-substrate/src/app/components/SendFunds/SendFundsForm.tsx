@@ -505,13 +505,16 @@ const SendFundsForm = ({
 					callDataString: callData,
 					initiatorAddress,
 					isProxy,
+					loggedInWallet,
 					multisig,
 					network,
 					note,
 					selectedProxy: selectedMultisig,
 					setLoadingMessages,
 					tip,
-					transactionFields: transactionFieldsObject
+					transactionFields: transactionFieldsObject,
+					wc_client: client,
+					wc_session_topic: session?.topic
 				});
 			}
 			setTransactionData(queueItemData);

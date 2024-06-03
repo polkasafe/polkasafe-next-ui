@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -7,13 +8,15 @@ import { formatBalance } from '@polkadot/util/format';
 import { sortAddresses } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus, Wallet } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
+import Client from '@walletconnect/sign-client';
 import addNewTransaction from './addNewTransaction';
 import getEncodedAddress from './getEncodedAddress';
 import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
+import wcSignTransaction from './wc_signTransaction';
 
 export interface IMultiTransferResponse {
 	callData: string;
@@ -39,6 +42,9 @@ interface Args {
 	attachments?: any;
 	tip: BN;
 	selectedProxy: string;
+	wc_client?: Client;
+	wc_session_topic?: string;
+	loggedInWallet?: Wallet;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -53,7 +59,10 @@ export default async function customCallDataTransaction({
 	setLoadingMessages,
 	transactionFields,
 	tip,
-	selectedProxy
+	selectedProxy,
+	wc_client,
+	wc_session_topic,
+	loggedInWallet
 }: Args) {
 	const encodedInitiatorAddress = getEncodedAddress(initiatorAddress, network);
 	if (!encodedInitiatorAddress) throw new Error('Invalid initiator address');
@@ -93,163 +102,331 @@ export default async function customCallDataTransaction({
 
 	let blockHash = '';
 
+	const transactionCall = api.tx.multisig.asMulti(multisig.threshold, otherSignatoriesSorted, TIME_POINT, tx, 0 as any);
+
+	if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+		try {
+			await wcSignTransaction(api, network, initiatorAddress, transactionCall, wc_client, wc_session_topic, tip);
+		} catch (e) {
+			console.log(e);
+			return undefined;
+		}
+	}
+
 	return new Promise<IMultiTransferResponse>((resolve, reject) => {
 		// 5. for transaction from proxy address
-		api.tx.multisig
-			.asMulti(multisig.threshold, otherSignatoriesSorted, TIME_POINT, tx, 0 as any)
-			.signAndSend(encodedInitiatorAddress, { tip }, async ({ status, txHash, events, dispatchError }) => {
-				if (status.isInvalid) {
-					console.log('Transaction invalid');
-					// messageApi.error('Transaction invalid');
-					setLoadingMessages('Transaction invalid');
-				} else if (status.isReady) {
-					console.log('Transaction is ready');
-					// messageApi.loading('Transaction is ready');
-					setLoadingMessages('Transaction is ready');
-				} else if (status.isBroadcast) {
-					console.log('Transaction has been broadcasted');
-					// messageApi.loading('Transaction has been broadcasted');
-					setLoadingMessages('Transaction has been broadcasted');
-				} else if (status.isInBlock) {
-					blockHash = status.asInBlock.toHex();
-					console.log('Transaction is in block');
-					// messageApi.loading('Transaction is in block');
-					setLoadingMessages('Transaction is in block');
-				} else if (status.isFinalized) {
-					console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
-					console.log(`approveAsMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
+		if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+			transactionCall
+				.send(async ({ status, txHash, events, dispatchError }) => {
+					if (status.isInvalid) {
+						console.log('Transaction invalid');
+						// messageApi.error('Transaction invalid');
+						setLoadingMessages('Transaction invalid');
+					} else if (status.isReady) {
+						console.log('Transaction is ready');
+						// messageApi.loading('Transaction is ready');
+						setLoadingMessages('Transaction is ready');
+					} else if (status.isBroadcast) {
+						console.log('Transaction has been broadcasted');
+						// messageApi.loading('Transaction has been broadcasted');
+						setLoadingMessages('Transaction has been broadcasted');
+					} else if (status.isInBlock) {
+						blockHash = status.asInBlock.toHex();
+						console.log('Transaction is in block');
+						// messageApi.loading('Transaction is in block');
+						setLoadingMessages('Transaction is in block');
+					} else if (status.isFinalized) {
+						console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
+						console.log(`approveAsMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
 
-					const block = await api.rpc.chain.getBlock(blockHash);
-					const blockNumber = block.block.header.number.toNumber();
+						const block = await api.rpc.chain.getBlock(blockHash);
+						const blockNumber = block.block.header.number.toNumber();
 
-					if (dispatchError) {
-						if (dispatchError.isModule) {
-							// for module errors, we have the section indexed, lookup
-							const decoded = api.registry.findMetaError(dispatchError.asModule);
-							const { docs, name, method, section } = decoded;
+						if (dispatchError) {
+							if (dispatchError.isModule) {
+								// for module errors, we have the section indexed, lookup
+								const decoded = api.registry.findMetaError(dispatchError.asModule);
+								const { docs, name, method, section } = decoded;
 
-							console.log(`${section}.${name}: ${docs.join(' ')}`);
+								console.log(`${section}.${name}: ${docs.join(' ')}`);
 
-							queueNotification({
-								header: `Error! ${section}.${method}`,
-								message: `${docs.join(' ')}`,
-								status: NotificationStatus.ERROR
-							});
-
-							// eslint-disable-next-line prefer-promise-reject-errors
-							reject({
-								callData: tx.method.toHex(),
-								callHash: tx.method.hash.toHex(),
-								created_at: new Date(),
-								error: `Error: ${section}.${method}\n${docs.join(' ')}`
-							});
-						} else {
-							// Other, CannotLookup, BadOrigin, no extra info
-							console.log(dispatchError.toString());
-						}
-					}
-
-					events.forEach(({ event }) => {
-						if (event.method === 'ExtrinsicSuccess') {
-							queueNotification({
-								header: 'Success!',
-								message: 'Transaction Successful.',
-								status: NotificationStatus.SUCCESS
-							});
-
-							notify({
-								args: {
-									address: initiatorAddress,
-									addresses: otherSignatoriesSorted,
-									callHash: tx.method.hash.toHex(),
-									multisigAddress: multisig.address,
-									network
-								},
-								network,
-								triggerName: 'initMultisigTransfer'
-							});
-
-							resolve({
-								callData: tx.method.toHex(),
-								callHash: tx.method.hash.toHex(),
-								created_at: new Date()
-							});
-
-							// 6. store data to BE
-							// created_at should be set by BE for server time, amount_usd should be fetched by BE
-							addNewTransaction({
-								amount: new BN(0),
-								block_number: blockNumber,
-								callData: tx.method.toHex(),
-								callHash: tx.method.hash.toHex(),
-								from: isProxy && multisig.proxy && selectedProxy ? selectedProxy : multisig.address,
-								network,
-								note,
-								to: [],
-								transactionFields
-							});
-
-							sendNotificationToAddresses({
-								addresses: otherSignatoriesSorted,
-								link: `/transactions?tab=Queue#${tx.method.hash.toHex()}`,
-								message: 'New transaction to sign',
-								network,
-								type: 'sent'
-							});
-						} else if (event.method === 'ExtrinsicFailed') {
-							console.log('Transaction failed');
-
-							const errorModule = (event.data as any)?.dispatchError?.asModule;
-							if (!errorModule) {
 								queueNotification({
-									header: 'Error!',
-									message: 'Transaction Failed',
+									header: `Error! ${section}.${method}`,
+									message: `${docs.join(' ')}`,
 									status: NotificationStatus.ERROR
 								});
+
 								// eslint-disable-next-line prefer-promise-reject-errors
 								reject({
 									callData: tx.method.toHex(),
 									callHash: tx.method.hash.toHex(),
 									created_at: new Date(),
-									error: 'Transaction Failed'
+									error: `Error: ${section}.${method}\n${docs.join(' ')}`
 								});
-								return;
+							} else {
+								// Other, CannotLookup, BadOrigin, no extra info
+								console.log(dispatchError.toString());
 							}
-
-							const { method, section, docs } = api.registry.findMetaError(errorModule);
-							console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
-
-							queueNotification({
-								header: `Error! ${section}.${method}`,
-								message: `${docs.join(' ')}`,
-								status: NotificationStatus.ERROR
-							});
-
-							// eslint-disable-next-line prefer-promise-reject-errors
-							reject({
-								callData: tx.method.toHex(),
-								callHash: tx.method.hash.toHex(),
-								created_at: new Date(),
-								error: `Error: ${section}.${method}\n${docs.join(' ')}`
-							});
 						}
+
+						events.forEach(({ event }) => {
+							if (event.method === 'ExtrinsicSuccess') {
+								queueNotification({
+									header: 'Success!',
+									message: 'Transaction Successful.',
+									status: NotificationStatus.SUCCESS
+								});
+
+								notify({
+									args: {
+										address: initiatorAddress,
+										addresses: otherSignatoriesSorted,
+										callHash: tx.method.hash.toHex(),
+										multisigAddress: multisig.address,
+										network
+									},
+									network,
+									triggerName: 'initMultisigTransfer'
+								});
+
+								resolve({
+									callData: tx.method.toHex(),
+									callHash: tx.method.hash.toHex(),
+									created_at: new Date()
+								});
+
+								// 6. store data to BE
+								// created_at should be set by BE for server time, amount_usd should be fetched by BE
+								addNewTransaction({
+									amount: new BN(0),
+									block_number: blockNumber,
+									callData: tx.method.toHex(),
+									callHash: tx.method.hash.toHex(),
+									from: isProxy && multisig.proxy && selectedProxy ? selectedProxy : multisig.address,
+									network,
+									note,
+									to: [],
+									transactionFields
+								});
+
+								sendNotificationToAddresses({
+									addresses: otherSignatoriesSorted,
+									link: `/transactions?tab=Queue#${tx.method.hash.toHex()}`,
+									message: 'New transaction to sign',
+									network,
+									type: 'sent'
+								});
+							} else if (event.method === 'ExtrinsicFailed') {
+								console.log('Transaction failed');
+
+								const errorModule = (event.data as any)?.dispatchError?.asModule;
+								if (!errorModule) {
+									queueNotification({
+										header: 'Error!',
+										message: 'Transaction Failed',
+										status: NotificationStatus.ERROR
+									});
+									// eslint-disable-next-line prefer-promise-reject-errors
+									reject({
+										callData: tx.method.toHex(),
+										callHash: tx.method.hash.toHex(),
+										created_at: new Date(),
+										error: 'Transaction Failed'
+									});
+									return;
+								}
+
+								const { method, section, docs } = api.registry.findMetaError(errorModule);
+								console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
+
+								queueNotification({
+									header: `Error! ${section}.${method}`,
+									message: `${docs.join(' ')}`,
+									status: NotificationStatus.ERROR
+								});
+
+								// eslint-disable-next-line prefer-promise-reject-errors
+								reject({
+									callData: tx.method.toHex(),
+									callHash: tx.method.hash.toHex(),
+									created_at: new Date(),
+									error: `Error: ${section}.${method}\n${docs.join(' ')}`
+								});
+							}
+						});
+					}
+				})
+				.catch((error) => {
+					console.log(':( transaction failed');
+					console.error('ERROR:', error);
+					// eslint-disable-next-line prefer-promise-reject-errors
+					reject({
+						callData: tx.method.toHex(),
+						callHash: tx.method.hash.toHex(),
+						created_at: new Date()
 					});
-				}
-			})
-			.catch((error) => {
-				console.log(':( transaction failed');
-				console.error('ERROR:', error);
-				// eslint-disable-next-line prefer-promise-reject-errors
-				reject({
-					callData: tx.method.toHex(),
-					callHash: tx.method.hash.toHex(),
-					created_at: new Date()
+					queueNotification({
+						header: 'Failed!',
+						message: error.message,
+						status: NotificationStatus.ERROR
+					});
 				});
-				queueNotification({
-					header: 'Failed!',
-					message: error.message,
-					status: NotificationStatus.ERROR
+		} else {
+			transactionCall
+				.signAndSend(encodedInitiatorAddress, { tip }, async ({ status, txHash, events, dispatchError }) => {
+					if (status.isInvalid) {
+						console.log('Transaction invalid');
+						// messageApi.error('Transaction invalid');
+						setLoadingMessages('Transaction invalid');
+					} else if (status.isReady) {
+						console.log('Transaction is ready');
+						// messageApi.loading('Transaction is ready');
+						setLoadingMessages('Transaction is ready');
+					} else if (status.isBroadcast) {
+						console.log('Transaction has been broadcasted');
+						// messageApi.loading('Transaction has been broadcasted');
+						setLoadingMessages('Transaction has been broadcasted');
+					} else if (status.isInBlock) {
+						blockHash = status.asInBlock.toHex();
+						console.log('Transaction is in block');
+						// messageApi.loading('Transaction is in block');
+						setLoadingMessages('Transaction is in block');
+					} else if (status.isFinalized) {
+						console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
+						console.log(`approveAsMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
+
+						const block = await api.rpc.chain.getBlock(blockHash);
+						const blockNumber = block.block.header.number.toNumber();
+
+						if (dispatchError) {
+							if (dispatchError.isModule) {
+								// for module errors, we have the section indexed, lookup
+								const decoded = api.registry.findMetaError(dispatchError.asModule);
+								const { docs, name, method, section } = decoded;
+
+								console.log(`${section}.${name}: ${docs.join(' ')}`);
+
+								queueNotification({
+									header: `Error! ${section}.${method}`,
+									message: `${docs.join(' ')}`,
+									status: NotificationStatus.ERROR
+								});
+
+								// eslint-disable-next-line prefer-promise-reject-errors
+								reject({
+									callData: tx.method.toHex(),
+									callHash: tx.method.hash.toHex(),
+									created_at: new Date(),
+									error: `Error: ${section}.${method}\n${docs.join(' ')}`
+								});
+							} else {
+								// Other, CannotLookup, BadOrigin, no extra info
+								console.log(dispatchError.toString());
+							}
+						}
+
+						events.forEach(({ event }) => {
+							if (event.method === 'ExtrinsicSuccess') {
+								queueNotification({
+									header: 'Success!',
+									message: 'Transaction Successful.',
+									status: NotificationStatus.SUCCESS
+								});
+
+								notify({
+									args: {
+										address: initiatorAddress,
+										addresses: otherSignatoriesSorted,
+										callHash: tx.method.hash.toHex(),
+										multisigAddress: multisig.address,
+										network
+									},
+									network,
+									triggerName: 'initMultisigTransfer'
+								});
+
+								resolve({
+									callData: tx.method.toHex(),
+									callHash: tx.method.hash.toHex(),
+									created_at: new Date()
+								});
+
+								// 6. store data to BE
+								// created_at should be set by BE for server time, amount_usd should be fetched by BE
+								addNewTransaction({
+									amount: new BN(0),
+									block_number: blockNumber,
+									callData: tx.method.toHex(),
+									callHash: tx.method.hash.toHex(),
+									from: isProxy && multisig.proxy && selectedProxy ? selectedProxy : multisig.address,
+									network,
+									note,
+									to: [],
+									transactionFields
+								});
+
+								sendNotificationToAddresses({
+									addresses: otherSignatoriesSorted,
+									link: `/transactions?tab=Queue#${tx.method.hash.toHex()}`,
+									message: 'New transaction to sign',
+									network,
+									type: 'sent'
+								});
+							} else if (event.method === 'ExtrinsicFailed') {
+								console.log('Transaction failed');
+
+								const errorModule = (event.data as any)?.dispatchError?.asModule;
+								if (!errorModule) {
+									queueNotification({
+										header: 'Error!',
+										message: 'Transaction Failed',
+										status: NotificationStatus.ERROR
+									});
+									// eslint-disable-next-line prefer-promise-reject-errors
+									reject({
+										callData: tx.method.toHex(),
+										callHash: tx.method.hash.toHex(),
+										created_at: new Date(),
+										error: 'Transaction Failed'
+									});
+									return;
+								}
+
+								const { method, section, docs } = api.registry.findMetaError(errorModule);
+								console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
+
+								queueNotification({
+									header: `Error! ${section}.${method}`,
+									message: `${docs.join(' ')}`,
+									status: NotificationStatus.ERROR
+								});
+
+								// eslint-disable-next-line prefer-promise-reject-errors
+								reject({
+									callData: tx.method.toHex(),
+									callHash: tx.method.hash.toHex(),
+									created_at: new Date(),
+									error: `Error: ${section}.${method}\n${docs.join(' ')}`
+								});
+							}
+						});
+					}
+				})
+				.catch((error) => {
+					console.log(':( transaction failed');
+					console.error('ERROR:', error);
+					// eslint-disable-next-line prefer-promise-reject-errors
+					reject({
+						callData: tx.method.toHex(),
+						callHash: tx.method.hash.toHex(),
+						created_at: new Date()
+					});
+					queueNotification({
+						header: 'Failed!',
+						message: error.message,
+						status: NotificationStatus.ERROR
+					});
 				});
-			});
+		}
 	});
 }

@@ -149,7 +149,6 @@ const SentInfo: FC<ISentInfoProps> = ({
 				validSigners.push(getSubstrateAddress(item));
 			}
 		});
-		console.log('valid', validSigners, linkedAddresses, multisig.signatories, approvals);
 		setValidSignersForMultisig(validSigners);
 	}, [approvals, linkedAddresses, multisig.signatories, userAddress]);
 
