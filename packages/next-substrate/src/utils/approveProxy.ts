@@ -13,19 +13,22 @@ import {
 	ISharedAddressBookRecord,
 	NotificationStatus,
 	IMultisigAddress,
-	UserDetailsContextType
+	UserDetailsContextType,
+	Wallet
 } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import Client from '@walletconnect/sign-client';
 import { calcWeight } from './calcWeight';
 import getEncodedAddress from './getEncodedAddress';
 import getMultisigInfo from './getMultisigInfo';
 import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
 import updateTransactionNote from './updateTransactionNote';
+import wcSignTransaction from './wc_signTransaction';
 
 interface Args {
 	api: ApiPromise;
@@ -39,6 +42,9 @@ interface Args {
 	setLoadingMessages: React.Dispatch<React.SetStateAction<string>>;
 	setUserDetailsContextState: React.Dispatch<React.SetStateAction<UserDetailsContextType>>;
 	records: { [address: string]: ISharedAddressBookRecord };
+	wc_client?: Client;
+	wc_session_topic?: string;
+	loggedInWallet?: Wallet;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -53,7 +59,10 @@ export default async function approveProxy({
 	network,
 	note,
 	setLoadingMessages,
-	setUserDetailsContextState
+	setUserDetailsContextState,
+	wc_client,
+	wc_session_topic,
+	loggedInWallet
 }: Args) {
 	const encodedInitiatorAddress = getEncodedAddress(approvingAddress, network) || approvingAddress;
 
@@ -193,12 +202,37 @@ export default async function approveProxy({
 		}
 	};
 
+	const tx =
+		numApprovals < multisig.threshold - 1
+			? api.tx.multisig.approveAsMulti(
+					multisig.threshold,
+					otherSignatoriesSorted,
+					multisigInfo.when,
+					callHash,
+					ZERO_WEIGHT
+			  )
+			: api.tx.multisig.asMulti(
+					multisig.threshold,
+					otherSignatoriesSorted,
+					multisigInfo.when,
+					callDataHex,
+					WEIGHT as any
+			  );
+
+	if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+		try {
+			await wcSignTransaction(api, network, approvingAddress, tx, wc_client, wc_session_topic);
+		} catch (e) {
+			console.log(e);
+			return undefined;
+		}
+	}
+
 	return new Promise<void>((resolve, reject) => {
 		// 5. Send asMulti if last approval call
 		if (numApprovals < multisig.threshold - 1) {
-			api.tx.multisig
-				.approveAsMulti(multisig.threshold, otherSignatoriesSorted, multisigInfo.when, callHash, ZERO_WEIGHT)
-				.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
+			if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+				tx.send(async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
 						setLoadingMessages('Transaction invalid');
@@ -239,8 +273,7 @@ export default async function approveProxy({
 							}
 						});
 					}
-				})
-				.catch((error) => {
+				}).catch((error) => {
 					console.log(error);
 					queueNotification({
 						header: 'Failed!',
@@ -249,14 +282,65 @@ export default async function approveProxy({
 					});
 					reject(error);
 				});
+			} else {
+				tx.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
+					if (status.isInvalid) {
+						console.log('Transaction invalid');
+						setLoadingMessages('Transaction invalid');
+					} else if (status.isReady) {
+						console.log('Transaction is ready');
+						setLoadingMessages('Transaction is ready');
+					} else if (status.isBroadcast) {
+						console.log('Transaction has been broadcasted');
+						setLoadingMessages('Transaction has been broadcasted');
+					} else if (status.isInBlock) {
+						console.log('Transaction is in block');
+						setLoadingMessages('Transaction is in block');
+					} else if (status.isFinalized) {
+						console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
+						console.log(`approveAsMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
+
+						events.forEach(({ event }) => {
+							if (event.method === 'ExtrinsicSuccess') {
+								queueNotification({
+									header: 'Success!',
+									message: 'Transaction Successful.',
+									status: NotificationStatus.SUCCESS
+								});
+								resolve();
+							} else if (event.method === 'ExtrinsicFailed') {
+								console.log('Transaction failed');
+
+								const errorModule = (event.data as any)?.dispatchError?.asModule;
+								const { method, section, docs } = api.registry.findMetaError(errorModule);
+								console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
+
+								queueNotification({
+									header: `Error! ${section}.${method}`,
+									message: `${docs.join(' ')}`,
+									status: NotificationStatus.ERROR
+								});
+								reject(new Error(`Error: ${section}.${method}\n${docs.join(' ')}`));
+							}
+						});
+					}
+				}).catch((error) => {
+					console.log(error);
+					queueNotification({
+						header: 'Failed!',
+						message: error.message,
+						status: NotificationStatus.ERROR
+					});
+					reject(error);
+				});
+			}
 		} else {
 			if (!callDataHex) {
 				reject(new Error('Invalid Call Data'));
 				return;
 			}
-			api.tx.multisig
-				.asMulti(multisig.threshold, otherSignatoriesSorted, multisigInfo.when, callDataHex, WEIGHT as any)
-				.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
+			if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+				tx.send(async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
 						setLoadingMessages('Transaction invalid');
@@ -329,8 +413,7 @@ export default async function approveProxy({
 							})
 						);
 					}
-				})
-				.catch((error) => {
+				}).catch((error) => {
 					console.log(error);
 					queueNotification({
 						header: 'Failed!',
@@ -339,6 +422,90 @@ export default async function approveProxy({
 					});
 					reject(error);
 				});
+			} else {
+				tx.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
+					if (status.isInvalid) {
+						console.log('Transaction invalid');
+						setLoadingMessages('Transaction invalid');
+					} else if (status.isReady) {
+						console.log('Transaction is ready');
+						setLoadingMessages('Transaction is ready');
+					} else if (status.isBroadcast) {
+						console.log('Transaction has been broadcasted');
+						setLoadingMessages('Transaction has been broadcasted');
+					} else if (status.isInBlock) {
+						console.log('Transaction is in block');
+						setLoadingMessages('Transaction is in block');
+					} else if (status.isFinalized) {
+						console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
+						console.log(`asMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
+
+						await Promise.all(
+							events.map(async ({ event }) => {
+								if (event.method === 'ExtrinsicSuccess') {
+									await fetchProxyData(reject);
+
+									notify({
+										args: {
+											address: approvingAddress,
+											addresses: otherSignatoriesSorted,
+											callHash,
+											multisigAddress: multisig.address,
+											network
+										},
+										network,
+										triggerName: 'executedProxy'
+									});
+
+									resolve();
+
+									// update note for transaction history
+									updateTransactionNote({ callHash: txHash.toHex(), multisigAddress: multisig.address, network, note });
+
+									sendNotificationToAddresses({
+										addresses: otherSignatoriesSorted,
+										link: `/transactions?tab=History#${txHash.toHex()}`,
+										message: 'Transaction Executed!',
+										network,
+										type: 'sent'
+									});
+								} else if (event.method === 'ExtrinsicFailed') {
+									console.log('Transaction failed');
+
+									const errorModule = (event.data as any)?.dispatchError?.asModule;
+									if (!errorModule) {
+										queueNotification({
+											header: 'Error!',
+											message: 'Transaction Failed',
+											status: NotificationStatus.ERROR
+										});
+										reject(new Error('Transaction Failed'));
+										return;
+									}
+
+									const { method, section, docs } = api.registry.findMetaError(errorModule);
+									console.log(`Error: ${section}.${method}\n${docs?.join(' ')}`);
+
+									queueNotification({
+										header: `Error! ${section}.${method}`,
+										message: `${docs.join(' ')}`,
+										status: NotificationStatus.ERROR
+									});
+									reject(new Error(`Error: ${section}.${method}\n${docs.join(' ')}`));
+								}
+							})
+						);
+					}
+				}).catch((error) => {
+					console.log(error);
+					queueNotification({
+						header: 'Failed!',
+						message: error.message,
+						status: NotificationStatus.ERROR
+					});
+					reject(error);
+				});
+			}
 		}
 
 		console.log(

@@ -171,7 +171,8 @@ export const chainProperties: ChainPropType = {
 		chainId: 'polkadot:6f09966420b2608d1947ccfb0f2a3624',
 		existentialDeposit: '0.00001',
 		logo: availLogo,
-		rpcEndpoint: 'wss://rpc-testnet.avail.tools/ws',
+		// rpcEndpoint: 'wss://rpc-testnet.avail.tools/ws',
+		rpcEndpoint: 'wss://goldberg-testnet-rpc.avail.tools/ws',
 		ss58Format: 42,
 		tokenDecimals: 18,
 		tokenSymbol: tokenSymbol.AVL

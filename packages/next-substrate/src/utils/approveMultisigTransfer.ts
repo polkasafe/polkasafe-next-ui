@@ -8,9 +8,10 @@ import { formatBalance } from '@polkadot/util/format';
 import { sortAddresses } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus, Wallet } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
+import Client from '@walletconnect/sign-client';
 import addNewTransaction from './addNewTransaction';
 import { calcWeight } from './calcWeight';
 import getEncodedAddress from './getEncodedAddress';
@@ -18,6 +19,7 @@ import getMultisigInfo from './getMultisigInfo';
 import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
 import updateTransactionNote from './updateTransactionNote';
+import wcSignTransaction from './wc_signTransaction';
 
 interface Args {
 	api: ApiPromise;
@@ -31,6 +33,9 @@ interface Args {
 	recipientAddress?: string;
 	note: string;
 	setLoadingMessages: React.Dispatch<React.SetStateAction<string>>;
+	wc_client?: Client;
+	wc_session_topic?: string;
+	loggedInWallet?: Wallet;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -45,7 +50,10 @@ export default async function approveMultisigTransfer({
 	multisig,
 	network,
 	note,
-	setLoadingMessages
+	setLoadingMessages,
+	wc_client,
+	wc_session_topic,
+	loggedInWallet
 }: Args) {
 	const encodedInitiatorAddress = getEncodedAddress(approvingAddress, network) || approvingAddress;
 
@@ -89,12 +97,37 @@ export default async function approveMultisigTransfer({
 
 	let blockHash = '';
 
+	const tx =
+		numApprovals < multisig.threshold - 1
+			? api.tx.multisig.approveAsMulti(
+					multisig.threshold,
+					otherSignatoriesSorted,
+					multisigInfo.when,
+					callHash,
+					ZERO_WEIGHT
+			  )
+			: api.tx.multisig.asMulti(
+					multisig.threshold,
+					otherSignatoriesSorted,
+					multisigInfo.when,
+					callDataHex,
+					WEIGHT as any
+			  );
+
+	if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+		try {
+			await wcSignTransaction(api, network, approvingAddress, tx, wc_client, wc_session_topic);
+		} catch (e) {
+			console.log(e);
+			return undefined;
+		}
+	}
+
 	return new Promise<void>((resolve, reject) => {
 		// 5. Send asMulti if last approval call
 		if (numApprovals < multisig.threshold - 1) {
-			api.tx.multisig
-				.approveAsMulti(multisig.threshold, otherSignatoriesSorted, multisigInfo.when, callHash, ZERO_WEIGHT)
-				.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
+			if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+				tx.send(async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
 						setLoadingMessages('Transaction invalid');
@@ -135,15 +168,12 @@ export default async function approveMultisigTransfer({
 							}
 						});
 					}
-				})
-				.catch((error) => {
+				}).catch((error) => {
 					console.log(error);
 					reject(error);
 				});
-		} else {
-			api.tx.multisig
-				.asMulti(multisig.threshold, otherSignatoriesSorted, multisigInfo.when, callDataHex, WEIGHT as any)
-				.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
+			} else {
+				tx.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
 						setLoadingMessages('Transaction invalid');
@@ -154,15 +184,11 @@ export default async function approveMultisigTransfer({
 						console.log('Transaction has been broadcasted');
 						setLoadingMessages('Transaction has been broadcasted');
 					} else if (status.isInBlock) {
-						blockHash = status.asInBlock.toHex();
 						console.log('Transaction is in block');
 						setLoadingMessages('Transaction is in block');
 					} else if (status.isFinalized) {
 						console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
-						console.log(`asMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
-
-						const block = await api.rpc.chain.getBlock(blockHash);
-						const blockNumber = block.block.header.number.toNumber();
+						console.log(`approveAsMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
 
 						events.forEach(({ event }) => {
 							if (event.method === 'ExtrinsicSuccess') {
@@ -171,60 +197,13 @@ export default async function approveMultisigTransfer({
 									message: 'Transaction Successful.',
 									status: NotificationStatus.SUCCESS
 								});
-
-								notify({
-									args: {
-										address: approvingAddress,
-										addresses: otherSignatoriesSorted,
-										callHash,
-										multisigAddress: multisig.address,
-										network
-									},
-									network,
-									triggerName: 'executedTransaction'
-								});
-
 								resolve();
-
-								// update note for transaction history
-								if (note)
-									updateTransactionNote({ callHash: txHash.toHex(), multisigAddress: multisig.address, network, note });
-
-								addNewTransaction({
-									amount: amount || new BN(0),
-									approvals: approvals.length > 0 ? [...approvals, approvingAddress] : [],
-									block_number: blockNumber,
-									callData: callDataHex,
-									callHash: txHash.toHex(),
-									from: multisig.address,
-									network,
-									note,
-									to: recipientAddress || ''
-								});
-
-								sendNotificationToAddresses({
-									addresses: otherSignatoriesSorted,
-									link: `/transactions?tab=History#${txHash.toHex()}`,
-									message: 'Transaction Executed!',
-									network,
-									type: 'sent'
-								});
 							} else if (event.method === 'ExtrinsicFailed') {
 								console.log('Transaction failed');
 
 								const errorModule = (event.data as any)?.dispatchError?.asModule;
-								if (!errorModule) {
-									queueNotification({
-										header: 'Error!',
-										message: 'Transaction Failed',
-										status: NotificationStatus.ERROR
-									});
-									reject(new Error('Transaction Failed'));
-									return;
-								}
-
 								const { method, section, docs } = api.registry.findMetaError(errorModule);
-								console.log(`Error: ${section}.${method}\n${docs?.join(' ')}`);
+								console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
 
 								queueNotification({
 									header: `Error! ${section}.${method}`,
@@ -235,16 +214,215 @@ export default async function approveMultisigTransfer({
 							}
 						});
 					}
-				})
-				.catch((error) => {
+				}).catch((error) => {
 					console.log(error);
-					queueNotification({
-						header: 'Failed!',
-						message: error.message,
-						status: NotificationStatus.ERROR
-					});
 					reject(error);
 				});
+			}
+		} else if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+			tx.send(async ({ status, txHash, events }) => {
+				if (status.isInvalid) {
+					console.log('Transaction invalid');
+					setLoadingMessages('Transaction invalid');
+				} else if (status.isReady) {
+					console.log('Transaction is ready');
+					setLoadingMessages('Transaction is ready');
+				} else if (status.isBroadcast) {
+					console.log('Transaction has been broadcasted');
+					setLoadingMessages('Transaction has been broadcasted');
+				} else if (status.isInBlock) {
+					blockHash = status.asInBlock.toHex();
+					console.log('Transaction is in block');
+					setLoadingMessages('Transaction is in block');
+				} else if (status.isFinalized) {
+					console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
+					console.log(`asMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
+
+					const block = await api.rpc.chain.getBlock(blockHash);
+					const blockNumber = block.block.header.number.toNumber();
+
+					events.forEach(({ event }) => {
+						if (event.method === 'ExtrinsicSuccess') {
+							queueNotification({
+								header: 'Success!',
+								message: 'Transaction Successful.',
+								status: NotificationStatus.SUCCESS
+							});
+
+							notify({
+								args: {
+									address: approvingAddress,
+									addresses: otherSignatoriesSorted,
+									callHash,
+									multisigAddress: multisig.address,
+									network
+								},
+								network,
+								triggerName: 'executedTransaction'
+							});
+
+							resolve();
+
+							// update note for transaction history
+							if (note)
+								updateTransactionNote({ callHash: txHash.toHex(), multisigAddress: multisig.address, network, note });
+
+							addNewTransaction({
+								amount: amount || new BN(0),
+								approvals: approvals.length > 0 ? [...approvals, approvingAddress] : [],
+								block_number: blockNumber,
+								callData: callDataHex,
+								callHash: txHash.toHex(),
+								from: multisig.address,
+								network,
+								note,
+								to: recipientAddress || ''
+							});
+
+							sendNotificationToAddresses({
+								addresses: otherSignatoriesSorted,
+								link: `/transactions?tab=History#${txHash.toHex()}`,
+								message: 'Transaction Executed!',
+								network,
+								type: 'sent'
+							});
+						} else if (event.method === 'ExtrinsicFailed') {
+							console.log('Transaction failed');
+
+							const errorModule = (event.data as any)?.dispatchError?.asModule;
+							if (!errorModule) {
+								queueNotification({
+									header: 'Error!',
+									message: 'Transaction Failed',
+									status: NotificationStatus.ERROR
+								});
+								reject(new Error('Transaction Failed'));
+								return;
+							}
+
+							const { method, section, docs } = api.registry.findMetaError(errorModule);
+							console.log(`Error: ${section}.${method}\n${docs?.join(' ')}`);
+
+							queueNotification({
+								header: `Error! ${section}.${method}`,
+								message: `${docs.join(' ')}`,
+								status: NotificationStatus.ERROR
+							});
+							reject(new Error(`Error: ${section}.${method}\n${docs.join(' ')}`));
+						}
+					});
+				}
+			}).catch((error) => {
+				console.log(error);
+				queueNotification({
+					header: 'Failed!',
+					message: error.message,
+					status: NotificationStatus.ERROR
+				});
+				reject(error);
+			});
+		} else {
+			tx.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
+				if (status.isInvalid) {
+					console.log('Transaction invalid');
+					setLoadingMessages('Transaction invalid');
+				} else if (status.isReady) {
+					console.log('Transaction is ready');
+					setLoadingMessages('Transaction is ready');
+				} else if (status.isBroadcast) {
+					console.log('Transaction has been broadcasted');
+					setLoadingMessages('Transaction has been broadcasted');
+				} else if (status.isInBlock) {
+					blockHash = status.asInBlock.toHex();
+					console.log('Transaction is in block');
+					setLoadingMessages('Transaction is in block');
+				} else if (status.isFinalized) {
+					console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
+					console.log(`asMulti tx: https://${network}.subscan.io/extrinsic/${txHash}`);
+
+					const block = await api.rpc.chain.getBlock(blockHash);
+					const blockNumber = block.block.header.number.toNumber();
+
+					events.forEach(({ event }) => {
+						if (event.method === 'ExtrinsicSuccess') {
+							queueNotification({
+								header: 'Success!',
+								message: 'Transaction Successful.',
+								status: NotificationStatus.SUCCESS
+							});
+
+							notify({
+								args: {
+									address: approvingAddress,
+									addresses: otherSignatoriesSorted,
+									callHash,
+									multisigAddress: multisig.address,
+									network
+								},
+								network,
+								triggerName: 'executedTransaction'
+							});
+
+							resolve();
+
+							// update note for transaction history
+							if (note)
+								updateTransactionNote({ callHash: txHash.toHex(), multisigAddress: multisig.address, network, note });
+
+							addNewTransaction({
+								amount: amount || new BN(0),
+								approvals: approvals.length > 0 ? [...approvals, approvingAddress] : [],
+								block_number: blockNumber,
+								callData: callDataHex,
+								callHash: txHash.toHex(),
+								from: multisig.address,
+								network,
+								note,
+								to: recipientAddress || ''
+							});
+
+							sendNotificationToAddresses({
+								addresses: otherSignatoriesSorted,
+								link: `/transactions?tab=History#${txHash.toHex()}`,
+								message: 'Transaction Executed!',
+								network,
+								type: 'sent'
+							});
+						} else if (event.method === 'ExtrinsicFailed') {
+							console.log('Transaction failed');
+
+							const errorModule = (event.data as any)?.dispatchError?.asModule;
+							if (!errorModule) {
+								queueNotification({
+									header: 'Error!',
+									message: 'Transaction Failed',
+									status: NotificationStatus.ERROR
+								});
+								reject(new Error('Transaction Failed'));
+								return;
+							}
+
+							const { method, section, docs } = api.registry.findMetaError(errorModule);
+							console.log(`Error: ${section}.${method}\n${docs?.join(' ')}`);
+
+							queueNotification({
+								header: `Error! ${section}.${method}`,
+								message: `${docs.join(' ')}`,
+								status: NotificationStatus.ERROR
+							});
+							reject(new Error(`Error: ${section}.${method}\n${docs.join(' ')}`));
+						}
+					});
+				}
+			}).catch((error) => {
+				console.log(error);
+				queueNotification({
+					header: 'Failed!',
+					message: error.message,
+					status: NotificationStatus.ERROR
+				});
+				reject(error);
+			});
 		}
 
 		// console.log(`Sending ${displayAmount} from ${multisig.address} to ${recipientAddress}`);

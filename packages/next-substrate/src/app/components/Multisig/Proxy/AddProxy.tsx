@@ -22,6 +22,8 @@ import transferAndProxyBatchAll from '@next-substrate/utils/transferAndProxyBatc
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { networks } from '@next-common/global/networkConstants';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
+import { Wallet } from '@next-common/types';
 import Loader from '../../UserFlow/Loader';
 import AddProxySuccessScreen from './AddProxySuccessScreen';
 import AddProxyFailedScreen from './AddProxyFailedScreen';
@@ -44,6 +46,7 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 	const [success, setSuccess] = useState<boolean>(false);
 	const [failure, setFailure] = useState<boolean>(false);
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
+	const { session, client } = useWalletConnectContext();
 
 	const multisig = activeOrg?.multisigs?.find((item) => item.address === activeMultisig);
 
@@ -83,7 +86,7 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 	const createProxy = async () => {
 		if (!apis || !apis[network] || !apis[network].apiReady) return;
 
-		await setSigner(apis[network].api, loggedInWallet, network);
+		if (loggedInWallet !== Wallet.WALLET_CONNECT) await setSigner(apis[network].api, loggedInWallet, network);
 
 		setLoading(true);
 		console.log(formatBnBalance(reservedProxyDeposit, { numberAfterComma: 7, withUnit: true }, network));
@@ -107,7 +110,10 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 				setLoadingMessages,
 				setTxnHash,
 				signatories: signatories || multisig?.signatories || [],
-				threshold: threshold || multisig?.threshold || 2
+				threshold: threshold || multisig?.threshold || 2,
+				wc_client: client,
+				wc_session_topic: session?.topic,
+				loggedInWallet
 			});
 			setSuccess(true);
 			setLoading(false);
