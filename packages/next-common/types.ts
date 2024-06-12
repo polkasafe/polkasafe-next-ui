@@ -7,6 +7,7 @@
 import GnosisSafeService from '@next-evm/services/Gnosis';
 import { Dispatch, SetStateAction } from 'react';
 import { StaticImageData } from 'next/image';
+import { SignerResult } from '@polkadot/api/types';
 import { NETWORK } from './global/evm-network-constants';
 
 export enum CHANNEL {
@@ -207,7 +208,8 @@ export enum Wallet {
 	SUBWALLET = 'subwallet-js',
 	TALISMAN = 'talisman',
 	METAMASK = 'metamask',
-	WALLET_CONNECT = 'wallet-connect'
+	WALLET_CONNECT = 'wallet-connect',
+	POLKADOT_VAULT = 'polkadot-vault'
 }
 
 export interface AccountMeta {
@@ -515,4 +517,12 @@ export interface ITreasury {
 export enum WC_POLKADOT_METHODS {
 	POLKADOT_SIGN_TRANSACTION = 'polkadot_signTransaction',
 	POLKADOT_SIGN_MESSAGE = 'polkadot_signMessage'
+}
+
+export interface QrState {
+	isQrHashed: boolean;
+	qrAddress: string;
+	qrPayload: Uint8Array;
+	qrResolve?: (result: SignerResult) => void;
+	qrReject?: (error: Error) => void;
 }

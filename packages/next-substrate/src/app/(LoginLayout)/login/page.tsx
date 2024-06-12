@@ -6,13 +6,13 @@
 
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { InjectedAccount, InjectedWindow } from '@polkadot/extension-inject/types';
-import { stringToHex } from '@polkadot/util';
+import { stringToHex, isHex } from '@polkadot/util';
 import { Button, Form, Input } from 'antd';
 import React, { useEffect, useState } from 'react';
 import ConnectWalletImg from '@next-common/assets/connect-wallet.svg';
 import { initialUserDetailsContext, useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import APP_NAME from '@next-common/global/appName';
-import { IUser, NotificationStatus, Triggers, WC_POLKADOT_METHODS, Wallet } from '@next-common/types';
+import { IUser, NotificationStatus, QrState, Triggers, WC_POLKADOT_METHODS, Wallet } from '@next-common/types';
 import AccountSelectionForm from '@next-common/ui-components/AccountSelectionForm';
 import { WalletIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
@@ -28,6 +28,14 @@ import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader
 import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
 import { signatureVerify, cryptoWaitReady } from '@polkadot/util-crypto';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { QrScanSignature, QrDisplayPayload } from '@polkadot/react-qr';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import { QrSigner } from '@next-substrate/utils/QrSigner';
+import { ApiPromise } from '@polkadot/api';
+import sendTxnWithSignature from '@next-substrate/utils/sendTxnWithSignature';
+import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
+import InfoBox from '@next-common/ui-components/InfoBox';
 
 const whitelist = [
 	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
@@ -42,8 +50,10 @@ const whitelist = [
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const ConnectWallet = () => {
+	let qrId = 0;
 	const { setUserDetailsContextState, userID, organisations } = useGlobalUserDetailsContext();
 	const { client, session } = useWalletConnectContext();
+	const { apis } = useGlobalApiContext();
 
 	const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
 	const [showAccountsDropdown, setShowAccountsDropdown] = useState(false);
@@ -57,6 +67,20 @@ const ConnectWallet = () => {
 	const [tfaToken, setTfaToken] = useState<string>('');
 	const [authCode, setAuthCode] = useState<number>();
 	const [tokenExpired, setTokenExpired] = useState<boolean>(false);
+	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [vaultTxnHash, setVaultTxnHash] = useState<string>('');
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [vaultSignature, setVaultSignature] = useState<string>('');
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
+		isQrHashed: false,
+		qrAddress: '',
+		qrPayload: new Uint8Array()
+	}));
 
 	const router = useRouter();
 
@@ -65,6 +89,9 @@ const ConnectWallet = () => {
 	};
 
 	useEffect(() => {
+		if (!apis || !apis[networks.WESTEND]?.apiReady) return;
+		const { api } = apis[networks.WESTEND];
+		console.log('api westend', (api as ApiPromise).genesisHash.toHex());
 		if (userID) {
 			if (organisations && organisations.length > 0) {
 				router.replace('/');
@@ -74,7 +101,7 @@ const ConnectWallet = () => {
 			}
 			console.log('login route to home');
 		}
-	}, [organisations, router, userID]);
+	}, [apis, organisations, router, userID]);
 
 	useEffect(() => {
 		if (accounts && accounts.length > 0) {
@@ -108,7 +135,11 @@ const ConnectWallet = () => {
 				setLoading(false);
 			} else {
 				let signature = '';
-				if (!whitelist.includes(getSubstrateAddress(address)) && selectedWallet !== Wallet.WALLET_CONNECT) {
+				if (
+					!whitelist.includes(getSubstrateAddress(address)) &&
+					selectedWallet !== Wallet.WALLET_CONNECT &&
+					selectedWallet !== Wallet.POLKADOT_VAULT
+				) {
 					const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
 					const wallet = injectedWindow.injectedWeb3[selectedWallet];
@@ -156,7 +187,90 @@ const ConnectWallet = () => {
 					}
 				}
 
+				if (selectedWallet === Wallet.POLKADOT_VAULT) {
+					setOpenSignWithVaultModal(true);
+					if (!apis || !apis[networks.WESTEND]?.apiReady) {
+						console.log('api not ready for westend', apis[networks.WESTEND]?.apiReady);
+						return;
+					}
+					const { api } = apis[networks.WESTEND];
+					const tx = (api as ApiPromise).tx.system.remark(`${token}`);
+
+					const lastHeader = await api.rpc.chain.getHeader();
+					// const blockNumber = api.registry.createType('BlockNumber', lastHeader.number.toNumber());
+
+					const era = api.registry.createType('ExtrinsicEra', {
+						current: lastHeader.number.toNumber(),
+						period: 64
+					});
+
+					const nonce = await api.rpc.system.accountNextIndex(substrateAddress);
+					const signer = new QrSigner(api.registry, setQrState);
+
+					const payload = {
+						// blockHash: lastHeader.hash.toHex(),
+						// blockNumber: blockNumber.toHex(),
+						era: era.toNumber(),
+						// genesisHash: api.genesisHash.toHex(),
+						nonce: nonce.toNumber(),
+						// runtimeVersion: (api as ApiPromise).runtimeVersion,
+						tip: api.registry.createType('Compact<Balance>', 0).toHex()
+					};
+					console.log('nonce', nonce.toNumber());
+					const result = await tx.signAsync(substrateAddress, { ...payload, signer });
+					setOpenSignWithVaultModal(false);
+					console.log('results', result.signature.toHex());
+					if (result && result.signature && isHex(result.signature.toHex())) {
+						const s = result.signature.toHex();
+						const txHash = await sendTxnWithSignature({
+							api,
+							network: networks.WESTEND,
+							setTxnHash: setVaultTxnHash,
+							tx
+						});
+
+						if (txHash) {
+							const checkTxnRes = await fetch(`https://${networks.WESTEND}.api.subscan.io/api/scan/extrinsic`, {
+								body: JSON.stringify({
+									events_limit: 1,
+									hash: txHash,
+									only_extrinsic_event: true
+								}),
+								headers: SUBSCAN_API_HEADERS,
+								method: 'POST'
+							});
+
+							const txData = await checkTxnRes.json();
+
+							console.log('subscan data', txData);
+
+							const txParams = (txData.data.params || []) as any[];
+
+							const remarkExists = txParams.find((paramObj) => {
+								return paramObj.name === 'remark' && paramObj.value === token;
+							});
+
+							if (!remarkExists) {
+								console.log('error in login');
+								queueNotification({
+									header: 'Error in Login',
+									status: NotificationStatus.ERROR
+								});
+								return;
+							}
+							signature = s;
+						}
+					}
+					// const signerResults = await signer.signPayload(payload);
+					// console.log('after sign raw', signerResults);
+					// const signResult = await api.sign(address, { data: stringToHex(token), type: 'bytes' }, { signer });
+					// console.log('signature', signResult);
+				}
+
 				const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/login_substrate`, {
+					body: JSON.stringify({
+						wallet: selectedWallet
+					}),
 					headers: firebaseFunctionsHeader(substrateAddress, signature),
 					method: 'POST'
 				});
@@ -296,6 +410,9 @@ const ConnectWallet = () => {
 				setSigning(false);
 
 				const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/login_substrate`, {
+					body: JSON.stringify({
+						wallet: selectedWallet
+					}),
 					headers: firebaseFunctionsHeader(substrateAddress, signature),
 					method: 'POST'
 				});
@@ -449,6 +566,41 @@ const ConnectWallet = () => {
 				</>
 			) : (
 				<>
+					<ModalComponent
+						open={openSignWithVaultModal}
+						onCancel={() => {
+							setOpenSignWithVaultModal(false);
+							setLoading(false);
+						}}
+						title='Authorize Transaction in Vault'
+					>
+						<>
+							<InfoBox message='To verify ownership of the address, a transaction will be conducted on the Westend Testnet. Please note that a small gas fee will apply.' />
+							<div className='flex items-center gap-x-4'>
+								<div className='rounded-xl bg-white p-4'>
+									<QrDisplayPayload
+										cmd={isQrHashed ? 1 : 2}
+										address={address}
+										genesisHash={apis[networks.WESTEND]?.api?.genesisHash}
+										payload={qrPayload}
+									/>
+								</div>
+								<QrScanSignature
+									onScan={(data) => {
+										if (data && data.signature && isHex(data.signature)) {
+											console.log('signature', data.signature);
+											setVaultSignature(data.signature);
+											qrResolve({
+												// eslint-disable-next-line no-plusplus
+												id: ++qrId,
+												signature: data.signature
+											});
+										}
+									}}
+								/>
+							</div>
+						</>
+					</ModalComponent>
 					<h2 className='font-bold text-lg text-white'>Get Started</h2>
 					<p className='mt-[10px]  text-normal text-sm text-white'>Connect your wallet</p>
 					<p className='text-text_secondary text-sm font-normal mt-[20px]'>

@@ -9,7 +9,7 @@ import { formatBalance } from '@polkadot/util/format';
 import { sortAddresses } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, NotificationStatus, Wallet } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus, QrState, Wallet } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import Client from '@walletconnect/sign-client';
@@ -20,6 +20,7 @@ import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
 import parseDecodedValue from './parseDecodedValue';
 import wcSignTransaction from './wc_signTransaction';
+import vaultSignTransaction from './vault_signTransaction';
 
 export interface IMultiTransferResponse {
 	callData: string;
@@ -50,6 +51,8 @@ interface Args {
 	wc_client?: Client;
 	wc_session_topic?: string;
 	loggedInWallet?: Wallet;
+	setQrState: React.Dispatch<React.SetStateAction<QrState>>;
+	setOpenSignWithVaultModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -69,7 +72,9 @@ export default async function initMultisigTransfer({
 	selectedProxy,
 	wc_client,
 	wc_session_topic,
-	loggedInWallet
+	loggedInWallet,
+	setQrState,
+	setOpenSignWithVaultModal
 }: Args) {
 	const encodedInitiatorAddress = getEncodedAddress(initiatorAddress, network);
 	if (!encodedInitiatorAddress) throw new Error('Invalid initiator address');
@@ -156,10 +161,23 @@ export default async function initMultisigTransfer({
 		}
 	}
 
+	if (loggedInWallet === Wallet.POLKADOT_VAULT) {
+		try {
+			setOpenSignWithVaultModal(true);
+			await vaultSignTransaction(api, network, initiatorAddress, transactionCall, setQrState);
+		} catch (e) {
+			console.log(e);
+			return undefined;
+		}
+	}
+
 	return new Promise<IMultiTransferResponse>((resolve, reject) => {
 		// 5. for transaction from proxy address
 		if (isProxy && multisig.proxy) {
-			if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+			if (
+				(loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) ||
+				loggedInWallet === Wallet.POLKADOT_VAULT
+			) {
 				transactionCall
 					.send(async ({ status, txHash, events, dispatchError }) => {
 						if (status.isInvalid) {
@@ -485,7 +503,10 @@ export default async function initMultisigTransfer({
 			// 		transferBatchCall.method.hash,
 			// 		MAX_WEIGHT as any
 			// 	)
-			if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+			if (
+				(loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) ||
+				loggedInWallet === Wallet.POLKADOT_VAULT
+			) {
 				transactionCall
 					.send(async ({ status, txHash, events, dispatchError }) => {
 						if (status.isInvalid) {

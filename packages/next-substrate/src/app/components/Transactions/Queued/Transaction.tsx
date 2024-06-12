@@ -12,7 +12,7 @@ import { useRouter, usePathname } from 'next/navigation';
 import { useActiveMultisigContext } from '@next-substrate/context/ActiveMultisigContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
-import { IMultisigAddress, IQueueItem, ITxnCategory, ITxNotification, Wallet } from '@next-common/types';
+import { IMultisigAddress, IQueueItem, ITxnCategory, ITxNotification, QrState, Wallet } from '@next-common/types';
 import { ArrowUpRightIcon, CircleArrowDownIcon, CircleArrowUpIcon } from '@next-common/ui-components/CustomIcons';
 import LoadingModal from '@next-common/ui-components/LoadingModal';
 import approveAddProxy from '@next-substrate/utils/approveAddProxy';
@@ -105,6 +105,15 @@ const Transaction: FC<ITransactionProps> = ({
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [approvals, setApprovals] = useState<string[]>(approvalsArray || []);
+
+	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
+		isQrHashed: false,
+		qrAddress: '',
+		qrPayload: new Uint8Array()
+	}));
 
 	const token = chainProperties[network].tokenSymbol;
 	const hash = pathname.slice(1);
@@ -283,6 +292,8 @@ const Transaction: FC<ITransactionProps> = ({
 						decodedCallData?.args?.call?.args?.calls?.[0]?.args.dest?.id ||
 						'',
 					setLoadingMessages,
+					setOpenSignWithVaultModal,
+					setQrState,
 					wc_client: client,
 					wc_session_topic: session?.topic
 				});
@@ -548,6 +559,9 @@ const Transaction: FC<ITransactionProps> = ({
 							setTransactionFields={setTransactionFieldsObject}
 							multi_id={multi_id}
 							setApprovals={setApprovals}
+							qrState={{ isQrHashed, qrAddress, qrPayload, qrResolve }}
+							setOpenSignWithVaultModal={setOpenSignWithVaultModal}
+							openSignWithVaultModal={openSignWithVaultModal}
 						/>
 					</div>
 				</Collapse.Panel>

@@ -8,7 +8,7 @@ import { formatBalance } from '@polkadot/util/format';
 import { sortAddresses } from '@polkadot/util-crypto';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, NotificationStatus, Wallet } from '@next-common/types';
+import { IMultisigAddress, NotificationStatus, QrState, Wallet } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import Client from '@walletconnect/sign-client';
@@ -20,6 +20,7 @@ import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
 import updateTransactionNote from './updateTransactionNote';
 import wcSignTransaction from './wc_signTransaction';
+import vaultSignTransaction from './vault_signTransaction';
 
 interface Args {
 	api: ApiPromise;
@@ -36,6 +37,8 @@ interface Args {
 	wc_client?: Client;
 	wc_session_topic?: string;
 	loggedInWallet?: Wallet;
+	setQrState: React.Dispatch<React.SetStateAction<QrState>>;
+	setOpenSignWithVaultModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -53,7 +56,9 @@ export default async function approveMultisigTransfer({
 	setLoadingMessages,
 	wc_client,
 	wc_session_topic,
-	loggedInWallet
+	loggedInWallet,
+	setQrState,
+	setOpenSignWithVaultModal
 }: Args) {
 	const encodedInitiatorAddress = getEncodedAddress(approvingAddress, network) || approvingAddress;
 
@@ -123,10 +128,23 @@ export default async function approveMultisigTransfer({
 		}
 	}
 
+	if (loggedInWallet === Wallet.POLKADOT_VAULT) {
+		try {
+			setOpenSignWithVaultModal(true);
+			await vaultSignTransaction(api, network, approvingAddress, tx, setQrState);
+		} catch (e) {
+			console.log(e);
+			return undefined;
+		}
+	}
+
 	return new Promise<void>((resolve, reject) => {
 		// 5. Send asMulti if last approval call
 		if (numApprovals < multisig.threshold - 1) {
-			if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+			if (
+				(loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) ||
+				loggedInWallet === Wallet.POLKADOT_VAULT
+			) {
 				tx.send(async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
@@ -219,7 +237,10 @@ export default async function approveMultisigTransfer({
 					reject(error);
 				});
 			}
-		} else if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
+		} else if (
+			(loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) ||
+			loggedInWallet === Wallet.POLKADOT_VAULT
+		) {
 			tx.send(async ({ status, txHash, events }) => {
 				if (status.isInvalid) {
 					console.log('Transaction invalid');

@@ -7,6 +7,7 @@
 import './style.css';
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
+import { isHex } from '@polkadot/util';
 import { AutoComplete, Button, Divider, Dropdown, Form, Input, Skeleton, Spin, Switch } from 'antd';
 import { DefaultOptionType } from 'antd/es/select';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
@@ -18,7 +19,15 @@ import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
-import { EFieldType, IMultisigAddress, IQueueItem, ITxnCategory, NotificationStatus, Wallet } from '@next-common/types';
+import {
+	EFieldType,
+	IMultisigAddress,
+	IQueueItem,
+	ITxnCategory,
+	NotificationStatus,
+	QrState,
+	Wallet
+} from '@next-common/types';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import Balance from '@next-common/ui-components/Balance';
 import BalanceInput from '@next-common/ui-components/BalanceInput';
@@ -51,6 +60,8 @@ import { useCache } from '@next-substrate/context/CachedDataContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 
 import ArgumentsTable from '../Transactions/Queued/ArgumentsTable';
@@ -165,6 +176,15 @@ const SendFundsForm = ({
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
 		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
 	);
+
+	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
+		isQrHashed: false,
+		qrAddress: '',
+		qrPayload: new Uint8Array()
+	}));
 
 	const multisigOptionsWithProxy: IMultisigAddress[] = [];
 
@@ -462,7 +482,8 @@ const SendFundsForm = ({
 			return;
 		}
 
-		if (loggedInWallet !== Wallet.WALLET_CONNECT) await setSigner(apis[network].api, loggedInWallet, network);
+		if (loggedInWallet !== Wallet.WALLET_CONNECT && loggedInWallet !== Wallet.POLKADOT_VAULT)
+			await setSigner(apis[network].api, loggedInWallet, network);
 
 		if (!multisig) return;
 
@@ -492,6 +513,8 @@ const SendFundsForm = ({
 					recipientAndAmount,
 					selectedProxy: selectedMultisig,
 					setLoadingMessages,
+					setOpenSignWithVaultModal,
+					setQrState,
 					tip,
 					transactionFields: transactionFieldsObject,
 					transferKeepAlive,
@@ -564,6 +587,37 @@ const SendFundsForm = ({
 			spinning={loading}
 			indicator={<LoadingLottie message={loadingMessages} />}
 		>
+			<ModalComponent
+				open={openSignWithVaultModal}
+				onCancel={() => {
+					setOpenSignWithVaultModal(false);
+					setLoading(false);
+				}}
+				title='Authorize Transaction in Vault'
+			>
+				<div className='flex items-center gap-x-4'>
+					<div className='rounded-xl bg-white p-4'>
+						<QrDisplayPayload
+							cmd={isQrHashed ? 1 : 2}
+							address={address}
+							genesisHash={apis[network]?.api?.genesisHash}
+							payload={qrPayload}
+						/>
+					</div>
+					<QrScanSignature
+						onScan={(data) => {
+							if (data && data.signature && isHex(data.signature)) {
+								console.log('signature', data.signature);
+								qrResolve({
+									id: 0,
+									signature: data.signature
+								});
+								setOpenSignWithVaultModal(false);
+							}
+						}}
+					/>
+				</div>
+			</ModalComponent>
 			{
 				<>
 					{initiatorBalance.lte(totalDeposit.add(totalGas)) && !fetchBalancesLoading && apis?.[network]?.apiReady ? (

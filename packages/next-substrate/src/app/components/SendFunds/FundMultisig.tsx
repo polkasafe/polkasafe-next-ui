@@ -5,6 +5,7 @@ import { AutoComplete, Dropdown, Form, Spin } from 'antd';
 import { DefaultOptionType } from 'antd/es/select';
 import BN from 'bn.js';
 import React, { useEffect, useState } from 'react';
+import { isHex } from '@polkadot/util';
 import FailedTransactionLottie from '@next-common/assets/lottie-graphics/FailedTransaction';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
@@ -28,7 +29,8 @@ import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
-import { Wallet } from '@next-common/types';
+import { QrState, Wallet } from '@next-common/types';
+import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
 const FundMultisig = ({
@@ -61,6 +63,15 @@ const FundMultisig = ({
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 	const [txnHash, setTxnHash] = useState<string>('');
 	const [selectedAccountBalance, setSelectedAccountBalance] = useState<string>('');
+
+	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
+		isQrHashed: false,
+		qrAddress: '',
+		qrPayload: new Uint8Array()
+	}));
 
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
 		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
@@ -118,7 +129,8 @@ const FundMultisig = ({
 	const handleSubmit = async () => {
 		if (!apis || !apis[network] || !apis[network].apiReady || !selectedMultisig || !amount) return;
 
-		if (loggedInWallet !== Wallet.WALLET_CONNECT) await setSigner(apis[network].api, loggedInWallet, network);
+		if (loggedInWallet !== Wallet.WALLET_CONNECT && loggedInWallet !== Wallet.POLKADOT_VAULT)
+			await setSigner(apis[network].api, loggedInWallet, network);
 
 		console.log('obj', {
 			amount,
@@ -139,6 +151,8 @@ const FundMultisig = ({
 				recepientAddress: selectedMultisig,
 				senderAddress: getSubstrateAddress(selectedSender) || selectedSender,
 				setLoadingMessages,
+				setOpenSignWithVaultModal,
+				setQrState,
 				setTxnHash,
 				topic: session?.topic
 			});
@@ -184,6 +198,37 @@ const FundMultisig = ({
 				open={showQrModal}
 			>
 				<AddressQr address={selectedSender} />
+			</ModalComponent>
+			<ModalComponent
+				open={openSignWithVaultModal}
+				onCancel={() => {
+					setOpenSignWithVaultModal(false);
+					setLoading(false);
+				}}
+				title='Authorize Transaction in Vault'
+			>
+				<div className='flex items-center gap-x-4'>
+					<div className='rounded-xl bg-white p-4'>
+						<QrDisplayPayload
+							cmd={isQrHashed ? 1 : 2}
+							address={address}
+							genesisHash={apis[network]?.api?.genesisHash}
+							payload={qrPayload}
+						/>
+					</div>
+					<QrScanSignature
+						onScan={(data) => {
+							if (data && data.signature && isHex(data.signature)) {
+								console.log('signature', data.signature);
+								qrResolve({
+									id: 0,
+									signature: data.signature
+								});
+								setOpenSignWithVaultModal(false);
+							}
+						}}
+					/>
+				</div>
 			</ModalComponent>
 			<div className={className}>
 				<div>

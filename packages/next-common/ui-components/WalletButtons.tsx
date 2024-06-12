@@ -5,11 +5,12 @@
 'use client';
 
 import { Injected, InjectedAccount, InjectedWindow } from '@polkadot/extension-inject/types';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import PolkadotWalletIcon from '@next-common/assets/wallet/polkadotjs-icon.svg';
 import SubWalletIcon from '@next-common/assets/wallet/subwallet-icon.svg';
 import TalismanIcon from '@next-common/assets/wallet/talisman-icon.svg';
 import WalletConnectLogo from '@next-common/assets/wallet/wallet-connect-logo.svg';
+import polkadotVaultLogo from '@next-common/assets/wallet/polkadot-vault.png';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import APP_NAME from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
@@ -17,7 +18,19 @@ import { Wallet } from '@next-common/types';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
+import { QrScanAddress } from '@polkadot/react-qr';
+import type { HexString } from '@polkadot/util/types';
+import Image from 'next/image';
 import WalletButton from './WalletButton';
+import ModalComponent from './ModalComponent';
+import InfoBox from './InfoBox';
+
+interface Scanned {
+	content: string;
+	isAddress: boolean;
+	genesisHash: HexString | null;
+	name?: string;
+}
 
 interface IWalletButtons {
 	setAccounts: React.Dispatch<React.SetStateAction<InjectedAccount[]>>;
@@ -39,6 +52,8 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 	const { loggedInWallet } = useGlobalUserDetailsContext();
 
 	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.POLKADOT);
+
+	const [openVaultModal, setOpenVaultModal] = useState<boolean>(false);
 
 	const { connect, session } = useWalletConnectContext();
 
@@ -134,13 +149,48 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				}));
 				setAccounts(walletConnectAccounts);
 			}
+		} else if (wallet === Wallet.POLKADOT_VAULT) {
+			setOpenVaultModal(true);
+			setFetchAccountsLoading?.(true);
 		} else {
 			await getAccounts(wallet);
 		}
 	};
 
+	const onScan = useCallback(
+		(scanned: Scanned): void => {
+			setAccounts([
+				{
+					address: scanned.isAddress ? scanned.content : '',
+					name: scanned.name || DEFAULT_ADDRESS_NAME
+				}
+			]);
+			setOpenVaultModal(false);
+			setFetchAccountsLoading?.(false);
+		},
+		[setAccounts, setFetchAccountsLoading]
+	);
+
+	const onError = useCallback((err: Error): void => {
+		console.log('error', err);
+	}, []);
+
 	return (
 		<div className={`mb-2 flex items-center justify-center gap-x-5 ${className}`}>
+			<ModalComponent
+				open={openVaultModal}
+				onCancel={() => setOpenVaultModal(false)}
+				title='Scan your Address QR'
+			>
+				<>
+					<InfoBox message='Please Scan your Westend Address QR in Polkadot Vault' />
+					<QrScanAddress
+						isEthereum={false}
+						onError={onError}
+						onScan={onScan}
+					/>
+				</>
+			</ModalComponent>
 			<WalletButton
 				className={`${
 					// eslint-disable-next-line sonarjs/no-duplicate-string
@@ -177,6 +227,21 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				onClick={(event) => handleWalletClick(event as any, Wallet.WALLET_CONNECT)}
 				icon={<WalletConnectLogo />}
 				tooltip='Wallet Connect'
+			/>
+			<WalletButton
+				className={`${
+					selectedWallet === Wallet.POLKADOT_VAULT ? 'border-primary bg-highlight border border-solid' : 'border-none'
+				}`}
+				// disabled={!apiReady}
+				onClick={(event) => handleWalletClick(event as any, Wallet.POLKADOT_VAULT)}
+				icon={
+					<Image
+						className='h-[24px] w-[24px]'
+						src={polkadotVaultLogo}
+						alt='Polkadot Vault'
+					/>
+				}
+				tooltip='Polkadot Vault'
 			/>
 		</div>
 	);

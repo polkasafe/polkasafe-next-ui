@@ -7,20 +7,25 @@ import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import formatUSDWithUnits from './formatUSDWithUnits';
 
 export default async function fetchTokenToUSDPrice(token: number, network: string) {
-	const response = await fetch(`https://${network}.api.subscan.io/api/open/price_converter`, {
-		body: JSON.stringify({
-			from: chainProperties[network]?.tokenSymbol,
-			quote: 'USD',
-			value: token
-		}),
-		headers: SUBSCAN_API_HEADERS,
-		method: 'POST'
-	});
+	try {
+		const response = await fetch(`https://${network}.api.subscan.io/api/open/price_converter`, {
+			body: JSON.stringify({
+				from: chainProperties[network]?.tokenSymbol,
+				quote: 'USD',
+				value: token
+			}),
+			headers: SUBSCAN_API_HEADERS,
+			method: 'POST'
+		});
 
-	const responseJSON = await response.json();
+		const responseJSON = await response.json();
 
-	if (responseJSON.message === 'Success' && responseJSON.data) {
-		return formatUSDWithUnits(responseJSON.data.output || '0');
+		if (responseJSON.message === 'Success' && responseJSON.data) {
+			return formatUSDWithUnits(responseJSON.data.output || '0');
+		}
+	} catch (e) {
+		console.log(e);
+		return '0';
 	}
 	return '0';
 }
