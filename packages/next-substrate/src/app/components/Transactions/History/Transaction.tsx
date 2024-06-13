@@ -227,6 +227,7 @@ const Transaction: FC<ITransaction> = ({
 								decodedCallData?.args?.calls?.map((item: any) => item?.args?.dest?.id) ||
 								decodedCallData?.args?.call?.args?.calls?.map((item: any) => item?.args?.dest?.id)
 							}
+							multisigAddress={multisigAddress}
 						/>
 					)}
 				</div>
