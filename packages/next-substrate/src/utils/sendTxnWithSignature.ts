@@ -76,7 +76,7 @@ export default async function sendTxnWithSignature({ api, setTxnHash, network, s
 			}
 		}).catch((error) => {
 			console.log(':( transaction failed');
-			console.error('ERROR:', error);
+			console.error('error in sendTxnWithSignature:', error);
 			reject();
 			queueNotification({
 				header: 'Failed!',

@@ -196,28 +196,33 @@ const ConnectWallet = () => {
 					const { api } = apis[networks.WESTEND];
 					const tx = (api as ApiPromise).tx.system.remark(`${token}`);
 
-					const lastHeader = await api.rpc.chain.getHeader();
+					const signer = new QrSigner(api.registry, setQrState);
+					// const callData = api.createType('Call', tx);
+
+					// const lastHeader = await api.rpc.chain.getHeader();
 					// const blockNumber = api.registry.createType('BlockNumber', lastHeader.number.toNumber());
 
-					const era = api.registry.createType('ExtrinsicEra', {
-						current: lastHeader.number.toNumber(),
-						period: 64
-					});
+					// const era = api.registry.createType('ExtrinsicEra', {
+					// current: lastHeader.number.toNumber(),
+					// period: 64
+					// });
 
-					const nonce = await api.rpc.system.accountNextIndex(substrateAddress);
-					const signer = new QrSigner(api.registry, setQrState);
+					// const nonce = await api.rpc.system.accountNextIndex(substrateAddress);
 
-					const payload = {
-						// blockHash: lastHeader.hash.toHex(),
-						// blockNumber: blockNumber.toHex(),
-						era: era.toNumber(),
-						// genesisHash: api.genesisHash.toHex(),
-						nonce: nonce.toNumber(),
-						// runtimeVersion: (api as ApiPromise).runtimeVersion,
-						tip: api.registry.createType('Compact<Balance>', 0).toHex()
-					};
-					console.log('nonce', nonce.toNumber());
-					const result = await tx.signAsync(substrateAddress, { ...payload, signer });
+					// const payload = {
+					// blockHash: lastHeader.hash.toHex(),
+					// blockNumber: blockNumber.toHex(),
+					// era: era.toNumber(),
+					// genesisHash: api.genesisHash.toHex(),
+					// method: callData.toHex(),
+					// nonce: nonce.toNumber(),
+					// specVersion: api.runtimeVersion.specVersion.toHex(),
+					// tip: api.registry.createType('Compact<Balance>', 0).toHex(),
+					// transactionVersion: api.runtimeVersion.transactionVersion.toHex(),
+					// version: tx.version
+					// };
+					const tip = api.registry.createType('Compact<Balance>', 0).toHex();
+					const result = await tx.signAsync(substrateAddress, { nonce: -1, signer, tip });
 					setOpenSignWithVaultModal(false);
 					console.log('results', result.signature.toHex());
 					if (result && result.signature && isHex(result.signature.toHex())) {
@@ -242,8 +247,6 @@ const ConnectWallet = () => {
 
 							const txData = await checkTxnRes.json();
 
-							console.log('subscan data', txData);
-
 							const txParams = (txData.data.params || []) as any[];
 
 							const remarkExists = txParams.find((paramObj) => {
@@ -261,10 +264,6 @@ const ConnectWallet = () => {
 							signature = s;
 						}
 					}
-					// const signerResults = await signer.signPayload(payload);
-					// console.log('after sign raw', signerResults);
-					// const signResult = await api.sign(address, { data: stringToHex(token), type: 'bytes' }, { signer });
-					// console.log('signature', signResult);
 				}
 
 				const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/login_substrate`, {

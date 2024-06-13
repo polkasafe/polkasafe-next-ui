@@ -1,4 +1,4 @@
-import { EFieldType, EINVOICE_STATUS, IMultisigAddress, NotificationStatus } from '@next-common/types';
+import { EFieldType, EINVOICE_STATUS, IMultisigAddress, NotificationStatus, QrState } from '@next-common/types';
 import {
 	CircleArrowDownIcon,
 	LineIcon,
@@ -24,8 +24,11 @@ import initMultisigTransfer, { IMultiTransferResponse } from '@next-substrate/ut
 import setSigner from '@next-substrate/utils/setSigner';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
-import ModalBtn from '../../Settings/ModalBtn';
+import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { isHex } from '@polkadot/util';
 import CancelBtn from '../../Settings/CancelBtn';
+import ModalBtn from '../../Settings/ModalBtn';
 
 const PayWithMultisig = ({
 	receiverAddress,
@@ -78,6 +81,15 @@ const PayWithMultisig = ({
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
 		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
 	);
+
+	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
+		isQrHashed: false,
+		qrAddress: '',
+		qrPayload: new Uint8Array()
+	}));
 
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
@@ -166,6 +178,8 @@ const PayWithMultisig = ({
 				recipientAndAmount: [{ amount, recipient: receiverAddress }],
 				selectedProxy: selectedMultisig,
 				setLoadingMessages,
+				setOpenSignWithVaultModal,
+				setQrState,
 				tip: new BN(0),
 				transactionFields: transactionFieldsObject,
 				transferKeepAlive: true
@@ -189,6 +203,37 @@ const PayWithMultisig = ({
 					The Receiver Address Network is {requestedNetwork}, Please select a Multisig in the same network.
 				</p>
 			)}
+			<ModalComponent
+				open={openSignWithVaultModal}
+				onCancel={() => {
+					setOpenSignWithVaultModal(false);
+					setLoading(false);
+				}}
+				title='Authorize Transaction in Vault'
+			>
+				<div className='flex items-center gap-x-4'>
+					<div className='rounded-xl bg-white p-4'>
+						<QrDisplayPayload
+							cmd={isQrHashed ? 1 : 2}
+							address={address}
+							genesisHash={apis[network]?.api?.genesisHash}
+							payload={qrPayload}
+						/>
+					</div>
+					<QrScanSignature
+						onScan={(data) => {
+							if (data && data.signature && isHex(data.signature)) {
+								console.log('signature', data.signature);
+								qrResolve({
+									id: 0,
+									signature: data.signature
+								});
+								setOpenSignWithVaultModal(false);
+							}
+						}}
+					/>
+				</div>
+			</ModalComponent>
 			<Form className='max-h-[68vh] overflow-y-auto px-2 pb-8'>
 				<section>
 					<div className='flex items-center gap-x-[10px] mt-[14px]'>

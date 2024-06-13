@@ -1,4 +1,4 @@
-import { EINVOICE_STATUS, NotificationStatus, Wallet } from '@next-common/types';
+import { EINVOICE_STATUS, NotificationStatus, QrState, Wallet } from '@next-common/types';
 import React, { useEffect, useState } from 'react';
 import { Divider, Form } from 'antd';
 import { LineIcon, SquareDownArrowIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
@@ -21,6 +21,9 @@ import { chainProperties } from '@next-common/global/networkConstants';
 import { Injected, InjectedAccount, InjectedWindow } from '@polkadot/extension-inject/types';
 import APP_NAME from '@next-common/global/appName';
 import AccountSelectionForm from '@next-common/ui-components/AccountSelectionForm';
+import { isHex } from '@polkadot/util';
+import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
+import ModalComponent from '@next-common/ui-components/ModalComponent';
 import ModalBtn from '../../Settings/ModalBtn';
 import CancelBtn from '../../Settings/CancelBtn';
 
@@ -57,6 +60,15 @@ const PayWithAccount = ({
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 	const [txnHash, setTxnHash] = useState<string>('');
+
+	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
+		isQrHashed: false,
+		qrAddress: '',
+		qrPayload: new Uint8Array()
+	}));
 
 	const onAccountChange = (a: string) => {
 		setAddress(a);
@@ -185,6 +197,8 @@ const PayWithAccount = ({
 				recepientAddress: receiverAddress,
 				senderAddress: getSubstrateAddress(address) || address,
 				setLoadingMessages,
+				setOpenSignWithVaultModal,
+				setQrState,
 				setTxnHash
 			});
 			setLoading(false);
@@ -203,6 +217,37 @@ const PayWithAccount = ({
 
 	return (
 		<div>
+			<ModalComponent
+				open={openSignWithVaultModal}
+				onCancel={() => {
+					setOpenSignWithVaultModal(false);
+					setLoading(false);
+				}}
+				title='Authorize Transaction in Vault'
+			>
+				<div className='flex items-center gap-x-4'>
+					<div className='rounded-xl bg-white p-4'>
+						<QrDisplayPayload
+							cmd={isQrHashed ? 1 : 2}
+							address={address}
+							genesisHash={apis[network]?.api?.genesisHash}
+							payload={qrPayload}
+						/>
+					</div>
+					<QrScanSignature
+						onScan={(data) => {
+							if (data && data.signature && isHex(data.signature)) {
+								console.log('signature', data.signature);
+								qrResolve({
+									id: 0,
+									signature: data.signature
+								});
+								setOpenSignWithVaultModal(false);
+							}
+						}}
+					/>
+				</div>
+			</ModalComponent>
 			<Form className='max-h-[68vh] overflow-y-auto px-2 pb-8'>
 				<section>
 					<div className='flex items-center gap-x-[10px] mt-[14px]'>

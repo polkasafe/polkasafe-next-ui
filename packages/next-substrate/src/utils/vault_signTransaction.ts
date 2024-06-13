@@ -19,44 +19,35 @@ export default async function vaultSignTransaction(
 ) {
 	if (!api || !network || !senderAddress) return;
 
-	const callData = api.createType('Call', tx);
+	// const callData = api.createType('Call', tx);
 
-	const lastHeader = await api.rpc.chain.getHeader();
-	const blockNumber = api.registry.createType('BlockNumber', lastHeader.number.toNumber());
+	// const lastHeader = await api.rpc.chain.getHeader();
+	// const blockNumber = api.registry.createType('BlockNumber', lastHeader.number.toNumber());
 
-	const era = api.registry.createType('ExtrinsicEra', {
-		current: lastHeader.number.toNumber(),
-		period: 64
-	});
+	// const era = api.registry.createType('ExtrinsicEra', {
+	// current: lastHeader.number.toNumber(),
+	// period: 64
+	// });
 
-	const nonce = await api.rpc.system.accountNextIndex(senderAddress);
+	// const nonce = await api.rpc.system.accountNextIndex(senderAddress);
 
-	const transactionPayload = {
-		address: senderAddress,
-		blockHash: lastHeader.hash.toHex(),
-		blockNumber: blockNumber.toHex(),
-		era: era.toHex(),
-		genesisHash: api.genesisHash.toHex(),
-		method: callData.toHex(),
-		nonce: nonce.toHex(),
-		signedExtensions: [
-			'CheckNonZeroSender',
-			'CheckSpecVersion',
-			'CheckTxVersion',
-			'CheckGenesis',
-			'CheckMortality',
-			'CheckNonce',
-			'CheckWeight',
-			'ChargeTransactionPayment'
-		],
-		specVersion: api.runtimeVersion.specVersion.toHex(),
-		tip: api.registry.createType('Compact<Balance>', tip).toHex(),
-		transactionVersion: api.runtimeVersion.transactionVersion.toHex(),
-		version: tx.version
-	};
+	// const transactionPayload = {
+	// address: senderAddress,
+	// blockHash: lastHeader.hash.toHex(),
+	// blockNumber: blockNumber.toHex(),
+	// era: era.toHex(),
+	// genesisHash: api.genesisHash.toHex(),
+	// method: callData.toHex(),
+	// nonce: nonce.toHex(),
+	// specVersion: api.runtimeVersion.specVersion.toHex(),
+	// tip: api.registry.createType('Compact<Balance>', tip).toHex(),
+	// transactionVersion: api.runtimeVersion.transactionVersion.toHex(),
+	// version: tx.version
+	// };
+	const tipHex = api.registry.createType('Compact<Balance>', tip).toHex();
 	try {
 		const signer = new QrSigner(api.registry, setQrState);
-		await tx.signAsync(senderAddress, { ...transactionPayload, signer });
+		await tx.signAsync(senderAddress, { nonce: -1, signer, tip: tipHex });
 	} catch (e) {
 		console.log('vault_signtransaction error', e);
 	}
