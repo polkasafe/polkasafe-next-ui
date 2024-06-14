@@ -2,8 +2,10 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
+'use client';
+
 import { Injected, InjectedAccount, InjectedWindow } from '@polkadot/extension-inject/types';
-import { useContext, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ApiContext, useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import APP_NAME from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
@@ -22,8 +24,7 @@ const initResponse: Response = {
 };
 
 const useGetWalletAccounts = (chosenWallet?: Wallet) => {
-	const { api, apiReady } = useContext(ApiContext);
-	const { network } = useGlobalApiContext();
+	const { network, api, apiReady } = useGlobalApiContext();
 
 	const [response, setResponse] = useState<Response>(initResponse);
 

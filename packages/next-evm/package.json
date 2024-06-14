@@ -57,7 +57,7 @@
     "https-browserify": "^1.0.0",
     "import": "^0.0.6",
     "net": "^1.0.2",
-    "next": "latest",
+    "next": "13",
     "nextjs-toploader": "^1.5.3",
     "os-browserify": "^0.3.0",
     "otpauth": "^9.1.5",

@@ -39,7 +39,7 @@ export default function CancelOrKillReferendaForm({
 	const { api, apiReady } = useGlobalApiContext();
 	const { loggedInWallet, address } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
-	const multisigAddresses = activeOrg.multisigs;
+	const multisigAddresses = activeOrg?.multisigs;
 	const currentMultisig = multisigAddresses?.find(
 		(item) =>
 			item.address === selectedMultisig ||
@@ -63,7 +63,7 @@ export default function CancelOrKillReferendaForm({
 		if (!api || !apiReady) {
 			return;
 		}
-		if (!loggedInWallet || !postData.index) {
+		if (!loggedInWallet || !postData.index || !currentMultisig) {
 			return;
 		}
 		await setSigner(api, loggedInWallet);
@@ -115,6 +115,7 @@ export default function CancelOrKillReferendaForm({
 			console.log('invalid index');
 			return;
 		}
+		if (!currentMultisig) return;
 		setLoadingStatus({ isLoading: true, message: 'fetching proposal details' });
 		try {
 			const response = await fetch(`https://${currentMultisig.network}.polkassembly.io/api/v1/getTitleAndContent`, {
@@ -122,7 +123,7 @@ export default function CancelOrKillReferendaForm({
 				headers: {
 					'Content-Type': 'application/json',
 					'x-api-key': '018db5c6-7225-70bc-8b5c-51202c78ec75',
-					'x-network': currentMultisig.network
+					'x-network': currentMultisig?.network
 				},
 				method: 'POST'
 			});
@@ -186,7 +187,7 @@ export default function CancelOrKillReferendaForm({
 							{formatBnBalance(
 								String(submissionDeposit.toString()),
 								{ numberAfterComma: 3, withUnit: true },
-								currentMultisig?.network
+								currentMultisig?.network || ''
 							)}{' '}
 							balance for these transactions:
 						</p>

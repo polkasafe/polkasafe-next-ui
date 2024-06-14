@@ -46,7 +46,7 @@ const PayWithMultisig = ({
 	const { apis } = useGlobalApiContext();
 	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
-	const { transactionFields } = activeOrg;
+	const transactionFields = activeOrg?.transactionFields || {};
 
 	const { allCurrencyPrices, tokensUsdPrice } = useGlobalCurrencyContext();
 
@@ -55,8 +55,8 @@ const PayWithMultisig = ({
 
 	const [multisig, setMultisig] = useState<IMultisigAddress>(
 		activeOrg?.multisigs?.find(
-			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
-		)
+			(item) => item.address === activeMultisig || (item.proxy && checkMultisigWithProxy(item.proxy, activeMultisig))
+		) || {} as IMultisigAddress
 	);
 	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
 
@@ -94,7 +94,7 @@ const PayWithMultisig = ({
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
 		const m = activeOrg?.multisigs?.find(
-			(item) => item.address === selectedMultisig || checkMultisigWithProxy(item.proxy, selectedMultisig)
+			(item) => item.address === selectedMultisig || (item.proxy && checkMultisigWithProxy(item.proxy, selectedMultisig))
 		);
 		setMultisig(m || activeOrg.multisigs[0]);
 		setNetwork(m?.network || activeOrg.multisigs[0].network);
@@ -111,7 +111,7 @@ const PayWithMultisig = ({
 				address={item.address}
 			/>
 		)
-	}));
+	})) || [];
 
 	useEffect(() => {
 		if (!requestedAmountInDollars || !allCurrencyPrices || !tokensUsdPrice) return;
@@ -157,7 +157,7 @@ const PayWithMultisig = ({
 
 		setLoading(true);
 		try {
-			let queueItemData: IMultiTransferResponse = {} as any;
+			let queueItemData: IMultiTransferResponse | undefined = {} as any;
 			if (!amount || amount.isZero() || !receiverAddress) {
 				queueNotification({
 					header: 'Error!',
@@ -186,7 +186,7 @@ const PayWithMultisig = ({
 			});
 			setTransactionData(queueItemData);
 			setLoading(false);
-			await updateInvoice(queueItemData?.callHash);
+			queueItemData?.callHash && await updateInvoice(queueItemData?.callHash);
 			// setSuccess(true);
 		} catch (error) {
 			console.log(error);
@@ -224,7 +224,7 @@ const PayWithMultisig = ({
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
 								console.log('signature', data.signature);
-								qrResolve({
+								qrResolve && qrResolve({
 									id: 0,
 									signature: data.signature
 								});

@@ -238,7 +238,7 @@ const PayWithAccount = ({
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
 								console.log('signature', data.signature);
-								qrResolve({
+								qrResolve && qrResolve({
 									id: 0,
 									signature: data.signature
 								});

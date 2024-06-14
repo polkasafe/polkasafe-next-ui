@@ -5,7 +5,6 @@ import React, { FC, useEffect, useState } from 'react';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import { OutlineCheckIcon } from '@next-common/ui-components/CustomIcons';
 import Image from 'next/image';
-import { StaticImport } from 'next/dist/shared/lib/get-img-props';
 import { Tooltip } from 'antd';
 import fallbackLogo from '@next-common/assets/fallback-token-logo.png';
 
@@ -15,7 +14,7 @@ export const ParachainIcon = ({
 	size = 20,
 	tooltip
 }: {
-	src: string | StaticImport;
+	src: string | any;
 	className?: string;
 	size?: number;
 	tooltip?: string;

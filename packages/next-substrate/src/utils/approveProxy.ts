@@ -18,7 +18,6 @@ import {
 } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
-import { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import Client from '@walletconnect/sign-client';
@@ -33,7 +32,7 @@ import wcSignTransaction from './wc_signTransaction';
 interface Args {
 	api: ApiPromise;
 	network: string;
-	router: AppRouterInstance;
+	router: any;
 	multisig: IMultisigAddress;
 	callDataHex?: string;
 	callHash: string;

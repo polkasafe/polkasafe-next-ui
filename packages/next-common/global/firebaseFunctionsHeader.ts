@@ -15,7 +15,7 @@ export default function firebaseFunctionsHeader(
 		Accept: 'application/json',
 		'Content-Type': contentType || 'application/json',
 		'x-address': address || (typeof window !== 'undefined' && localStorage.getItem('address')) || '',
-		'x-api-key': NOTIFICATION_ENGINE_API_KEY,
+		'x-api-key': NOTIFICATION_ENGINE_API_KEY || '',
 		// 'x-network': network || (typeof window !== 'undefined' && localStorage.getItem('network')) || '',
 		'x-signature': signature || (typeof window !== 'undefined' && localStorage.getItem('signature')) || '',
 		'x-source': 'polkasafe'

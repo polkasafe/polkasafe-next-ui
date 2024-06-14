@@ -142,7 +142,7 @@ const ConnectWallet = () => {
 				) {
 					const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
-					const wallet = injectedWindow.injectedWeb3[selectedWallet];
+					const wallet = injectedWindow && injectedWindow.injectedWeb3[selectedWallet];
 
 					if (!wallet) {
 						setLoading(false);
@@ -151,7 +151,10 @@ const ConnectWallet = () => {
 					const injected = wallet && wallet.enable && (await wallet.enable(APP_NAME));
 
 					const signRaw = injected && injected.signer && injected.signer.signRaw;
-					if (!signRaw) console.error('Signer not available');
+					if (!signRaw) {
+						console.error('Signer not available')
+						return;
+					};
 					setSigning(true);
 					const { signature: userSignature } = await signRaw({
 						address: substrateAddress,
@@ -270,7 +273,7 @@ const ConnectWallet = () => {
 					body: JSON.stringify({
 						wallet: selectedWallet
 					}),
-					headers: firebaseFunctionsHeader(substrateAddress, signature),
+					headers: firebaseFunctionsHeader(substrateAddress, signature) || {},
 					method: 'POST'
 				});
 				const { data: userData, error: connectAddressErr } = (await loginRes.json()) as {
@@ -388,7 +391,7 @@ const ConnectWallet = () => {
 			if (!validate2FAError && token) {
 				const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
 
-				const wallet = injectedWindow.injectedWeb3[selectedWallet];
+				const wallet = injectedWindow && injectedWindow.injectedWeb3[selectedWallet];
 
 				if (!wallet) {
 					setLoading(false);
@@ -397,7 +400,10 @@ const ConnectWallet = () => {
 				const injected = wallet && wallet.enable && (await wallet.enable(APP_NAME));
 
 				const signRaw = injected && injected.signer && injected.signer.signRaw;
-				if (!signRaw) console.error('Signer not available');
+				if (!signRaw) {
+					console.error('Signer not available')
+					return;
+				}
 				setSigning(true);
 				setTfaToken('');
 				const { signature } = await signRaw({
@@ -589,7 +595,7 @@ const ConnectWallet = () => {
 										if (data && data.signature && isHex(data.signature)) {
 											console.log('signature', data.signature);
 											setVaultSignature(data.signature);
-											qrResolve({
+											qrResolve && qrResolve({
 												// eslint-disable-next-line no-plusplus
 												id: ++qrId,
 												signature: data.signature
