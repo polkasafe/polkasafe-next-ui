@@ -91,7 +91,7 @@ export const chainProperties: ChainPropType = {
 		chainId: 'polkadot:e143f23803ac50e8f6f8e62695d1ce9e',
 		existentialDeposit: '0.0100',
 		logo: westendLogo,
-		rpcEndpoint: 'wss://westend-rpc.dwellir.com',
+		rpcEndpoint: 'wss://westend-rpc.polkadot.io',
 		ss58Format: 42,
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.WND

@@ -12,7 +12,6 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
-import { ItemType } from 'antd/es/menu/hooks/useItems';
 import { SubmittableExtrinsic } from '@polkadot/api/types';
 import { chainProperties } from '@next-common/global/evm-network-constants';
 import setSigner from '@next-substrate/utils/setSigner';
@@ -23,7 +22,7 @@ import { TypeDef, TypeDefInfo } from '@polkadot/types/types';
 import _ from 'lodash';
 import { Form, Input, Radio, Spin } from 'antd';
 import HelperTooltip from '@next-common/ui-components/HelperTooltip';
-import Alert from 'antd/es/alert/Alert';
+// import Alert from 'antd/es/alert/Alert';
 import formatBalance from '@next-substrate/utils/formatBalance';
 import formatBnBalance from '@next-substrate/utils/formatBnBalance';
 import Dropdown from 'antd/es/dropdown/dropdown';
@@ -35,8 +34,10 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import executeTx from '../utils/executeTx';
 import { EEnactment, FormState, IAdvancedDetails, IEnactment } from '../types';
-import useCurrentBlock from '../../hooks/useCurrentBlock';
+import useCurrentBlock from '../../../../../hooks/useCurrentBlock';
 import createPreImage from '../utils/createPreimage';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { networks } from '@next-common/global/networkConstants';
 
 interface ParamField {
 	name: string;
@@ -113,7 +114,7 @@ export default function CreateReferendaForm({
 	const [availableBalance, setAvailableBalance] = useState('0');
 	const availableBalanceBN = new BN(availableBalance);
 	const { activeOrg } = useActiveOrgContext();
-	const multisigAddresses = activeOrg.multisigs;
+	const multisigAddresses = activeOrg?.multisigs;
 	const currentMultisig = multisigAddresses?.find(
 		(item) =>
 			item.address === selectedMultisig ||
@@ -121,7 +122,7 @@ export default function CreateReferendaForm({
 			item.proxy === selectedMultisig
 	);
 
-	const { network } = currentMultisig;
+	const network = currentMultisig?.network || networks.POLKADOT;
 
 	const [submissionDeposit, setSubmissionDeposit] = useState<BN>(BN_ZERO);
 	const [palletRPCs, setPalletRPCs] = useState<ItemType[]>([]);
@@ -151,7 +152,7 @@ export default function CreateReferendaForm({
 		if (!api || !apiReady) {
 			return;
 		}
-		if (!loginWallet) {
+		if (!loginWallet || !currentMultisig) {
 			return;
 		}
 		await setSigner(api, loginWallet);
@@ -201,7 +202,7 @@ export default function CreateReferendaForm({
 		if (!api || !apiReady) {
 			return;
 		}
-		if (!loginWallet) {
+		if (!loginWallet || !currentMultisig) {
 			return;
 		}
 		await setSigner(api, loginWallet);
@@ -376,12 +377,12 @@ export default function CreateReferendaForm({
 		if (!api || !apiReady || !isHex(preimageHash, 256) || preimageHash?.length < 0) return;
 		setLoadingStatus({ isLoading: true, message: '' });
 		const response = await fetch(
-			`https://${currentMultisig.network}.polkassembly.io/api/v1/preimages/latest?hash=${preimageHash}`,
+			`https://${currentMultisig?.network}.polkassembly.io/api/v1/preimages/latest?hash=${preimageHash}`,
 			{
 				headers: {
 					'Content-Type': 'application/json',
 					'x-api-key': '018db5c6-7225-70bc-8b5c-51202c78ec75',
-					'x-network': currentMultisig.network
+					'x-network': currentMultisig?.network || ''
 				},
 				method: 'POST'
 			}
@@ -581,7 +582,7 @@ export default function CreateReferendaForm({
 									{formatBnBalance(
 										String(submissionDeposit.toString()),
 										{ numberAfterComma: 3, withUnit: true },
-										currentMultisig?.network
+										currentMultisig?.network || ''
 									)}{' '}
 									balance for these transactions:
 								</p>

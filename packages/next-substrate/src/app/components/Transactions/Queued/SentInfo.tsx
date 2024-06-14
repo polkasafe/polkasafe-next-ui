@@ -4,6 +4,7 @@
 import Identicon from '@polkadot/react-identicon';
 import { Button, Collapse, Divider, Input, Timeline } from 'antd';
 import classNames from 'classnames';
+import { isHex } from '@polkadot/util';
 import React, { FC, useCallback, useEffect, useState } from 'react';
 import CancelBtn from '@next-substrate/app/components/Multisig/CancelBtn';
 import RemoveBtn from '@next-substrate/app/components/Settings/RemoveBtn';
@@ -12,7 +13,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, ITxNotification, ITxnCategory } from '@next-common/types';
+import { IMultisigAddress, ITxNotification, ITxnCategory, QrState } from '@next-common/types';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,
@@ -36,6 +37,7 @@ import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { ApiPromise } from '@polkadot/api';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
+import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
 import ArgumentsTable from './ArgumentsTable';
 import EditNote from './EditNote';
 import NotifyButton from './NotifyButton';
@@ -79,6 +81,9 @@ interface ISentInfoProps {
 	setCategory: React.Dispatch<React.SetStateAction<string>>;
 	setApprovals: React.Dispatch<React.SetStateAction<string[]>>;
 	setTransactionFields: React.Dispatch<React.SetStateAction<ITxnCategory>>;
+	qrState: QrState;
+	openSignWithVaultModal: boolean;
+	setOpenSignWithVaultModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 const SentInfo: FC<ISentInfoProps> = ({
@@ -115,7 +120,10 @@ const SentInfo: FC<ISentInfoProps> = ({
 	multi_id,
 	setCategory,
 	setApprovals,
-	setTransactionFields
+	setTransactionFields,
+	qrState,
+	setOpenSignWithVaultModal,
+	openSignWithVaultModal
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
@@ -206,6 +214,36 @@ const SentInfo: FC<ISentInfoProps> = ({
 
 	return (
 		<div className={classNames('flex gap-x-4 max-sm:flex-wrap max-sm:gap-2', className)}>
+			<ModalComponent
+				open={openSignWithVaultModal}
+				onCancel={() => {
+					setOpenSignWithVaultModal(false);
+				}}
+				title='Authorize Transaction in Vault'
+			>
+				<div className='flex items-center gap-x-4'>
+					<div className='rounded-xl bg-white p-4'>
+						<QrDisplayPayload
+							cmd={qrState.isQrHashed ? 1 : 2}
+							address={initiatorAddress}
+							genesisHash={api?.genesisHash}
+							payload={qrState.qrPayload}
+						/>
+					</div>
+					<QrScanSignature
+						onScan={(data) => {
+							if (data && data.signature && isHex(data.signature)) {
+								console.log('signature', data.signature);
+								qrState.qrResolve({
+									id: 0,
+									signature: data.signature
+								});
+								setOpenSignWithVaultModal(false);
+							}
+						}}
+					/>
+				</div>
+			</ModalComponent>
 			<ModalComponent
 				onCancel={() => setOpenApproveModal(false)}
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Approve Transaction</h3>}

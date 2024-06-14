@@ -21,13 +21,15 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import setSigner from '@next-substrate/utils/setSigner';
 import transferFunds from '@next-substrate/utils/transferFunds';
+import { isHex } from '@polkadot/util';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
-import { Wallet } from '@next-common/types';
+import { QrState, Wallet } from '@next-common/types';
+import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
 import { ParachainIcon } from '../NetworksDropdown/NetworkCard';
 import TransactionSuccessScreen from './TransactionSuccessScreen';
 
@@ -64,6 +66,15 @@ const ExistentialDeposit = ({
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 	const [txnHash, setTxnHash] = useState<string>('');
 	const [selectedAccountBalance, setSelectedAccountBalance] = useState<string>('');
+
+	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
+		isQrHashed: false,
+		qrAddress: '',
+		qrPayload: new Uint8Array()
+	}));
 
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
@@ -128,6 +139,8 @@ const ExistentialDeposit = ({
 				recepientAddress: multisig?.address || activeMultisig,
 				senderAddress: getSubstrateAddress(selectedSender) || selectedSender,
 				setLoadingMessages,
+				setOpenSignWithVaultModal,
+				setQrState,
 				setTxnHash,
 				topic: session?.topic
 			});
@@ -171,6 +184,37 @@ const ExistentialDeposit = ({
 				open={showQrModal}
 			>
 				<AddressQr address={selectedSender} />
+			</ModalComponent>
+			<ModalComponent
+				open={openSignWithVaultModal}
+				onCancel={() => {
+					setOpenSignWithVaultModal(false);
+					setLoading(false);
+				}}
+				title='Authorize Transaction in Vault'
+			>
+				<div className='flex items-center gap-x-4'>
+					<div className='rounded-xl bg-white p-4'>
+						<QrDisplayPayload
+							cmd={isQrHashed ? 1 : 2}
+							address={address}
+							genesisHash={apis[network]?.api?.genesisHash}
+							payload={qrPayload}
+						/>
+					</div>
+					<QrScanSignature
+						onScan={(data) => {
+							if (data && data.signature && isHex(data.signature)) {
+								console.log('signature', data.signature);
+								qrResolve({
+									id: 0,
+									signature: data.signature
+								});
+								setOpenSignWithVaultModal(false);
+							}
+						}}
+					/>
+				</div>
 			</ModalComponent>
 			<div className={className}>
 				<section className='mb-4 text-[13px] w-full text-waiting bg-waiting bg-opacity-10 p-2.5 rounded-lg font-normal flex items-center gap-x-2'>

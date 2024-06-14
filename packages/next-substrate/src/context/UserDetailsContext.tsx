@@ -395,6 +395,9 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 		}
 
 		const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/login_substrate`, {
+			body: JSON.stringify({
+				wallet: userDetailsContextState.loggedInWallet
+			}),
 			headers: firebaseFunctionsHeader(),
 			method: 'POST'
 		});

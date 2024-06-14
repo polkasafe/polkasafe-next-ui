@@ -18,7 +18,7 @@ const AppModal = ({
 	name: string;
 	description: string;
 	onCancel: () => void;
-	appUrl: string;
+	appUrl?: string;
 	newTab?: boolean;
 	// modal?: boolean;
 }) => {
@@ -70,7 +70,7 @@ const AppModal = ({
 						if (appUrl && newTab) {
 							window.open(`${appUrl}`, '_blank');
 						} else {
-							setIframeVisibility(appUrl);
+							appUrl && setIframeVisibility(appUrl);
 						}
 						onCancel();
 					}}

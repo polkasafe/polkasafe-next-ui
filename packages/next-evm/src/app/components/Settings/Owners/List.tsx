@@ -123,7 +123,6 @@ const EditAddressModal = ({
 					rolesToEdit={rolesToEdit}
 					telegramToEdit={telegramToEdit}
 					nickNameToEdit={nickNameToEdit}
-					shared={false}
 				/>
 			</Modal>
 		</>

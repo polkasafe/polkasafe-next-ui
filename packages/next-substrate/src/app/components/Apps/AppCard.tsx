@@ -21,9 +21,9 @@ const AppCard = ({
 	className?: string;
 	name: string;
 	description: string;
-	appUrl: string;
-	logoUrl: string | StaticImageData;
-	logoComponent: ReactElement;
+	appUrl?: string;
+	logoUrl?: string | StaticImageData;
+	logoComponent?: ReactElement;
 	newTab?: boolean;
 	modal?: boolean;
 	modalComponent?: ReactElement;

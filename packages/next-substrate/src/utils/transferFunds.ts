@@ -8,10 +8,11 @@ import { ApiPromise } from '@polkadot/api';
 import { formatBalance } from '@polkadot/util/format';
 import BN from 'bn.js';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { NotificationStatus, Wallet } from '@next-common/types';
+import { NotificationStatus, QrState, Wallet } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import Client from '@walletconnect/sign-client';
 import wcSignTransaction from './wc_signTransaction';
+import vaultSignTransaction from './vault_signTransaction';
 
 interface Props {
 	recepientAddress: string;
@@ -24,6 +25,8 @@ interface Props {
 	client?: Client;
 	topic?: string;
 	loggedInWallet?: Wallet;
+	setQrState: React.Dispatch<React.SetStateAction<QrState>>;
+	setOpenSignWithVaultModal: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -37,7 +40,9 @@ export default async function transferFunds({
 	setLoadingMessages,
 	client,
 	loggedInWallet,
-	topic
+	topic,
+	setQrState,
+	setOpenSignWithVaultModal
 }: Props) {
 	formatBalance.setDefaults({
 		decimals: chainProperties[network].tokenDecimals,
@@ -58,9 +63,19 @@ export default async function transferFunds({
 		}
 	}
 
+	if (loggedInWallet === Wallet.POLKADOT_VAULT) {
+		try {
+			setOpenSignWithVaultModal(true);
+			await vaultSignTransaction(api, network, senderAddress, tx, setQrState);
+		} catch (e) {
+			console.log(e);
+			return undefined;
+		}
+	}
+
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	return new Promise<void>((resolve, reject) => {
-		if (loggedInWallet === Wallet.WALLET_CONNECT && client && topic) {
+		if ((loggedInWallet === Wallet.WALLET_CONNECT && client && topic) || loggedInWallet === Wallet.POLKADOT_VAULT) {
 			tx.send(async ({ status, txHash, events }) => {
 				if (status.isInvalid) {
 					console.log('Transaction invalid');

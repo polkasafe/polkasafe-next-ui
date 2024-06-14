@@ -2,6 +2,8 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
+'use client';
+
 import { useEffect, useState } from 'react';
 import { useCache } from '@next-substrate/context/CachedDataContext';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';

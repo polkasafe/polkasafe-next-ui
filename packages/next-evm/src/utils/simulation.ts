@@ -66,7 +66,7 @@ export const getSimulation = async (tx: any): Promise<any> => {
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			'content-type': 'application/JSON',
 			// eslint-disable-next-line @typescript-eslint/naming-convention
-			'X-Access-Key': process.env.NEXT_PUBLIC_POLKASAFE_TENDERLY_KEY
+			'X-Access-Key': process.env.NEXT_PUBLIC_POLKASAFE_TENDERLY_KEY || ''
 		},
 		method: 'POST',
 		body: JSON.stringify(tx)

@@ -11,7 +11,7 @@ import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import { BN_ZERO } from '@polkadot/util';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { EKillOrCancel, EReferenda } from './types';
-import useMultisig from '../hooks/useMultisig';
+import useMultisig from '../../../../hooks/useMultisig';
 import TransactionSuccessScreen from '../../SendFunds/TransactionSuccessScreen';
 import TransactionFailedScreen from '../../SendFunds/TransactionFailedScreen';
 

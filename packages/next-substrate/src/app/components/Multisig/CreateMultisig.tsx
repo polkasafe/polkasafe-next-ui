@@ -14,7 +14,7 @@ import AddBtn from '@next-substrate/app/components/Multisig/ModalBtn';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
-import { IMultisigAddress, ISharedAddressBookRecord, NotificationStatus } from '@next-common/types';
+import { IMultisigAddress, ISharedAddressBookRecord, NotificationStatus, QrState } from '@next-common/types';
 import { CircleArrowDownIcon, DashDotIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import ProxyImpPoints from '@next-common/ui-components/ProxyImpPoints';
@@ -24,6 +24,7 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import inputToBn from '@next-substrate/utils/inputToBn';
 import setSigner from '@next-substrate/utils/setSigner';
 import transferFunds from '@next-substrate/utils/transferFunds';
+import { isHex } from '@polkadot/util';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
@@ -34,6 +35,7 @@ import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import _createMultisig from '@next-substrate/utils/_createMultisig';
+import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
 import AddAddress from '../AddressBook/AddAddress';
 import DragDrop from './DragDrop';
 import Search from './Search';
@@ -76,6 +78,15 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 	const [form] = Form.useForm();
 
 	const [createMultisigData, setCreateMultisigData] = useState<IMultisigAddress>({} as any);
+
+	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
+		isQrHashed: false,
+		qrAddress: '',
+		qrPayload: new Uint8Array()
+	}));
 
 	const networkOptions: ItemType[] = Object.values(networks).map((item) => ({
 		key: item,
@@ -145,7 +156,9 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 				network,
 				recepientAddress: multisigData.address,
 				senderAddress: getSubstrateAddress(userAddress) || userAddress,
-				setLoadingMessages
+				setLoadingMessages,
+				setOpenSignWithVaultModal,
+				setQrState
 			});
 			// if (['alephzero'].includes(network) || pathname !== '/') {
 			// createProxy(multisigData, false);
@@ -334,6 +347,37 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 							onClick={() => setCancelCreateProxy(false)}
 						/>
 					</div>
+				</div>
+			</ModalComponent>
+			<ModalComponent
+				open={openSignWithVaultModal}
+				onCancel={() => {
+					setOpenSignWithVaultModal(false);
+					setLoading(false);
+				}}
+				title='Authorize Transaction in Vault'
+			>
+				<div className='flex items-center gap-x-4'>
+					<div className='rounded-xl bg-white p-4'>
+						<QrDisplayPayload
+							cmd={isQrHashed ? 1 : 2}
+							address={userAddress}
+							genesisHash={apis[network]?.api?.genesisHash}
+							payload={qrPayload}
+						/>
+					</div>
+					<QrScanSignature
+						onScan={(data) => {
+							if (data && data.signature && isHex(data.signature)) {
+								console.log('signature', data.signature);
+								qrResolve({
+									id: 0,
+									signature: data.signature
+								});
+								setOpenSignWithVaultModal(false);
+							}
+						}}
+					/>
 				</div>
 			</ModalComponent>
 			<Form

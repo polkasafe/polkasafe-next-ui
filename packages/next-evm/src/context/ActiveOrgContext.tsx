@@ -36,7 +36,11 @@ export const ActiveOrgProvider = ({ children }: { children?: ReactNode }): React
 		if (!organisations || !organisations.length) return;
 		if (currentOrgId) {
 			const org = organisations.find((item) => item.id === currentOrgId);
-			setActiveOrg(org);
+			if (org) {
+				setActiveOrg(org);
+			} else {
+				setActiveOrg(organisations?.[0]);
+			}
 		} else {
 			setActiveOrg(organisations?.[0]);
 		}

@@ -18,11 +18,11 @@ import Client from '@walletconnect/sign-client';
 import { calcWeight } from './calcWeight';
 import getEncodedAddress from './getEncodedAddress';
 import getMultisigInfo from './getMultisigInfo';
-import getSubstrateAddress from './getSubstrateAddress';
-import inputToBn from './inputToBn';
+// import getSubstrateAddress from './getSubstrateAddress';
+// import inputToBn from './inputToBn';
 import notify from './notify';
 import sendNotificationToAddresses from './sendNotificationToAddresses';
-import transferFunds from './transferFunds';
+// import transferFunds from './transferFunds';
 import updateTransactionNote from './updateTransactionNote';
 import wcSignTransaction from './wc_signTransaction';
 
@@ -111,14 +111,14 @@ export default async function approveAddProxy({
 			`Please Sign To Add A Small (${chainProperties[network].existentialDeposit} ${chainProperties[network].tokenSymbol}) Existential Deposit To Make Your Multisig Onchain.`
 		);
 		try {
-			await transferFunds({
-				amount: inputToBn(`${chainProperties[network].existentialDeposit}`, network, false)[0],
-				api,
-				network,
-				recepientAddress: multisigData.address,
-				senderAddress: getSubstrateAddress(approvingAddress) || approvingAddress,
-				setLoadingMessages
-			});
+			// await transferFunds({
+			// amount: inputToBn(`${chainProperties[network].existentialDeposit}`, network, false)[0],
+			// api,
+			// network,
+			// recepientAddress: multisigData.address,
+			// senderAddress: getSubstrateAddress(approvingAddress) || approvingAddress,
+			// setLoadingMessages
+			// });
 		} catch (error) {
 			console.log(error);
 		}

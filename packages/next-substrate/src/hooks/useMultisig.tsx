@@ -1,3 +1,6 @@
+
+'use client';
+
 import { IMultisigAddress } from '@next-common/types';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 

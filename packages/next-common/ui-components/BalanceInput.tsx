@@ -5,7 +5,6 @@
 'use client';
 
 import { Dropdown, Form, Input, Tooltip } from 'antd';
-import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import BN from 'bn.js';
 import { useEffect, useState } from 'react';
 import { useGlobalCurrencyContext } from '@next-substrate/context/CurrencyContext';
@@ -18,6 +17,7 @@ import { ParachainIcon } from '@next-substrate/app/components/NetworksDropdown/N
 
 import formatBalance from '@next-substrate/utils/formatBalance';
 import { CircleArrowDownIcon, WarningCircleIcon } from './CustomIcons';
+import { ItemType } from 'antd/es/menu/interface';
 
 interface Props {
 	className?: string;
