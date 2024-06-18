@@ -39,6 +39,7 @@
     "@thirdweb-dev/react": "^3.14.40",
     "@thirdweb-dev/sdk": "^3.10.59",
     "@types/jest": "^27.0.1",
+    "@typescript-eslint/eslint-plugin": "^6.4.0",
     "add": "^2.0.6",
     "antd": "5.11.0",
     "assert": "^2.0.0",
@@ -48,6 +49,9 @@
     "chart.js": "^4.4.1",
     "crypto-browserify": "^3.12.0",
     "dayjs": "^1.11.9",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-promise": "^6.0.0",
+    "eslint-plugin-react": "^7.34.2",
     "eth-sig-util": "^3.0.1",
     "ethers": "5.7.0",
     "firebase-admin": "^11.11.0",
@@ -79,16 +83,22 @@
     "yarn": "^1.22.21"
   },
   "devDependencies": {
+    "@eslint/eslintrc": "^3.1.0",
+    "@eslint/js": "^9.5.0",
     "@types/node": "latest",
     "@types/react": "^18.2.28",
     "@types/react-dom": "^18.2.13",
     "@types/uuid": "^9.0.4",
     "autoprefixer": "^10.4.16",
-    "eslint": "latest",
+    "eslint": "^8.0.1",
     "eslint-config-next": "latest",
+    "eslint-config-standard-with-typescript": "^43.0.1",
+    "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
+    "globals": "^15.6.0",
     "postcss": "^8.4.31",
     "raw-loader": "^4.0.2",
     "tailwindcss": "3.3.3",
-    "typescript": "latest"
+    "typescript": "*",
+    "typescript-eslint": "^7.13.1"
   }
 }
