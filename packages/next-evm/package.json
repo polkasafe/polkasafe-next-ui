@@ -92,7 +92,6 @@
     "autoprefixer": "^10.4.16",
     "eslint": "^8.0.1",
     "eslint-config-next": "latest",
-    "eslint-config-standard-with-typescript": "^43.0.1",
     "eslint-plugin-n": "^15.0.0 || ^16.0.0 ",
     "globals": "^15.6.0",
     "postcss": "^8.4.31",
