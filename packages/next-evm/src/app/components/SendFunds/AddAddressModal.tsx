@@ -18,12 +18,14 @@ const AddAddressModal = ({
 	defaultAddress,
 	showAddressModal,
 	setShowAddressModal,
-	setAutoCompleteAddresses
+	setAutoCompleteAddresses,
+	onComplete
 }: {
 	defaultAddress: string;
 	showAddressModal: boolean;
 	setShowAddressModal: React.Dispatch<React.SetStateAction<boolean>>;
 	setAutoCompleteAddresses: React.Dispatch<React.SetStateAction<DefaultOptionType[]>>;
+	onComplete?: (address: string) => void;
 }) => {
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [addAddressName, setAddAddressName] = useState('');
@@ -54,13 +56,20 @@ const AddAddressModal = ({
 				...prev,
 				addressBook: newAddresses
 			}));
+			setShowAddressModal(false);
+			queueNotification({
+				header: 'Successful!',
+				message: 'Your Address has been Added.',
+				status: NotificationStatus.SUCCESS
+			});
+			onComplete?.(defaultAddress);
+		} else {
+			queueNotification({
+				header: 'Failed!',
+				message: 'There has been an error adding your Address.',
+				status: NotificationStatus.ERROR
+			});
 		}
-		setShowAddressModal(false);
-		queueNotification({
-			header: 'Successful!',
-			message: 'Your Address has been Added.',
-			status: NotificationStatus.SUCCESS
-		});
 	};
 	return (
 		<ModalComponent

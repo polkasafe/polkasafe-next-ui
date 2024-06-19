@@ -480,7 +480,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								decodedCallData.method === 'multiSend'
 									? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
 											(item: any) => item?.dataDecoded?.parameters?.[1]?.value
-									  )
+										)
 									: txInfo?.transferInfo?.value || String(amount_token)
 							}
 							approvals={approvals}
@@ -489,7 +489,7 @@ const Transaction: FC<IHistoryTransactions> = ({
 								decodedCallData.method === 'multiSend'
 									? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
 											(item: any) => item?.dataDecoded?.parameters?.[0]?.value
-									  )
+										)
 									: txInfo?.recipient?.value || to.toString() || ''
 							}
 							callHash={txHash || ''}
@@ -502,8 +502,8 @@ const Transaction: FC<IHistoryTransactions> = ({
 								type === 'addOwnerWithThreshold'
 									? decodedData.parameters?.[0]?.value
 									: type === 'removeOwner'
-									? decodedData.parameters?.[1]?.value
-									: ''
+										? decodedData.parameters?.[1]?.value
+										: ''
 							}
 							multiSendTokens={tokenDetailsArray}
 							tokenSymbol={txInfo?.transferInfo?.tokenSymbol}

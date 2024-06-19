@@ -335,8 +335,8 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 										!threshold || threshold < 2
 											? 'Threshold Must Be More Than 1.'
 											: threshold > signatories.length && signatories.length > 1
-											? 'Threshold Must Be Less Than Or Equal To Selected Signatories.'
-											: ''
+												? 'Threshold Must Be Less Than Or Equal To Selected Signatories.'
+												: ''
 									}
 									className='border-0 outline-0 my-0 p-0'
 									validateStatus={

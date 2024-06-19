@@ -117,8 +117,8 @@ const BalanceInput = ({
 							!isValidInput
 								? 'Please input a valid value'
 								: insufficientBalance
-								? 'Insufficient Balance in Sender Account.'
-								: amountLessThanReq && `Amount less than Requested ($${formatBalance(requestedAmount)})`
+									? 'Insufficient Balance in Sender Account.'
+									: amountLessThanReq && `Amount less than Requested ($${formatBalance(requestedAmount)})`
 						}
 					>
 						<div className='flex items-center h-[50px]'>

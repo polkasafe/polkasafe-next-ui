@@ -143,7 +143,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 									tokenAddress: nft.address,
 									tokenId: nft.id,
 									tokenNameWithID: nft.name
-							  }))
+								}))
 							: [];
 
 					setAllAssets((prev) => ({ ...prev, [account.address]: { assets, fiatTotal: tokenInfo.fiatTotal || '0' } }));

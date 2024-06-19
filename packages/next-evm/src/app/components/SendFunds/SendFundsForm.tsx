@@ -150,6 +150,7 @@ const SendFundsForm = ({
 
 	const [isSimulationSuccess, setIsSimulationSuccess] = useState<boolean>(false);
 	const [isSimulationFailed, setIsSimulationFailed] = useState<boolean>(false);
+
 	const [simulationFailedReason, setSimulationFailedReason] = useState<string>('');
 
 	const [simulationId, setSimulationId] = useState<string>('');
@@ -328,13 +329,7 @@ const SendFundsForm = ({
 			if (!recipientAndAmount) return;
 
 			recipientAndAmount.forEach((item, i) => {
-				if (
-					item.recipient &&
-					(!isValidWeb3Address(item.recipient) ||
-						recipientAndAmount.indexOf(
-							recipientAndAmount.find((a) => item.recipient === a.recipient) as IRecipientAndAmount
-						) !== i)
-				) {
+				if (item.recipient && !isValidWeb3Address(item.recipient)) {
 					setValidRecipient((prev) => {
 						const copyArray = [...prev];
 						copyArray[i] = false;
@@ -707,6 +702,8 @@ const SendFundsForm = ({
 										) : (
 											<AutoComplete
 												autoFocus
+												defaultOpen
+												className='[&>div>span>input]:px-[12px]'
 												filterOption={(inputValue, options) => {
 													return inputValue && options?.value ? String(options?.value) === inputValue : true;
 												}}
@@ -800,6 +797,7 @@ const SendFundsForm = ({
 												setShowAddressModal={setShowAddressModal}
 												setAutoCompleteAddresses={setAutoCompleteAddresses}
 												defaultAddress={recipient}
+												onComplete={(a) => onRecipientChange(a, i)}
 											/>
 											<div className='w-[55%]'>
 												<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
@@ -835,6 +833,8 @@ const SendFundsForm = ({
 														) : (
 															<AutoComplete
 																autoFocus
+																defaultOpen
+																className='[&>div>span>input]:px-[12px]'
 																filterOption={(inputValue, options) => {
 																	return inputValue && options?.value ? String(options?.value) === inputValue : true;
 																}}
@@ -849,12 +849,7 @@ const SendFundsForm = ({
 																		</Button>
 																	)
 																}
-																options={autocompleteAddresses.filter(
-																	(item) =>
-																		!recipientAndAmount.some(
-																			(r) => r.recipient && item.value && r.recipient === (String(item.value) || '')
-																		)
-																)}
+																options={autocompleteAddresses}
 																id='recipient'
 																placeholder='Send to Address..'
 																onChange={(value) => onRecipientChange(value, i)}

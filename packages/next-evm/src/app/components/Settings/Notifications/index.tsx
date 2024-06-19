@@ -248,11 +248,11 @@ const Notifications = () => {
 				? {
 						...notification_preferences.channelPreferences,
 						[channel]: { enabled: false, handle: '', name: channel, verification_token: '', verified: false }
-				  }
+					}
 				: {
 						...notification_preferences.channelPreferences,
 						[channel]: { ...notification_preferences.channelPreferences?.[channel], enabled }
-				  };
+					};
 
 			const updateNotificationChannelRes = await fetch(
 				`${FIREBASE_FUNCTIONS_URL}/updateNotificationChannelPreferencesEth`,

@@ -82,7 +82,7 @@ const Exchange = ({ className }: { className?: string }) => {
 							{token?.name}
 						</span>
 					)
-			  }))
+				}))
 			: [];
 
 	const onConfirm = () => {
@@ -182,8 +182,8 @@ const Exchange = ({ className }: { className?: string }) => {
 									coinAmount && Number.isNaN(Number(coinAmount))
 										? 'Please enter a valid Amount'
 										: onrampFlowType === EOnramp.SELL &&
-										  Number(coinAmount) > Number(maxAmount) &&
-										  'InSufficient Balance in Multisig'
+											Number(coinAmount) > Number(maxAmount) &&
+											'InSufficient Balance in Multisig'
 								}
 							>
 								<div className='flex items-center h-[50px]'>

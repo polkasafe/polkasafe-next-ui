@@ -544,8 +544,8 @@ const Transaction: FC<ITransactionProps> = ({
 									{!approvals.includes(address)
 										? 'Needs Your Confirmation'
 										: approvals.length === threshold
-										? 'Awaiting Execution'
-										: 'Awaiting Confirmations'}{' '}
+											? 'Awaiting Execution'
+											: 'Awaiting Confirmations'}{' '}
 									({approvals.length}/{threshold})
 								</span>
 								<span className='text-white text-sm'>
@@ -572,15 +572,15 @@ const Transaction: FC<ITransactionProps> = ({
 							decodedCallData.method === 'multiSend'
 								? decodedCallData?.parameters?.[0]?.valueDecoded?.map(
 										(item: any) => item?.dataDecoded?.parameters?.[1]?.value
-								  )
+									)
 								: txInfo?.transferInfo?.value || value
 						}
 						addressAddOrRemove={
 							txType === 'addOwnerWithThreshold'
 								? decodedCallData.parameters?.[0]?.value
 								: txType === 'removeOwner'
-								? decodedCallData.parameters?.[1]?.value
-								: ''
+									? decodedCallData.parameters?.[1]?.value
+									: ''
 						}
 						callHash={callHash}
 						recipientAddress={

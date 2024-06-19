@@ -48,6 +48,7 @@ const addToAddressBook = async ({
 			error: string;
 		};
 		if (addAddressError) {
+			console.log('error', addAddressError);
 			return null;
 		}
 

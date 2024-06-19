@@ -176,13 +176,13 @@ const TreasuryAnalytics = () => {
 								totalOutgoingUSD: orgTreasury[organisationId].totalOutgoingUSD + totalOutgoingUSD,
 								incomingTransactions: [...orgTreasury[organisationId].incomingTransactions, ...incomingTxns],
 								outgoingTransactions: [...orgTreasury[organisationId].outgoingTransactions, ...outgoingTxns]
-						  }
+							}
 						: {
 								totalIncomingUSD,
 								totalOutgoingUSD,
 								incomingTransactions: incomingTxns,
 								outgoingTransactions: outgoingTxns
-						  },
+							},
 					[`${multisig.address}_${multisig.network}`]: {
 						totalIncomingUSD,
 						totalOutgoingUSD,
