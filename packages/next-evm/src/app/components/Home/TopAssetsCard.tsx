@@ -35,11 +35,11 @@ const TopAssetsCard = ({
 					balance_usd: Number(item.balance_usd),
 					tokenName: item.symbol,
 					tokenSymbol: item.name
-			  }))
+				}))
 			: organisationBalance &&
-			  organisationBalance?.tokens &&
-			  Object.keys(organisationBalance.tokens)?.length > 0 &&
-			  Object.keys(organisationBalance.tokens)?.map((item) => {
+				organisationBalance?.tokens &&
+				Object.keys(organisationBalance.tokens)?.length > 0 &&
+				Object.keys(organisationBalance.tokens)?.map((item) => {
 					const balance = organisationBalance.tokens[item].balance_token;
 					const balanceUSD = organisationBalance.tokens[item].balance_usd;
 					const { name } = organisationBalance.tokens[item];
@@ -50,7 +50,7 @@ const TopAssetsCard = ({
 						tokenName: name,
 						tokenSymbol
 					};
-			  });
+				});
 	const sortedData = dataArray
 		?.sort((a, b) => a.balance - b.balance)
 		?.reverse()

@@ -150,6 +150,7 @@ const SendFundsForm = ({
 
 	const [isSimulationSuccess, setIsSimulationSuccess] = useState<boolean>(false);
 	const [isSimulationFailed, setIsSimulationFailed] = useState<boolean>(false);
+
 	const [simulationFailedReason, setSimulationFailedReason] = useState<string>('');
 
 	const [simulationId, setSimulationId] = useState<string>('');
@@ -328,10 +329,7 @@ const SendFundsForm = ({
 			if (!recipientAndAmount) return;
 
 			recipientAndAmount.forEach((item, i) => {
-				if (
-					item.recipient &&
-					(!isValidWeb3Address(item.recipient))
-				) {
+				if (item.recipient && !isValidWeb3Address(item.recipient)) {
 					setValidRecipient((prev) => {
 						const copyArray = [...prev];
 						copyArray[i] = false;
@@ -799,7 +797,7 @@ const SendFundsForm = ({
 												setShowAddressModal={setShowAddressModal}
 												setAutoCompleteAddresses={setAutoCompleteAddresses}
 												defaultAddress={recipient}
-												onComplete={(address) => onRecipientChange(address, i)}
+												onComplete={(a) => onRecipientChange(a, i)}
 											/>
 											<div className='w-[55%]'>
 												<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>

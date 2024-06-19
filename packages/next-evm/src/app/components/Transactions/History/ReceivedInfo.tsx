@@ -84,7 +84,7 @@ const ReceivedInfo: FC<IReceivedInfoProps> = ({
 										? ethers.utils.formatUnits(
 												BigInt(!Number.isNaN(item.value) ? item.value : 0).toString(),
 												tokenDetialsArray?.[i]?.tokenDecimals || chainProperties[network].decimals
-										  )
+											)
 										: '?'}{' '}
 									{tokenDetialsArray?.[i]?.tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 									{item.value && !Number.isNaN(item.value) && Number(usdValue[i]) !== 0 && (

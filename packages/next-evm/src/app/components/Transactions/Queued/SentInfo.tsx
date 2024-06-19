@@ -147,7 +147,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 										? ethers.utils.formatUnits(
 												BigInt(!Number.isNaN(amount) ? amount : 0).toString(),
 												tokenDecimals || chainProperties[network].decimals
-										  )
+											)
 										: '?'}{' '}
 									{tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 									{amount && !Number.isNaN(amount) && !Array.isArray(amount) && (
@@ -183,7 +183,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 										? ethers.utils.formatUnits(
 												BigInt(!Number.isNaN(amount[i]) ? amount[i] : 0).toString(),
 												multiSendTokens?.[i]?.tokenDecimals || tokenDecimals || chainProperties[network].decimals
-										  )
+											)
 										: 0;
 									return (
 										<>

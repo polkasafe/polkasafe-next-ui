@@ -63,8 +63,7 @@ const AddAddressModal = ({
 				status: NotificationStatus.SUCCESS
 			});
 			onComplete?.(defaultAddress);
-		}
-		else {
+		} else {
 			queueNotification({
 				header: 'Failed!',
 				message: 'There has been an error adding your Address.',

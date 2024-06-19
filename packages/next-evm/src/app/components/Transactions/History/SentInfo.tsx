@@ -175,7 +175,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 													? ethers.utils.formatUnits(
 															String(amount[i]),
 															multiSendTokens?.[i]?.tokenDecimals || tokenDecimals || chainProperties[network].decimals
-													  )
+														)
 													: '?'}{' '}
 												{multiSendTokens?.[i]?.tokenSymbol || tokenSymbol || chainProperties[network].tokenSymbol}{' '}
 												{amount[i] &&

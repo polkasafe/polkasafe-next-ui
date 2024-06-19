@@ -50,14 +50,14 @@ const BalanceHistory = ({
 		startDate && endDate
 			? sortedIncomingTxns.filter(
 					(item) => dayjs(item.timestamp).isBefore(dayjs(endDate)) && dayjs(item.timestamp).isAfter(dayjs(startDate))
-			  )
+				)
 			: sortedIncomingTxns;
 
 	const filterredOutgoingTxns =
 		startDate && endDate
 			? sortedOutgoingTxns.filter(
 					(item) => dayjs(item.timestamp).isBefore(dayjs(endDate)) && dayjs(item.timestamp).isAfter(dayjs(startDate))
-			  )
+				)
 			: sortedOutgoingTxns;
 
 	const tokensData: ITokenData = {};

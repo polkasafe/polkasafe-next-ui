@@ -66,7 +66,7 @@ const EditField = ({
 							</div>
 						),
 						value: option.optionName
-				  }))
+					}))
 				: []
 		);
 	}, [dropdownState]);
