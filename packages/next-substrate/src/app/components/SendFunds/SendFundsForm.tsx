@@ -18,7 +18,13 @@ import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import { chainProperties, networks } from '@next-common/global/networkConstants';
+import {
+	chainProperties,
+	crossChainNetwork,
+	Network,
+	networkMappingObject,
+	networks
+} from '@next-common/global/networkConstants';
 import {
 	EFieldType,
 	IMultisigAddress,
@@ -75,6 +81,9 @@ import AddAddressModal from './AddAddressModal';
 import SetIdentity from './SetIdentity';
 import Delegate from './Delegate';
 import SelectSigner from '../SelectSigner';
+import { sendXCMTransfer } from './utils/sendXCMTransfer';
+import { api } from 'avail-js-sdk';
+import executeTx from '../Apps/CreateProposal/utils/executeTx';
 
 export enum ETransactionType {
 	SEND_TOKEN = 'Send Token',
@@ -106,6 +115,7 @@ const SendFundsForm = ({
 	const { getCache, setCache } = useCache();
 	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
 	const { client, session } = useWalletConnectContext();
+	const [xcmSelected, setXcmSelected] = useState<boolean>(false);
 
 	const [initiatorAddress, setInitiatorAddress] = useState<string>(address);
 
@@ -185,6 +195,9 @@ const SendFundsForm = ({
 		qrAddress: '',
 		qrPayload: new Uint8Array()
 	}));
+
+	const xcmSupported = crossChainNetwork?.[network]?.supportedNetworks?.length > 0 ? true : false;
+	const [destinationNetwork, setDestinationNetwork] = useState<Network | null>(null);
 
 	const multisigOptionsWithProxy: IMultisigAddress[] = [];
 
@@ -491,36 +504,58 @@ const SendFundsForm = ({
 		try {
 			let queueItemData: IMultiTransferResponse = {} as any;
 			if (transactionType === ETransactionType.SEND_TOKEN) {
-				if (recipientAndAmount.some((item) => item.recipient === '' || item.amount.isZero()) || !amount) {
-					queueNotification({
-						header: 'Error!',
-						message: 'Invalid Input.',
-						status: NotificationStatus.ERROR
+				if (xcmSelected) {
+					const data = await sendXCMTransfer({
+						api: apis[network].api,
+						fromChain: network,
+						toChain: destinationNetwork,
+						currency: chainProperties[network]?.tokenSymbol,
+						amount: recipientAndAmount[0].amount.toString(),
+						destinationAddress: recipientAndAmount[0].recipient
 					});
-					setLoading(false);
-					return;
+					queueItemData = await executeTx({
+						api: apis[network].api,
+						apiReady: apis[network].apiReady,
+						network,
+						tx: data,
+						address,
+						isProxy,
+						multisig,
+						tip,
+						setLoadingMessages
+					});
+				} else {
+					if (recipientAndAmount.some((item) => item.recipient === '' || item.amount.isZero()) || !amount) {
+						queueNotification({
+							header: 'Error!',
+							message: 'Invalid Input.',
+							status: NotificationStatus.ERROR
+						});
+						setLoading(false);
+						return;
+					}
+					queueItemData = await initMultisigTransfer({
+						addToQueue,
+						api: apis[network].api,
+						attachments: subfieldAttachments,
+						initiatorAddress,
+						isProxy,
+						loggedInWallet,
+						multisig,
+						network,
+						note,
+						recipientAndAmount,
+						selectedProxy: selectedMultisig,
+						setLoadingMessages,
+						setOpenSignWithVaultModal,
+						setQrState,
+						tip,
+						transactionFields: transactionFieldsObject,
+						transferKeepAlive,
+						wc_client: client,
+						wc_session_topic: session?.topic
+					});
 				}
-				queueItemData = await initMultisigTransfer({
-					addToQueue,
-					api: apis[network].api,
-					attachments: subfieldAttachments,
-					initiatorAddress,
-					isProxy,
-					loggedInWallet,
-					multisig,
-					network,
-					note,
-					recipientAndAmount,
-					selectedProxy: selectedMultisig,
-					setLoadingMessages,
-					setOpenSignWithVaultModal,
-					setQrState,
-					tip,
-					transactionFields: transactionFieldsObject,
-					transferKeepAlive,
-					wc_client: client,
-					wc_session_topic: session?.topic
-				});
 			} else {
 				queueItemData = await customCallDataTransaction({
 					api: apis[network].api,
@@ -807,6 +842,41 @@ const SendFundsForm = ({
 							/>
 						) : (
 							<section className=''>
+								{xcmSupported && (
+									<div className='flex justify-start items-center my-4 gap-3'>
+										<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
+											Cross Chain Transfer
+											<Switch
+												checked={xcmSelected}
+												onChange={(checked) => {
+													setXcmSelected(checked);
+													setRecipientAndAmount([{ amount: new BN(0), recipient: '' }]);
+												}}
+												size='small'
+												className='text-primary'
+											/>
+										</label>
+										{xcmSelected && (
+											<Dropdown
+												trigger={['click']}
+												className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer'
+												menu={{
+													items: [
+														...crossChainNetwork[network].supportedNetworks.map((c) => ({
+															key: c,
+															label: <span className='text-white capitalize'>{c.split('-').join(' ')}</span>
+														}))
+													],
+													onClick: (e) => setDestinationNetwork(e.key)
+												}}
+											>
+												<div className='flex justify-between items-center text-white'>
+													{destinationNetwork ? destinationNetwork : 'Select Network'}
+												</div>
+											</Dropdown>
+										)}
+									</div>
+								)}
 								<div className='flex items-start gap-x-[10px]'>
 									<div>
 										<div className='flex flex-col gap-y-3 mb-2'>
@@ -921,13 +991,15 @@ const SendFundsForm = ({
 												</article>
 											))}
 										</div>
-										<Button
-											icon={<PlusCircleOutlined className='text-primary' />}
-											className='bg-transparent p-0 border-none outline-none text-primary text-sm flex items-center'
-											onClick={onAddRecipient}
-										>
-											Add Another Recipient
-										</Button>
+										{!xcmSelected && (
+											<Button
+												icon={<PlusCircleOutlined className='text-primary' />}
+												className='bg-transparent p-0 border-none outline-none text-primary text-sm flex items-center'
+												onClick={onAddRecipient}
+											>
+												Add Another Recipient
+											</Button>
+										)}
 									</div>
 									<div className='flex flex-col gap-y-4 max-sm:hidden'>
 										<article className='w-[412px] flex items-center'>
@@ -1277,7 +1349,7 @@ const SendFundsForm = ({
 									transactionFields[category].subfields[key].subfieldType === EFieldType.ATTACHMENT
 										? transactionFields[category].subfields[key].required && !subfieldAttachments[key]?.file
 										: !transactionFieldsObject.subfields[key]?.value &&
-										  transactionFields[category].subfields[key].required
+											transactionFields[category].subfields[key].required
 								)
 							}
 							loading={loading}
