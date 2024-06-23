@@ -245,3 +245,125 @@ export const onrampTokenProperties: {
 		logo: acalaLogo
 	}
 };
+
+export const crossChainNetwork = {
+	[networks.ASTAR]: {
+		name: 'astar',
+		supportedNetworks: ['acala', 'moonbeam', 'shiden', 'parallel', 'phala']
+	},
+	// [networks.AVAIL]: {
+	// 	name: 'avail-goldberg',
+	// 	supportedNetworks: [
+	// 		'goldberg' // Avail-specific parachain
+	// 	]
+	// },
+	[networks.KHALA]: {
+		name: 'khala',
+		supportedNetworks: ['karura', 'moonriver', 'bifrost', 'parallel-heiko']
+	},
+	[networks.KUSAMA]: {
+		name: 'kusama',
+		supportedNetworks: [
+			'karura',
+			'moonriver',
+			'bifrost',
+			'parallel-heiko',
+			'shiden',
+			'statemine',
+			'kilt-spiritnet',
+			'crust-shadow',
+			'calamari',
+			'khala'
+		]
+	},
+	[networks.PHALA]: {
+		name: 'phala',
+		supportedNetworks: [
+			'khala' // Phala's sister network on Kusama
+		]
+	},
+	[networks.POLKADOT]: {
+		name: 'polkadot',
+		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala', 'statemint']
+	},
+	[networks.ROCOCO]: {
+		name: 'rococo',
+		supportedNetworks: [
+			'basilisk' // Rococo is a testnet for Polkadot and Kusama parachains
+		]
+	},
+	[networks.STATEMINE]: {
+		name: 'assethub-kusama',
+		supportedNetworks: ['karura', 'moonriver', 'shiden', 'bifrost', 'parallel-heiko', 'calamari', 'kilt-spiritnet']
+	},
+	[networks.STATEMINT]: {
+		name: 'assethub-polkadot',
+		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala']
+	},
+	[networks.TURING]: {
+		name: 'avail-turing',
+		supportedNetworks: []
+	},
+	[networks.WESTEND]: {
+		name: 'westend',
+		supportedNetworks: []
+	}
+};
+
+export const networkMappingObject = {
+	'asset-hub-polkadot': 'AssetHubPolkadot',
+	acala: 'Acala',
+	astar: 'Astar',
+	'bifrost-polkadot': 'BifrostPolkadot',
+	bitgreen: 'Bitgreen',
+	centrifuge: 'Centrifuge',
+	'composable-finance': 'ComposableFinance',
+	darwinia: 'Darwinia',
+	'hydra-dx': 'HydraDX',
+	interlay: 'Interlay',
+	litentry: 'Litentry',
+	moonbeam: 'Moonbeam',
+	parallel: 'Parallel',
+	'asset-hub-kusama': 'AssetHubKusama',
+	'coretime-kusama': 'CoretimeKusama',
+	encointer: 'Encointer',
+	altair: 'Altair',
+	amplitude: 'Amplitude',
+	bajun: 'Bajun',
+	basilisk: 'Basilisk',
+	'bifrost-kusama': 'BifrostKusama',
+	pioneer: 'Pioneer',
+	calamari: 'Calamari',
+	'crust-shadow': 'CrustShadow',
+	crab: 'Crab',
+	imbue: 'Imbue',
+	integritee: 'Integritee',
+	'invarch-tinker': 'InvArchTinker',
+	karura: 'Karura',
+	kintsugi: 'Kintsugi',
+	litmus: 'Litmus',
+	mangata: 'Mangata',
+	moonriver: 'Moonriver',
+	'parallel-heiko': 'ParallelHeiko',
+	picasso: 'Picasso',
+	quartz: 'Quartz',
+	robonomics: 'Robonomics',
+	shiden: 'Shiden',
+	turing: 'Turing',
+	unique: 'Unique',
+	crust: 'Crust',
+	manta: 'Manta',
+	nodle: 'Nodle',
+	'neuro-web': 'NeuroWeb',
+	pendulum: 'Pendulum',
+	polkadex: 'Polkadex',
+	zeitgeist: 'Zeitgeist',
+	collectives: 'Collectives',
+	khala: 'Khala',
+	phala: 'Phala',
+	subsocial: 'Subsocial',
+	'kilt-spiritnet': 'KiltSpiritnet',
+	curio: 'Curio',
+	polkadot: 'Polkadot',
+	kusama: 'Kusama'
+};
