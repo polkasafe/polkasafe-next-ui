@@ -70,7 +70,7 @@ const AppModal = ({
 						if (appUrl && newTab) {
 							window.open(`${appUrl}`, '_blank');
 						} else {
-							setIframeVisibility?.(appUrl);
+							appUrl && setIframeVisibility(appUrl);
 						}
 						onCancel();
 					}}

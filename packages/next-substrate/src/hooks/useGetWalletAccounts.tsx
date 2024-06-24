@@ -6,7 +6,7 @@
 
 import { Injected, InjectedAccount, InjectedWindow } from '@polkadot/extension-inject/types';
 import { useEffect, useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import { ApiContext, useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import APP_NAME from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';

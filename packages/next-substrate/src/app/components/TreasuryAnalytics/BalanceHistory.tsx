@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 import { useMultisigAssetsContext } from '@next-substrate/context/MultisigAssetsContext';
 import formatBalance from '@next-substrate/utils/formatBalance';
 import React from 'react';
@@ -46,14 +47,14 @@ const BalanceHistory = ({
 		startDate && endDate
 			? sortedIncomingTxns.filter(
 					(item) => dayjs(item.timestamp).isBefore(dayjs(endDate)) && dayjs(item.timestamp).isAfter(dayjs(startDate))
-				)
+			  )
 			: sortedIncomingTxns;
 
 	const filterredOutgoingTxns =
 		startDate && endDate
 			? sortedOutgoingTxns.filter(
 					(item) => dayjs(item.timestamp).isBefore(dayjs(endDate)) && dayjs(item.timestamp).isAfter(dayjs(startDate))
-				)
+			  )
 			: sortedOutgoingTxns;
 
 	const tokensData: ITokenData = {};

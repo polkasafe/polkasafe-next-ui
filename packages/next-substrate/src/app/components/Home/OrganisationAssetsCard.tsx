@@ -88,7 +88,7 @@ const OrganisationAssetsCard = ({
 							{allCurrencyPrices[currencyProperties[currency]?.symbol]
 								? formatBalance(
 										Number(fiatBalanceInUSD) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
-									)
+								  )
 								: fiatBalanceInUSD}{' '}
 							{allCurrencyPrices[currencyProperties[currency]?.symbol]?.code}
 						</p>

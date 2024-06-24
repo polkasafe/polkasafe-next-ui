@@ -37,7 +37,7 @@ const TopAssetsCard = ({
 						tokenName: network,
 						tokenSymbol: chainProperties[network].tokenSymbol
 					}
-				]
+			  ]
 			: (organisationBalance &&
 					organisationBalance?.tokens &&
 					Object.keys(organisationBalance.tokens)?.length > 0 &&
@@ -53,7 +53,7 @@ const TopAssetsCard = ({
 							tokenSymbol
 						};
 					})) ||
-				[];
+			  [];
 	const sortedData = dataArray
 		?.sort((a, b) => a.balance - b.balance)
 		?.reverse()

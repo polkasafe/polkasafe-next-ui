@@ -165,7 +165,7 @@ const TreasuryAnalytics = () => {
 						}
 					]}
 				/>
-				<div className='flex gap-x-3 max-sm:flex-col max-sm:gap-2 max-sm:mt-2'>
+				<div className='flex gap-x-3 w-full max-sm:flex-col max-sm:gap-2 max-sm:mt-2'>
 					<DatePicker.RangePicker
 						onChange={onRangeChange}
 						value={[startDate, endDate]}

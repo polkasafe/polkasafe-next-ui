@@ -28,9 +28,9 @@ const MultisigOverview = () => {
 	const activeMultisigData = activeMultisig
 		? activeOrg?.multisigs.find(
 				(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
-			)
+		  )
 		: undefined;
-
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [network, setNetwork] = useState<string>(
 		activeMultisigData?.network || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
 	);

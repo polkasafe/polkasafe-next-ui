@@ -3,7 +3,6 @@
 import React, { useEffect, useLayoutEffect, useState } from 'react';
 import * as am5 from '@amcharts/amcharts5';
 import * as am5xy from '@amcharts/amcharts5/xy';
-// eslint-disable-next-line @typescript-eslint/naming-convention
 import am5themes_Animated from '@amcharts/amcharts5/themes/Animated';
 import { ITreasuryTxns } from '@next-common/types';
 import dayjs from 'dayjs';

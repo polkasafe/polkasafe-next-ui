@@ -1,9 +1,8 @@
-/* eslint-disable sort-keys */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { Collapse, Divider, Modal } from 'antd';
+import { Button, Collapse, Divider, Modal } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
@@ -22,15 +21,15 @@ import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
-import { SyncOutlined } from '@ant-design/icons';
-import { BN } from 'bn.js';
-import inputToBn from '@next-substrate/utils/inputToBn';
 import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 
 import ReceivedInfo from './ReceivedInfo';
 import SentInfo from './SentInfo';
 import TransactionFields, { generateCategoryKey } from '../TransactionFields';
+import { SyncOutlined } from '@ant-design/icons';
 import SendFundsForm from '../../SendFunds/SendFundsForm';
+import { BN } from 'bn.js';
+import inputToBn from '@next-substrate/utils/inputToBn';
 
 dayjs.extend(LocalizedFormat);
 
@@ -89,6 +88,8 @@ const Transaction: FC<ITransaction> = ({
 
 		const callDataFunc = data.extrinsicFn;
 		setTxnParams({ method: `${callDataFunc?.method}`, section: `${callDataFunc?.section}` });
+
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [apis, callData, callHash, network]);
 
 	useEffect(() => {
@@ -120,7 +121,7 @@ const Transaction: FC<ITransaction> = ({
 				}
 				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
 				open={openTransactionModal}
-				className='w-auto md:min-w-[500px] scale-90'
+				className={`w-auto md:min-w-[500px] scale-90`}
 			>
 				<SendFundsForm
 					selectedMultisigAddress={from}

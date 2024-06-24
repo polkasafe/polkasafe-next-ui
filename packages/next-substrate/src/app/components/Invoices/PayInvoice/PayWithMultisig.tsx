@@ -56,7 +56,7 @@ const PayWithMultisig = ({
 	const [multisig, setMultisig] = useState<IMultisigAddress>(
 		activeOrg?.multisigs?.find(
 			(item) => item.address === activeMultisig || (item.proxy && checkMultisigWithProxy(item.proxy, activeMultisig))
-		) || ({} as IMultisigAddress)
+		) || {} as IMultisigAddress
 	);
 	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
 
@@ -94,26 +94,24 @@ const PayWithMultisig = ({
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
 		const m = activeOrg?.multisigs?.find(
-			(item) =>
-				item.address === selectedMultisig || (item.proxy && checkMultisigWithProxy(item.proxy, selectedMultisig))
+			(item) => item.address === selectedMultisig || (item.proxy && checkMultisigWithProxy(item.proxy, selectedMultisig))
 		);
 		setMultisig(m || activeOrg.multisigs[0]);
 		setNetwork(m?.network || activeOrg.multisigs[0].network);
 	}, [activeOrg, selectedMultisig]);
 
-	const multisigOptions: ItemType[] =
-		activeOrg?.multisigs?.map((item) => ({
-			key: JSON.stringify(item),
-			label: (
-				<AddressComponent
-					isMultisig
-					showNetworkBadge
-					network={item.network}
-					withBadge={false}
-					address={item.address}
-				/>
-			)
-		})) || [];
+	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
+		key: JSON.stringify(item),
+		label: (
+			<AddressComponent
+				isMultisig
+				showNetworkBadge
+				network={item.network}
+				withBadge={false}
+				address={item.address}
+			/>
+		)
+	})) || [];
 
 	useEffect(() => {
 		if (!requestedAmountInDollars || !allCurrencyPrices || !tokensUsdPrice) return;
@@ -188,9 +186,7 @@ const PayWithMultisig = ({
 			});
 			setTransactionData(queueItemData);
 			setLoading(false);
-			if (queueItemData?.callHash) {
-				await updateInvoice(queueItemData?.callHash);
-			}
+			queueItemData?.callHash && await updateInvoice(queueItemData?.callHash);
 			// setSuccess(true);
 		} catch (error) {
 			console.log(error);
@@ -228,12 +224,10 @@ const PayWithMultisig = ({
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
 								console.log('signature', data.signature);
-								if (qrResolve) {
-									qrResolve({
-										id: 0,
-										signature: data.signature
-									});
-								}
+								qrResolve && qrResolve({
+									id: 0,
+									signature: data.signature
+								});
 								setOpenSignWithVaultModal(false);
 							}
 						}}

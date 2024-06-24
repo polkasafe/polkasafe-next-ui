@@ -6,12 +6,6 @@
 /* eslint-disable sort-keys */
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-      env: {
-        POLKASAFE_FIREBASE_CONFIG: process.env.POLKASAFE_FIREBASE_CONFIG,
-        POLKASAFE_CURRENCY_API_KEY: process.env.POLKASAFE_CURRENCY_API_KEY,
-        NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY: process.env.NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY,
-        NEXT_PULIC_POLKASAFE_FIREBASE_CONFIG: process.env.NEXT_PULIC_POLKASAFE_FIREBASE_CONFIG,
-    },
     async headers() {
       return [
         {

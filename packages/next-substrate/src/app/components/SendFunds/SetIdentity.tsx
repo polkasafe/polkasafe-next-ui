@@ -29,7 +29,7 @@ const SetIdentity = ({
 		return val
 			? {
 					Raw: val
-				}
+			  }
 			: { none: null };
 	};
 
