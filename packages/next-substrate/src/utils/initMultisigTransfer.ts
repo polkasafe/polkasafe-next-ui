@@ -134,23 +134,23 @@ export default async function initMultisigTransfer({
 		isProxy && multisig.proxy
 			? api.tx.multisig.asMulti(multisig.threshold, otherSignatoriesSorted, TIME_POINT, tx, 0 as any)
 			: api.tx.multisig.asMulti.meta.args.length === 6
-			? api.tx.multisig.asMulti(
-					multisig.threshold,
-					otherSignatoriesSorted,
-					null,
-					transferBatchCall.method,
-					MAX_WEIGHT || (0 as any)
-			  )
-			: api.tx.multisig.asMulti(
-					multisig.threshold,
-					otherSignatoriesSorted,
-					null,
-					transferBatchCall.method,
-					(MAX_WEIGHT as any) || {
-						proofSize: 0,
-						refTime: 0
-					}
-			  );
+				? api.tx.multisig.asMulti(
+						multisig.threshold,
+						otherSignatoriesSorted,
+						null,
+						transferBatchCall.method,
+						MAX_WEIGHT || (0 as any)
+					)
+				: api.tx.multisig.asMulti(
+						multisig.threshold,
+						otherSignatoriesSorted,
+						null,
+						transferBatchCall.method,
+						(MAX_WEIGHT as any) || {
+							proofSize: 0,
+							refTime: 0
+						}
+					);
 
 	if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
 		try {

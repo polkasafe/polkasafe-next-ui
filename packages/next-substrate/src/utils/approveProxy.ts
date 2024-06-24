@@ -209,14 +209,14 @@ export default async function approveProxy({
 					multisigInfo.when,
 					callHash,
 					ZERO_WEIGHT
-			  )
+				)
 			: api.tx.multisig.asMulti(
 					multisig.threshold,
 					otherSignatoriesSorted,
 					multisigInfo.when,
 					callDataHex,
 					WEIGHT as any
-			  );
+				);
 
 	if (loggedInWallet === Wallet.WALLET_CONNECT && wc_client && wc_session_topic) {
 		try {

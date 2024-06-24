@@ -102,13 +102,10 @@ const Transaction: FC<ITransactionProps> = ({
 	const [customTx, setCustomTx] = useState<boolean>(false);
 
 	const [txnParams, setTxnParams] = useState<{ method: string; section: string }>({} as any);
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [approvals, setApprovals] = useState<string[]>(approvalsArray || []);
 
 	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
 		isQrHashed: false,
 		qrAddress: '',
@@ -275,7 +272,7 @@ const Transaction: FC<ITransactionProps> = ({
 									decodedCallData?.args?.calls?.[0]?.args.value ||
 									decodedCallData?.args?.call?.args?.calls?.[0]?.args?.value ||
 									0
-						  ),
+							),
 					api: apis[network].api,
 					approvals,
 					approvingAddress: initiatorAddress,
@@ -406,7 +403,6 @@ const Transaction: FC<ITransactionProps> = ({
 								paragraph={{ rows: 0 }}
 							/>
 						) : (
-							// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 							<div
 								onClick={() => {
 									toggleTransactionVisible(!transactionInfoVisible);
@@ -430,12 +426,12 @@ const Transaction: FC<ITransactionProps> = ({
 										{isProxyApproval
 											? 'Proxy'
 											: isProxyAddApproval
-											? 'Adding New Signatories to Multisig'
-											: isProxyRemovalApproval
-											? 'Remove Old Multisig From Proxy'
-											: customTx
-											? `${txnParams?.section}.${txnParams?.method}`
-											: 'Sent'}
+												? 'Adding New Signatories to Multisig'
+												: isProxyRemovalApproval
+													? 'Remove Old Multisig From Proxy'
+													: customTx
+														? `${txnParams?.section}.${txnParams?.method}`
+														: 'Sent'}
 									</span>
 									{!isProxyApproval && !isProxyAddApproval && !isProxyRemovalApproval && !customTx && (
 										<span className='flex items-center gap-x-[6px]'>
@@ -447,10 +443,10 @@ const Transaction: FC<ITransactionProps> = ({
 															network,
 															value: String(decodedCallData?.args?.value || decodedCallData?.args?.call?.args?.value),
 															withUnit: true
-													  })
+														})
 													: totalAmount
-													? `${totalAmount} ${token}`
-													: `? ${token}`}
+														? `${totalAmount} ${token}`
+														: `? ${token}`}
 											</span>
 										</span>
 									)}

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { IMultisigAddress } from '@next-common/types';

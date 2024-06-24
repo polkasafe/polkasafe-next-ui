@@ -57,8 +57,9 @@ const SingleTxn = ({
 		decodedCallData && (decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id)
 			? getSubstrateAddress(decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id)
 			: '';
-	const destAddressName = addressBook?.find((address) => getSubstrateAddress(address.address) === destSubstrateAddress)
-		?.name;
+	const destAddressName = addressBook?.find(
+		(address) => getSubstrateAddress(address.address) === destSubstrateAddress
+	)?.name;
 	const toText =
 		decodedCallData && destSubstrateAddress && destAddressName
 			? destAddressName
@@ -69,9 +70,9 @@ const SingleTxn = ({
 									decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id,
 									network
 								)
-						  )
+							)
 						: ''
-			  );
+				);
 
 	let batchCallRecipients: string[] = [];
 	if (decodedCallData && decodedCallData?.args?.calls) {
@@ -114,7 +115,7 @@ const SingleTxn = ({
 									{batchCallRecipients?.length
 										? batchCallRecipients?.map(
 												(a, index) => `${a}${index !== batchCallRecipients.length - 1 ? ', ' : ''}`
-										  )
+											)
 										: toText}
 								</span>
 							) : customTx ? (
@@ -156,8 +157,8 @@ const SingleTxn = ({
 							{!Number.isNaN(Number(transaction.amount_usd))
 								? (Number(transaction.amount_usd) * Number(currencyPrice)).toFixed(3)
 								: Number.isNaN(Number(amountUSD))
-								? '0.00'
-								: (Number(transaction.amount_token) * Number(amountUSD) * Number(currencyPrice)).toFixed(3)}{' '}
+									? '0.00'
+									: (Number(transaction.amount_token) * Number(amountUSD) * Number(currencyPrice)).toFixed(3)}{' '}
 							{currencyProperties[currency].symbol}
 						</p>
 					) : (

@@ -32,12 +32,12 @@ import BalanceInput from '@next-common/ui-components/BalanceInput';
 import AddressInput from '@next-common/ui-components/AddressInput';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
+import { ItemType } from 'antd/lib/menu/hooks/useItems';
+import { networks } from '@next-common/global/networkConstants';
 import executeTx from '../utils/executeTx';
 import { EEnactment, FormState, IAdvancedDetails, IEnactment } from '../types';
 import useCurrentBlock from '../../../../../hooks/useCurrentBlock';
 import createPreImage from '../utils/createPreimage';
-import { ItemType } from 'antd/lib/menu/hooks/useItems';
-import { networks } from '@next-common/global/networkConstants';
 
 interface ParamField {
 	name: string;

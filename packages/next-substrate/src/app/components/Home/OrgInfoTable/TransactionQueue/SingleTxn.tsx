@@ -22,7 +22,6 @@ interface IQueueTransactions {
 	transaction: IQueueItem;
 }
 const SingleTxn = ({
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	multisigAddress,
 	network,
 	transaction // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -63,8 +62,9 @@ const SingleTxn = ({
 		decodedCallData && (decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id)
 			? getSubstrateAddress(decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id)
 			: '';
-	const destAddressName = addressBook?.find((address) => getSubstrateAddress(address.address) === destSubstrateAddress)
-		?.name;
+	const destAddressName = addressBook?.find(
+		(address) => getSubstrateAddress(address.address) === destSubstrateAddress
+	)?.name;
 
 	const toText =
 		decodedCallData && destSubstrateAddress && destAddressName
@@ -76,9 +76,9 @@ const SingleTxn = ({
 									decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id,
 									network
 								)
-						  )
+							)
 						: ''
-			  );
+				);
 
 	let batchCallRecipients: string[] = [];
 	if (decodedCallData && decodedCallData?.args?.calls) {
@@ -123,7 +123,7 @@ const SingleTxn = ({
 									{batchCallRecipients.length
 										? batchCallRecipients?.map(
 												(a, index) => `${a}${index !== batchCallRecipients.length - 1 ? ', ' : ''}`
-										  )
+											)
 										: toText}
 								</span>
 							) : customTx ? (
@@ -160,7 +160,7 @@ const SingleTxn = ({
 										network,
 										value: String(decodedCallData?.args?.value || decodedCallData?.args?.call?.args?.value),
 										withUnit: true
-								  })
+									})
 								: `? ${chainProperties[network].tokenSymbol}`}
 						</h1>
 						{!Number.isNaN(Number(amountUSD)) &&

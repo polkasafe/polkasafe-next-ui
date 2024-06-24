@@ -124,7 +124,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 											network,
 											value: String(amount),
 											withUnit: true
-									  })
+										})
 									: `? ${chainProperties[network].tokenSymbol}`}{' '}
 								{!Number.isNaN(Number(amount_usd)) && amount && (
 									<span>
@@ -157,7 +157,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 								<p className='font-medium text-sm leading-[15px] text-white'>
 									{recipientAddresses
 										? activeOrg?.addressBook?.find((item) => item.address === recipientAddresses)?.name ||
-										  DEFAULT_ADDRESS_NAME
+											DEFAULT_ADDRESS_NAME
 										: '?'}
 								</p>
 								{recipientAddresses && (
@@ -200,7 +200,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 														network,
 														value: String(amount[i]),
 														withUnit: true
-												  })
+													})
 												: `? ${chainProperties[network].tokenSymbol}`}{' '}
 											{!Number.isNaN(Number(amount_usd)) && amount[i] && (
 												<span>
