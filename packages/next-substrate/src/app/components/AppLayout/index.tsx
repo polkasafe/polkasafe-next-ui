@@ -5,8 +5,7 @@
 'use client';
 
 import './styles.css';
-import { MessageOutlined } from '@ant-design/icons';
-import { Drawer, Layout, Badge, FloatButton } from 'antd';
+import { Drawer, Layout, Badge } from 'antd';
 import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -28,7 +27,6 @@ import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy
 import Footer from './Footer';
 import Menu from './Menu';
 import NavHeader from './NavHeader';
-import InAppChat from '../InAppChat';
 
 const { Content, Sider } = Layout;
 
@@ -39,6 +37,7 @@ export interface IRouteInfo {
 
 dayjs.extend(LocalizedFormat);
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 function AppLayout({ className, children }: { className?: string; children: React.ReactNode }) {
 	const { activeMultisig, multisigAddresses, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { setActiveMultisigContextState } = useActiveMultisigContext();
@@ -111,14 +110,6 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 
 	return (
 		<Layout className={className}>
-			<FloatButton.Group
-				trigger='click'
-				type='primary'
-				icon={<MessageOutlined />}
-			>
-				{/* <FloatButton /> */}
-				<InAppChat />
-			</FloatButton.Group>
 			<NavHeader
 				setSideDrawer={setSideDrawer}
 				sideDrawer={sideDrawer}

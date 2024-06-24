@@ -89,6 +89,9 @@ const ConnectWallet = () => {
 	};
 
 	useEffect(() => {
+		if (!apis || !apis[networks.WESTEND]?.apiReady) return;
+		const { api } = apis[networks.WESTEND];
+		console.log('api westend', (api as ApiPromise).genesisHash.toHex());
 		if (userID) {
 			if (organisations && organisations.length > 0) {
 				router.replace('/');
@@ -149,9 +152,9 @@ const ConnectWallet = () => {
 
 					const signRaw = injected && injected.signer && injected.signer.signRaw;
 					if (!signRaw) {
-						console.error('Signer not available');
+						console.error('Signer not available')
 						return;
-					}
+					};
 					setSigning(true);
 					const { signature: userSignature } = await signRaw({
 						address: substrateAddress,
@@ -398,7 +401,7 @@ const ConnectWallet = () => {
 
 				const signRaw = injected && injected.signer && injected.signer.signRaw;
 				if (!signRaw) {
-					console.error('Signer not available');
+					console.error('Signer not available')
 					return;
 				}
 				setSigning(true);
@@ -592,13 +595,11 @@ const ConnectWallet = () => {
 										if (data && data.signature && isHex(data.signature)) {
 											console.log('signature', data.signature);
 											setVaultSignature(data.signature);
-											if (qrResolve) {
-												qrResolve({
-													// eslint-disable-next-line no-plusplus
-													id: ++qrId,
-													signature: data.signature
-												});
-											}
+											qrResolve && qrResolve({
+												// eslint-disable-next-line no-plusplus
+												id: ++qrId,
+												signature: data.signature
+											});
 										}
 									}}
 								/>

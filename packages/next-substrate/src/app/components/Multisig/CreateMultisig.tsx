@@ -53,6 +53,8 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 	const { setUserDetailsContextState, address: userAddress, loggedInWallet } = useGlobalUserDetailsContext();
 	const { setOpenProxyModal } = useAddMultisigContext();
 	const { activeOrg } = useActiveOrgContext();
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [uploadSignatoriesJson, setUploadSignatoriesJson] = useState(false);
 
 	const [multisigName, setMultisigName] = useState<string>('');
@@ -368,12 +370,10 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
 								console.log('signature', data.signature);
-								if (qrResolve) {
-									qrResolve({
-										id: 0,
-										signature: data.signature
-									});
-								}
+								qrResolve({
+									id: 0,
+									signature: data.signature
+								});
 								setOpenSignWithVaultModal(false);
 							}
 						}}
@@ -414,7 +414,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 																setSignatories((prev) => [...prev, addAddress]);
 																setAddAddress('');
 															}
-														}
+													  }
 											}
 										>
 											<p className='font-normal text-sm'>Add</p>
@@ -501,8 +501,8 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 										!threshold || threshold < 2
 											? 'Threshold Must Be More Than 1.'
 											: threshold > signatories.length && signatories.length > 1
-												? 'Threshold Must Be Less Than Or Equal To Selected Signatories.'
-												: ''
+											? 'Threshold Must Be Less Than Or Equal To Selected Signatories.'
+											: ''
 									}
 									className='border-0 outline-0 my-0 p-0'
 									validateStatus={

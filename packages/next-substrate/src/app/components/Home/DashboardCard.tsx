@@ -231,8 +231,8 @@ const DashboardCard = ({
 								{hasProxy && isProxy
 									? getNameByProxy(currentMultisig, selectedProxy)
 									: multisigSettings?.[`${activeMultisig}_${currentMultisig?.network}`]?.name ||
-										currentMultisig?.name ||
-										DEFAULT_MULTISIG_NAME}
+									  currentMultisig?.name ||
+									  DEFAULT_MULTISIG_NAME}
 								<div
 									className={`px-2 py-[2px] rounded-md text-xs font-medium ${
 										hasProxy && isProxy ? 'bg-proxy-pink text-highlight' : 'bg-primary text-white'
@@ -324,7 +324,7 @@ const DashboardCard = ({
 									{isProxy
 										? shortenAddress(selectedProxy || '')
 										: activeMultisig &&
-											shortenAddress(getEncodedAddress(activeMultisig, currentMultisig?.network) || '')}
+										  shortenAddress(getEncodedAddress(activeMultisig, currentMultisig?.network) || '')}
 								</div>
 								<button
 									className='ml-2 mr-1'

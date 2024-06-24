@@ -34,9 +34,9 @@ const LinkMultisigStep = ({
 }) => {
 	const { address, multisigSettings } = useGlobalUserDetailsContext();
 	const [selectedNetwork, setSelectedNetwork] = useState(networks.POLKADOT);
-
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [loading, setLoading] = useState<boolean>(false);
-
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [openCreateMultisigModal, setOpenCreateMultisigModal] = useState<boolean>(false);
 	const [multisigs, setMultisigs] = useState<IMultisigAddress[]>([]);
 
@@ -216,7 +216,7 @@ const LinkMultisigStep = ({
 																	proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
 																		mp.address === multiProxy.address ? { ...mp, name } : mp
 																	)
-																}
+															  }
 															: lm
 													);
 													setLinkedMultisigs(payload);
@@ -233,7 +233,7 @@ const LinkMultisigStep = ({
 																		proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
 																			mp.address === multiProxy.address ? { ...mp, linked: false } : mp
 																		)
-																	}
+																  }
 																: lm
 														);
 														setLinkedMultisigs(payload);
@@ -259,7 +259,7 @@ const LinkMultisigStep = ({
 																		proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
 																			mp.address === multiProxy.address ? { ...mp, linked: true } : mp
 																		)
-																	}
+																  }
 																: lm
 														);
 														setLinkedMultisigs(payload);
@@ -356,7 +356,7 @@ const LinkMultisigStep = ({
 																		proxy: (typeof lm.proxy !== 'string' ? lm.proxy : []).map((mp) =>
 																			mp.address === multisigProxy.address ? { ...mp, name } : mp
 																		)
-																	}
+																  }
 																: lm
 														);
 														setMultisigs(payload);

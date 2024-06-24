@@ -219,12 +219,11 @@ const FundMultisig = ({
 					<QrScanSignature
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
-								if (qrResolve) {
-									qrResolve({
-										id: 0,
-										signature: data.signature
-									});
-								}
+								console.log('signature', data.signature);
+								qrResolve({
+									id: 0,
+									signature: data.signature
+								});
 								setOpenSignWithVaultModal(false);
 							}
 						}}

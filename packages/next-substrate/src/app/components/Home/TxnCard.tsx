@@ -262,7 +262,7 @@ const TxnCard = ({
 											(decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id)
 												? getSubstrateAddress(
 														decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id
-													)
+												  )
 												: '';
 										const destAddressName = addressBook?.find(
 											(address) => getSubstrateAddress(address.address) === destSubstrateAddress
@@ -279,9 +279,9 @@ const TxnCard = ({
 																		decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id,
 																		network
 																	)
-																)
+															  )
 															: ''
-													);
+												  );
 
 										let batchCallRecipients: string[] = [];
 										if (decodedCallData && decodedCallData?.args?.calls) {
@@ -325,7 +325,7 @@ const TxnCard = ({
 																	{batchCallRecipients.length
 																		? batchCallRecipients?.map(
 																				(a, index) => `${a}${index !== batchCallRecipients.length - 1 ? ', ' : ''}`
-																			)
+																		  )
 																		: toText}
 																</span>
 															) : customTx ? (
@@ -367,7 +367,7 @@ const TxnCard = ({
 																			decodedCallData?.args?.value || decodedCallData?.args?.call?.args?.value
 																		),
 																		withUnit: true
-																	})
+																  })
 																: `? ${chainProperties[network].tokenSymbol}`}
 														</h1>
 														{!Number.isNaN(Number(amountUSD)) &&
@@ -456,7 +456,7 @@ const TxnCard = ({
 											(decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id)
 												? getSubstrateAddress(
 														decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id
-													)
+												  )
 												: '';
 										const destAddressName = addressBook?.find(
 											(address) => getSubstrateAddress(address.address) === destSubstrateAddress
@@ -472,9 +472,9 @@ const TxnCard = ({
 																		decodedCallData?.args?.dest?.id || decodedCallData?.args?.call?.args?.dest?.id,
 																		network
 																	)
-																)
+															  )
 															: ''
-													);
+												  );
 
 										let batchCallRecipients: string[] = [];
 										if (decodedCallData && decodedCallData?.args?.calls) {
@@ -517,7 +517,7 @@ const TxnCard = ({
 																	{batchCallRecipients?.length
 																		? batchCallRecipients?.map(
 																				(a, index) => `${a}${index !== batchCallRecipients.length - 1 ? ', ' : ''}`
-																			)
+																		  )
 																		: toText}
 																</span>
 															) : customTx ? (
@@ -562,12 +562,12 @@ const TxnCard = ({
 															{!Number.isNaN(Number(transaction.amount_usd))
 																? (Number(transaction.amount_usd) * Number(currencyPrice)).toFixed(3)
 																: Number.isNaN(Number(amountUSD))
-																	? '0.00'
-																	: (
-																			Number(transaction.amount_token) *
-																			Number(amountUSD) *
-																			Number(currencyPrice)
-																		).toFixed(3)}{' '}
+																? '0.00'
+																: (
+																		Number(transaction.amount_token) *
+																		Number(amountUSD) *
+																		Number(currencyPrice)
+																  ).toFixed(3)}{' '}
 															{currencyProperties[currency].symbol}
 														</p>
 													) : (

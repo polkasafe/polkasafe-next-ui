@@ -31,9 +31,9 @@ const ManageMultisig = () => {
 	const activeMultisigData = activeMultisig
 		? activeOrg?.multisigs.find(
 				(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
-			)
+		  )
 		: undefined;
-
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [network, setNetwork] = useState<string>(
 		activeMultisigData?.network || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
 	);
@@ -105,7 +105,7 @@ const ManageMultisig = () => {
 							</div>
 						)
 					}
-				]
+			  ]
 			: (selectedMultisig?.proxy && typeof selectedMultisig.proxy !== 'string' ? selectedMultisig.proxy : []).map(
 					(mp) => ({
 						key: JSON.stringify({ address: mp.address, name: mp.name }),
@@ -123,7 +123,7 @@ const ManageMultisig = () => {
 							</div>
 						)
 					})
-				);
+			  );
 
 	return (
 		<div>

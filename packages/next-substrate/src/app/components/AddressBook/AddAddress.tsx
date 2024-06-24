@@ -338,7 +338,7 @@ const AddAddress: React.FC<IMultisigProps> = ({ addAddress, onCancel, setAddAddr
 													</span>
 												),
 												value: item
-											}))
+										  }))
 										: []
 								}
 								mode='tags'

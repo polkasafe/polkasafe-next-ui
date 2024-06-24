@@ -36,8 +36,8 @@ export default function CreateOrgLayout({ children }: { children: React.ReactNod
 											i > step
 												? 'border border-text_secondary text-text_secondary bg-bg-main'
 												: i === step
-													? 'bg-primary text-white'
-													: 'bg-success text-bg-main'
+												? 'bg-primary text-white'
+												: 'bg-success text-bg-main'
 										}`}
 									>
 										{i < step ? <OutlineCheckIcon /> : i + 1}

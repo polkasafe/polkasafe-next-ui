@@ -68,6 +68,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 
 	const { tokensUsdPrice } = useGlobalCurrencyContext();
 
+	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const handleGetAssets = useCallback(async () => {
 		if (!activeOrg || !activeOrg.id || !activeOrg.multisigs) {
 			return;

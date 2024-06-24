@@ -61,7 +61,7 @@ export default async function getAssetsForAddress(
 												network
 											)
 										)
-									}`
+								  }`
 								: '',
 						logoURI:
 							tokenProperties[asset.symbol as keyof typeof tokenProperties]?.logoURI ||

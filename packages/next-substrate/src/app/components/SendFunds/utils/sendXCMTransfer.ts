@@ -1,5 +1,5 @@
-import { networkMappingObject, networks } from '@next-common/global/networkConstants';
-import { Builder } from '@paraspell/sdk';
+import { chainProperties, Network, networkMappingObject, networks } from '@next-common/global/networkConstants';
+import { Builder, TDestination } from '@paraspell/sdk';
 import { ApiPromise } from '@polkadot/api';
 
 interface ISendXCMTransferProps {
@@ -11,7 +11,6 @@ interface ISendXCMTransferProps {
 	destinationAddress: string;
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export const sendXCMTransfer = async ({
 	api,
 	fromChain,
@@ -27,20 +26,20 @@ export const sendXCMTransfer = async ({
 		fromChain === networks.WESTEND
 	) {
 		return Builder(api).to(networkMappingObject[toChain]).amount(amount).address(destinationAddress).build();
-	}
-	if (
+	} else if (
 		toChain === networks.POLKADOT ||
 		toChain === networks.KUSAMA ||
 		toChain === networks.ROCOCO ||
 		toChain === networks.WESTEND
 	) {
 		return Builder(api).from(networkMappingObject[fromChain]).amount(amount).address(destinationAddress).build();
+	} else {
+		return Builder(api)
+			.from(networkMappingObject[fromChain])
+			.to(networkMappingObject[toChain])
+			.currency(currency)
+			.amount(amount)
+			.address(destinationAddress)
+			.build();
 	}
-	return Builder(api)
-		.from(networkMappingObject[fromChain])
-		.to(networkMappingObject[toChain])
-		.currency(currency)
-		.amount(amount)
-		.address(destinationAddress)
-		.build();
 };

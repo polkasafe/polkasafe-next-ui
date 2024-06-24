@@ -233,6 +233,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 					<QrScanSignature
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
+								console.log('signature', data.signature);
 								qrState.qrResolve({
 									id: 0,
 									signature: data.signature
@@ -329,7 +330,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 												network,
 												value: String(amount),
 												withUnit: true
-											})
+										  })
 										: `? ${chainProperties[network].tokenSymbol}`}{' '}
 									{!Number.isNaN(Number(amountUSD)) && amount && (
 										<span>
@@ -397,7 +398,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 															network,
 															value: String(amount[i]),
 															withUnit: true
-														})
+													  })
 													: `? ${chainProperties[network].tokenSymbol}`}{' '}
 												{!Number.isNaN(Number(amountUSD)) && amount[i] && (
 													<span>

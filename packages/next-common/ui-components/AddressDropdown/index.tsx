@@ -5,10 +5,10 @@
 import { InjectedAccount } from '@polkadot/extension-inject/types';
 import { Divider, Dropdown } from 'antd';
 import { useEffect, useState } from 'react';
-import { ItemType } from 'antd/es/menu/interface';
 import Address from '../Address';
 
 import { CircleArrowDownIcon } from '../CustomIcons';
+import { ItemType } from 'antd/es/menu/interface';
 
 interface IAddressDropdownProps {
 	defaultAddress?: string;
