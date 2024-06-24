@@ -102,6 +102,17 @@ interface ISendFundsFormProps {
 	defaultSelectedAddress?: string;
 	transactionType?: ETransactionType;
 	setTransactionType?: React.Dispatch<React.SetStateAction<ETransactionType>>;
+	selectedMultisigAddress?: string;
+	selectedRecipient?: {
+		recipient: string;
+		amount: BN;
+		amountStr: string;
+	};
+	selectedNetwork?: Network;
+	selectedTransactionFieldsObject?: {
+		category: string;
+		subfields: { [subfield: string]: { name: string; value: string } };
+	};
 }
 
 const SendFundsForm = ({
@@ -110,8 +121,13 @@ const SendFundsForm = ({
 	defaultSelectedAddress,
 	setNewTxn,
 	transactionType = ETransactionType.SEND_TOKEN,
-	setTransactionType // eslint-disable-next-line sonarjs/cognitive-complexity
+	setTransactionType,
+	selectedMultisigAddress,
+	selectedRecipient,
+	selectedNetwork,
+	selectedTransactionFieldsObject // eslint-disable-next-line sonarjs/cognitive-complexity,
 }: ISendFundsFormProps) => {
+	console.log('selectedRecipient', selectedRecipient);
 	const { getCache, setCache } = useCache();
 	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
 	const { client, session } = useWalletConnectContext();
@@ -134,11 +150,15 @@ const SendFundsForm = ({
 			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
 		)
 	);
-	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
+	const [network, setNetwork] = useState<string>(
+		selectedNetwork || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
+	);
 	const [recipientAndAmount, setRecipientAndAmount] = useState<IRecipientAndAmount[]>([
 		{
-			amount: new BN(0),
-			recipient: defaultSelectedAddress ? getEncodedAddress(defaultSelectedAddress, network) || '' : address || ''
+			amount: selectedRecipient.amount ? selectedRecipient.amount : new BN('0'),
+			recipient: selectedRecipient.recipient
+				? getEncodedAddress(selectedRecipient.recipient, network) || ''
+				: address || ''
 		}
 	]);
 	const [callData, setCallData] = useState<string>('');
@@ -171,7 +191,7 @@ const SendFundsForm = ({
 	const [transactionFieldsObject, setTransactionFieldsObject] = useState<{
 		category: string;
 		subfields: { [subfield: string]: { name: string; value: string } };
-	}>({ category: 'none', subfields: {} });
+	}>(selectedTransactionFieldsObject || { category: 'none', subfields: {} });
 
 	const [category, setCategory] = useState<string>('none');
 
@@ -184,7 +204,7 @@ const SendFundsForm = ({
 	const [showDecodedCallData, setShowDecodedCallData] = useState<boolean>(false);
 
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
-		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
+		selectedMultisigAddress || activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
 	);
 
 	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
@@ -976,6 +996,7 @@ const SendFundsForm = ({
 															network={network}
 															multipleCurrency
 															label='Amount*'
+															defaultValue={formatBnBalance(recipientAndAmount[i].amount.toString(), {}, network)}
 															fromBalance={multisigBalance}
 															onChange={(balance) => onAmountChange(balance, i)}
 														/>

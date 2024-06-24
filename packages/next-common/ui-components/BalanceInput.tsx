@@ -166,10 +166,10 @@ const BalanceInput: React.FC<Props> = ({
 							!isValidInput
 								? 'Please input a valid value'
 								: fromBalance && !bnBalance?.isZero() && bnBalance?.gte(new BN(fromBalance))
-								? 'Insufficient Balance in Sender Account.'
-								: requestedAmount &&
-								  amountLessThanReq &&
-								  `Amount less than Requested ($${formatBalance(requestedAmount)})`
+									? 'Insufficient Balance in Sender Account.'
+									: requestedAmount &&
+										amountLessThanReq &&
+										`Amount less than Requested ($${formatBalance(requestedAmount)})`
 						}
 						initialValue={chainProperties[network]?.existentialDeposit}
 					>
