@@ -155,7 +155,7 @@ const SendFundsForm = ({
 	);
 	const [recipientAndAmount, setRecipientAndAmount] = useState<IRecipientAndAmount[]>([
 		{
-			amount: selectedRecipient.amount ? selectedRecipient.amount : new BN('0'),
+			amount: selectedRecipient?.amount ? selectedRecipient?.amount : new BN('0'),
 			recipient: selectedRecipient.recipient
 				? getEncodedAddress(selectedRecipient.recipient, network) || ''
 				: address || ''
