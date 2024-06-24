@@ -2,7 +2,7 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import { Collapse, Divider } from 'antd';
+import { Button, Collapse, Divider, Modal } from 'antd';
 import classNames from 'classnames';
 import dayjs from 'dayjs';
 import React, { FC, useEffect, useState } from 'react';
@@ -13,7 +13,8 @@ import {
 	ArrowDownLeftIcon,
 	ArrowUpRightIcon,
 	CircleArrowDownIcon,
-	CircleArrowUpIcon
+	CircleArrowUpIcon,
+	OutlineCloseIcon
 } from '@next-common/ui-components/CustomIcons';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
@@ -25,6 +26,10 @@ import { ParachainIcon } from '../../NetworksDropdown/NetworkCard';
 import ReceivedInfo from './ReceivedInfo';
 import SentInfo from './SentInfo';
 import TransactionFields, { generateCategoryKey } from '../TransactionFields';
+import { SyncOutlined } from '@ant-design/icons';
+import SendFundsForm from '../../SendFunds/SendFundsForm';
+import { BN } from 'bn.js';
+import inputToBn from '@next-substrate/utils/inputToBn';
 
 dayjs.extend(LocalizedFormat);
 
@@ -46,6 +51,7 @@ const Transaction: FC<ITransaction> = ({
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { apis } = useGlobalApiContext();
+	const [openTransactionModal, setOpenTransactionModal] = useState<boolean>(false);
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const { activeOrg } = useActiveOrgContext();
 	const [txnParams, setTxnParams] = useState<{ method: string; section: string }>({} as any);
@@ -101,138 +107,182 @@ const Transaction: FC<ITransaction> = ({
 	}, [decodedCallData]);
 
 	return (
-		<Collapse
-			className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'
-			bordered={false}
-			defaultActiveKey={[`${hash}`]}
-		>
-			<Collapse.Panel
-				showArrow={false}
-				key={`${callHash}`}
-				header={
-					<div
-						onClick={() => toggleTransactionVisible(!transactionInfoVisible)}
-						className={classNames(
-							'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px] max-sm:flex max-sm:flex-wrap max-sm:gap-2'
-						)}
+		<>
+			<Modal
+				centered
+				footer={false}
+				closeIcon={
+					<button
+						className='outline-none border-none bg-highlight w-6 h-6 rounded-full flex items-center justify-center'
+						onClick={() => setOpenTransactionModal(false)}
 					>
-						<p className='col-span-2 flex items-center gap-x-3'>
-							{type === 'Sent' || customTx ? (
-								<span
-									className={`flex items-center justify-center w-9 h-9 ${
-										isProxyApproval ? 'bg-[#FF79F2] text-[#FF79F2]' : 'bg-success text-red-500'
-									} bg-opacity-10 p-[10px] rounded-lg`}
+						<OutlineCloseIcon className='text-primary w-2 h-2' />
+					</button>
+				}
+				title={<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl'>Send Funds</h3>}
+				open={openTransactionModal}
+				className={`w-auto md:min-w-[500px] scale-90`}
+			>
+				<SendFundsForm
+					selectedMultisigAddress={from}
+					selectedNetwork={network}
+					selectedRecipient={{
+						recipient:
+							decodedCallData?.args?.dest?.id ||
+							decodedCallData?.args?.call?.args?.dest?.id ||
+							decodedCallData?.args?.calls?.map((item: any) => item?.args?.dest?.id)?.[0] ||
+							decodedCallData?.args?.call?.args?.calls?.map((item: any) => item?.args?.dest?.id)?.[0],
+						amount: inputToBn(`${amount_token}`, network, false)?.[0] || new BN(0),
+						amountStr: amount_token
+					}}
+					selectedTransactionFieldsObject={transactionFieldsObject}
+					// defaultRecipientAddress={to}
+					onCancel={() => setOpenTransactionModal(false)}
+				/>
+			</Modal>
+			<Collapse
+				className='bg-bg-secondary rounded-lg p-2.5 scale-90 h-[111%] w-[111%] origin-top-left'
+				bordered={false}
+				defaultActiveKey={[`${hash}`]}
+			>
+				<Collapse.Panel
+					showArrow={false}
+					key={`${callHash}`}
+					header={
+						<div className='relative'>
+							<div
+								onClick={() => toggleTransactionVisible(!transactionInfoVisible)}
+								className={classNames(
+									'grid items-center grid-cols-10 cursor-pointer text-white font-normal text-sm leading-[15px] max-sm:flex max-sm:flex-wrap max-sm:gap-2'
+								)}
+							>
+								<p className='col-span-2 flex items-center gap-x-3'>
+									{type === 'Sent' || customTx ? (
+										<span
+											className={`flex items-center justify-center w-9 h-9 ${
+												isProxyApproval ? 'bg-[#FF79F2] text-[#FF79F2]' : 'bg-success text-red-500'
+											} bg-opacity-10 p-[10px] rounded-lg`}
+										>
+											<ArrowUpRightIcon />
+										</span>
+									) : (
+										<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-green-500'>
+											<ArrowDownLeftIcon />
+										</span>
+									)}
+									<span className='capitalize'>
+										{customTx
+											? txnParams
+												? `${txnParams.section}.${txnParams.method}`
+												: 'Custom Transaction'
+											: isProxyApproval
+												? 'Proxy Creation'
+												: type}
+									</span>
+								</p>
+								{Number(amount_token) ? (
+									<p className='col-span-2 flex items-center gap-x-[6px]'>
+										{Boolean(amount_token) && <ParachainIcon src={chainProperties[network]?.logo} />}
+										<span
+											className={`font-normal text-xs leading-[13px] text-success ${type === 'Sent' && 'text-failure'}`}
+										>
+											{type === 'Sent' || !amount_token ? '-' : '+'} {Boolean(amount_token) && amount_token}{' '}
+											{(Boolean(amount_token) && token) || chainProperties[network].tokenSymbol}
+										</span>
+									</p>
+								) : (
+									<p className='col-span-2'>-</p>
+								)}
+								<p className='col-span-2'>{dayjs(created_at).format('lll')}</p>
+								<p
+									className='col-span-2'
+									onClick={(e) => e.stopPropagation()}
 								>
-									<ArrowUpRightIcon />
-								</span>
-							) : (
-								<span className='flex items-center justify-center w-9 h-9 bg-success bg-opacity-10 p-[10px] rounded-lg text-green-500'>
-									<ArrowDownLeftIcon />
+									<TransactionFields
+										callHash={callHash}
+										category={category}
+										setCategory={setCategory}
+										transactionFieldsObject={transactionFieldsObject}
+										setTransactionFieldsObject={setTransactionFieldsObject}
+										multisigAddress={multisigAddress}
+										network={network}
+									/>
+								</p>
+								<p className='col-span-2 flex items-center justify-end gap-x-4'>
+									<span className='text-success'>Success</span>
+									<span className='text-white text-sm'>
+										{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}
+									</span>
+								</p>
+							</div>
+							{type === 'Sent' && Boolean(amount_token) && !isProxyApproval && (
+								<span
+									className='absolute -right-4 -top-4'
+									onClick={() => setOpenTransactionModal(true)}
+								>
+									<SyncOutlined className='text-text_main' />
 								</span>
 							)}
-							<span className='capitalize'>
-								{customTx
-									? txnParams
-										? `${txnParams.section}.${txnParams.method}`
-										: 'Custom Transaction'
-									: isProxyApproval
-									? 'Proxy Creation'
-									: type}
-							</span>
-						</p>
-						{Number(amount_token) ? (
-							<p className='col-span-2 flex items-center gap-x-[6px]'>
-								{Boolean(amount_token) && <ParachainIcon src={chainProperties[network]?.logo} />}
-								<span
-									className={`font-normal text-xs leading-[13px] text-success ${type === 'Sent' && 'text-failure'}`}
-								>
-									{type === 'Sent' || !amount_token ? '-' : '+'} {Boolean(amount_token) && amount_token}{' '}
-									{(Boolean(amount_token) && token) || chainProperties[network].tokenSymbol}
-								</span>
-							</p>
-						) : (
-							<p className='col-span-2'>-</p>
-						)}
-						<p className='col-span-2'>{dayjs(created_at).format('lll')}</p>
-						<p
-							className='col-span-2'
-							onClick={(e) => e.stopPropagation()}
-						>
-							<TransactionFields
+						</div>
+					}
+				>
+					<div>
+						<Divider className='bg-text_secondary my-5' />
+						{type === 'Received' ? (
+							<ReceivedInfo
+								amount={String(amount_token)}
+								amountType={token}
+								date={dayjs(created_at).format('llll')}
+								from={from}
 								callHash={callHash}
+								amount_usd={amount_usd}
+								to={String(to)}
+								transactionFields={transactionFieldsObject}
 								category={category}
 								setCategory={setCategory}
-								transactionFieldsObject={transactionFieldsObject}
-								setTransactionFieldsObject={setTransactionFieldsObject}
-								multisigAddress={multisigAddress}
-								network={network}
+								setTransactionFields={setTransactionFieldsObject}
+								multisigAddress={multisig?.address || ''}
+								note={note || ''}
 							/>
-						</p>
-						<p className='col-span-2 flex items-center justify-end gap-x-4'>
-							<span className='text-success'>Success</span>
-							<span className='text-white text-sm'>
-								{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}
-							</span>
-						</p>
+						) : (
+							<SentInfo
+								amount={
+									decodedCallData?.args?.value ||
+									decodedCallData?.args?.call?.args?.value ||
+									decodedCallData?.args?.calls?.map((item: any) => item?.args?.value) ||
+									decodedCallData?.args?.call?.args?.calls?.map((item: any) => item?.args?.value) ||
+									''
+								}
+								date={dayjs(created_at).format('llll')}
+								multi_id={multi_id || ''}
+								callHash={callHash}
+								transactionFields={transactionFieldsObject}
+								note={note}
+								from={from}
+								amount_usd={amount_usd}
+								txnParams={txnParams}
+								customTx={customTx}
+								callData={callData}
+								network={network}
+								api={apis?.[network]?.api}
+								apiReady={apis?.[network]?.apiReady}
+								category={category}
+								setCategory={setCategory}
+								setTransactionFields={setTransactionFieldsObject}
+								approvals={approvals || []}
+								recipientAddresses={
+									decodedCallData?.args?.dest?.id ||
+									decodedCallData?.args?.call?.args?.dest?.id ||
+									decodedCallData?.args?.calls?.map((item: any) => item?.args?.dest?.id) ||
+									decodedCallData?.args?.call?.args?.calls?.map((item: any) => item?.args?.dest?.id)
+								}
+								multisigAddress={multisigAddress}
+							/>
+						)}
 					</div>
-				}
-			>
-				<div>
-					<Divider className='bg-text_secondary my-5' />
-					{type === 'Received' ? (
-						<ReceivedInfo
-							amount={String(amount_token)}
-							amountType={token}
-							date={dayjs(created_at).format('llll')}
-							from={from}
-							callHash={callHash}
-							amount_usd={amount_usd}
-							to={String(to)}
-							transactionFields={transactionFieldsObject}
-							category={category}
-							setCategory={setCategory}
-							setTransactionFields={setTransactionFieldsObject}
-							multisigAddress={multisig?.address || ''}
-							note={note || ''}
-						/>
-					) : (
-						<SentInfo
-							amount={
-								decodedCallData?.args?.value ||
-								decodedCallData?.args?.call?.args?.value ||
-								decodedCallData?.args?.calls?.map((item: any) => item?.args?.value) ||
-								decodedCallData?.args?.call?.args?.calls?.map((item: any) => item?.args?.value) ||
-								''
-							}
-							date={dayjs(created_at).format('llll')}
-							multi_id={multi_id || ''}
-							callHash={callHash}
-							transactionFields={transactionFieldsObject}
-							note={note}
-							from={from}
-							amount_usd={amount_usd}
-							txnParams={txnParams}
-							customTx={customTx}
-							callData={callData}
-							network={network}
-							api={apis?.[network]?.api}
-							apiReady={apis?.[network]?.apiReady}
-							category={category}
-							setCategory={setCategory}
-							setTransactionFields={setTransactionFieldsObject}
-							approvals={approvals || []}
-							recipientAddresses={
-								decodedCallData?.args?.dest?.id ||
-								decodedCallData?.args?.call?.args?.dest?.id ||
-								decodedCallData?.args?.calls?.map((item: any) => item?.args?.dest?.id) ||
-								decodedCallData?.args?.call?.args?.calls?.map((item: any) => item?.args?.dest?.id)
-							}
-							multisigAddress={multisigAddress}
-						/>
-					)}
-				</div>
-			</Collapse.Panel>
-		</Collapse>
+				</Collapse.Panel>
+			</Collapse>
+		</>
 	);
 };
 
