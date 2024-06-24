@@ -28,8 +28,8 @@ const PrimaryButton = ({ className, children, onClick, size, loading, disabled, 
 				disabled
 					? 'bg-highlight text-text_secondary border-none'
 					: secondary
-					? 'bg-highlight text-primary border border-primary'
-					: 'bg-primary text-white border-none'
+						? 'bg-highlight text-primary border border-primary'
+						: 'bg-primary text-white border-none'
 			}`}
 			onClick={(e) => onClick?.(e)}
 		>

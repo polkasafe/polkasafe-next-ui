@@ -57,8 +57,8 @@ const AddressInput: React.FC<IAddressInput> = ({
 				? multisig.proxy && typeof multisig.proxy === 'string'
 					? [multisig.proxy, multisig.address]
 					: multisig.proxy && typeof multisig.proxy !== 'string' && multisig.proxy.length > 0
-					? [...multisig.proxy.map(({ address }) => address), multisig.address]
-					: [multisig.address]
+						? [...multisig.proxy.map(({ address }) => address), multisig.address]
+						: [multisig.address]
 				: [];
 		if (records) {
 			Object.keys(records).forEach((address) => {

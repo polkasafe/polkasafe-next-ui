@@ -112,8 +112,6 @@ const Notifications = () => {
 		handleEnableUpdate();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [cancelledTxn, newTxn, scheduleTxn, txnExecuted, notifyAfter, remindersFromOthers, notification_preferences]);
-
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const notifyAfterHours: MenuProps['items'] = [8, 12, 24, 48].map((hr) => {
 		return {
 			key: hr,
@@ -125,7 +123,6 @@ const Notifications = () => {
 		};
 	});
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const onNotifyHoursChange: MenuProps['onClick'] = ({ key }) => {
 		setNotifyAfter(Number(key));
 	};
@@ -250,11 +247,11 @@ const Notifications = () => {
 				? {
 						...notification_preferences.channelPreferences,
 						[channel]: { enabled: false, handle: '', name: channel, verification_token: '', verified: false }
-				  }
+					}
 				: {
 						...notification_preferences.channelPreferences,
 						[channel]: { ...notification_preferences.channelPreferences?.[channel], enabled }
-				  };
+					};
 
 			const updateNotificationChannelRes = await fetch(
 				`${FIREBASE_FUNCTIONS_URL}/updateNotificationChannelPreferences_substrate`,

@@ -82,8 +82,6 @@ const Transaction: FC<ITransaction> = ({
 
 		const callDataFunc = data.extrinsicFn;
 		setTxnParams({ method: `${callDataFunc?.method}`, section: `${callDataFunc?.section}` });
-
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [apis, callData, callHash, network]);
 
 	useEffect(() => {
@@ -136,8 +134,8 @@ const Transaction: FC<ITransaction> = ({
 										? `${txnParams.section}.${txnParams.method}`
 										: 'Custom Transaction'
 									: isProxyApproval
-									? 'Proxy Creation'
-									: type}
+										? 'Proxy Creation'
+										: type}
 							</span>
 						</p>
 						{Number(amount_token) ? (

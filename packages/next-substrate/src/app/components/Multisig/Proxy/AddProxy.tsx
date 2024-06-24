@@ -96,7 +96,7 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 						reservedProxyDeposit.sub(multisigBalance),
 						{ numberAfterComma: 3, withUnit: true },
 						network
-				  )}) will be transfered to Multisig to Create a Proxy.`
+					)}) will be transfered to Multisig to Create a Proxy.`
 				: 'Proxy Creation in Progress'
 		);
 		try {
