@@ -16,8 +16,8 @@ import { CurrencyFlag } from '@next-substrate/app/components/Settings/ChangeCurr
 import { ParachainIcon } from '@next-substrate/app/components/NetworksDropdown/NetworkCard';
 
 import formatBalance from '@next-substrate/utils/formatBalance';
-import { CircleArrowDownIcon, WarningCircleIcon } from './CustomIcons';
 import { ItemType } from 'antd/es/menu/interface';
+import { CircleArrowDownIcon, WarningCircleIcon } from './CustomIcons';
 
 interface Props {
 	className?: string;

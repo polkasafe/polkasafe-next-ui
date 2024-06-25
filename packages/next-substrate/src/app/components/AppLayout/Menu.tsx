@@ -174,8 +174,8 @@ const Menu: FC<Props> = ({ className }) => {
 					sharedMultisigInfo && isSharedMultisig
 						? sharedMultisigInfo.address
 						: active?.proxy && isProxy
-						? selectedProxy
-						: selectedMultisigAddress
+							? selectedProxy
+							: selectedMultisigAddress
 			};
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps

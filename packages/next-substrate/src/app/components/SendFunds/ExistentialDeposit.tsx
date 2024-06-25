@@ -205,11 +205,12 @@ const ExistentialDeposit = ({
 					<QrScanSignature
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
-								console.log('signature', data.signature);
-								qrResolve({
-									id: 0,
-									signature: data.signature
-								});
+								if (qrResolve) {
+									qrResolve({
+										id: 0,
+										signature: data.signature
+									});
+								}
 								setOpenSignWithVaultModal(false);
 							}
 						}}

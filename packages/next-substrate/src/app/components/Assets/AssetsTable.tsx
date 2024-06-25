@@ -74,7 +74,7 @@ const AssetsTable = () => {
 											? (allCurrencyPrices[currencyProperties[currency].symbol]
 													? Number(balance_usd) * Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
 													: Number(balance_usd)
-											  )
+												)
 													.toFixed(2)
 													.replace(/\d(?=(\d{3})+\.)/g, '$&,')
 											: '-'}
@@ -133,9 +133,9 @@ const AssetsTable = () => {
 									{!Number.isNaN(tokens[item].balance_usd)
 										? (allCurrencyPrices[currencyProperties[currency].symbol]
 												? Number(tokens[item].balance_usd) *
-												  Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
+													Number(allCurrencyPrices[currencyProperties[currency].symbol]?.value)
 												: Number(tokens[item].balance_usd)
-										  )
+											)
 												.toFixed(2)
 												.replace(/\d(?=(\d{3})+\.)/g, '$&,')
 										: '-'}

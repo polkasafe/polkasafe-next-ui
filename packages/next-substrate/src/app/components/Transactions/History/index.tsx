@@ -238,8 +238,8 @@ const History: FC<IHistory> = ({
 						const amount = !Number.isNaN(txn.amount_usd)
 							? (Number(txn.amount_usd) * Number(currencyPrice)).toFixed(4)
 							: Number.isNaN(Number(amountUSD))
-							? '0'
-							: (Number(txn.amount_token) * Number(amountUSD) * Number(currencyPrice)).toFixed(4);
+								? '0'
+								: (Number(txn.amount_token) * Number(amountUSD) * Number(currencyPrice)).toFixed(4);
 						return {
 							amount: type === 'Sent' ? `-${amount}` : amount,
 							callhash: txn.callHash,

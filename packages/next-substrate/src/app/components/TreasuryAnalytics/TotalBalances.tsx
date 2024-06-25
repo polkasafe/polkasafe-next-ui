@@ -22,14 +22,14 @@ const TotalBalances = ({
 		startDate && endDate
 			? incomingTransactions.filter(
 					(item) => dayjs(item.timestamp).isBefore(dayjs(endDate)) && dayjs(item.timestamp).isAfter(dayjs(startDate))
-			  )
+				)
 			: incomingTransactions;
 
 	const filterredOutgoingTxns =
 		startDate && endDate
 			? outgoingTransactions.filter(
 					(item) => dayjs(item.timestamp).isBefore(dayjs(endDate)) && dayjs(item.timestamp).isAfter(dayjs(startDate))
-			  )
+				)
 			: outgoingTransactions;
 
 	const totalIncoming = filterredIncomingTxns.reduce((sum, item) => sum + Number(item.balance_usd), 0);
@@ -77,6 +77,7 @@ const TotalBalances = ({
 						$ {formatBalance(totalIncoming - totalOutgoing)}
 					</div>
 				</div>
+				<div className='flex-1' />
 				<Button
 					onClick={onReload}
 					icon={<SyncOutlined className='text-primary' />}
