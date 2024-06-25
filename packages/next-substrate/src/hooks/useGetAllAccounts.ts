@@ -8,7 +8,7 @@ import { Signer } from '@polkadot/api/types';
 import { isWeb3Injected, web3Enable } from '@polkadot/extension-dapp';
 import { Injected, InjectedAccount, InjectedWindow } from '@polkadot/extension-inject/types';
 import { useEffect, useState } from 'react';
-import { ApiContext, useGlobalApiContext } from '@next-substrate/context/ApiContext';
+import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import APP_NAME, { WALLET_NAME } from '@next-common/global/appName';
 import { Wallet } from '@next-common/types';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';

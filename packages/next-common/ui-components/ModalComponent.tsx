@@ -31,7 +31,7 @@ const ModalComponent = ({ open, children, title, onCancel }: IModalProps) => {
 			}
 			title={<h3 className='mb-8 text-lg font-semibold text-white'>{title}</h3>}
 			open={open}
-			className='w-auto scale-90 origin-center md:min-w-[500px]'
+			className='w-auto scale-90 origin-center md:min-w-[500px] bg-[#1b2028]'
 			destroyOnClose
 		>
 			{children}

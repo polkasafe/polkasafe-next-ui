@@ -1,3 +1,4 @@
+/* eslint-disable sort-keys */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
@@ -18,13 +19,7 @@ import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
 import CancelBtn from '@next-substrate/app/components/Settings/CancelBtn';
 import ModalBtn from '@next-substrate/app/components/Settings/ModalBtn';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
-import {
-	chainProperties,
-	crossChainNetwork,
-	Network,
-	networkMappingObject,
-	networks
-} from '@next-common/global/networkConstants';
+import { chainProperties, crossChainNetwork, Network, networks } from '@next-common/global/networkConstants';
 import {
 	EFieldType,
 	IMultisigAddress,
@@ -82,7 +77,6 @@ import SetIdentity from './SetIdentity';
 import Delegate from './Delegate';
 import SelectSigner from '../SelectSigner';
 import { sendXCMTransfer } from './utils/sendXCMTransfer';
-import { api } from 'avail-js-sdk';
 import executeTx from '../Apps/CreateProposal/utils/executeTx';
 
 export enum ETransactionType {
@@ -216,7 +210,7 @@ const SendFundsForm = ({
 		qrPayload: new Uint8Array()
 	}));
 
-	const xcmSupported = crossChainNetwork?.[network]?.supportedNetworks?.length > 0 ? true : false;
+	const xcmSupported = crossChainNetwork?.[network]?.supportedNetworks?.length > 0;
 	const [destinationNetwork, setDestinationNetwork] = useState<Network | null>(null);
 
 	const multisigOptionsWithProxy: IMultisigAddress[] = [];
@@ -662,11 +656,12 @@ const SendFundsForm = ({
 					<QrScanSignature
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
-								console.log('signature', data.signature);
-								qrResolve({
-									id: 0,
-									signature: data.signature
-								});
+								if (qrResolve) {
+									qrResolve({
+										id: 0,
+										signature: data.signature
+									});
+								}
 								setOpenSignWithVaultModal(false);
 							}
 						}}
@@ -891,7 +886,7 @@ const SendFundsForm = ({
 												}}
 											>
 												<div className='flex justify-between items-center text-white'>
-													{destinationNetwork ? destinationNetwork : 'Select Network'}
+													{destinationNetwork || 'Select Network'}
 												</div>
 											</Dropdown>
 										)}
@@ -1054,32 +1049,26 @@ const SendFundsForm = ({
 										<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Call Data</label>
 										<div className='flex items-center gap-x-[10px]'>
 											<article className='w-[500px]'>
-												{
-													// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
-													<div
-														className='text-sm cursor-pointer w-full font-normal flex items-center justify-between leading-[15px] outline-0 p-3 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white'
-														onClick={() => copyText(callData)}
-													>
-														{shortenAddress(callData, 10)}
-														<button className='text-primary'>
-															<CopyIcon />
-														</button>
-													</div>
-												}
+												<div
+													className='text-sm cursor-pointer w-full font-normal flex items-center justify-between leading-[15px] outline-0 p-3 placeholder:text-[#505050] border-2 border-dashed border-[#505050] rounded-lg text-white'
+													onClick={() => copyText(callData)}
+												>
+													{shortenAddress(callData, 10)}
+													<button className='text-primary'>
+														<CopyIcon />
+													</button>
+												</div>
 											</article>
 										</div>
 									</>
 								)}
-								{
-									// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-noninteractive-element-interactions
-									<p
-										onClick={() => setShowDecodedCallData((prev) => !prev)}
-										className='text-primary cursor-pointer font-medium text-sm leading-[15px] mt-3 mb-6 flex items-center gap-x-3'
-									>
-										<span>{showDecodedCallData ? 'Hide' : 'Advanced'} Details</span>
-										<ArrowRightIcon />
-									</p>
-								}
+								<p
+									onClick={() => setShowDecodedCallData((prev) => !prev)}
+									className='text-primary cursor-pointer font-medium text-sm leading-[15px] mt-3 mb-6 flex items-center gap-x-3'
+								>
+									<span>{showDecodedCallData ? 'Hide' : 'Advanced'} Details</span>
+									<ArrowRightIcon />
+								</p>
 								{showDecodedCallData && (
 									<article className='w-[900px]'>
 										<Divider

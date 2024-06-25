@@ -39,7 +39,6 @@ const PayWithAccount = ({
 	requestedAmountInDollars: string;
 	onCancel: () => void;
 	invoiceId: string;
-	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const [accounts, setAccounts] = useState<InjectedAccount[]>([]);
 	const { apis } = useGlobalApiContext();
@@ -137,7 +136,6 @@ const PayWithAccount = ({
 
 	useEffect(() => {
 		getAccounts(Wallet.POLKADOT);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	useEffect(() => {
@@ -238,10 +236,12 @@ const PayWithAccount = ({
 						onScan={(data) => {
 							if (data && data.signature && isHex(data.signature)) {
 								console.log('signature', data.signature);
-								qrResolve && qrResolve({
-									id: 0,
-									signature: data.signature
-								});
+								if (qrResolve) {
+									qrResolve({
+										id: 0,
+										signature: data.signature
+									});
+								}
 								setOpenSignWithVaultModal(false);
 							}
 						}}
