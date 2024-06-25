@@ -991,7 +991,11 @@ const SendFundsForm = ({
 															network={network}
 															multipleCurrency
 															label='Amount*'
-															defaultValue={formatBnBalance(recipientAndAmount[i].amount.toString(), {}, network)}
+															defaultValue={formatBnBalance(
+																recipientAndAmount[i].amount.toString(),
+																{ numberAfterComma: 0, withThousandDelimitor: false },
+																network
+															)}
 															fromBalance={multisigBalance}
 															onChange={(balance) => onAmountChange(balance, i)}
 														/>
