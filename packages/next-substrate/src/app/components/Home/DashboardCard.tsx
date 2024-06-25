@@ -112,6 +112,7 @@ const DashboardCard = ({
 			label: <span className='text-white flex items-center gap-x-2'>{item}</span>
 		}));
 
+	console.log(activeMultisig, hasProxy, isProxy);
 	return (
 		<>
 			<ModalComponent
