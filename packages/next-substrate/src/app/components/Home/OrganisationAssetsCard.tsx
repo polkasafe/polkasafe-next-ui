@@ -12,6 +12,7 @@ import { currencyProperties } from '@next-common/global/currencyConstants';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
 import FundMultisig from '../SendFunds/FundMultisig';
 import ChangeCurrency from '../Settings/ChangeCurrency';
+import CreateNFT from '../SendFunds/CreateNFT';
 
 interface IOrganisationAssetsCard {
 	setNewTxn: React.Dispatch<React.SetStateAction<boolean>>;
@@ -51,12 +52,16 @@ const OrganisationAssetsCard = ({
 				}}
 				title={<h3 className='text-white mb-8 text-lg font-semibold'>{transactionType}</h3>}
 			>
-				<SendFundsForm
-					setNewTxn={setNewTxn}
-					onCancel={() => setOpenTransactionModal(false)}
-					transactionType={transactionType}
-					setTransactionType={setTransactionType}
-				/>
+				{transactionType === ETransactionType.CREATE_NFT ? (
+					<CreateNFT />
+				) : (
+					<SendFundsForm
+						setNewTxn={setNewTxn}
+						onCancel={() => setOpenTransactionModal(false)}
+						transactionType={transactionType}
+						setTransactionType={setTransactionType}
+					/>
+				)}
 			</ModalComponent>
 			<ModalComponent
 				open={openFundMultisigModal}

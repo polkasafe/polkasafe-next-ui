@@ -86,7 +86,8 @@ export enum ETransactionType {
 	SUBMIT_PREIMAGE = 'Submit Preimage',
 	SUBMIT_PROPOSAL = 'Submit Proposal',
 	SET_IDENTITY = 'Set Identity',
-	DELEGATE = 'Delegate'
+	DELEGATE = 'Delegate',
+	CREATE_NFT = 'Create NFT'
 }
 
 interface ISendFundsFormProps {
