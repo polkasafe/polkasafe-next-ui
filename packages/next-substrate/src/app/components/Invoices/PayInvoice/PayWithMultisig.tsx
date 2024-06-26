@@ -1,4 +1,12 @@
-import { EFieldType, EINVOICE_STATUS, IMultisigAddress, NotificationStatus, QrState } from '@next-common/types';
+import {
+	EFieldType,
+	EINVOICE_STATUS,
+	IMultisigAddress,
+	IQueueItem,
+	ITxnCategory,
+	NotificationStatus,
+	QrState
+} from '@next-common/types';
 import {
 	CircleArrowDownIcon,
 	LineIcon,
@@ -27,6 +35,7 @@ import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy
 import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { isHex } from '@polkadot/util';
+import { useCache } from '@next-substrate/context/CachedDataContext';
 import CancelBtn from '../../Settings/CancelBtn';
 import ModalBtn from '../../Settings/ModalBtn';
 
@@ -47,6 +56,8 @@ const PayWithMultisig = ({
 	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 	const transactionFields = activeOrg?.transactionFields || {};
+
+	const { getCache, setCache } = useCache();
 
 	const { allCurrencyPrices, tokensUsdPrice } = useGlobalCurrencyContext();
 
@@ -148,6 +159,44 @@ const PayWithMultisig = ({
 		}
 	};
 
+	const addToQueue = ({
+		approvals,
+		txHash,
+		txData,
+		totalAmount,
+		multisigNetwork,
+		multisigAddress,
+		txFields,
+		multisigThreshold
+	}: {
+		totalAmount: string;
+		txHash: string;
+		txData: string;
+		multisigAddress: string;
+		multisigNetwork: string;
+		txFields: ITxnCategory;
+		multisigThreshold: number;
+		approvals: string[];
+	}) => {
+		if (!txHash || !txData || !activeOrg?.id) return;
+		const prevQueue = getCache(`all-queue-txns-${activeOrg?.id}`);
+		console.log('old queue', prevQueue);
+		const newQueueItem: IQueueItem = {
+			approvals,
+			callData: txData,
+			callHash: txHash,
+			created_at: new Date(),
+			multisigAddress,
+			network: multisigNetwork,
+			status: 'Approval',
+			threshold: multisigThreshold,
+			totalAmount,
+			transactionFields: txFields
+		};
+		const newQueue: IQueueItem[] = [newQueueItem, ...prevQueue];
+		setCache(`all-queue-txns-${activeOrg?.id}`, newQueue, 1800);
+	};
+
 	const handleSubmit = async () => {
 		if (!apis || !apis[network] || !apis[network].apiReady || !address) {
 			return;
@@ -170,8 +219,7 @@ const PayWithMultisig = ({
 				return;
 			}
 			queueItemData = await initMultisigTransfer({
-				// eslint-disable-next-line @typescript-eslint/no-unused-vars
-				addToQueue: (obj: any) => {},
+				addToQueue,
 				api: apis[network].api,
 				initiatorAddress: address,
 				multisig,

@@ -149,12 +149,13 @@ export interface IInvoice {
 	to: Array<string>;
 	network: string;
 	amount: string;
+	amountPaid: string;
 	note: string;
 	status: {
 		current_status: string;
 		history: Array<{ status: string; updated_at: Date }>;
 	};
-	paid_from: null | [{ token: string; amount: number }];
+	paid_from: null | [{ token: string; amount: number; wallet: string; timestamp: Date; dollarValue: string }];
 	files: string;
 	transactionHash: string;
 }
@@ -163,7 +164,8 @@ export enum EINVOICE_STATUS {
 	PENDING = 'pending',
 	REJECTED = 'rejected',
 	APPROVED = 'approved',
-	PAID = 'paid'
+	PAID = 'paid',
+	PARTIALLY_PAID = 'partially paid'
 }
 
 export interface UserDetailsContextTypeEVM {

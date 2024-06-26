@@ -38,6 +38,7 @@ import { ApiPromise } from '@polkadot/api';
 import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
+import useCheckForOwner from '@next-substrate/hooks/useCheckForOwner';
 import ArgumentsTable from './ArgumentsTable';
 import EditNote from './EditNote';
 import NotifyButton from './NotifyButton';
@@ -128,13 +129,9 @@ const SentInfo: FC<ISentInfoProps> = ({
 }) => {
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 
-	const {
-		address: userAddress,
-		addressBook,
-		activeMultisig,
-		notOwnerOfMultisig,
-		linkedAddresses
-	} = useGlobalUserDetailsContext();
+	const { isOwnerOfMultisig, owners } = useCheckForOwner(multisig?.address);
+
+	const { address: userAddress, addressBook, activeMultisig, linkedAddresses } = useGlobalUserDetailsContext();
 	const [initiatorAddress, setInitiatorAddress] = useState<string>(userAddress);
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const [openApproveModal, setOpenApproveModal] = useState<boolean>(false);
@@ -149,16 +146,16 @@ const SentInfo: FC<ISentInfoProps> = ({
 	useEffect(() => {
 		const validSigners = [];
 
-		multisig.signatories.forEach((item) => {
+		owners.forEach((item) => {
 			if (
-				[userAddress, ...linkedAddresses].some((a) => getSubstrateAddress(a) === getSubstrateAddress(item)) &&
-				!approvals.some((a) => getSubstrateAddress(a) === getSubstrateAddress(item))
+				[userAddress, ...linkedAddresses].some((a) => getSubstrateAddress(a) === item) &&
+				!approvals.some((a) => getSubstrateAddress(a) === item)
 			) {
-				validSigners.push(getSubstrateAddress(item));
+				validSigners.push(item);
 			}
 		});
 		setValidSignersForMultisig(validSigners);
-	}, [approvals, linkedAddresses, multisig.signatories, userAddress]);
+	}, [approvals, linkedAddresses, owners, userAddress]);
 
 	const fetchApprovals = useCallback(async () => {
 		if (!multi_id || !callHash || (approvals && approvals.length > 0)) return;
@@ -317,7 +314,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 				isProxyAddApproval ||
 				isProxyRemovalApproval ||
 				getMultiDataLoading ||
-				notOwnerOfMultisig ||
+				!isOwnerOfMultisig ||
 				customTx ? null : recipientAddress && amount && !customTx ? (
 					typeof recipientAddress === 'string' ? (
 						<>
@@ -465,7 +462,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						<p className=''>Transaction was not created on Polkasafe, enter call data to fetch this data.</p>
 					</section>
 				)}
-				{!callData && !notOwnerOfMultisig && (
+				{!callData && isOwnerOfMultisig && (
 					<Input
 						size='large'
 						placeholder='Enter Call Data.'
@@ -795,7 +792,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						{validSignersForMultisig && validSignersForMultisig.length > 0 && (
 							<Button
 								disabled={
-									notOwnerOfMultisig ||
+									!isOwnerOfMultisig ||
 									!validSignersForMultisig ||
 									!decodedCallData ||
 									(approvals.length === threshold - 1 && !callDataString)
@@ -815,7 +812,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 						)}
 						{depositor === getEncodedAddress(userAddress, network) && (
 							<Button
-								disabled={notOwnerOfMultisig || !callDataString || !decodedCallData}
+								disabled={!isOwnerOfMultisig || !callDataString || !decodedCallData}
 								loading={loading}
 								onClick={() => setOpenCancelModal(true)}
 								className={`w-full border-none text-white text-sm font-normal bg-failure ${

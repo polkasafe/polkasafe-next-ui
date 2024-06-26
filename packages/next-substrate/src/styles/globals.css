@@ -144,6 +144,11 @@ input {
 
 .ant-modal-content {
   border-radius: 10px;
+  background-color: #1B2028 !important;
+}
+
+.ant-modal-header {
+  background-color: transparent !important;
 }
 
 .ant-tabs-tab-bg-white .ant-tabs-tab:not(.ant-tabs-tab-active) {

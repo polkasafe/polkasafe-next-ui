@@ -7,6 +7,8 @@ import emptyImage from '@next-common/assets/icons/empty-image.png';
 import React from 'react';
 import Image from 'next/image';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
+import { currencies, currencyProperties } from '@next-common/global/currencyConstants';
+import { CurrencyFlag } from '../../Settings/ChangeCurrency';
 
 const PaymentDetails = ({
 	selectedOrg,
@@ -178,6 +180,13 @@ const PaymentDetails = ({
 						value={amount}
 						defaultValue={amount}
 					/>
+					<div className='absolute right-0 bottom-0 top-0 flex cursor-pointer items-center justify-center pr-5 text-white text-lg'>
+						<CurrencyFlag
+							className='mr-2'
+							src={currencyProperties[currencies.UNITED_STATES_DOLLAR]?.logo}
+						/>
+						<span>{currencyProperties[currencies.UNITED_STATES_DOLLAR]?.symbol}</span>
+					</div>
 				</Form.Item>
 			</div>
 			<div className='flex flex-col gap-y-3'>
@@ -197,13 +206,14 @@ const PaymentDetails = ({
 					]}
 					className='border-0 outline-0 my-0 p-0'
 				>
-					<Input
+					<Input.TextArea
 						placeholder='Note'
-						className='text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white'
+						className='w-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white pr-24 resize-none'
 						id='note'
-						onChange={(e) => setNote(e.target.value)}
+						rows={4}
 						value={note}
 						defaultValue={note}
+						onChange={(e) => setNote(e.target.value)}
 					/>
 				</Form.Item>
 			</div>

@@ -25,10 +25,10 @@ const SetIdentity = ({
 	const [twitterHandle, setTwitterHandle] = useState<string | undefined>();
 	const [email, setEmail] = useState<string | undefined>();
 
-	const getRawOrNoneObject = (val: string | undefined) => {
-		return val
+	const createRawObject = (value: string | undefined) => {
+		return value
 			? {
-					Raw: val
+					Raw: value
 				}
 			: { none: null };
 	};
@@ -57,13 +57,13 @@ const SetIdentity = ({
 
 		const args = {
 			additional: [],
-			display: getRawOrNoneObject(displayName),
-			email: getRawOrNoneObject(email),
-			legal: getRawOrNoneObject(legalName),
+			display: createRawObject(displayName),
+			email: createRawObject(email),
+			legal: createRawObject(legalName),
 			pgpFingerprint: null,
-			riot: getRawOrNoneObject(elementHandle),
-			twitter: getRawOrNoneObject(twitterHandle),
-			web: getRawOrNoneObject(websiteUrl)
+			riot: createRawObject(elementHandle),
+			twitter: createRawObject(twitterHandle),
+			web: createRawObject(websiteUrl)
 		};
 
 		const tx = api.tx.identity.setIdentity(args);

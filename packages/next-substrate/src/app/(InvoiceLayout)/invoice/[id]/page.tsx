@@ -16,13 +16,14 @@ import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import CompleteInvoicePayment from '@next-substrate/app/components/Invoices/CompletePayment';
 import { ParachainIcon } from '@next-substrate/app/components/NetworksDropdown/NetworkCard';
+import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import React, { useEffect, useState } from 'react';
 
 const Invoice = ({ params }: { params: { id: string } }) => {
 	const [openPaymentModal, setOpenPaymentModal] = useState(false);
 	const [modalTitle, setModalTitle] = useState<string>('');
 
-	const address = '';
+	const { address } = useGlobalUserDetailsContext();
 
 	const invoiceId = params?.id;
 
@@ -84,7 +85,7 @@ const Invoice = ({ params }: { params: { id: string } }) => {
 					receiverAddress={invoiceData.from}
 					approvingAddress={address}
 					status={invoiceData.status.current_status as EINVOICE_STATUS}
-					invoiceId={invoiceData.id}
+					invoiceId={invoiceId}
 					to={invoiceData.to}
 					requestedNetwork={invoiceData.network}
 				/>
