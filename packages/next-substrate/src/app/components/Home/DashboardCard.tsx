@@ -33,6 +33,7 @@ import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy
 import ExistentialDeposit from '../SendFunds/ExistentialDeposit';
 import FundMultisig from '../SendFunds/FundMultisig';
 import SendFundsForm, { ETransactionType } from '../SendFunds/SendFundsForm';
+import CreateNFT from '../SendFunds/CreateNFT';
 
 interface IDashboardCard {
 	className?: string;
@@ -127,12 +128,16 @@ const DashboardCard = ({
 				}
 			>
 				{isOnchain ? (
-					<SendFundsForm
-						transactionType={transactionType}
-						setTransactionType={setTransactionType}
-						setNewTxn={setNewTxn}
-						onCancel={() => setOpenTransactionModal(false)}
-					/>
+					transactionType === ETransactionType.CREATE_NFT ? (
+						<CreateNFT />
+					) : (
+						<SendFundsForm
+							transactionType={transactionType}
+							setTransactionType={setTransactionType}
+							setNewTxn={setNewTxn}
+							onCancel={() => setOpenTransactionModal(false)}
+						/>
+					)
 				) : (
 					<ExistentialDeposit
 						setNewTxn={setNewTxn}

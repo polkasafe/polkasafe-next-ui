@@ -192,13 +192,13 @@ function CreateNFT() {
 			}
 			const api = apis[network].api as ApiPromise;
 			const createTx = api.tx.nfts.create(selectedMultisig, {
-				max_supply: null,
-				mint_settings: {
-					default_item_settings: 0,
-					end_block: null,
-					mint_type: { Issuer: 'NULL' },
+				maxSupply: null,
+				mintSettings: {
+					defaultItemSettings: 0,
+					endBlock: null,
+					mintType: { Issuer: null },
 					price: null,
-					start_block: null
+					startBlock: null
 				},
 				settings: 0
 			});
