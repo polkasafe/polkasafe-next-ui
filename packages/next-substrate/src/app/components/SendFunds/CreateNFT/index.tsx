@@ -9,15 +9,15 @@ import React, { useEffect, useState } from 'react';
 import { IMultisigAddress, NotificationStatus } from '@next-common/types';
 import { ItemType } from 'antd/lib/menu/hooks/useItems';
 import { ApiPromise } from '@polkadot/api';
-import { handleUploadData, handleUploadImage } from './uploadToIpfs';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { getCollectionsByOwner, getNextCollectionId } from './utils/getAllCollectionByAddress';
-import executeTx from '../../Apps/CreateProposal/utils/executeTx';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import setSigner from '@next-substrate/utils/setSigner';
+import Loader from '@next-common/ui-components/Loader';
+import { handleUploadData, handleUploadImage } from './uploadToIpfs';
+import { getCollectionsByOwner, getNextCollectionId } from './utils/getAllCollectionByAddress';
+import executeTx from '../../Apps/CreateProposal/utils/executeTx';
 import CreateNFTForm from './components/CreateNFTForm';
 import CreateCollectionForm from './components/CreateCollectionForm';
-import Loader from '@next-common/ui-components/Loader';
 
 function CreateNFT() {
 	const { apis } = useGlobalApiContext();
@@ -27,13 +27,15 @@ function CreateNFT() {
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
 		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
 	);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [multisigBalance, setMultisigBalance] = useState<string>('');
 
 	const [fileList, setFileList] = useState([]);
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [nftFormState, setNftFormState] = useState({
-		name: '',
+		attributes: '',
 		description: '',
-		attributes: ''
+		name: ''
 	});
 
 	const [loading, setLoading] = useState<boolean>(false);
@@ -93,11 +95,11 @@ function CreateNFT() {
 		});
 	});
 
-	const network = activeOrg?.multisigs?.filter((multisig) => multisig.address === selectedMultisig)?.[0].network;
+	const network = activeOrg?.multisigs?.filter((m) => m.address === selectedMultisig)?.[0].network;
 
 	const onFileChange = (info) => {
-		let fileList = [...info.fileList].slice(-1);
-		setFileList(fileList);
+		const f = [...info.fileList].slice(-1);
+		setFileList(f);
 	};
 
 	const handleSubmit = async (values: any) => {
@@ -105,10 +107,10 @@ function CreateNFT() {
 		setLoading(true);
 
 		const jsonData = {
-			name: name,
-			description: description,
 			attributes: {},
-			image: ''
+			description,
+			image: '',
+			name
 		};
 		attributes.split(',').forEach((attr) => {
 			const [key, value] = attr.split(':').map((item) => item.trim());
@@ -127,6 +129,7 @@ function CreateNFT() {
 			if (!jsonUrl || !imageUrl) {
 				queueNotification({
 					header: 'Error',
+					// eslint-disable-next-line sonarjs/no-duplicate-string
 					message: 'Failed to upload data',
 					status: NotificationStatus.ERROR
 				});
@@ -142,19 +145,19 @@ function CreateNFT() {
 
 			await setSigner(api, loggedInWallet, network);
 
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const queueItemData = await executeTx({
+				address,
 				api: apis[network].api,
 				apiReady: apis[network].apiReady,
-				network,
-				tx,
-				address,
 				isProxy,
 				multisig,
+				network,
+				setLoadingMessages,
 				tip: '0',
-				setLoadingMessages
+				tx
 			});
 			setLoading(false);
-			return;
 		} catch (error) {
 			queueNotification({
 				header: 'Error',
@@ -170,9 +173,9 @@ function CreateNFT() {
 		setLoading(true);
 
 		const jsonData = {
-			name: name,
-			description: description,
-			image: ''
+			description,
+			image: '',
+			name
 		};
 		try {
 			// Upload Image first and add URL to JSON
@@ -208,19 +211,19 @@ function CreateNFT() {
 			const tx = api.tx.utility.batchAll([createTx, setMetaDataTx]);
 
 			await setSigner(api, loggedInWallet, network);
+			// eslint-disable-next-line @typescript-eslint/no-unused-vars
 			const queueItemData = await executeTx({
+				address,
 				api: apis[network].api,
 				apiReady: apis[network].apiReady,
-				network,
-				tx,
-				address,
 				isProxy,
 				multisig,
+				network,
+				setLoadingMessages,
 				tip: '0',
-				setLoadingMessages
+				tx
 			});
 			setLoading(false);
-			return;
 		} catch (error) {
 			queueNotification({
 				header: 'Error',
@@ -241,7 +244,7 @@ function CreateNFT() {
 			.finally(() => {
 				setLoading(false);
 			});
-	}, [selectedMultisig]);
+	}, [apis, network, selectedMultisig]);
 
 	console.log(collection && collection.length > 0, 'selectedCollection');
 
@@ -255,51 +258,47 @@ function CreateNFT() {
 						className='mt-28'
 					/>
 				</div>
+			) : [networks.STATEMINE, networks.STATEMINT, networks.ROCOCO_ASSETHUB].includes(network) ? (
+				collection && collection.length > 0 && !showCreateCollection ? (
+					<CreateNFTForm
+						onClickCreateCollection={setShowCreateCollection}
+						handleSubmit={handleSubmit}
+						collection={collection || []}
+						onFileChange={onFileChange}
+						loading={loading}
+						selectedMultisig={selectedMultisig}
+						setSelectedMultisig={setSelectedMultisig}
+						setIsProxy={setIsProxy}
+						setSelectedProxyName={setSelectedProxyName}
+						setMultisigBalance={setMultisigBalance}
+						selectedCollection={selectedCollection}
+						setSelectedCollection={setSelectedCollection}
+						isProxy={isProxy}
+						selectedProxyName={selectedProxyName}
+						network={network}
+						multisigOptions={multisigOptions}
+						apis={apis}
+					/>
+				) : (
+					<CreateCollectionForm
+						handleSubmit={handleCreateCollectionSubmit}
+						onFileChange={onFileChange}
+						collection={collection || []}
+						loading={loading}
+						selectedMultisig={selectedMultisig}
+						setSelectedMultisig={setSelectedMultisig}
+						setIsProxy={setIsProxy}
+						setSelectedProxyName={setSelectedProxyName}
+						setMultisigBalance={setMultisigBalance}
+						isProxy={isProxy}
+						selectedProxyName={selectedProxyName}
+						network={network}
+						multisigOptions={multisigOptions}
+						apis={apis}
+					/>
+				)
 			) : (
-				<>
-					{[networks.STATEMINE, networks.STATEMINT, networks.ROCOCO_ASSETHUB].includes(network) ? (
-						collection && collection.length > 0 && !showCreateCollection ? (
-							<CreateNFTForm
-								onClickCreateCollection={setShowCreateCollection}
-								handleSubmit={handleSubmit}
-								collection={collection || []}
-								onFileChange={onFileChange}
-								loading={loading}
-								selectedMultisig={selectedMultisig}
-								setSelectedMultisig={setSelectedMultisig}
-								setIsProxy={setIsProxy}
-								setSelectedProxyName={setSelectedProxyName}
-								setMultisigBalance={setMultisigBalance}
-								selectedCollection={selectedCollection}
-								setSelectedCollection={setSelectedCollection}
-								isProxy={isProxy}
-								selectedProxyName={selectedProxyName}
-								network={network}
-								multisigOptions={multisigOptions}
-								apis={apis}
-							/>
-						) : (
-							<CreateCollectionForm
-								handleSubmit={handleCreateCollectionSubmit}
-								onFileChange={onFileChange}
-								collection={collection || []}
-								loading={loading}
-								selectedMultisig={selectedMultisig}
-								setSelectedMultisig={setSelectedMultisig}
-								setIsProxy={setIsProxy}
-								setSelectedProxyName={setSelectedProxyName}
-								setMultisigBalance={setMultisigBalance}
-								isProxy={isProxy}
-								selectedProxyName={selectedProxyName}
-								network={network}
-								multisigOptions={multisigOptions}
-								apis={apis}
-							/>
-						)
-					) : (
-						<p className='text-text_main'>This multisigs does not support nft creation</p>
-					)}
-				</>
+				<p className='text-text_main'>This multisigs does not support nft creation</p>
 			)}
 		</div>
 	);

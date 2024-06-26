@@ -13,6 +13,8 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import Client from '@walletconnect/sign-client';
 import wcSignTransaction from './wc_signTransaction';
 import vaultSignTransaction from './vault_signTransaction';
+import formatBnBalance from './formatBnBalance';
+import getSubstrateAddress from './getSubstrateAddress';
 
 interface Props {
 	recepientAddress: string;
@@ -73,138 +75,168 @@ export default async function transferFunds({
 		}
 	}
 
-	// eslint-disable-next-line sonarjs/cognitive-complexity
-	return new Promise<void>((resolve, reject) => {
-		if ((loggedInWallet === Wallet.WALLET_CONNECT && client && topic) || loggedInWallet === Wallet.POLKADOT_VAULT) {
-			tx.send(async ({ status, txHash, events }) => {
-				if (status.isInvalid) {
-					console.log('Transaction invalid');
-					setLoadingMessages('Transaction invalid');
-				} else if (status.isReady) {
-					console.log('Transaction is ready');
-					setLoadingMessages('Transaction is ready');
-				} else if (status.isBroadcast) {
-					console.log('Transaction has been broadcasted');
-					setLoadingMessages('Transaction has been broadcasted');
-				} else if (status.isInBlock) {
-					console.log('Transaction is in block');
-					setLoadingMessages('Transaction is in block');
-				} else if (status.isFinalized) {
-					console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
-					console.log(`transfer tx: https://${network}.subscan.io/extrinsic/${txHash}`);
-					setTxnHash?.(`${txHash}`);
+	return new Promise<{ txHash: string; paidFrom: { token: string; amount: number; wallet: string; timestamp: Date } }>(
+		(resolve, reject) => {
+			if ((loggedInWallet === Wallet.WALLET_CONNECT && client && topic) || loggedInWallet === Wallet.POLKADOT_VAULT) {
+				tx.send(async ({ status, txHash, events }) => {
+					if (status.isInvalid) {
+						console.log('Transaction invalid');
+						setLoadingMessages('Transaction invalid');
+					} else if (status.isReady) {
+						console.log('Transaction is ready');
+						setLoadingMessages('Transaction is ready');
+					} else if (status.isBroadcast) {
+						console.log('Transaction has been broadcasted');
+						setLoadingMessages('Transaction has been broadcasted');
+					} else if (status.isInBlock) {
+						console.log('Transaction is in block');
+						setLoadingMessages('Transaction is in block');
+					} else if (status.isFinalized) {
+						console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
+						console.log(`transfer tx: https://${network}.subscan.io/extrinsic/${txHash}`);
+						setTxnHash?.(`${txHash}`);
 
-					events.forEach(({ event }) => {
-						if (event.method === 'ExtrinsicSuccess') {
-							queueNotification({
-								header: 'Success!',
-								message: 'Transaction Successful.',
-								status: NotificationStatus.SUCCESS
-							});
-							resolve();
-						} else if (event.method === 'ExtrinsicFailed') {
-							console.log('Transaction failed');
-
-							const errorModule = (event.data as any)?.dispatchError?.asModule;
-							if (!errorModule) {
+						events.forEach(({ event }) => {
+							if (event.method === 'ExtrinsicSuccess') {
 								queueNotification({
-									header: 'Error!',
-									message: 'Transaction Failed',
+									header: 'Success!',
+									message: 'Transaction Successful.',
+									status: NotificationStatus.SUCCESS
+								});
+								resolve({
+									txHash: `${txHash}`,
+									paidFrom: {
+										amount: Number(
+											formatBnBalance(amount, { withThousandDelimitor: false, numberAfterComma: 0 }, network)
+										),
+										token: network,
+										wallet: getSubstrateAddress(senderAddress),
+										timestamp: new Date()
+									}
+								});
+							} else if (event.method === 'ExtrinsicFailed') {
+								console.log('Transaction failed');
+
+								const errorModule = (event.data as any)?.dispatchError?.asModule;
+								if (!errorModule) {
+									queueNotification({
+										header: 'Error!',
+										message: 'Transaction Failed',
+										status: NotificationStatus.ERROR
+									});
+									reject(new Error('Transaction Failed'));
+									return;
+								}
+
+								const { method, section, docs } = api.registry.findMetaError(errorModule);
+								console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
+
+								queueNotification({
+									header: `Error! ${section}.${method}`,
+									message: `${docs.join(' ')}`,
 									status: NotificationStatus.ERROR
 								});
-								reject(new Error('Transaction Failed'));
-								return;
+
+								reject(new Error(`Error: ${section}.${method}\n${docs.join(' ')}`));
 							}
-
-							const { method, section, docs } = api.registry.findMetaError(errorModule);
-							console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
-
-							queueNotification({
-								header: `Error! ${section}.${method}`,
-								message: `${docs.join(' ')}`,
-								status: NotificationStatus.ERROR
-							});
-
-							reject(new Error(`Error: ${section}.${method}\n${docs.join(' ')}`));
-						}
+						});
+					}
+				}).catch((error) => {
+					console.log(':( transaction failed');
+					console.error('ERROR:', error);
+					reject();
+					queueNotification({
+						header: 'Failed!',
+						message: error.message,
+						status: NotificationStatus.ERROR
 					});
-				}
-			}).catch((error) => {
-				console.log(':( transaction failed');
-				console.error('ERROR:', error);
-				reject();
-				queueNotification({
-					header: 'Failed!',
-					message: error.message,
-					status: NotificationStatus.ERROR
 				});
-			});
-		} else {
-			tx.signAndSend(senderAddress, async ({ status, txHash, events }) => {
-				if (status.isInvalid) {
-					console.log('Transaction invalid');
-					setLoadingMessages('Transaction invalid');
-				} else if (status.isReady) {
-					console.log('Transaction is ready');
-					setLoadingMessages('Transaction is ready');
-				} else if (status.isBroadcast) {
-					console.log('Transaction has been broadcasted');
-					setLoadingMessages('Transaction has been broadcasted');
-				} else if (status.isInBlock) {
-					console.log('Transaction is in block');
-					setLoadingMessages('Transaction is in block');
-				} else if (status.isFinalized) {
-					console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
-					console.log(`transfer tx: https://${network}.subscan.io/extrinsic/${txHash}`);
-					setTxnHash?.(`${txHash}`);
+			} else {
+				tx.signAndSend(senderAddress, async ({ status, txHash, events }) => {
+					if (status.isInvalid) {
+						console.log('Transaction invalid');
+						setLoadingMessages('Transaction invalid');
+					} else if (status.isReady) {
+						console.log('Transaction is ready');
+						setLoadingMessages('Transaction is ready');
+					} else if (status.isBroadcast) {
+						console.log('Transaction has been broadcasted');
+						setLoadingMessages('Transaction has been broadcasted');
+					} else if (status.isInBlock) {
+						console.log('Transaction is in block');
+						setLoadingMessages('Transaction is in block');
+					} else if (status.isFinalized) {
+						console.log(`Transaction has been included in blockHash ${status.asFinalized.toHex()}`);
+						console.log(`transfer tx: https://${network}.subscan.io/extrinsic/${txHash}`);
+						setTxnHash?.(`${txHash}`);
 
-					events.forEach(({ event }) => {
-						if (event.method === 'ExtrinsicSuccess') {
-							queueNotification({
-								header: 'Success!',
-								message: 'Transaction Successful.',
-								status: NotificationStatus.SUCCESS
-							});
-							resolve();
-						} else if (event.method === 'ExtrinsicFailed') {
-							console.log('Transaction failed');
-
-							const errorModule = (event.data as any)?.dispatchError?.asModule;
-							if (!errorModule) {
+						events.forEach(({ event }) => {
+							if (event.method === 'ExtrinsicSuccess') {
 								queueNotification({
-									header: 'Error!',
-									message: 'Transaction Failed',
-									status: NotificationStatus.ERROR
+									header: 'Success!',
+									message: 'Transaction Successful.',
+									status: NotificationStatus.SUCCESS
 								});
-								reject(new Error('Transaction Failed'));
-								return;
+								resolve({
+									txHash: `${txHash}`,
+									paidFrom: {
+										amount: Number(
+											formatBnBalance(amount, { withThousandDelimitor: false, numberAfterComma: 0 }, network)
+										),
+										token: network,
+										wallet: getSubstrateAddress(senderAddress),
+										timestamp: new Date()
+									}
+								});
+							} else if (event.method === 'ExtrinsicFailed') {
+								console.log('Transaction failed');
+
+								try {
+									const errorModule = (event.data as any)?.dispatchError?.asModule;
+									if (!errorModule) {
+										queueNotification({
+											header: 'Error!',
+											message: 'Transaction Failed',
+											status: NotificationStatus.ERROR
+										});
+										reject(new Error('Transaction Failed'));
+										return;
+									}
+
+									const { method, section, docs } = api.registry.findMetaError(errorModule);
+									console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
+
+									queueNotification({
+										header: `Error! ${section}.${method}`,
+										message: `${docs.join(' ')}`,
+										status: NotificationStatus.ERROR
+									});
+
+									reject(new Error(`Error: ${section}.${method}\n${docs.join(' ')}`));
+								} catch (error) {
+									queueNotification({
+										header: 'Error!',
+										message: 'Transaction Failed',
+										status: NotificationStatus.ERROR
+									});
+									reject(new Error('Transaction Failed'));
+								}
 							}
-
-							const { method, section, docs } = api.registry.findMetaError(errorModule);
-							console.log(`Error: ${section}.${method}\n${docs.join(' ')}`);
-
-							queueNotification({
-								header: `Error! ${section}.${method}`,
-								message: `${docs.join(' ')}`,
-								status: NotificationStatus.ERROR
-							});
-
-							reject(new Error(`Error: ${section}.${method}\n${docs.join(' ')}`));
-						}
+						});
+					}
+				}).catch((error) => {
+					console.log(':( transaction failed');
+					console.error('ERROR:', error);
+					reject();
+					queueNotification({
+						header: 'Failed!',
+						message: error.message,
+						status: NotificationStatus.ERROR
 					});
-				}
-			}).catch((error) => {
-				console.log(':( transaction failed');
-				console.error('ERROR:', error);
-				reject();
-				queueNotification({
-					header: 'Failed!',
-					message: error.message,
-					status: NotificationStatus.ERROR
 				});
-			});
+			}
+
+			console.log(`Sending ${displayAmount} from ${senderAddress} to ${recepientAddress}`);
 		}
-
-		console.log(`Sending ${displayAmount} from ${senderAddress} to ${recepientAddress}`);
-	});
+	);
 }

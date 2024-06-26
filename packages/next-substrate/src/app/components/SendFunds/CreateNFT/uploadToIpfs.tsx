@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 const baseUrl = 'https://api.pinata.cloud/pinning/';
 
 export const handleUploadImage = async (file: File) => {
@@ -7,13 +8,13 @@ export const handleUploadImage = async (file: File) => {
 	const formData = new FormData();
 	formData.append('file', file);
 	const response = await fetch(`${baseUrl}pinFileToIPFS`, {
-		method: 'POST',
+		body: formData,
 		headers: {
 			'Access-Control-Allow-Origin': '*',
 			pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY!,
 			pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_API_SECRET!
 		},
-		body: formData
+		method: 'POST'
 	});
 
 	if (!response.ok) {
@@ -30,14 +31,14 @@ export const handleUploadData = async (data: any) => {
 		return;
 	}
 	const response = await fetch(`${baseUrl}pinJSONToIPFS`, {
-		method: 'POST',
+		body: JSON.stringify(data),
 		headers: {
 			'Access-Control-Allow-Origin': '*',
 			'Content-Type': 'application/json',
 			pinata_api_key: process.env.NEXT_PUBLIC_PINATA_API_KEY!,
 			pinata_secret_api_key: process.env.NEXT_PUBLIC_PINATA_API_SECRET!
 		},
-		body: JSON.stringify(data)
+		method: 'POST'
 	});
 
 	if (!response.ok) {

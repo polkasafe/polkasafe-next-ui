@@ -1,8 +1,7 @@
-import { EINVOICE_STATUS, NotificationStatus, QrState, Wallet } from '@next-common/types';
+import { EINVOICE_STATUS, IInvoice, QrState, Wallet } from '@next-common/types';
 import React, { useEffect, useState } from 'react';
 import { Divider, Form } from 'antd';
 import { LineIcon, SquareDownArrowIcon, WarningCircleIcon } from '@next-common/ui-components/CustomIcons';
-import queueNotification from '@next-common/ui-components/QueueNotification';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
@@ -24,6 +23,7 @@ import AccountSelectionForm from '@next-common/ui-components/AccountSelectionFor
 import { isHex } from '@polkadot/util';
 import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import formatBnBalance from '@next-substrate/utils/formatBnBalance';
 import ModalBtn from '../../Settings/ModalBtn';
 import CancelBtn from '../../Settings/CancelBtn';
 
@@ -58,6 +58,7 @@ const PayWithAccount = ({
 	const [loading, setLoading] = useState<boolean>(false);
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [txnHash, setTxnHash] = useState<string>('');
 
 	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
@@ -152,14 +153,16 @@ const PayWithAccount = ({
 		setTokensRequested(String(numberOfTokens));
 	}, [allCurrencyPrices, network, requestedAmountInDollars, tokensUsdPrice]);
 
-	const updateInvoice = async () => {
-		if (!invoiceId || !txnHash) return;
+	const updateInvoice = async (txHash: string, paidFrom: IInvoice['paid_from']) => {
+		console.log('update invoice', txHash, invoiceId);
+		if (!invoiceId || !txHash) return;
 
 		const createInvoiceRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/updateInvoice_substrate`, {
 			body: JSON.stringify({
 				invoiceId,
+				paid_from: paidFrom,
 				status: EINVOICE_STATUS.PAID,
-				transactionHash: txnHash
+				transactionHash: txHash
 			}),
 			headers: firebaseFunctionsHeader(),
 			method: 'POST'
@@ -188,7 +191,7 @@ const PayWithAccount = ({
 
 		setLoading(true);
 		try {
-			await transferFunds({
+			const { txHash, paidFrom } = await transferFunds({
 				amount,
 				api: apis[network].api,
 				network,
@@ -200,13 +203,16 @@ const PayWithAccount = ({
 				setTxnHash
 			});
 			setLoading(false);
-			queueNotification({
-				header: 'Success!',
-				message: 'You have successfully completed the transaction. ',
-				status: NotificationStatus.SUCCESS
-			});
 			onCancel();
-			await updateInvoice();
+			await updateInvoice(txHash, [
+				{
+					...paidFrom,
+					dollarValue: String(
+						Number(formatBnBalance(amount, { numberAfterComma: 0, withThousandDelimitor: false }, network)) *
+							Number(tokensUsdPrice[network]?.value || 0)
+					)
+				}
+			]);
 		} catch (error) {
 			console.log(error);
 			setLoading(false);

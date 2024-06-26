@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-duplicate-string */
 /* eslint-disable @typescript-eslint/naming-convention */
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
@@ -47,11 +48,11 @@ export const networks = {
 	PHALA: 'phala',
 	POLKADOT: 'polkadot',
 	ROCOCO: 'rococo',
+	ROCOCO_ASSETHUB: 'assethub-rococo',
 	STATEMINE: 'assethub-kusama',
 	STATEMINT: 'assethub-polkadot',
 	TURING: 'avail-turing',
-	WESTEND: 'westend',
-	ROCOCO_ASSETHUB: 'assethub-rococo'
+	WESTEND: 'westend'
 };
 
 export const tokenSymbol = {
@@ -271,7 +272,6 @@ export const crossChainNetwork = {
 	// },
 	[networks.KHALA]: {
 		name: 'khala',
-		// eslint-disable-next-line sonarjs/no-duplicate-string
 		supportedNetworks: ['karura', 'moonriver', 'bifrost', 'parallel-heiko']
 	},
 	[networks.KUSAMA]: {

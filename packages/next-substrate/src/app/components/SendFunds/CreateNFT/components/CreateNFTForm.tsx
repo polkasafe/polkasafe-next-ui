@@ -2,7 +2,6 @@ import AddressComponent from '@next-common/ui-components/AddressComponent';
 import Balance from '@next-common/ui-components/Balance';
 import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import { Button, Dropdown, Form, Input } from 'antd';
-import TextArea from 'antd/es/input/TextArea';
 import Dragger from 'antd/es/upload/Dragger';
 import React from 'react';
 import { InboxOutlined } from '@ant-design/icons';
@@ -128,7 +127,7 @@ function CreateNFTForm({
 				<Form.Item
 					className='border-0 outline-0 my-0 p-0'
 					name='name'
-					rules={[{ required: true, message: 'Please input the name of the NFT!' }]}
+					rules={[{ message: 'Please input the name of the NFT!', required: true }]}
 				>
 					<div className='items-center'>
 						<label className='text-primary font-normal text-xs block mb-2'>Name</label>
@@ -161,7 +160,7 @@ function CreateNFTForm({
 				<Form.Item
 					className='border-0 outline-0 my-0 p-0'
 					name='attributes'
-					rules={[{ required: true, message: 'Please input the name of the NFT!' }]}
+					rules={[{ message: 'Please input the name of the NFT!', required: true }]}
 				>
 					<div className='items-center'>
 						<label className='text-primary font-normal text-xs block mb-2'>Attributes (key:value, key:value)</label>
@@ -192,7 +191,7 @@ function CreateNFTForm({
 			</Form.Item>
 			<Button
 				htmlType='submit'
-				className={`flex items-center justify-center gap-x-[10.83px] border-none outline-none text-sm bg-primary text-white rounded-lg min-w-[120px]`}
+				className='flex items-center justify-center gap-x-[10.83px] border-none outline-none text-sm bg-primary text-white rounded-lg min-w-[120px]'
 				disabled={loading}
 			>
 				Create NFT

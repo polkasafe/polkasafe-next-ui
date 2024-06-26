@@ -1,3 +1,4 @@
+/* eslint-disable consistent-return */
 import { ApiPromise } from '@polkadot/api';
 
 export const getCollectionsByOwner = async (api: ApiPromise, ownerAddress: string) => {
@@ -26,7 +27,7 @@ export const getCollectionsByOwner = async (api: ApiPromise, ownerAddress: strin
 	} catch (error) {
 		console.log(error);
 	}
-	console.log(`Collections created by toJon:`);
+	console.log('Collections created by toJon:');
 };
 
 export const getNextCollectionId = async (api: ApiPromise) => {

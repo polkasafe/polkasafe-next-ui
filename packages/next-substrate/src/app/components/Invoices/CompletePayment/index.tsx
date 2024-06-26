@@ -78,8 +78,10 @@ const CompleteInvoicePayment = ({
 	}, []);
 
 	const updateInvoiceStatus = async (s: EINVOICE_STATUS) => {
+		console.log('on approve', invoiceId, s);
 		if (!invoiceId || !s) return;
 
+		console.log('to', to, approvingAddress);
 		if (to && to.length > 0 && !to.includes(approvingAddress)) {
 			queueNotification({
 				header: 'Error!',
