@@ -50,7 +50,8 @@ export const networks = {
 	STATEMINE: 'assethub-kusama',
 	STATEMINT: 'assethub-polkadot',
 	TURING: 'avail-turing',
-	WESTEND: 'westend'
+	WESTEND: 'westend',
+	ROCOCO_ASSETHUB: 'assethub-rococo'
 };
 
 export const tokenSymbol = {
@@ -187,6 +188,16 @@ export const chainProperties: ChainPropType = {
 		ss58Format: 42,
 		tokenDecimals: 18,
 		tokenSymbol: tokenSymbol.T_AVAIL
+	},
+	[networks.ROCOCO_ASSETHUB]: {
+		blockTime: 6000,
+		chainId: '1000',
+		existentialDeposit: '0.000033333333',
+		logo: rococoLogo,
+		rpcEndpoint: 'wss://asset-hub-rococo-rpc.dwellir.com',
+		ss58Format: 42,
+		tokenDecimals: 12,
+		tokenSymbol: tokenSymbol.ROC
 	}
 	// [networks.PASEO]: {
 	// blockTime: 1000,

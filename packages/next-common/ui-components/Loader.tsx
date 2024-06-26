@@ -4,18 +4,21 @@
 import { Spin } from 'antd';
 import React from 'react';
 
-const Loader: React.FC<{ size?: 'small' | 'default' | 'large'; text?: string }> = ({
+const Loader: React.FC<{ size?: 'small' | 'default' | 'large'; text?: string; className?: string }> = ({
 	size = 'default',
-	text
+	text,
+	className
 }: {
 	size?: 'small' | 'default' | 'large';
 	text?: string;
+	className?: string;
 }) => {
 	return (
 		<div className='flex h-full items-center justify-center'>
 			<Spin
 				size={size}
 				tip={text || 'Loading...'}
+				className={className}
 			/>
 		</div>
 	);
