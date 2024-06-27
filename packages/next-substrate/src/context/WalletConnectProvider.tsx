@@ -29,10 +29,11 @@ export interface IWalletConnectContext {
 
 export const initialAddMultisigContext: IWalletConnectContext = {} as IWalletConnectContext;
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
 
 const web3Modal = new Web3Modal({
-	projectId: PROJECT_ID,
+	projectId: 'b75902c9d985e940612273eed0a95c84',
 	themeMode: 'dark',
 	walletConnectVersion: 2
 });
