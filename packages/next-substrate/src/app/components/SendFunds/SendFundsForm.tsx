@@ -859,37 +859,50 @@ const SendFundsForm = ({
 						) : (
 							<section className=''>
 								{xcmSupported && (
-									<div className='flex justify-start items-center my-4 gap-3'>
-										<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
-											Cross Chain Transfer
-											<Switch
-												checked={xcmSelected}
-												onChange={(checked) => {
-													setXcmSelected(checked);
-													setRecipientAndAmount([{ amount: new BN(0), recipient: '' }]);
-												}}
-												size='small'
-												className='text-primary'
-											/>
-										</label>
-										{xcmSelected && (
-											<Dropdown
-												trigger={['click']}
-												className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer'
-												menu={{
-													items: [
-														...crossChainNetwork[network].supportedNetworks.map((c) => ({
-															key: c,
-															label: <span className='text-white capitalize'>{c.split('-').join(' ')}</span>
-														}))
-													],
-													onClick: (e) => setDestinationNetwork(e.key)
-												}}
-											>
-												<div className='flex justify-between items-center text-white'>
-													{destinationNetwork || 'Select Network'}
-												</div>
-											</Dropdown>
+									<div>
+										<div className='flex justify-start items-center my-4 gap-3'>
+											<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
+												Cross Chain Transfer
+												<Switch
+													checked={xcmSelected}
+													onChange={(checked) => {
+														setXcmSelected(checked);
+														setRecipientAndAmount([{ amount: new BN(0), recipient: '' }]);
+														if (!checked) {
+															setDestinationNetwork(null);
+														}
+													}}
+													size='small'
+													className='text-primary'
+												/>
+											</label>
+											{xcmSelected && (
+												<Dropdown
+													trigger={['click']}
+													className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer'
+													menu={{
+														items: [
+															...crossChainNetwork[network].supportedNetworks.map((c) => ({
+																key: c,
+																label: <span className='text-white capitalize'>{c.split('-').join(' ')}</span>
+															}))
+														],
+														onClick: (e) => setDestinationNetwork(e.key)
+													}}
+												>
+													<div className='flex justify-between items-center text-white capitalize'>
+														{destinationNetwork?.split('-').join(' ') || 'Select Network'}
+													</div>
+												</Dropdown>
+											)}
+										</div>
+
+										{destinationNetwork && (
+											<p className='text-waiting'>
+												Please enter{' '}
+												<span className='font-bold capitalize italic'>{destinationNetwork?.split('-').join(' ')}</span>{' '}
+												network formatted address
+											</p>
 										)}
 									</div>
 								)}
