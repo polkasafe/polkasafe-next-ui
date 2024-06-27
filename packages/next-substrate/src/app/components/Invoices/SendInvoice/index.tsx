@@ -154,7 +154,7 @@ const SendInvoice = ({
 				<LoadingLottie
 					width={sendInvoiceStep === 2 && 250}
 					noWaitMessage
-					message={sendInvoiceStep === 2 ? 'Requesting Invoice' : 'Sending Invoice'}
+					message={sendInvoiceStep === 2 ? 'Creating Invoice Request' : 'Sending Invoice'}
 				/>
 			}
 		>
