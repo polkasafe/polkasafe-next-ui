@@ -48,7 +48,7 @@ export const networks = {
 	PHALA: 'phala',
 	POLKADOT: 'polkadot',
 	ROCOCO: 'rococo',
-	ROCOCO_ASSETHUB: 'assethub-rococo',
+	// ROCOCO_ASSETHUB: 'assethub-rococo',
 	STATEMINE: 'assethub-kusama',
 	STATEMINT: 'assethub-polkadot',
 	TURING: 'avail-turing',
@@ -189,17 +189,17 @@ export const chainProperties: ChainPropType = {
 		ss58Format: 42,
 		tokenDecimals: 18,
 		tokenSymbol: tokenSymbol.T_AVAIL
-	},
-	[networks.ROCOCO_ASSETHUB]: {
-		blockTime: 6000,
-		chainId: 'polkadot:7c34d42fc815d392057c78b49f2755c75',
-		existentialDeposit: '0.000033333333',
-		logo: rococoLogo,
-		rpcEndpoint: 'wss://asset-hub-rococo-rpc.dwellir.com',
-		ss58Format: 42,
-		tokenDecimals: 12,
-		tokenSymbol: tokenSymbol.ROC
 	}
+	// [networks.ROCOCO_ASSETHUB]: {
+	// blockTime: 6000,
+	// chainId: 'polkadot:7c34d42fc815d392057c78b49f2755c75',
+	// existentialDeposit: '0.000033333333',
+	// logo: rococoLogo,
+	// rpcEndpoint: 'wss://asset-hub-rococo-rpc.dwellir.com',
+	// ss58Format: 42,
+	// tokenDecimals: 12,
+	// tokenSymbol: tokenSymbol.ROC
+	// }
 	// [networks.PASEO]: {
 	// blockTime: 1000,
 	// chainId: 0,
