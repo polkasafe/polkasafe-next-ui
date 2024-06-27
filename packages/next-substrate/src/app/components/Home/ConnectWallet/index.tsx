@@ -20,7 +20,8 @@ import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 // import Image from 'next/image';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import getConnectAddressToken from '@next-substrate/utils/getConnectAddressToken';
-import { SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL, SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
+import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 
 const whitelist = [
 	getSubstrateAddress('16Ge612BDMd2GHKWFPhkmJizF7zgYEmtD1xPpnLwFT2WxS1'),
@@ -194,14 +195,15 @@ const ConnectWallet = () => {
 
 		setLoading(true);
 		try {
-			const { data: token, error: validate2FAError } = await nextApiClientFetch<string>(
-				`${SUBSTRATE_API_AUTH_URL}/2fa/validate2FA`,
-				{
+			const tokenData = await fetch(`${FIREBASE_FUNCTIONS_URL}/valid_2FA_code`, {
+				body: JSON.stringify({
 					authCode,
 					tfa_token: tfaToken
-				},
-				{ address: substrateAddress }
-			);
+				}),
+				headers: firebaseFunctionsHeader(substrateAddress),
+				method: 'POST'
+			});
+			const { data: token, error: validate2FAError } = (await tokenData.json()) as { data: string; error: string };
 
 			if (validate2FAError) {
 				if (validate2FAError === '2FA token expired.') {
