@@ -30,7 +30,7 @@ export interface IWalletConnectContext {
 export const initialAddMultisigContext: IWalletConnectContext = {} as IWalletConnectContext;
 
 const web3Modal = new Web3Modal({
-	projectId: 'b75902c9d985e940612273eed0a95c84',
+	projectId: '681a25a9988434e34c628b3be43781b8',
 	themeMode: 'dark',
 	walletConnectVersion: 2
 });
