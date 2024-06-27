@@ -480,6 +480,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 										items: networkOptions,
 										onClick: (e) => setNetwork(e.key)
 									}}
+									overlayClassName='z-[1250]'
 								>
 									<div className='flex justify-between items-center text-white gap-x-2'>
 										<div className='capitalize flex items-center gap-x-2 text-sm'>
