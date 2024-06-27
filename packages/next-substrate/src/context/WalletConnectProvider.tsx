@@ -29,11 +29,11 @@ export interface IWalletConnectContext {
 
 export const initialAddMultisigContext: IWalletConnectContext = {} as IWalletConnectContext;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
 
 const web3Modal = new Web3Modal({
-	projectId: 'b75902c9d985e940612273eed0a95c84',
+	// projectId: 'b75902c9d985e940612273eed0a95c84',
+	projectId: PROJECT_ID,
 	themeMode: 'dark',
 	walletConnectVersion: 2
 });
@@ -162,7 +162,7 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			const _client = await Client.init({
 				// logger: DEFAULT_LOGGER,
 				// relayUrl: relayerRegion,
-				projectId: 'b75902c9d985e940612273eed0a95c84',
+				projectId: PROJECT_ID,
 				metadata: DEFAULT_APP_METADATA
 			});
 			console.log('wallet connect client', _client);
