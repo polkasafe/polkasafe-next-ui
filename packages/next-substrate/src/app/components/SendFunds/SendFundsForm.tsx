@@ -368,12 +368,12 @@ const SendFundsForm = ({
 		recipientAndAmount.forEach((item, i) => {
 			if (
 				item.recipient &&
-				(!getSubstrateAddress(item.recipient) ||
-					recipientAndAmount.indexOf(
-						recipientAndAmount.find(
-							(a) => getSubstrateAddress(item.recipient) === getSubstrateAddress(a.recipient)
-						) as IRecipientAndAmount
-					) !== i)
+				!getSubstrateAddress(item.recipient)
+				// recipientAndAmount.indexOf(
+				// recipientAndAmount.find(
+				// (a) => getSubstrateAddress(item.recipient) === getSubstrateAddress(a.recipient)
+				// ) as IRecipientAndAmount
+				// ) !== i
 			) {
 				setValidRecipient((prev) => {
 					const copyArray = [...prev];
@@ -967,16 +967,20 @@ const SendFundsForm = ({
 																				</Button>
 																			)
 																		}
-																		options={autocompleteAddresses.filter(
-																			(item) =>
-																				!recipientAndAmount.some(
-																					(r) =>
-																						r.recipient &&
-																						item.value &&
-																						getSubstrateAddress(r.recipient) ===
-																							getSubstrateAddress(String(item.value) || '')
-																				)
-																		)}
+																		options={
+																			autocompleteAddresses
+																			// filter duplicate address
+																			// .filter(
+																			// (item) =>
+																			// !recipientAndAmount.some(
+																			// (r) =>
+																			// r.recipient &&
+																			// item.value &&
+																			// getSubstrateAddress(r.recipient) ===
+																			// getSubstrateAddress(String(item.value) || '')
+																			// )
+																			// )
+																		}
 																		id='recipient'
 																		placeholder='Send to Address..'
 																		onChange={(value) => onRecipientChange(value, i)}

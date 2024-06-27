@@ -25,7 +25,7 @@ const AddAddressModal = ({
 	setShowAddressModal: React.Dispatch<React.SetStateAction<boolean>>;
 	setAutoCompleteAddresses: React.Dispatch<React.SetStateAction<DefaultOptionType[]>>;
 }) => {
-	const { activeOrg } = useActiveOrgContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [addAddressName, setAddAddressName] = useState('');
 	const [addAddressLoading, setAddAddressLoading] = useState(false);
 
@@ -40,6 +40,13 @@ const AddAddressModal = ({
 		});
 		setAddAddressLoading(false);
 		if (newAddresses) {
+			setActiveOrg((prevState) => {
+				return {
+					...prevState,
+					addressBook: newAddresses
+				};
+			});
+
 			setAutoCompleteAddresses(
 				newAddresses.map((item) => ({
 					label: (
