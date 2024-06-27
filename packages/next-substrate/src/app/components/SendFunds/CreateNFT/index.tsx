@@ -13,6 +13,9 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 import setSigner from '@next-substrate/utils/setSigner';
 import Loader from '@next-common/ui-components/Loader';
+import Balance from '@next-common/ui-components/Balance';
+import { Dropdown } from 'antd';
+import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import { handleUploadData, handleUploadImage } from './uploadToIpfs';
 import { getCollectionsByOwner, getNextCollectionId } from './utils/getAllCollectionByAddress';
 import executeTx from '../../Apps/CreateProposal/utils/executeTx';
@@ -298,7 +301,49 @@ function CreateNFT() {
 					/>
 				)
 			) : (
-				<p className='text-text_main'>This multisigs does not support nft creation</p>
+				<>
+					<div className='flex items-center gap-x-[10px] mt-[14px] max-sm:flex-col'>
+						<article className='w-full max-sm:w-full'>
+							<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between max-sm:w-full'>
+								Creating from
+								<Balance
+									api={apis?.[network]?.api}
+									apiReady={apis?.[network]?.apiReady || false}
+									network={network}
+									onChange={setMultisigBalance}
+									address={selectedMultisig}
+								/>
+							</p>
+							<Dropdown
+								trigger={['click']}
+								className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer max-sm:w-full'
+								menu={{
+									items: multisigOptions,
+									onClick: (e) => {
+										const data = JSON.parse(e.key);
+										setSelectedMultisig(data?.isProxy ? data?.proxy : data?.address);
+										setIsProxy(data?.isProxy);
+										setSelectedProxyName(data.name);
+									}
+								}}
+							>
+								<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+									<AddressComponent
+										isMultisig
+										isProxy={isProxy}
+										name={selectedProxyName}
+										showNetworkBadge
+										network={network}
+										withBadge={false}
+										address={selectedMultisig}
+									/>
+									<CircleArrowDownIcon className='text-primary' />
+								</div>
+							</Dropdown>
+						</article>
+					</div>
+					<p className='text-red-500 text-xs p-0 m-0 mt-1'>This multisigs does not support nft creation</p>
+				</>
 			)}
 		</div>
 	);
