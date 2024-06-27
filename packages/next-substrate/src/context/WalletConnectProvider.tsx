@@ -161,7 +161,7 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			const _client = await Client.init({
 				// logger: DEFAULT_LOGGER,
 				// relayUrl: relayerRegion,
-				projectId: PROJECT_ID,
+				projectId: 'b75902c9d985e940612273eed0a95c84',
 				metadata: DEFAULT_APP_METADATA
 			});
 			console.log('wallet connect client', _client);
