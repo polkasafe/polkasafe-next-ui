@@ -24,7 +24,7 @@ const OrgNameAndImageStep = ({
 	setOrgImageUrl: React.Dispatch<React.SetStateAction<string>>;
 }) => {
 	const [loading, setLoading] = useState<boolean>(false);
-	const IMGBB_KEY = '8ce9959fc4824951a0236e753775328d';
+	const IMGBB_KEY = process.env.NEXT_PUBLIC_IMBB_KEY;
 	const props: UploadProps = {
 		name: 'file',
 		// eslint-disable-next-line sort-keys

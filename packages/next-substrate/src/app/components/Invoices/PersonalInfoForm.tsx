@@ -17,7 +17,7 @@ import CancelBtn from '../Settings/CancelBtn';
 const PersonalInfoForm = ({ onCancel }: { onCancel: () => void }) => {
 	const [imageLoading, setImageLoading] = useState<boolean>(false);
 	const [loading, setLoading] = useState<boolean>(false);
-	const IMGBB_KEY = '8ce9959fc4824951a0236e753775328d';
+	const IMGBB_KEY = process.env.NEXT_PUBLIC_IMBB_KEY;
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [orgName, setOrgName] = useState<string>(activeOrg?.name);
 	const [orgImageUrl, setOrgImageUrl] = useState<string>(activeOrg?.imageURI);
@@ -33,7 +33,6 @@ const PersonalInfoForm = ({ onCancel }: { onCancel: () => void }) => {
 
 	const props: UploadProps = {
 		name: 'file',
-		// eslint-disable-next-line sort-keys
 		headers: {
 			authorization: 'authorization-text'
 		},

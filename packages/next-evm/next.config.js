@@ -6,6 +6,18 @@
 /* eslint-disable sort-keys */
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+      env: {
+        POLKASAFE_FIREBASE_CONFIG: process.env.POLKASAFE_FIREBASE_CONFIG,
+        THIRDWEB_CLIENT_ID: process.env.THIRDWEB_CLIENT_ID,
+        NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY: process.env.NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY,
+        NEXT_PUBLIC_POLKASAFE_TENDERLY_KEY: process.env.NEXT_PUBLIC_POLKASAFE_TENDERLY_KEY,
+        NEXT_PUBLIC_POLKASAFE_COINGECKO_API_KEY: process.env.NEXT_PUBLIC_POLKASAFE_COINGECKO_API_KEY,
+        NEXT_PUBLIC_PRIVY_APP_ID: process.env.NEXT_PUBLIC_PRIVY_APP_ID,
+        PRIVY_APP_SECRET: process.env.PRIVY_APP_SECRET,
+        NEXT_PUBLIC_COVALENT_API_URI: process.env.NEXT_PUBLIC_COVALENT_API_URI,
+        NEXT_PUBLIC_COVALENT_API_KEY: process.env.NEXT_PUBLIC_COVALENT_API_KEY,
+        NEXT_PUBLIC_IMBB_KEY: process.env.NEXT_PUBLIC_IMBB_KEY
+    },
     async headers() {
       return [
         {

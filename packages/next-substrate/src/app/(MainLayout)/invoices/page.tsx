@@ -1,6 +1,5 @@
 'use client';
 
-/* eslint-disable sonarjs/no-duplicate-string */
 import { PlusCircleOutlined } from '@ant-design/icons';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { IInvoice, NotificationStatus } from '@next-common/types';
@@ -18,6 +17,7 @@ import { Button } from 'antd';
 import React, { useEffect, useState } from 'react';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
+import dayjs from 'dayjs';
 
 enum ETab {
 	SENT,
@@ -38,12 +38,12 @@ const Invoices = () => {
 
 	const [sentInvoices, setSentInvoices] = useState<IInvoice[]>([]);
 	const [userReceivedInvoices, setUserReceivedInvoices] = useState<IInvoice[]>([]);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+
 	const [orgReceivedInvoices, setOrgReceivedInvoices] = useState<IInvoice[]>([]);
 
 	useEffect(() => {
 		const fetchInvoices = async () => {
-			if (!activeOrg || !activeOrg.id || !address) return;
+			if (!activeOrg?.id || !address) return;
 
 			setLoading(true);
 
@@ -69,12 +69,11 @@ const Invoices = () => {
 				setSentInvoices(invoiceData.sentInvoices);
 				setOrgReceivedInvoices(invoiceData.orgReceivedInvoices);
 				setUserReceivedInvoices(invoiceData.userReceivedInvoices);
-				console.log('invoice data', invoiceData, invoiceError);
 			}
 			setLoading(false);
 		};
 		fetchInvoices();
-	}, [activeOrg, address]);
+	}, [activeOrg?.id, address]);
 
 	return (
 		<div className='h-[75vh] bg-bg-main rounded-lg px-5 py-3'>
@@ -149,10 +148,14 @@ const Invoices = () => {
 						</PrimaryButton>
 					</div>
 					{tab === ETab.SENT ? (
-						<SentInvoices invoices={sentInvoices} />
+						<SentInvoices
+							invoices={sentInvoices.sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1))}
+						/>
 					) : (
 						<ReceivedInvoices
-							invoices={userReceivedInvoices}
+							invoices={[...userReceivedInvoices, ...orgReceivedInvoices].sort((a, b) =>
+								dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1
+							)}
 							setInvoices={setUserReceivedInvoices}
 						/>
 					)}

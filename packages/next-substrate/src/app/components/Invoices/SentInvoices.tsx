@@ -1,13 +1,13 @@
 import Image from 'next/image';
 import React from 'react';
 import sentInvoiceImage from '@next-common/assets/SentInvoice.png';
-import dayjs from 'dayjs';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import { IInvoice } from '@next-common/types';
 import formatBalance from '@next-substrate/utils/formatBalance';
-import { CopyIcon } from '@next-common/ui-components/CustomIcons';
+import { CopyIcon, RightArrowOutlined } from '@next-common/ui-components/CustomIcons';
 import copyText from '@next-substrate/utils/copyText';
 import { Tooltip } from 'antd';
+import dayjs from 'dayjs';
 
 const SentInvoices = ({ invoices }: { invoices: IInvoice[] }) => {
 	console.log('invoices', invoices);
@@ -32,12 +32,27 @@ const SentInvoices = ({ invoices }: { invoices: IInvoice[] }) => {
 			) : (
 				invoices.map((item, i) => (
 					<div className='border-b border-text_secondary py-4 px-4 grid items-center grid-cols-7 gap-x-5 text-white font-normal text-sm leading-[15px]'>
-						<p className='col-span-1'>{dayjs(item.created_at).format('ll')}</p>
+						<p className='col-span-1'>{dayjs(item.created_at).format('lll')}</p>
 						<p className='col-span-1'># {i + 1}</p>
 						<p className='col-span-2'>
 							<AddressComponent address={item.from} />
 						</p>
-						<p className='col-span-1'>Not Paid</p>
+						<p className='col-span-1'>
+							{item.paid_from ? (
+								item.paid_from.length > 1 ? (
+									<span className='flex items-center gap-x-2'>
+										Multiple
+										<span className='text-lg text-primary cursor-pointer'>
+											<RightArrowOutlined />
+										</span>
+									</span>
+								) : (
+									<AddressComponent address={item.paid_from[0].wallet} />
+								)
+							) : (
+								'Not Paid'
+							)}
+						</p>
 						<p className='col-span-1'>$ {formatBalance(item.amount)}</p>
 						<p className='col-span-1 flex justify-between items-center'>
 							<span className='text-waiting capitalize'>{item.status.current_status}</span>

@@ -29,7 +29,7 @@ const SelectContact = ({
 	}, [organisations]);
 
 	return (
-		<div className='max-h-[400px] overflow-y-auto w-[500px]'>
+		<div className='max-h-[400px] overflow-y-auto w-[550px]'>
 			<Checkbox.Group
 				className='flex flex-col gap-y-2'
 				onChange={(checkedValues) => setSelectedAddresses(checkedValues as string[])}
