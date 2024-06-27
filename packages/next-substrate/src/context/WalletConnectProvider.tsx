@@ -154,6 +154,7 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 		try {
 			// setIsInitializing(true);
 			// const claimedOrigin = localStorage.getItem('wallet_connect_dapp_origin') || origin;
+			console.log('before client init');
 			// eslint-disable-next-line no-underscore-dangle
 			const _client = await Client.init({
 				// logger: DEFAULT_LOGGER,
