@@ -258,7 +258,7 @@ function CreateNFT() {
 						className='mt-28'
 					/>
 				</div>
-			) : [networks.STATEMINE, networks.STATEMINT, networks.ROCOCO_ASSETHUB].includes(network) ? (
+			) : [networks.STATEMINE, networks.STATEMINT].includes(network) ? (
 				collection && collection.length > 0 && !showCreateCollection ? (
 					<CreateNFTForm
 						onClickCreateCollection={setShowCreateCollection}
