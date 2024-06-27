@@ -172,7 +172,7 @@ const FundMultisig = ({
 			successMessage='Transaction Successful!'
 			amount={amount}
 			sender={selectedSender}
-			recipients={[activeMultisig]}
+			recipients={[selectedMultisig]}
 			created_at={new Date()}
 			txnHash={txnHash}
 			onDone={() => {

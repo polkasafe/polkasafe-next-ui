@@ -17,8 +17,8 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 
 const RemoveMultisigAddress = ({ onCancel, multisig }: { onCancel: () => void; multisig: IMultisigAddress }) => {
-	const { multisigSettings, setUserDetailsContextState, userID } = useGlobalUserDetailsContext();
-	const { activeOrg } = useActiveOrgContext();
+	const { multisigSettings, userID } = useGlobalUserDetailsContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [loading, setLoading] = useState<boolean>(false);
 	const network = multisig.network || networks.POLKADOT;
 
@@ -60,30 +60,15 @@ const RemoveMultisigAddress = ({ onCancel, multisig }: { onCancel: () => void; m
 			if (removeSafeData && removeSafeData === 'Success') {
 				setLoading(false);
 				const copy = [...activeOrg.multisigs];
-				setUserDetailsContextState((prevState) => {
+
+				setActiveOrg((prev) => {
 					const newMutlisigArray = copy.filter(
 						(item) => item.address !== multisig.address || item.proxy === multisig.proxy
 					);
-					if (
-						newMutlisigArray &&
-						newMutlisigArray[0]?.address &&
-						!multisigSettings?.[`${newMutlisigArray[0]?.address}_${newMutlisigArray[0]?.network}`]?.deleted
-					) {
-						localStorage.setItem('active_multisig', newMutlisigArray[0].address);
-					} else {
-						localStorage.removeItem('active_multisig');
-					}
+
 					return {
-						...prevState,
-						activeMultisig: localStorage.getItem('active_multisig') || '',
-						multisigAddresses: newMutlisigArray,
-						multisigSettings: {
-							...prevState.multisigSettings,
-							[`${multisig.address}_${multisig.network}`]: {
-								...prevState.multisigSettings[`${multisig.address}_${multisig.network}`],
-								deleted: true
-							}
-						}
+						...prev,
+						multisigs: newMutlisigArray
 					};
 				});
 				onCancel();

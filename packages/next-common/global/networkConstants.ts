@@ -192,7 +192,7 @@ export const chainProperties: ChainPropType = {
 	},
 	[networks.ROCOCO_ASSETHUB]: {
 		blockTime: 6000,
-		chainId: '1000',
+		chainId: 'polkadot:7c34d42fc815d392057c78b49f2755c75',
 		existentialDeposit: '0.000033333333',
 		logo: rococoLogo,
 		rpcEndpoint: 'wss://asset-hub-rococo-rpc.dwellir.com',
