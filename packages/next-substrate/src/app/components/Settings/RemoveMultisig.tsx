@@ -37,7 +37,9 @@ const RemoveMultisigAddress = ({ onCancel, multisig }: { onCancel: () => void; m
 
 			const removeSafeRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/deleteMultisig_substrate`, {
 				body: JSON.stringify({
-					multisigAddress: multisig.address
+					multisigAddress: multisig.address,
+					network,
+					organisationId: activeOrg.id
 				}),
 				headers: firebaseFunctionsHeader(),
 				method: 'POST'
@@ -73,6 +75,12 @@ const RemoveMultisigAddress = ({ onCancel, multisig }: { onCancel: () => void; m
 				});
 				onCancel();
 			}
+			queueNotification({
+				header: 'Success!',
+				message: 'Your multisig has been removed successfully.',
+				status: NotificationStatus.SUCCESS
+			});
+			setLoading(false);
 		} catch (error) {
 			console.log('ERROR', error);
 			setLoading(false);

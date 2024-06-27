@@ -88,7 +88,7 @@ const Details = ({ multisig }: { multisig: IMultisigAddress }) => {
 					className='border-none outline-none text-failure bg-failure bg-opacity-10 flex items-center gap-x-3 justify-center rounded-lg p-[10px] w-full mt-7'
 				>
 					<DeleteIcon />
-					<span>Remove Safe</span>
+					<span>Remove Multisig</span>
 				</Button>
 			</article>
 		</div>

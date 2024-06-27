@@ -1,3 +1,6 @@
 {
-    "typescript.validate.enable": true
+    "typescript.validate.enable": true,
+    "cSpell.words": [
+        "organisation"
+    ]
 }
