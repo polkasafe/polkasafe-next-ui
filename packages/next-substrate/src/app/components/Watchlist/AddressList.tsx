@@ -87,7 +87,7 @@ const AddressList = () => {
 				<Tooltip title='Watch'>
 					<a
 						target='_blank'
-						href={`${baseURL}?multisig=${watchlists[item]?.address}&network=${watchlists[item]?.network}`}
+						href={`${baseURL}/watch?multisig=${watchlists[item]?.address}&network=${watchlists[item]?.network}`}
 						rel='noreferrer'
 					>
 						<button className='text-primary bg-highlight flex items-center justify-center p-1 sm:p-2 rounded-md sm:rounded-lg text-xs sm:text-sm w-6 h-6 sm:w-8 sm:h-8'>

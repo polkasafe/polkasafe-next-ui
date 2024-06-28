@@ -19,7 +19,7 @@ import CancelBtn from '../Settings/CancelBtn';
 
 const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCancel: () => void }) => {
 	const { network, api, apiReady } = useGlobalApiContext();
-	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
+	const { setUserDetailsContextState, address: userAddress } = useGlobalUserDetailsContext();
 	const [name, setName] = useState<string>('');
 	const [selectedNetwork, setSelectedNetwork] = useState(network);
 	const [validMultisig, setValidMultisig] = useState(false);
@@ -51,7 +51,7 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 				name,
 				network: selectedNetwork
 			}),
-			headers: firebaseFunctionsHeader(),
+			headers: firebaseFunctionsHeader(userAddress),
 			method: 'POST'
 		});
 		const { data: watchlistData, error: watchlistError } = (await watchlistRes.json()) as {
@@ -85,7 +85,7 @@ const AddWatchlistAddressModal = ({ address, onCancel }: { address: string; onCa
 			setLoading(false);
 			queueNotification({
 				header: 'Failed',
-				message: 'Failed to add Address to Watchlist',
+				message: watchlistError,
 				status: NotificationStatus.ERROR
 			});
 		}

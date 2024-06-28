@@ -164,7 +164,9 @@ const DashboardCard = ({
 						<Tooltip title='Copy Share Link'>
 							<button
 								className='text-text_secondary text-lg'
-								onClick={() => copyText(`${baseURL}?multisig=${activeMultisig}&network=${currentMultisig?.network}`)}
+								onClick={() =>
+									copyText(`${baseURL}/watch?multisig=${activeMultisig}&network=${currentMultisig?.network}`)
+								}
 							>
 								<ShareAltOutlined />
 							</button>

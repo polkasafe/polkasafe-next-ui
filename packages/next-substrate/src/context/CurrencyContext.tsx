@@ -14,6 +14,7 @@ import getCurrency from '@next-substrate/utils/getCurrency';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
 import fetchTokenToUSDPrice from '@next-substrate/utils/fetchTokentoUSDPrice';
 import Loader from '@next-common/ui-components/Loader';
+import { usePathname } from 'next/navigation';
 
 export interface CurrencyContextType {
 	currency: string;
@@ -38,7 +39,12 @@ export function CurrencyContextProvider({ children }: CurrencyContextProviderPro
 
 	const [loading, setLoading] = useState<boolean>(false);
 
+	const pathname = usePathname();
+
+	const path = pathname.split('/')[1];
+
 	const fetchTokenPrice = useCallback(async () => {
+		if (path === 'watch') return;
 		setLoading(true);
 		for (const network of Object.keys(networks)) {
 			// eslint-disable-next-line no-await-in-loop
