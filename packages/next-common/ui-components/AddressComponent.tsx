@@ -59,7 +59,8 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 	const addressBook = activeOrg?.addressBook || [];
 
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === address || checkMultisigWithProxy(item.proxy || '', address)
+		(item) =>
+			(item.address === address || checkMultisigWithProxy(item.proxy || '', address)) && item.network === network
 	);
 
 	const addressObj = addressBook?.find((item) => item?.address === address);
@@ -158,7 +159,7 @@ const AddressComponent: React.FC<IAddressComponent> = ({
 							addressObj?.nickName ||
 							addressObj?.name ||
 							multisigSettings[`${encodedMultisigAddress}_${network}`]?.name ||
-							activeOrg?.multisigs.find((item) => item.address === address || item.proxy === address)?.name ||
+							multisig?.name ||
 							DEFAULT_ADDRESS_NAME}
 						{network && showNetworkBadge && (
 							<div

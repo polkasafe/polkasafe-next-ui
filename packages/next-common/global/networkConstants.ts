@@ -4,15 +4,15 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import acalaLogo from '~assets/parachains-logos/acala-logo.png';
+// import acalaLogo from '~assets/parachains-logos/acala-logo.png';
 import alephzeroLogo from '~assets/parachains-logos/aleph-zero-logo.jpeg';
 import assethubLogo from '~assets/parachains-logos/assethub-logo.png';
 import astarLogo from '~assets/parachains-logos/astar-logo.png';
 import kusamaLogo from '~assets/parachains-logos/kusama-logo.gif';
-import moonbeamLogo from '~assets/parachains-logos/moonbeam-logo.png';
-import moonriverLogo from '~assets/parachains-logos/moonriver-logo.png';
+// import moonbeamLogo from '~assets/parachains-logos/moonbeam-logo.png';
+// import moonriverLogo from '~assets/parachains-logos/moonriver-logo.png';
 import polkadotLogo from '~assets/parachains-logos/polkadot-logo.jpg';
-import polymeshLogo from '~assets/parachains-logos/polymesh-logo.png';
+// import polymeshLogo from '~assets/parachains-logos/polymesh-logo.png';
 import westendLogo from '~assets/parachains-logos/westend-logo.png';
 import { StaticImageData } from 'next/image';
 import rococoLogo from '~assets/parachains-logos/rococo-logo.jpeg';
@@ -216,12 +216,12 @@ export const chainProperties: ChainPropType = {
 /* eslint-disable sort-keys */
 export const onrampTokens = {
 	POLKADOT: 'polkadot',
-	KUSAMA: 'kusama',
-	ASTAR: 'astar',
-	MOONBEAM: 'moonbeam',
-	MOONRIVER: 'moonriver',
-	POLYMESH: 'polymesh',
-	ACALA: 'acala'
+	KUSAMA: 'kusama'
+	// ASTAR: 'astar',
+	// MOONBEAM: 'moonbeam',
+	// MOONRIVER: 'moonriver',
+	// POLYMESH: 'polymesh',
+	// ACALA: 'acala'
 };
 
 export const onrampTokenProperties: {
@@ -236,28 +236,28 @@ export const onrampTokenProperties: {
 		tokenSymbol: 'ksm',
 		logo: kusamaLogo,
 		offramp: true
-	},
-	[onrampTokens.ASTAR]: {
-		tokenSymbol: 'astr',
-		logo: astarLogo
-	},
-	[onrampTokens.MOONBEAM]: {
-		tokenSymbol: 'glmr',
-		logo: moonbeamLogo,
-		offramp: true
-	},
-	[onrampTokens.MOONRIVER]: {
-		tokenSymbol: 'movr',
-		logo: moonriverLogo
-	},
-	[onrampTokens.POLYMESH]: {
-		tokenSymbol: 'polyx',
-		logo: polymeshLogo
-	},
-	[onrampTokens.ACALA]: {
-		tokenSymbol: 'aca',
-		logo: acalaLogo
 	}
+	// [onrampTokens.ASTAR]: {
+	// tokenSymbol: 'astr',
+	// logo: astarLogo
+	// },
+	// [onrampTokens.MOONBEAM]: {
+	// tokenSymbol: 'glmr',
+	// logo: moonbeamLogo,
+	// offramp: true
+	// },
+	// [onrampTokens.MOONRIVER]: {
+	// tokenSymbol: 'movr',
+	// logo: moonriverLogo
+	// },
+	// [onrampTokens.POLYMESH]: {
+	// tokenSymbol: 'polyx',
+	// logo: polymeshLogo
+	// },
+	// [onrampTokens.ACALA]: {
+	// tokenSymbol: 'aca',
+	// logo: acalaLogo
+	// }
 };
 
 export const crossChainNetwork = {

@@ -21,9 +21,14 @@ import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { QrScanAddress } from '@polkadot/react-qr';
 import type { HexString } from '@polkadot/util/types';
 import Image from 'next/image';
+import { ParachainIcon } from '@next-substrate/app/components/NetworksDropdown/NetworkCard';
+import { Dropdown } from 'antd';
+import { chainProperties, networks } from '@next-common/global/networkConstants';
+import { ItemType } from 'antd/es/menu/interface';
 import WalletButton from './WalletButton';
 import ModalComponent from './ModalComponent';
 import InfoBox from './InfoBox';
+import { CircleArrowDownIcon } from './CustomIcons';
 
 interface Scanned {
 	content: string;
@@ -39,6 +44,7 @@ interface IWalletButtons {
 	setNoExtenstion?: React.Dispatch<React.SetStateAction<boolean>>;
 	setNoAccounts?: React.Dispatch<React.SetStateAction<boolean>>;
 	setFetchAccountsLoading?: React.Dispatch<React.SetStateAction<boolean>>;
+	setVaultNetwork?: React.Dispatch<React.SetStateAction<string>>;
 }
 
 const WalletButtons: React.FC<IWalletButtons> = ({
@@ -47,7 +53,8 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 	className,
 	setNoAccounts,
 	setNoExtenstion,
-	setFetchAccountsLoading
+	setFetchAccountsLoading,
+	setVaultNetwork
 }: IWalletButtons) => {
 	const { loggedInWallet } = useGlobalUserDetailsContext();
 
@@ -55,9 +62,24 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 
 	const [openVaultModal, setOpenVaultModal] = useState<boolean>(false);
 
-	const { connect, session } = useWalletConnectContext();
+	const [selectedNetwork, setSelectedNetwork] = useState(networks.POLKADOT);
 
-	// eslint-disable-next-line sonarjs/cognitive-complexity
+	const networkOptions: ItemType[] = Object.values(networks).map((n) => ({
+		key: n,
+		label: (
+			<span className='text-white flex items-center gap-x-2 capitalize'>
+				<ParachainIcon src={chainProperties[n]?.logo} />
+				{n}
+			</span>
+		)
+	}));
+
+	const onNetworkChange = (e: any) => {
+		setSelectedNetwork(e.key);
+		setVaultNetwork?.(e.key);
+	};
+
+	const { connect, session } = useWalletConnectContext();
 	const getAccounts = async (chosenWallet: Wallet): Promise<undefined> => {
 		if (typeof window !== 'undefined') {
 			const injectedWindow = window as Window & InjectedWindow;
@@ -183,7 +205,23 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				title='Scan your Address QR'
 			>
 				<>
-					<InfoBox message='Please Scan your Westend Address QR in Polkadot Vault' />
+					<Dropdown
+						trigger={['click']}
+						className='border border-primary rounded-lg p-2.5 bg-bg-secondary cursor-pointer mb-2'
+						menu={{
+							items: networkOptions,
+							onClick: onNetworkChange
+						}}
+					>
+						<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+							<span className='flex items-center gap-x-2 capitalize'>
+								<ParachainIcon src={chainProperties[selectedNetwork]?.logo} />
+								{selectedNetwork}
+							</span>
+							<CircleArrowDownIcon className='text-primary' />
+						</div>
+					</Dropdown>
+					<InfoBox message={`Please Scan your ${selectedNetwork} Address QR in Polkadot Vault`} />
 					<QrScanAddress
 						isEthereum={false}
 						onError={onError}
