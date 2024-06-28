@@ -262,7 +262,7 @@ export const onrampTokenProperties: {
 export const crossChainNetwork = {
 	[networks.ASTAR]: {
 		name: 'astar',
-		supportedNetworks: ['acala', 'moonbeam', 'shiden', 'parallel', 'phala']
+		supportedNetworks: ['acala', 'moonbeam', 'parallel', 'phala', 'assethub-polkadot']
 	},
 	// [networks.AVAIL]: {
 	// name: 'avail-goldberg',
@@ -282,7 +282,7 @@ export const crossChainNetwork = {
 			'bifrost',
 			'parallel-heiko',
 			'shiden',
-			'statemine',
+			'assethub-kusama',
 			'kilt-spiritnet',
 			'crust-shadow',
 			'calamari',
@@ -291,13 +291,11 @@ export const crossChainNetwork = {
 	},
 	[networks.PHALA]: {
 		name: 'phala',
-		supportedNetworks: [
-			'khala' // Phala's sister network on Kusama
-		]
+		supportedNetworks: ['khala']
 	},
 	[networks.POLKADOT]: {
 		name: 'polkadot',
-		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala', 'statemint']
+		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala', 'assethub-polkadot']
 	},
 	[networks.ROCOCO]: {
 		name: 'rococo',
@@ -305,13 +303,17 @@ export const crossChainNetwork = {
 			'basilisk' // Rococo is a testnet for Polkadot and Kusama parachains
 		]
 	},
+	// [networks.ROCOCO_ASSETHUB]: {
+	// name: 'rococo',
+	// supportedNetworks: ['rococo']
+	// },
 	[networks.STATEMINE]: {
 		name: 'assethub-kusama',
 		supportedNetworks: ['karura', 'moonriver', 'shiden', 'bifrost', 'parallel-heiko', 'calamari', 'kilt-spiritnet']
 	},
 	[networks.STATEMINT]: {
 		name: 'assethub-polkadot',
-		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala']
+		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala', 'polkadot']
 	},
 	[networks.TURING]: {
 		name: 'avail-turing',
@@ -324,7 +326,7 @@ export const crossChainNetwork = {
 };
 
 export const networkMappingObject = {
-	'asset-hub-polkadot': 'AssetHubPolkadot',
+	'assethub-polkadot': 'AssetHubPolkadot',
 	acala: 'Acala',
 	astar: 'Astar',
 	'bifrost-polkadot': 'BifrostPolkadot',
@@ -337,7 +339,7 @@ export const networkMappingObject = {
 	litentry: 'Litentry',
 	moonbeam: 'Moonbeam',
 	parallel: 'Parallel',
-	'asset-hub-kusama': 'AssetHubKusama',
+	'assethub-kusama': 'AssetHubKusama',
 	'coretime-kusama': 'CoretimeKusama',
 	encointer: 'Encointer',
 	altair: 'Altair',

@@ -310,13 +310,15 @@ const SentInfo: FC<ISentInfoProps> = ({
 				/>
 			</ModalComponent>
 			<article className='p-4 rounded-lg bg-bg-main flex-1 max-sm:flex-wrap'>
-				{isProxyApproval ||
+				{(isProxyApproval ||
 				isProxyAddApproval ||
 				isProxyRemovalApproval ||
 				getMultiDataLoading ||
 				!isOwnerOfMultisig ||
-				customTx ? null : recipientAddress && amount && !customTx ? (
-					typeof recipientAddress === 'string' ? (
+				customTx
+					? null
+					: recipientAddress && amount && !customTx) &&
+					(typeof recipientAddress === 'string' ? (
 						<>
 							<p className='flex items-center gap-x-1 text-white font-medium text-sm leading-[15px]'>
 								<span>Send</span>
@@ -453,8 +455,8 @@ const SentInfo: FC<ISentInfoProps> = ({
 									</>
 								))}
 						</div>
-					)
-				) : (
+					))}
+				{!callData && isOwnerOfMultisig && (
 					<section className='w-full text-waiting bg-waiting bg-opacity-10 p-3 rounded-lg flex items-center gap-x-[11px]'>
 						<span>
 							<WarningCircleIcon className='text-base' />
