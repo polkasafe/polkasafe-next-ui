@@ -9,7 +9,7 @@
 import { chainProperties, networks } from '@next-common/global/networkConstants';
 import Client from '@walletconnect/sign-client';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
-import { Web3Modal } from '@web3modal/standalone';
+import { WalletConnectModal } from '@walletconnect/modal';
 import { createContext, useContext, useMemo, ReactNode, useCallback, useState, useEffect } from 'react';
 
 export const DEFAULT_APP_METADATA = {
@@ -32,10 +32,9 @@ export const initialAddMultisigContext: IWalletConnectContext = {} as IWalletCon
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
 
-const web3Modal = new Web3Modal({
+const web3Modal = new WalletConnectModal({
 	projectId: '681a25a9988434e34c628b3be43781b8',
-	themeMode: 'dark',
-	walletConnectVersion: 2
+	themeMode: 'dark'
 });
 
 export const WalletConnectContext = createContext(initialAddMultisigContext);
