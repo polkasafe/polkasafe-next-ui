@@ -33,7 +33,7 @@ export const initialAddMultisigContext: IWalletConnectContext = {} as IWalletCon
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
 
 const web3Modal = new Web3Modal({
-	projectId: 'b75902c9d985e940612273eed0a95c84',
+	projectId: '681a25a9988434e34c628b3be43781b8',
 	themeMode: 'dark',
 	walletConnectVersion: 2
 });
@@ -162,7 +162,7 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			const _client = await Client.init({
 				// logger: DEFAULT_LOGGER,
 				// relayUrl: relayerRegion,
-				projectId: 'b75902c9d985e940612273eed0a95c84',
+				projectId: '681a25a9988434e34c628b3be43781b8',
 				metadata: DEFAULT_APP_METADATA
 			});
 			console.log('wallet connect client', _client);
@@ -173,6 +173,8 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			await subscribeToEvents(_client);
 			// await checkPersistedState(_client);
 			// await _logClientId(_client);
+		} catch (error) {
+			console.log('error in initialising wc client', error);
 		} finally {
 			// setIsInitializing(false);
 		}

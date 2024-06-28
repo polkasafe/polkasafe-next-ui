@@ -176,6 +176,7 @@ export const chainProperties: ChainPropType = {
 		logo: availLogo,
 		// rpcEndpoint: 'wss://rpc-testnet.avail.tools/ws',
 		rpcEndpoint: 'wss://goldberg-testnet-rpc.avail.tools/ws',
+		// rpcEndpoint: 'wss://goldberg.avail.tools/ws',
 		ss58Format: 42,
 		tokenDecimals: 18,
 		tokenSymbol: tokenSymbol.AVL
