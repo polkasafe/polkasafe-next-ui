@@ -75,6 +75,8 @@ const ConnectWallet = () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [vaultSignature, setVaultSignature] = useState<string>('');
 
+	const [vaultNetwork, setVaultNetwork] = useState<string>(networks.POLKADOT);
+
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
 		isQrHashed: false,
@@ -189,11 +191,10 @@ const ConnectWallet = () => {
 
 				if (selectedWallet === Wallet.POLKADOT_VAULT) {
 					setOpenSignWithVaultModal(true);
-					if (!apis || !apis[networks.WESTEND]?.apiReady) {
-						console.log('api not ready for westend', apis[networks.WESTEND]?.apiReady);
+					if (!apis || !apis[vaultNetwork]?.apiReady) {
 						return;
 					}
-					const { api } = apis[networks.WESTEND];
+					const { api } = apis[vaultNetwork];
 					const tx = (api as ApiPromise).tx.system.remark(`${token}`);
 
 					const signer = new QrSigner(api.registry, setQrState);
@@ -229,13 +230,13 @@ const ConnectWallet = () => {
 						const s = result.signature.toHex();
 						const txHash = await sendTxnWithSignature({
 							api,
-							network: networks.WESTEND,
+							network: vaultNetwork,
 							setTxnHash: setVaultTxnHash,
 							tx
 						});
 
 						if (txHash) {
-							const checkTxnRes = await fetch(`https://${networks.WESTEND}.api.subscan.io/api/scan/extrinsic`, {
+							const checkTxnRes = await fetch(`https://${vaultNetwork}.api.subscan.io/api/scan/extrinsic`, {
 								body: JSON.stringify({
 									events_limit: 1,
 									hash: txHash,
@@ -577,13 +578,15 @@ const ConnectWallet = () => {
 						title='Authorize Transaction in Vault'
 					>
 						<>
-							<InfoBox message='To verify ownership of the address, a transaction will be conducted on the Westend Testnet. Please note that a small gas fee will apply.' />
+							<InfoBox
+								message={`To verify ownership of the address, a transaction will be conducted on the  ${vaultNetwork} network. Please note that a small gas fee will apply.`}
+							/>
 							<div className='flex items-center gap-x-4'>
 								<div className='rounded-xl bg-white p-4'>
 									<QrDisplayPayload
 										cmd={isQrHashed ? 1 : 2}
 										address={address}
-										genesisHash={apis[networks.WESTEND]?.api?.genesisHash}
+										genesisHash={apis[vaultNetwork]?.api?.genesisHash}
 										payload={qrPayload}
 									/>
 								</div>
@@ -619,6 +622,7 @@ const ConnectWallet = () => {
 								className='mb-4'
 								setWallet={setSelectedWallet}
 								setAccounts={setAccounts}
+								setVaultNetwork={setVaultNetwork}
 							/>
 							{fetchAccountsLoading ? (
 								<div>
