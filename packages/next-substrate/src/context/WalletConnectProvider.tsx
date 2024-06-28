@@ -159,10 +159,10 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			console.log('before client init');
 			// eslint-disable-next-line no-underscore-dangle
 			const _client = await Client.init({
-				// logger: DEFAULT_LOGGER,
+				logger: 'debug',
 				// relayUrl: relayerRegion,
-				projectId: '681a25a9988434e34c628b3be43781b8',
-				metadata: DEFAULT_APP_METADATA
+				projectId: '681a25a9988434e34c628b3be43781b8'
+				// metadata: DEFAULT_APP_METADATA
 			});
 			console.log('wallet connect client', _client);
 
