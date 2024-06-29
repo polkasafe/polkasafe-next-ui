@@ -156,7 +156,6 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 		try {
 			// setIsInitializing(true);
 			// const claimedOrigin = localStorage.getItem('wallet_connect_dapp_origin') || origin;
-			console.log('before client init');
 
 			const provider = await UniversalProvider.init({
 				relayUrl: 'wss://relay.walletconnect.com',
@@ -167,7 +166,6 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			// 	relayUrl: 'wss://relay.walletconnect.com',
 			// 	// metadata: DEFAULT_APP_METADATA
 			// });
-			console.log('wallet connect client', provider.client);
 
 			setClient(provider.client as any);
 			// setOrigin(_client.metadata.url);
