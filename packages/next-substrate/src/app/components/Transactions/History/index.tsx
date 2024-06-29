@@ -45,11 +45,13 @@ const History: FC<IHistory> = ({
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeNetwork, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 	const { currencyPrice, tokensUsdPrice } = useGlobalCurrencyContext();
 	const { activeOrg } = useActiveOrgContext();
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+		(item) =>
+			(item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)) &&
+			item.network === activeNetwork
 	);
 
 	const multisigs = activeOrg?.multisigs?.map((item) => ({ address: item.address, network: item.network }));

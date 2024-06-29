@@ -25,12 +25,14 @@ import ChangeCurrency from './ChangeCurrency';
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const ManageMultisig = () => {
-	const { activeMultisig, userID } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeNetwork, userID } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
 	const activeMultisigData = activeMultisig
 		? activeOrg?.multisigs.find(
-				(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
+				(item) =>
+					(item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)) &&
+					item.network === activeNetwork
 			)
 		: undefined;
 
@@ -49,13 +51,14 @@ const ManageMultisig = () => {
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
 
-		if (activeMultisig) {
-			const m = activeOrg?.multisigs.find((item) => item.address === activeMultisig);
+		if (activeMultisig && activeNetwork) {
+			const m = activeOrg?.multisigs.find((item) => item.address === activeMultisig && item.network === activeNetwork);
 			setSelectedMultisig(m);
+			setNetwork(m.network);
 			return;
 		}
 		setSelectedMultisig(activeOrg?.multisigs?.[0]);
-	}, [activeMultisig, activeOrg]);
+	}, [activeMultisig, activeNetwork, activeOrg]);
 
 	useEffect(() => {
 		setSelectedProxy({

@@ -38,7 +38,7 @@ const TxnCard = ({
 }) => {
 	const userAddress = typeof window !== 'undefined' && localStorage.getItem('address');
 	// const signature = typeof window !== 'undefined' && localStorage.getItem('signature');
-	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeNetwork, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 
 	const { activeOrg } = useActiveOrgContext();
 	const { apis } = useGlobalApiContext();
@@ -53,7 +53,9 @@ const TxnCard = ({
 	const [amountUSD, setAmountUSD] = useState<string>('');
 
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+		(item) =>
+			(item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)) &&
+			item.network === activeNetwork
 	);
 
 	const network = multisig.network || networks.POLKADOT;
@@ -200,7 +202,7 @@ const TxnCard = ({
 		};
 
 		getQueue();
-	}, [activeMultisig, isSharedMultisig, multisig, network, newTxn, notOwnerOfMultisig, userAddress]);
+	}, [activeMultisig, activeNetwork, isSharedMultisig, multisig, network, newTxn, notOwnerOfMultisig, userAddress]);
 
 	useEffect(() => {
 		if (!userAddress || !activeMultisig) return;

@@ -98,7 +98,7 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 					}, 0);
 					setAllAssets((prev) => ({
 						...prev,
-						[account.address]: { assets: data, fiatTotal: String(fiatTotal) }
+						[`${account.address}_${account.network}`]: { assets: data, fiatTotal: String(fiatTotal) }
 					}));
 				}
 

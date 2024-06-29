@@ -190,6 +190,7 @@ export default async function approveAddProxy({
 					return {
 						...prevState,
 						activeMultisig: multisigData.address,
+						activeNetwork: multisigData.network,
 						multisigAddresses: copyMultisigAddresses,
 						multisigSettings: {
 							...prevState.multisigSettings,
