@@ -171,7 +171,7 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			// });
 			console.log('wallet connect client', provider.client);
 
-			setClient(provider.client);
+			setClient(provider.client as any);
 			// setOrigin(_client.metadata.url);
 			// prevRelayerValue.current = relayerRegion;
 			await subscribeToEvents(provider.client);
