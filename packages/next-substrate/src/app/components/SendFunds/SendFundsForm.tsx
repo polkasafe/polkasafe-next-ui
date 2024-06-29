@@ -122,9 +122,8 @@ const SendFundsForm = ({
 	selectedNetwork,
 	selectedTransactionFieldsObject // eslint-disable-next-line sonarjs/cognitive-complexity,
 }: ISendFundsFormProps) => {
-	console.log('selectedRecipient', selectedRecipient);
 	const { getCache, setCache } = useCache();
-	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeNetwork, address, loggedInWallet } = useGlobalUserDetailsContext();
 	const { client, session } = useWalletConnectContext();
 	const [xcmSelected, setXcmSelected] = useState<boolean>(false);
 
@@ -142,11 +141,13 @@ const SendFundsForm = ({
 
 	const [multisig, setMultisig] = useState<IMultisigAddress>(
 		activeOrg?.multisigs?.find(
-			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+			(item) =>
+				(item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)) &&
+				item.network === activeNetwork
 		)
 	);
 	const [network, setNetwork] = useState<string>(
-		selectedNetwork || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
+		selectedNetwork || activeNetwork || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
 	);
 	const [recipientAndAmount, setRecipientAndAmount] = useState<IRecipientAndAmount[]>([
 		{
@@ -228,8 +229,6 @@ const SendFundsForm = ({
 		}
 	});
 
-	console.log(multisigOptionsWithProxy);
-
 	const multisigOptions: ItemType[] = multisigOptionsWithProxy?.map((item) => ({
 		key: JSON.stringify({ ...item, isProxy: true }),
 		label: (
@@ -310,12 +309,13 @@ const SendFundsForm = ({
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
 		const m = activeOrg?.multisigs?.find(
-			(item) => item.address === selectedMultisig || checkMultisigWithProxy(item.proxy, selectedMultisig)
+			(item) =>
+				(item.address === selectedMultisig || checkMultisigWithProxy(item.proxy, selectedMultisig)) &&
+				item.network === network
 		);
-		console.log('m', m);
+		console.log('m', m, network);
 		setMultisig(m || activeOrg.multisigs[0]);
-		setNetwork(m?.network || activeOrg.multisigs[0].network);
-	}, [activeOrg, selectedMultisig]);
+	}, [activeOrg, network, selectedMultisig]);
 
 	useEffect(() => {
 		if (

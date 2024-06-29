@@ -119,6 +119,7 @@ export interface UserDetailsContextType {
 	loggedInWallet: Wallet;
 	linkedAddresses?: string[];
 	activeMultisig: string;
+	activeNetwork: string;
 	isProxy: boolean;
 	address: string;
 	createdAt: Date;

@@ -29,7 +29,7 @@ interface IQueued {
 }
 
 const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
-	const { activeMultisig, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeNetwork, isSharedMultisig, notOwnerOfMultisig } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
 	const [queuedTransactions, setQueuedTransactions] = useState<IQueueItem[]>([]);
@@ -38,7 +38,9 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 	const multisigs = activeOrg?.multisigs?.map((item) => ({ address: item.address, network: item.network }));
 
 	const multisig = activeOrg?.multisigs?.find(
-		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+		(item) =>
+			(item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)) &&
+			item.network === activeNetwork
 	);
 
 	const {
@@ -148,7 +150,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 			setLoading(false);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [activeMultisig]);
+	}, [activeMultisig, activeNetwork]);
 
 	useEffect(() => {
 		fetchQueuedTransactions();

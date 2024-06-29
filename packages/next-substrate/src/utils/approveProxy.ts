@@ -156,6 +156,7 @@ export default async function approveProxy({
 					return {
 						...prevState,
 						activeMultisig: (multisigData.proxy as string) || multisigData.address,
+						activeNetwork: multisigData.network,
 						isProxy: true,
 						multisigAddresses: copyMultisigAddresses,
 						multisigSettings: {

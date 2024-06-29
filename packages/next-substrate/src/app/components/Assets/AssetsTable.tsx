@@ -20,7 +20,7 @@ const AssetsTable = () => {
 	const { currency, allCurrencyPrices } = useGlobalCurrencyContext();
 	const { allAssets, organisationBalance } = useMultisigAssetsContext();
 	const { activeOrg } = useActiveOrgContext();
-	const { activeMultisig } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeNetwork } = useGlobalUserDetailsContext();
 
 	return (
 		<div className='text-sm font-medium leading-[15px]'>
@@ -37,9 +37,9 @@ const AssetsTable = () => {
 				<span className='col-span-1'>Value</span>
 				<span className='col-span-1'>Action</span>
 			</article>
-			{activeMultisig ? (
-				allAssets && allAssets[activeMultisig]?.assets?.length > 0 ? (
-					allAssets[activeMultisig]?.assets.map((asset, index) => {
+			{activeMultisig && activeNetwork ? (
+				allAssets && allAssets[`${activeMultisig}_${activeNetwork}`]?.assets?.length > 0 ? (
+					allAssets[`${activeMultisig}_${activeNetwork}`]?.assets.map((asset, index) => {
 						const { balance_token, balance_usd, logoURI, name, symbol } = asset;
 						return (
 							<>
@@ -89,7 +89,7 @@ const AssetsTable = () => {
 										<p className='font-normal text-sm'>Send</p>
 									</PrimaryButton>
 								</article>
-								{allAssets[activeMultisig].assets.length - 1 !== index ? (
+								{allAssets[`${activeMultisig}_${activeNetwork}`].assets.length - 1 !== index ? (
 									<Divider className='bg-text_secondary my-0' />
 								) : null}
 							</>

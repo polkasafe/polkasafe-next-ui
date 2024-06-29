@@ -21,7 +21,8 @@ import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 import ChangeCurrency from '../../components/Settings/ChangeCurrency';
 
 const Assets = () => {
-	const { userID, activeMultisig, isProxy, multisigAddresses, isSharedMultisig } = useGlobalUserDetailsContext();
+	const { userID, activeMultisig, activeNetwork, isProxy, multisigAddresses, isSharedMultisig } =
+		useGlobalUserDetailsContext();
 	const [activeAddress, setActiveAddress] = useState<'Proxy' | 'Multisig'>(isProxy ? 'Proxy' : 'Multisig');
 
 	const { allAssets, loadingAssets, organisationBalance } = useMultisigAssetsContext();
@@ -57,8 +58,8 @@ const Assets = () => {
 						<p className='text-sm text-text_secondary mb-3'>Total Balance</p>
 						<p className='text-[30px] font-bold text-white'>
 							{formatBalance(
-								activeMultisig
-									? Number(allAssets[activeMultisig]?.fiatTotal) *
+								activeMultisig && activeNetwork
+									? Number(allAssets[`${activeMultisig}_${activeNetwork}`]?.fiatTotal) *
 											Number(allCurrencyPrices[currencyProperties[currency]?.symbol]?.value) ||
 											allAssets[activeMultisig]?.fiatTotal
 									: Number(organisationBalance?.total) *

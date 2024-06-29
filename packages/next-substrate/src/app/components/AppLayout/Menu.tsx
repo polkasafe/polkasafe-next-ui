@@ -212,7 +212,7 @@ const Menu: FC<Props> = ({ className }) => {
 									const org = JSON.parse(e.key) as IOrganisation;
 									setActiveOrg(org);
 									if (typeof window !== 'undefined') localStorage.setItem('active-org', org.id);
-									setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: '' }));
+									setUserDetailsContextState((prev) => ({ ...prev, activeMultisig: '', activeNetwork: '' }));
 									setSelectedMultisigAddress('');
 									setSelectedNetwork('');
 								}
@@ -295,6 +295,7 @@ const Menu: FC<Props> = ({ className }) => {
 													return {
 														...prevState,
 														activeMultisig: multisig.address,
+														activeNetwork: multisig.network,
 														isSharedSafe: false,
 														notOwnerOfSafe: false,
 														sharedMultisigAddress: '',

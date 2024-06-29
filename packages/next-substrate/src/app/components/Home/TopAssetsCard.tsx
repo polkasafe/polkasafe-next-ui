@@ -32,8 +32,11 @@ const TopAssetsCard = ({
 		multisigAddress && network
 			? [
 					{
-						balance: allAssets[multisigAddress].assets.reduce((sum, item) => sum + Number(item.balance_token), 0),
-						balance_usd: Number(allAssets[multisigAddress].fiatTotal),
+						balance: allAssets[`${multisigAddress}_${network}`].assets.reduce(
+							(sum, item) => sum + Number(item.balance_token),
+							0
+						),
+						balance_usd: Number(allAssets[`${multisigAddress}_${network}`].fiatTotal),
 						tokenName: network,
 						tokenSymbol: chainProperties[network].tokenSymbol
 					}

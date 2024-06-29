@@ -3,7 +3,6 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 import { Button } from 'antd';
 import React, { useState } from 'react';
-import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import { DeleteIcon, EditIcon } from '@next-common/ui-components/CustomIcons';
@@ -11,14 +10,11 @@ import { DeleteIcon, EditIcon } from '@next-common/ui-components/CustomIcons';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import { IMultisigAddress } from '@next-common/types';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
-import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import RemoveMultisigAddress from './RemoveMultisig';
 import RenameMultisig from './RenameMultisig';
 
 const Details = ({ multisig }: { multisig: IMultisigAddress }) => {
 	const { multisigSettings } = useGlobalUserDetailsContext();
-	const { activeOrg } = useActiveOrgContext();
-	const { network } = useGlobalApiContext();
 	const [openRemoveModal, setOpenRemoveModal] = useState<boolean>(false);
 	const [openRenameModal, setOpenRenameModal] = useState<boolean>(false);
 
@@ -44,10 +40,8 @@ const Details = ({ multisig }: { multisig: IMultisigAddress }) => {
 				<RenameMultisig
 					multisig={multisig}
 					name={
-						multisigSettings?.[`${encodedMultisigAddress}_${network}`]?.name ||
-						activeOrg?.multisigs?.find(
-							(item) => item.address === multisig.address || item.address === encodedMultisigAddress
-						)?.name ||
+						multisigSettings?.[`${encodedMultisigAddress}_${multisig.network}`]?.name ||
+						multisig.name ||
 						DEFAULT_MULTISIG_NAME
 					}
 					onCancel={() => setOpenRenameModal(false)}
@@ -64,15 +58,14 @@ const Details = ({ multisig }: { multisig: IMultisigAddress }) => {
 				</div>
 				<div className='flex items-center justify-between gap-x-5 mt-5'>
 					<span>Blockchain:</span>
-					<span className='text-white capitalize'>{network}</span>
+					<span className='text-white capitalize'>{multisig.network}</span>
 				</div>
 				{encodedMultisigAddress && (
 					<div className='flex items-center justify-between gap-x-5 mt-7'>
 						<span>Safe Name:</span>
 						<span className='text-white flex items-center gap-x-3'>
-							{multisigSettings?.[`${encodedMultisigAddress}_${network}`]?.name ||
-								activeOrg?.multisigs?.find((item) => item.address === multisig.address || item.proxy === multisig.proxy)
-									?.name ||
+							{multisigSettings?.[`${encodedMultisigAddress}_${multisig.network}`]?.name ||
+								multisig.name ||
 								DEFAULT_MULTISIG_NAME}
 							<button onClick={() => setOpenRenameModal(true)}>
 								<EditIcon className='text-primary cursor-pointer' />
