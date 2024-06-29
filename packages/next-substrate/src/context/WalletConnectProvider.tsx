@@ -30,11 +30,10 @@ export interface IWalletConnectContext {
 
 export const initialAddMultisigContext: IWalletConnectContext = {} as IWalletConnectContext;
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
 
 const web3Modal = new WalletConnectModal({
-	projectId: '681a25a9988434e34c628b3be43781b8',
+	projectId: PROJECT_ID,
 	themeMode: 'dark'
 });
 
@@ -161,12 +160,11 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 
 			const provider = await UniversalProvider.init({
 				relayUrl: 'wss://relay.walletconnect.com',
-				projectId: '681a25a9988434e34c628b3be43781b8'
+				projectId: PROJECT_ID
 			});
 			// const _client = await Client.init({
 			// 	logger: 'debug',
 			// 	relayUrl: 'wss://relay.walletconnect.com',
-			// 	projectId: '681a25a9988434e34c628b3be43781b8'
 			// 	// metadata: DEFAULT_APP_METADATA
 			// });
 			console.log('wallet connect client', provider.client);
