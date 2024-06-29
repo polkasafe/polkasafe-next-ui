@@ -8,6 +8,7 @@
 
 import { chainProperties, networks } from '@next-common/global/networkConstants';
 import Client from '@walletconnect/sign-client';
+import UniversalProvider from '@walletconnect/universal-provider';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
 import { WalletConnectModal } from '@walletconnect/modal';
 import { createContext, useContext, useMemo, ReactNode, useCallback, useState, useEffect } from 'react';
@@ -157,19 +158,23 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			// setIsInitializing(true);
 			// const claimedOrigin = localStorage.getItem('wallet_connect_dapp_origin') || origin;
 			console.log('before client init');
-			// eslint-disable-next-line no-underscore-dangle
-			const _client = await Client.init({
-				logger: 'debug',
-				// relayUrl: relayerRegion,
-				projectId: '681a25a9988434e34c628b3be43781b8'
-				// metadata: DEFAULT_APP_METADATA
-			});
-			console.log('wallet connect client', _client);
 
-			setClient(_client);
+			const provider = await UniversalProvider.init({
+				relayUrl: 'wss://relay.walletconnect.com',
+				projectId: '681a25a9988434e34c628b3be43781b8'
+			});
+			// const _client = await Client.init({
+			// 	logger: 'debug',
+			// 	relayUrl: 'wss://relay.walletconnect.com',
+			// 	projectId: '681a25a9988434e34c628b3be43781b8'
+			// 	// metadata: DEFAULT_APP_METADATA
+			// });
+			console.log('wallet connect client', provider.client);
+
+			setClient(provider.client);
 			// setOrigin(_client.metadata.url);
 			// prevRelayerValue.current = relayerRegion;
-			await subscribeToEvents(_client);
+			await subscribeToEvents(provider.client);
 			// await checkPersistedState(_client);
 			// await _logClientId(_client);
 		} catch (error) {

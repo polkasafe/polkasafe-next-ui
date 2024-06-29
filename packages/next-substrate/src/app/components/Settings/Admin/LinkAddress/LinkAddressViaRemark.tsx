@@ -84,7 +84,7 @@ const LinkAddressViaRemark = ({ onCancel }: { onCancel: () => void }) => {
 				>
 					PolkasafeUser:{shortenAddress(address)}
 				</code>{' '}
-				from the address to link and input the transaction hash below.
+				in Polkadot from the address to link and input the transaction hash below.
 			</p>
 			<Form.Item
 				name='hash'
