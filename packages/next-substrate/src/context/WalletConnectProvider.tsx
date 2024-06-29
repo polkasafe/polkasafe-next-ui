@@ -169,9 +169,9 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 			// 	projectId: '681a25a9988434e34c628b3be43781b8'
 			// 	// metadata: DEFAULT_APP_METADATA
 			// });
-			console.log('wallet connect client', provider.client);
+			console.log('wallet connect client', provider.client as Client);
 
-			setClient(provider.client);
+			setClient(provider.client as Client);
 			// setOrigin(_client.metadata.url);
 			// prevRelayerValue.current = relayerRegion;
 			await subscribeToEvents(provider.client);
