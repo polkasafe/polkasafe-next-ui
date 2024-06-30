@@ -127,7 +127,7 @@ const BalanceHistory = ({
 			</div>
 			<div className='h-[300px] w-full'>
 				<LineChart
-					days={endDate.diff(startDate, 'd')}
+					days={endDate?.diff(startDate, 'd')}
 					incomingTransactions={filterredIncomingTxns}
 					outgoingTransactions={filterredOutgoingTxns}
 				/>

@@ -5,7 +5,6 @@
 'use client';
 
 import { createContext, useContext, useEffect, useMemo, useState, Context, ReactNode } from 'react';
-import CURRENCY_API_KEY from '@next-common/global/currencyApiKey';
 import { currencies, currencySymbol } from '@next-common/global/currencyConstants';
 
 export interface CurrencyContextType {
@@ -31,7 +30,7 @@ export function CurrencyContextProvider({ children }: CurrencyContextProviderPro
 	useEffect(() => {
 		const fetchCurrencyPrice = async () => {
 			const fetchPriceRes = await fetch(
-				`https://api.currencyapi.com/v3/latest?apikey=${CURRENCY_API_KEY}&currencies=${[
+				`https://api.currencyapi.com/v3/latest?apikey=${process.env.POLKASAFE_CURRENCY_API_KEY}&currencies=${[
 					...Object.values(currencySymbol)
 				]}`,
 				{

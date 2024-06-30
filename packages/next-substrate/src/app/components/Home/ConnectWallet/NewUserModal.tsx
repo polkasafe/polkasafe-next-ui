@@ -10,7 +10,7 @@ import useGetWalletAccounts from '@next-substrate/hooks/useGetWalletAccounts';
 import { IAddressBookItem, NotificationStatus } from '@next-common/types';
 import { AddIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 interface INewUserModal {
@@ -32,7 +32,7 @@ const NewUserModal = ({ open, onCancel }: INewUserModal) => {
 				console.log('ERROR');
 			} else {
 				const { data: addAddressData, error: addAddressError } = await nextApiClientFetch<IAddressBookItem[]>(
-					`${SUBSTRATE_API_URL}/addToAddressBook`,
+					`${FIREBASE_FUNCTIONS_URL}/addToAddressBook`,
 					{
 						address,
 						name

@@ -20,9 +20,9 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import WalletButtons from '@next-common/ui-components/WalletButtons';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 // import Image from 'next/image';
-import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
+
 import getConnectAddressToken from '@next-substrate/utils/getConnectAddressToken';
-import { FIREBASE_FUNCTIONS_URL, SUBSTRATE_API_AUTH_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { useRouter } from 'next/navigation';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { useWalletConnectContext } from '@next-substrate/context/WalletConnectProvider';
@@ -365,14 +365,15 @@ const ConnectWallet = () => {
 
 		setLoading(true);
 		try {
-			const { data: token, error: validate2FAError } = await nextApiClientFetch<string>(
-				`${SUBSTRATE_API_AUTH_URL}/2fa/validate2FA`,
-				{
+			const tokenData = await fetch(`${FIREBASE_FUNCTIONS_URL}/valid_2FA_code`, {
+				body: JSON.stringify({
 					authCode,
 					tfa_token: tfaToken
-				},
-				{ address: substrateAddress }
-			);
+				}),
+				headers: firebaseFunctionsHeader(substrateAddress),
+				method: 'POST'
+			});
+			const { data: token, error: validate2FAError } = (await tokenData.json()) as { data: string; error: string };
 
 			if (validate2FAError) {
 				if (validate2FAError === '2FA token expired.') {
