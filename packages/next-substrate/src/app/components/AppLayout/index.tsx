@@ -21,7 +21,7 @@ import { ISharedAddressBooks } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import LocalizedFormat from 'dayjs/plugin/localizedFormat';
 
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import dayjs from 'dayjs';
 import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
@@ -76,7 +76,7 @@ function AppLayout({ className, children }: { className?: string; children: Reac
 		setMultisigChanged(true);
 		const { data: sharedAddressBookData, error: sharedAddressBookError } =
 			await nextApiClientFetch<ISharedAddressBooks>(
-				`${SUBSTRATE_API_URL}/getSharedAddressBook`,
+				`${FIREBASE_FUNCTIONS_URL}/getSharedAddressBook`,
 				{
 					multisigAddress: multisig?.proxy ? multisig.proxy : multisig?.address
 				},

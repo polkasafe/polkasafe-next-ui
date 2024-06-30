@@ -8,7 +8,7 @@ import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { NotificationStatus } from '@next-common/types';
 import { CheckOutlined, Disc, NotifyMail, CloseIcon } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const EmailBadge = () => {
@@ -35,7 +35,7 @@ const EmailBadge = () => {
 				return;
 			}
 			const { data: addEmailData, error: addEmailError } = await nextApiClientFetch<string>(
-				`${SUBSTRATE_API_URL}/updateEmail`,
+				`${FIREBASE_FUNCTIONS_URL}/updateEmail`,
 				{
 					email: inputValue
 				},

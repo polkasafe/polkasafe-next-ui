@@ -27,7 +27,7 @@ import {
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import ModalComponent from '@next-common/ui-components/ModalComponent';
 import DiscordInfoModal from './DiscordInfoModal';
@@ -185,7 +185,7 @@ const Notifications = () => {
 
 				const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
 					await nextApiClientFetch<string>(
-						`${SUBSTRATE_API_URL}/updateNotificationTriggerPreferences`,
+						`${FIREBASE_FUNCTIONS_URL}/updateNotificationTriggerPreferences`,
 						{
 							triggerPreferences: newPreferences
 						},
@@ -257,7 +257,7 @@ const Notifications = () => {
 
 			const { data: updateNotificationTriggerData, error: updateNotificationTriggerError } =
 				await nextApiClientFetch<string>(
-					`${SUBSTRATE_API_URL}/updateNotificationChannelPreferences`,
+					`${FIREBASE_FUNCTIONS_URL}/updateNotificationChannelPreferences`,
 					{
 						channelPreferences: newChannelPreferences
 					},
@@ -328,7 +328,7 @@ const Notifications = () => {
 				setVerificationLoading(true);
 
 				const { data: verifyEmailUpdate, error: verifyTokenError } = await nextApiClientFetch<string>(
-					`${SUBSTRATE_API_URL}/notify`,
+					`${FIREBASE_FUNCTIONS_URL}/notify`,
 					{
 						args: {
 							address,
@@ -395,7 +395,7 @@ const Notifications = () => {
 				console.log('ERROR');
 			} else {
 				const { data: verifyToken, error: verifyTokenError } = await nextApiClientFetch<string>(
-					`${SUBSTRATE_API_URL}/getChannelVerifyToken`,
+					`${FIREBASE_FUNCTIONS_URL}/getChannelVerifyToken`,
 					{
 						channel
 					},

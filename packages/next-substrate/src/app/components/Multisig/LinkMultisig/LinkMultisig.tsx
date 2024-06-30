@@ -1,7 +1,7 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
-/* eslint-disable no-tabs */
+
 /* eslint-disable sort-keys */
 
 import React, { useState } from 'react';
@@ -19,7 +19,7 @@ import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import getSubstrateAddress from '@next-substrate/utils/getSubstrateAddress';
 
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL, SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
 import NameAddress from './NameAddress';
 import SelectNetwork from './SelectNetwork';
 import Owners from './Owners';
@@ -97,7 +97,7 @@ const LinkMultisig = ({ onCancel }: { onCancel: () => void }) => {
 				}
 			}
 			const { data: createMultisigData, error: multisigError } = await nextApiClientFetch<IMultisigAddress>(
-				`${SUBSTRATE_API_URL}/createMultisig`,
+				`${FIREBASE_FUNCTIONS_URL}/createMultisig`,
 				{
 					signatories,
 					threshold: multisigThreshold,
