@@ -41,7 +41,6 @@ export type ChainPropType = {
 export const networks = {
 	ALEPHZERO: 'alephzero',
 	ASTAR: 'astar',
-	AVAIL: 'avail-goldberg',
 	KHALA: 'khala',
 	KUSAMA: 'kusama',
 	// PASEO: 'paseo',
@@ -168,18 +167,6 @@ export const chainProperties: ChainPropType = {
 		ss58Format: 30,
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.PHA
-	},
-	[networks.AVAIL]: {
-		blockTime: 1000,
-		chainId: 'polkadot:6f09966420b2608d1947ccfb0f2a3624',
-		existentialDeposit: '0.00001',
-		logo: availLogo,
-		// rpcEndpoint: 'wss://rpc-testnet.avail.tools/ws',
-		rpcEndpoint: 'wss://goldberg-testnet-rpc.avail.tools/ws',
-		// rpcEndpoint: 'wss://goldberg.avail.tools/ws',
-		ss58Format: 42,
-		tokenDecimals: 18,
-		tokenSymbol: tokenSymbol.AVL
 	},
 	[networks.TURING]: {
 		blockTime: 1000,
