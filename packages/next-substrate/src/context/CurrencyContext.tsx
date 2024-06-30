@@ -8,7 +8,6 @@
 import '@polkadot/api-augment';
 
 import { createContext, useContext, useEffect, useMemo, useState, Context, ReactNode, useCallback } from 'react';
-import CURRENCY_API_KEY from '@next-common/global/currencyApiKey';
 import { currencies, currencyProperties, currencySymbol } from '@next-common/global/currencyConstants';
 import getCurrency from '@next-substrate/utils/getCurrency';
 import { chainProperties, networks } from '@next-common/global/networkConstants';
@@ -67,7 +66,7 @@ export function CurrencyContextProvider({ children }: CurrencyContextProviderPro
 	useEffect(() => {
 		const fetchCurrencyPrice = async () => {
 			const fetchPriceRes = await fetch(
-				`https://api.currencyapi.com/v3/latest?apikey=${CURRENCY_API_KEY}&currencies=${[
+				`https://api.currencyapi.com/v3/latest?apikey=${process.env.POLKASAFE_CURRENCY_API_KEY}&currencies=${[
 					...Object.values(currencySymbol)
 				]}`,
 				{

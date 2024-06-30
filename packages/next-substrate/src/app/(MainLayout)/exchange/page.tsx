@@ -14,7 +14,7 @@ import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { networks, onrampTokenProperties, onrampTokens } from '@next-common/global/networkConstants';
-import ONRAMP_APP_ID from '@next-common/global/onrampAppId';
+
 import { CircleArrowDownIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
@@ -101,7 +101,7 @@ const Exchange = ({ className }: { className?: string }) => {
 		// transak.init();
 
 		const onramp = new OnrampWebSDK({
-			appId: ONRAMP_APP_ID,
+			appId: Number(process.env.NEXT_ONRAMP_APP_ID),
 			coinAmount: Number(coinAmount),
 			coinCode: onrampTokenProperties[coinCode].tokenSymbol,
 			flowType: onrampFlowType,

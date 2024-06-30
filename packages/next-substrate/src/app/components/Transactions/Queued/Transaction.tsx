@@ -23,7 +23,7 @@ import cancelProxy from '@next-substrate/utils/cancelProxy';
 import decodeCallData from '@next-substrate/utils/decodeCallData';
 import parseDecodedValue from '@next-substrate/utils/parseDecodedValue';
 import setSigner from '@next-substrate/utils/setSigner';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
@@ -153,7 +153,7 @@ const Transaction: FC<ITransactionProps> = ({
 		(async () => {
 			if (decodedCallData || callData) return; // already stored
 
-			await nextApiClientFetch(`${SUBSTRATE_API_URL}/setTransactionCallData`, {
+			await nextApiClientFetch(`${FIREBASE_FUNCTIONS_URL}/setTransactionCallData`, {
 				callData: callDataString,
 				callHash,
 				network
@@ -165,7 +165,7 @@ const Transaction: FC<ITransactionProps> = ({
 	useEffect(() => {
 		const fetchMultisigData = async (newMultisigAddress: string) => {
 			const { data: newMultisigData, error: multisigFetchError } = await nextApiClientFetch<IMultisigAddress>(
-				`${SUBSTRATE_API_URL}/getMultisigDataByMultisigAddress`,
+				`${FIREBASE_FUNCTIONS_URL}/getMultisigDataByMultisigAddress`,
 				{
 					multisigAddress: newMultisigAddress,
 					network

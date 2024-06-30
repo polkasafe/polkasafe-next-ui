@@ -11,7 +11,7 @@ import { INotification } from '@next-common/types';
 import { NotificationIcon } from '@next-common/ui-components/CustomIcons';
 import Loader from '@next-common/ui-components/Loader';
 
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import NotificationCard from './NotificationCard';
 
@@ -32,7 +32,7 @@ const Notification = () => {
 
 		setLoading(true);
 		const { data, error } = await nextApiClientFetch<INotification[]>(
-			`${SUBSTRATE_API_URL}/getNotifications`,
+			`${FIREBASE_FUNCTIONS_URL}/getNotifications`,
 			{},
 			{ network }
 		);

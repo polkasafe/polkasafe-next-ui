@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { NotificationStatus } from '@next-common/types';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
@@ -25,7 +25,7 @@ const RemoveFromWatchlist = ({
 
 		setLoading(true);
 		const { data: watchlistData, error: watchlistError } = await nextApiClientFetch<string>(
-			`${SUBSTRATE_API_URL}/removeFromWatchlist`,
+			`${FIREBASE_FUNCTIONS_URL}/removeFromWatchlist`,
 			{
 				address,
 				network
