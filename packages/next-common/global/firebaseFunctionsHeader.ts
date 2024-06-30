@@ -3,7 +3,7 @@
 // of the Apache-2.0 license. See the LICENSE file for details.
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { NOTIFICATION_ENGINE_API_KEY } from "@next-substrate/utils/notificationEngine";
+import { NOTIFICATION_ENGINE_API_KEY } from '@next-substrate/utils/notificationEngine';
 
 export default function firebaseFunctionsHeader(
 	// network: string,
