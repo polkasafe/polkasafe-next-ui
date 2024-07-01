@@ -11,7 +11,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { CHANNEL, NotificationStatus } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 
 const VerifyEmailToken = () => {
@@ -23,7 +23,7 @@ const VerifyEmailToken = () => {
 		const email = searchParams.get('email');
 		const token = searchParams.get('token');
 		const { data: verifyEmailData, error: verifyEmailError } = await nextApiClientFetch<string>(
-			`${SUBSTRATE_API_URL}/verifyEmail`,
+			`${FIREBASE_FUNCTIONS_URL}/verifyEmail`,
 			{
 				email,
 				token

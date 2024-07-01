@@ -11,7 +11,7 @@ import { useGlobalApiContext } from '@next-substrate/context/ApiContext';
 import { NotificationStatus } from '@next-common/types';
 import { NotifyMail } from '@next-common/ui-components/CustomIcons';
 import queueNotification from '@next-common/ui-components/QueueNotification';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 
@@ -28,7 +28,7 @@ const ContactUs = () => {
 			setLoading(true);
 
 			const { data: contactFormData, error: contactFormError } = await nextApiClientFetch<any>(
-				`${SUBSTRATE_API_URL}/addContactFormResponse`,
+				`${FIREBASE_FUNCTIONS_URL}/addContactFormResponse`,
 				{
 					email,
 					message,

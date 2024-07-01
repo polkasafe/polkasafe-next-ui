@@ -15,7 +15,7 @@ async function nextApiClientFetch<T>(
 ): Promise<{ data?: T; error?: string }> {
 	const network = getNetwork();
 
-	const response = await fetch(`${typeof window !== 'undefined' && window.location.origin}/${url}`, {
+	const response = await fetch(`${url}`, {
 		body: JSON.stringify(data),
 		headers: firebaseFunctionsHeader(headers?.network || network, headers?.address || '', headers?.signature || ''),
 		method: method || 'POST'

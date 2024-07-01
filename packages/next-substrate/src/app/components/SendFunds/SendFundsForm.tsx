@@ -122,9 +122,8 @@ const SendFundsForm = ({
 	selectedNetwork,
 	selectedTransactionFieldsObject // eslint-disable-next-line sonarjs/cognitive-complexity,
 }: ISendFundsFormProps) => {
-	console.log('selectedRecipient', selectedRecipient);
 	const { getCache, setCache } = useCache();
-	const { activeMultisig, address, loggedInWallet } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeNetwork, address, loggedInWallet } = useGlobalUserDetailsContext();
 	const { client, session } = useWalletConnectContext();
 	const [xcmSelected, setXcmSelected] = useState<boolean>(false);
 
@@ -142,11 +141,13 @@ const SendFundsForm = ({
 
 	const [multisig, setMultisig] = useState<IMultisigAddress>(
 		activeOrg?.multisigs?.find(
-			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+			(item) =>
+				(item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)) &&
+				item.network === activeNetwork
 		)
 	);
 	const [network, setNetwork] = useState<string>(
-		selectedNetwork || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
+		selectedNetwork || activeNetwork || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
 	);
 	const [recipientAndAmount, setRecipientAndAmount] = useState<IRecipientAndAmount[]>([
 		{
@@ -228,8 +229,6 @@ const SendFundsForm = ({
 		}
 	});
 
-	console.log(multisigOptionsWithProxy);
-
 	const multisigOptions: ItemType[] = multisigOptionsWithProxy?.map((item) => ({
 		key: JSON.stringify({ ...item, isProxy: true }),
 		label: (
@@ -310,12 +309,13 @@ const SendFundsForm = ({
 	useEffect(() => {
 		if (!activeOrg || !activeOrg.multisigs) return;
 		const m = activeOrg?.multisigs?.find(
-			(item) => item.address === selectedMultisig || checkMultisigWithProxy(item.proxy, selectedMultisig)
+			(item) =>
+				(item.address === selectedMultisig || checkMultisigWithProxy(item.proxy, selectedMultisig)) &&
+				item.network === network
 		);
-		console.log('m', m);
+		console.log('m', m, network);
 		setMultisig(m || activeOrg.multisigs[0]);
-		setNetwork(m?.network || activeOrg.multisigs[0].network);
-	}, [activeOrg, selectedMultisig]);
+	}, [activeOrg, network, selectedMultisig]);
 
 	useEffect(() => {
 		if (
@@ -859,37 +859,50 @@ const SendFundsForm = ({
 						) : (
 							<section className=''>
 								{xcmSupported && (
-									<div className='flex justify-start items-center my-4 gap-3'>
-										<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
-											Cross Chain Transfer
-											<Switch
-												checked={xcmSelected}
-												onChange={(checked) => {
-													setXcmSelected(checked);
-													setRecipientAndAmount([{ amount: new BN(0), recipient: '' }]);
-												}}
-												size='small'
-												className='text-primary'
-											/>
-										</label>
-										{xcmSelected && (
-											<Dropdown
-												trigger={['click']}
-												className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer'
-												menu={{
-													items: [
-														...crossChainNetwork[network].supportedNetworks.map((c) => ({
-															key: c,
-															label: <span className='text-white capitalize'>{c.split('-').join(' ')}</span>
-														}))
-													],
-													onClick: (e) => setDestinationNetwork(e.key)
-												}}
-											>
-												<div className='flex justify-between items-center text-white'>
-													{destinationNetwork || 'Select Network'}
-												</div>
-											</Dropdown>
+									<div>
+										<div className='flex justify-start items-center my-4 gap-3'>
+											<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>
+												Cross Chain Transfer
+												<Switch
+													checked={xcmSelected}
+													onChange={(checked) => {
+														setXcmSelected(checked);
+														setRecipientAndAmount([{ amount: new BN(0), recipient: '' }]);
+														if (!checked) {
+															setDestinationNetwork(null);
+														}
+													}}
+													size='small'
+													className='text-primary'
+												/>
+											</label>
+											{xcmSelected && (
+												<Dropdown
+													trigger={['click']}
+													className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer'
+													menu={{
+														items: [
+															...crossChainNetwork[network].supportedNetworks.map((c) => ({
+																key: c,
+																label: <span className='text-white capitalize'>{c.split('-').join(' ')}</span>
+															}))
+														],
+														onClick: (e) => setDestinationNetwork(e.key)
+													}}
+												>
+													<div className='flex justify-between items-center text-white capitalize'>
+														{destinationNetwork?.split('-').join(' ') || 'Select Network'}
+													</div>
+												</Dropdown>
+											)}
+										</div>
+
+										{destinationNetwork && (
+											<p className='text-waiting'>
+												Please enter{' '}
+												<span className='font-bold capitalize italic'>{destinationNetwork?.split('-').join(' ')}</span>{' '}
+												network formatted address
+											</p>
 										)}
 									</div>
 								)}

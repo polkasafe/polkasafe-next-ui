@@ -121,6 +121,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 			return {
 				...prevState,
 				activeMultisig: multisigData.address,
+				activeNetwork: multisigData.network,
 				multisigAddresses: [...(prevState?.multisigAddresses || []), multisigData],
 				multisigSettings: {
 					...prevState.multisigSettings,

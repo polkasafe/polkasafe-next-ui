@@ -1,7 +1,6 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
-/* eslint-disable sort-keys */
 
 'use client';
 
@@ -11,16 +10,18 @@ import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
 import { OnrampWebSDK } from '@onramp.money/onramp-web-sdk';
 import { Dropdown, Form, Input } from 'antd';
 import { ItemType } from 'antd/es/menu/hooks/useItems';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { networks, onrampTokenProperties, onrampTokens } from '@next-common/global/networkConstants';
-import ONRAMP_APP_ID from '@next-common/global/onrampAppId';
+
 import { CircleArrowDownIcon, ExternalLinkIcon } from '@next-common/ui-components/CustomIcons';
 import PrimaryButton from '@next-common/ui-components/PrimaryButton';
 import getEncodedAddress from '@next-substrate/utils/getEncodedAddress';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
+import { IMultisigAddress } from '@next-common/types';
+import InfoBox from '@next-common/ui-components/InfoBox';
 import { ParachainIcon } from '../../components/NetworksDropdown/NetworkCard';
 import AddMultisigModal from '../../components/Multisig/AddMultisigModal';
 
@@ -29,19 +30,44 @@ enum EOnramp {
 	SELL = 2
 }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const Exchange = ({ className }: { className?: string }) => {
-	const { address: userAddress, activeMultisig } = useGlobalUserDetailsContext();
+	const { address: userAddress } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
-	const activeMultisigData = activeOrg?.multisigs?.find((item) => item.address === activeMultisig);
+	const multisigOptions: ItemType[] = activeOrg?.multisigs
+		?.filter((item) => [networks.POLKADOT, networks.KUSAMA].includes(item.network))
+		.map((item) => ({
+			key: JSON.stringify(item),
+			label: (
+				<AddressComponent
+					isMultisig
+					showNetworkBadge
+					withBadge={false}
+					network={item.network}
+					address={item.address}
+				/>
+			)
+		}));
 
 	const [network, setNetwork] = useState<string>(
-		activeMultisigData?.network || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
+		multisigOptions && multisigOptions.length > 0
+			? (JSON.parse(multisigOptions[0].key as string) as IMultisigAddress).network
+			: networks.POLKADOT
 	);
 
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
-		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
+		multisigOptions && multisigOptions.length > 0
+			? (JSON.parse(multisigOptions[0].key as string) as IMultisigAddress).address
+			: ''
 	);
+
+	useEffect(() => {
+		if (multisigOptions && multisigOptions.length > 0) {
+			setSelectedMultisig((JSON.parse(multisigOptions[0].key as string) as IMultisigAddress).address);
+			setNetwork((JSON.parse(multisigOptions[0].key as string) as IMultisigAddress).network);
+		}
+	}, [multisigOptions]);
 
 	const [onrampFlowType, setOnrampFlowType] = useState<EOnramp>(EOnramp.BUY);
 	const [coinCode, setCoinCode] = useState(onrampTokens.POLKADOT);
@@ -59,19 +85,6 @@ const Exchange = ({ className }: { className?: string }) => {
 			)
 		}));
 
-	const multisigOptions: ItemType[] = activeOrg?.multisigs?.map((item) => ({
-		key: JSON.stringify(item),
-		label: (
-			<AddressComponent
-				isMultisig
-				showNetworkBadge
-				withBadge={false}
-				network={item.network}
-				address={item.address}
-			/>
-		)
-	}));
-
 	const onConfirm = () => {
 		if (!selectedMultisig || !coinAmount || Number.isNaN(coinAmount)) return;
 
@@ -88,7 +101,7 @@ const Exchange = ({ className }: { className?: string }) => {
 		// transak.init();
 
 		const onramp = new OnrampWebSDK({
-			appId: ONRAMP_APP_ID,
+			appId: Number(process.env.NEXT_ONRAMP_APP_ID),
 			coinAmount: Number(coinAmount),
 			coinCode: onrampTokenProperties[coinCode].tokenSymbol,
 			flowType: onrampFlowType,
@@ -126,64 +139,72 @@ const Exchange = ({ className }: { className?: string }) => {
 							Sell
 						</span>
 					</div>
-					<div>
-						<Dropdown
-							trigger={['click']}
-							className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer'
-							menu={{
-								items: multisigOptions,
-								onClick: (e) => {
-									setSelectedMultisig(JSON.parse(e.key)?.address);
-									setNetwork(JSON.parse(e.key)?.network);
-								}
-							}}
-						>
-							<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
-								<AddressComponent
-									isMultisig
-									showNetworkBadge
-									withBadge={false}
-									network={network}
-									address={selectedMultisig}
-								/>
-								<CircleArrowDownIcon className='text-primary' />
-							</div>
-						</Dropdown>
-					</div>
-					<div className='flex-1'>
-						<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Token Amount*</label>
-						<Form.Item
-							className='border-0 outline-0 my-0 p-0'
-							name='coin-amount'
-							rules={[{ required: true }]}
-							validateStatus={coinAmount && Number.isNaN(coinAmount) ? 'error' : 'success'}
-							help={coinAmount && Number.isNaN(coinAmount) && 'Please enter a valid Amount'}
-						>
-							<div className='flex items-center h-[50px]'>
-								<Input
-									id='coin-amount'
-									onChange={(e) => setCoinAmount(e.target.value as any)}
-									placeholder='10'
-									value={coinAmount}
-									className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-main rounded-lg text-white pr-20'
-								/>
+					{multisigOptions && multisigOptions.length > 0 ? (
+						<>
+							<div>
 								<Dropdown
 									trigger={['click']}
-									className={className}
+									className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer'
 									menu={{
-										items: currencyOptions,
-										onClick: (e) => setCoinCode(e.key as any)
+										items: multisigOptions,
+										onClick: (e) => {
+											setSelectedMultisig(JSON.parse(e.key)?.address);
+											setNetwork(JSON.parse(e.key)?.network);
+										}
 									}}
 								>
-									<div className='absolute cursor-pointer right-0 text-white pr-3 gap-x-1 flex items-center justify-center'>
-										<ParachainIcon src={onrampTokenProperties[coinCode]?.logo} />
-										<span>{onrampTokenProperties[coinCode]?.tokenSymbol?.toUpperCase()}</span>
-										<CircleArrowDownIcon className='text-primary ml-1' />
+									<div className='flex justify-between gap-x-4 items-center text-white text-[16px]'>
+										<AddressComponent
+											isMultisig
+											showNetworkBadge
+											withBadge={false}
+											network={network}
+											address={selectedMultisig}
+										/>
+										<CircleArrowDownIcon className='text-primary' />
 									</div>
 								</Dropdown>
 							</div>
-						</Form.Item>
-					</div>
+							<div className='flex-1'>
+								<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Token Amount*</label>
+								<Form.Item
+									className='border-0 outline-0 my-0 p-0'
+									name='coin-amount'
+									rules={[{ required: true }]}
+									validateStatus={coinAmount && Number.isNaN(coinAmount) ? 'error' : 'success'}
+									help={coinAmount && Number.isNaN(coinAmount) && 'Please enter a valid Amount'}
+								>
+									<div className='flex items-center h-[50px]'>
+										<Input
+											id='coin-amount'
+											onChange={(e) => setCoinAmount(e.target.value as any)}
+											placeholder='10'
+											value={coinAmount}
+											className='w-full h-full text-sm font-normal leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-main rounded-lg text-white pr-20'
+										/>
+										<Dropdown
+											trigger={['click']}
+											className={className}
+											menu={{
+												items: currencyOptions,
+												onClick: (e) => setCoinCode(e.key as any)
+											}}
+										>
+											<div className='absolute cursor-pointer right-0 text-white pr-3 gap-x-1 flex items-center justify-center'>
+												<ParachainIcon src={onrampTokenProperties[coinCode]?.logo} />
+												<span>{onrampTokenProperties[coinCode]?.tokenSymbol?.toUpperCase()}</span>
+												<CircleArrowDownIcon className='text-primary ml-1' />
+											</div>
+										</Dropdown>
+									</div>
+								</Form.Item>
+							</div>
+						</>
+					) : (
+						<div className='flex-1'>
+							<InfoBox message='Please create a Multisig in Polkadot or Kusama' />
+						</div>
+					)}
 					<PrimaryButton
 						disabled={!selectedMultisig || !coinAmount || Number.isNaN(coinAmount)}
 						className='flex justify-center'

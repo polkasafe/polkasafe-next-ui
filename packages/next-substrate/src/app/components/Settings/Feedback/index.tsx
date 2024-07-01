@@ -7,7 +7,7 @@ import { NotificationStatus } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import Review from './Review';
 
@@ -39,7 +39,7 @@ const Feedback = () => {
 					return;
 				}
 				const { data: feedbackData, error: feedbackError } = await nextApiClientFetch<any>(
-					`${SUBSTRATE_API_URL}/addFeedback`,
+					`${FIREBASE_FUNCTIONS_URL}/addFeedback`,
 					{
 						rating,
 						review
@@ -98,7 +98,6 @@ const Feedback = () => {
 				<div className='my-[34.5px] flex items-center justify-center gap-x-5 max-sm:gap-x-1 max-sm:my-[14.5px]'>
 					{emojis.map((emoji, i) => {
 						return (
-							// eslint-disable-next-line jsx-a11y/click-events-have-key-events, jsx-a11y/no-static-element-interactions
 							<span
 								onClick={() => setRating(5 - i)}
 								key={emoji}

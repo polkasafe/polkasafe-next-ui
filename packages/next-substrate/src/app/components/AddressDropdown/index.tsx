@@ -40,6 +40,7 @@ const AddressDropdown = () => {
 			return {
 				...prevState,
 				activeMultisig: '',
+				activeNetwork: '',
 				address: '',
 				addressBook: [],
 				isSharedMultisig: false,

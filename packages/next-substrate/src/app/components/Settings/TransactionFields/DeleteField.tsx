@@ -106,7 +106,7 @@ const DeleteField = ({
 		<Form className='my-0 w-[560px]'>
 			<p className='text-white font-medium text-sm leading-[15px]'>
 				Are you sure you want to delete
-				<span className='text-primary mx-1.5'>{transactionFields[category].subfields?.[subfield].subfieldName}</span>?
+				<span className='text-primary mx-1.5'>{transactionFields[category].subfields?.[subfield]?.subfieldName}</span>?
 			</p>
 			<div className='flex items-center justify-between gap-x-5 mt-[30px]'>
 				<CancelBtn onClick={onCancel} />

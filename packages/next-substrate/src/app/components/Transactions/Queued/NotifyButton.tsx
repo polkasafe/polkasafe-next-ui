@@ -5,7 +5,7 @@ import { Button, Tooltip as AntDTooltip } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { CircleCheckIcon, NotificationIcon } from '@next-common/ui-components/CustomIcons';
 import styled from 'styled-components';
-import { SUBSTRATE_API_URL } from '@next-common/global/apiUrls';
+import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import nextApiClientFetch from '@next-substrate/utils/nextApiClientFetch';
 import { IUserNotificationPreferences } from '@next-common/types';
 
@@ -29,7 +29,7 @@ export default function NotifyButton({ address, onClick, canNotificationSend }: 
 	useEffect(() => {
 		const canSendReminder = async () => {
 			const { data } = await nextApiClientFetch<IUserNotificationPreferences>(
-				`${SUBSTRATE_API_URL}/getNotificationPreferencesForAddress`,
+				`${FIREBASE_FUNCTIONS_URL}/getNotificationPreferencesForAddress`,
 				{
 					address
 				}

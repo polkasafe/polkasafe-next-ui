@@ -69,6 +69,7 @@ const DashboardCard = ({
 }: IDashboardCard) => {
 	const {
 		activeMultisig,
+		activeNetwork,
 		multisigSettings,
 		isProxy,
 		setUserDetailsContextState,
@@ -91,11 +92,13 @@ const DashboardCard = ({
 		} else {
 			setCurrentMultisig(
 				activeOrg?.multisigs?.find(
-					(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+					(item) =>
+						(item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)) &&
+						item.network === activeNetwork
 				)
 			);
 		}
-	}, [activeMultisig, activeOrg?.multisigs, isSharedMultisig, sharedMultisigInfo]);
+	}, [activeMultisig, activeNetwork, activeOrg?.multisigs, isSharedMultisig, sharedMultisigInfo]);
 
 	const baseURL = typeof window !== 'undefined' && global.window.location.origin;
 
@@ -164,7 +167,9 @@ const DashboardCard = ({
 						<Tooltip title='Copy Share Link'>
 							<button
 								className='text-text_secondary text-lg'
-								onClick={() => copyText(`${baseURL}?multisig=${activeMultisig}&network=${currentMultisig?.network}`)}
+								onClick={() =>
+									copyText(`${baseURL}/watch?multisig=${activeMultisig}&network=${currentMultisig?.network}`)
+								}
 							>
 								<ShareAltOutlined />
 							</button>
@@ -369,7 +374,11 @@ const DashboardCard = ({
 							<div>
 								<div className='text-white'>Tokens</div>
 								<div className='font-bold text-lg text-primary'>
-									{loadingAssets ? <Spin size='default' /> : allAssets?.[activeMultisig]?.assets.length}
+									{loadingAssets ? (
+										<Spin size='default' />
+									) : (
+										allAssets?.[`${activeMultisig}_${activeNetwork}`]?.assets.length
+									)}
 								</div>
 							</div>
 							<div>
@@ -378,7 +387,9 @@ const DashboardCard = ({
 									{loadingAssets ? (
 										<Spin size='default' />
 									) : (
-										(Number(allAssets?.[activeMultisig]?.fiatTotal || 0) * Number(currencyPrice)).toFixed(2) || 'N/A'
+										(
+											Number(allAssets?.[`${activeMultisig}_${activeNetwork}`]?.fiatTotal || 0) * Number(currencyPrice)
+										).toFixed(2) || 'N/A'
 									)}
 								</div>
 							</div>

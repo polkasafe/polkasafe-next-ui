@@ -26,6 +26,7 @@ const ManageMultisig = () => {
 					<h3 className='text-white mb-8 text-lg font-semibold md:font-bold md:text-xl capitalize'>Add Category</h3>
 				}
 				open={openAddCustomFieldModal}
+				footer={null}
 			>
 				<AddCustomField
 					setCatgory={setCategory}

@@ -8,8 +8,9 @@
 
 import { chainProperties, networks } from '@next-common/global/networkConstants';
 import Client from '@walletconnect/sign-client';
+import UniversalProvider from '@walletconnect/universal-provider';
 import { PairingTypes, SessionTypes } from '@walletconnect/types';
-import { Web3Modal } from '@web3modal/standalone';
+import { WalletConnectModal } from '@walletconnect/modal';
 import { createContext, useContext, useMemo, ReactNode, useCallback, useState, useEffect } from 'react';
 
 export const DEFAULT_APP_METADATA = {
@@ -31,10 +32,9 @@ export const initialAddMultisigContext: IWalletConnectContext = {} as IWalletCon
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID;
 
-const web3Modal = new Web3Modal({
+const web3Modal = new WalletConnectModal({
 	projectId: PROJECT_ID,
-	themeMode: 'dark',
-	walletConnectVersion: 2
+	themeMode: 'dark'
 });
 
 export const WalletConnectContext = createContext(initialAddMultisigContext);
@@ -156,22 +156,25 @@ export const WalletConnectProvider = ({ children }: { children?: ReactNode }): R
 		try {
 			// setIsInitializing(true);
 			// const claimedOrigin = localStorage.getItem('wallet_connect_dapp_origin') || origin;
-			console.log('before client init');
-			// eslint-disable-next-line no-underscore-dangle
-			const _client = await Client.init({
-				// logger: DEFAULT_LOGGER,
-				// relayUrl: relayerRegion,
-				projectId: PROJECT_ID,
-				metadata: DEFAULT_APP_METADATA
-			});
-			console.log('wallet connect client', _client);
 
-			setClient(_client);
+			const provider = await UniversalProvider.init({
+				relayUrl: 'wss://relay.walletconnect.com',
+				projectId: PROJECT_ID
+			});
+			// const _client = await Client.init({
+			// 	logger: 'debug',
+			// 	relayUrl: 'wss://relay.walletconnect.com',
+			// 	// metadata: DEFAULT_APP_METADATA
+			// });
+
+			setClient(provider.client as any);
 			// setOrigin(_client.metadata.url);
 			// prevRelayerValue.current = relayerRegion;
-			await subscribeToEvents(_client);
+			await subscribeToEvents(provider.client as any);
 			// await checkPersistedState(_client);
 			// await _logClientId(_client);
+		} catch (error) {
+			console.log('error in initialising wc client', error);
 		} finally {
 			// setIsInitializing(false);
 		}

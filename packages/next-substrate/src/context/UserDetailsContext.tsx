@@ -7,14 +7,11 @@
 
 import dayjs from 'dayjs';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, ReactNode } from 'react';
-import { useRouter, useSearchParams, usePathname } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { EFieldType, IUser, Triggers, UserDetailsContextType, Wallet } from '@next-common/types';
 import Loader from '@next-common/ui-components/Loader';
 import logout from '@next-substrate/utils/logout';
 
-import { SUBSCAN_API_HEADERS } from '@next-common/global/subscan_consts';
-import { networks } from '@next-common/global/networkConstants';
-import { DEFAULT_MULTISIG_NAME } from '@next-common/global/default';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import { useWalletConnectContext } from './WalletConnectProvider';
@@ -23,6 +20,7 @@ export const initialUserDetailsContext: UserDetailsContextType = {
 	userID: '',
 	organisations: [],
 	activeMultisig: '',
+	activeNetwork: '',
 	address: '',
 	addressBook: [],
 	createdAt: new Date(),
@@ -325,67 +323,9 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	const { session } = useWalletConnectContext();
 
 	const [loading, setLoading] = useState(true);
-
-	const searchParams = useSearchParams();
 	const pathname = usePathname();
 
 	const path = pathname.split('/')[1];
-
-	const sharedMultisigAddress = searchParams.get('multisig');
-	const sharedMultisigNetwork = searchParams.get('network');
-
-	const [sharedMultisigInfo, setSharedMultisigInfo] = useState<
-		{ signatories: string[]; threshold: number; address: string } | undefined
-	>();
-
-	const multisigInfo = useCallback(async () => {
-		if (!sharedMultisigAddress || !sharedMultisigNetwork) return;
-
-		if (!Object.values(networks).includes(sharedMultisigNetwork)) {
-			return;
-		}
-
-		setLoading(true);
-		const response = await fetch(`https://${sharedMultisigNetwork}.api.subscan.io/api/v2/scan/search`, {
-			body: JSON.stringify({
-				key: sharedMultisigAddress
-			}),
-			headers: SUBSCAN_API_HEADERS,
-			method: 'POST'
-		});
-
-		const responseJSON = await response.json();
-
-		setLoading(false);
-
-		if (responseJSON && responseJSON?.data && responseJSON?.data?.account && responseJSON?.data?.account?.multisig) {
-			const notOwnerOfMultisig = !userDetailsContextState.multisigAddresses?.some(
-				(item) => item.address === sharedMultisigAddress
-			);
-			const info = responseJSON?.data?.account?.multisig;
-			const signatories: string[] = info?.multi_account_member?.map((item: any) => item?.address);
-			const threshold: number = info?.threshold;
-			if (signatories && threshold) {
-				setSharedMultisigInfo({ signatories, threshold, address: sharedMultisigAddress });
-				setUserDetailsContextState((prevState) => {
-					return {
-						...prevState,
-						activeMultisig: sharedMultisigAddress,
-						notOwnerOfMultisig,
-						sharedMultisigAddress,
-						isSharedMultisig: !!sharedMultisigAddress && notOwnerOfMultisig,
-						sharedMultisigInfo: { signatories, threshold, address: sharedMultisigAddress, name: DEFAULT_MULTISIG_NAME }
-					};
-				});
-			}
-		}
-		console.log(responseJSON);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [sharedMultisigAddress, sharedMultisigNetwork]);
-
-	useEffect(() => {
-		multisigInfo();
-	}, [multisigInfo]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	const connectAddress = useCallback(async () => {
@@ -412,7 +352,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					...prevState,
 					userID: userData?.userId,
 					organisations: userData?.organisations || [],
-					activeMultisig: sharedMultisigAddress && sharedMultisigInfo ? sharedMultisigInfo.address : '',
+					activeMultisig: '',
 					address: userData?.address?.[0],
 					addressBook: userData?.addressBook || [],
 					createdAt: userData?.created_at,
@@ -437,7 +377,8 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 			setUserDetailsContextState((prevState) => {
 				return {
 					...prevState,
-					activeMultisig: sharedMultisigAddress && sharedMultisigInfo ? sharedMultisigInfo.address : '',
+					activeMultisig: '',
+					activeNetwork: '',
 					address: '',
 					addressBook: [],
 					loggedInWallet: Wallet.POLKADOT,
@@ -447,13 +388,13 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					watchlists: {}
 				};
 			});
-			if (!sharedMultisigAddress && path !== 'invoice') {
+			if (path !== 'invoice') {
 				router.push('/login');
 			}
 		}
 		setLoading(false);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [sharedMultisigAddress, sharedMultisigInfo]);
+	}, []);
 
 	useEffect(() => {
 		if (typeof window !== 'undefined' && localStorage.getItem('address')) {
@@ -479,7 +420,7 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 		} else {
 			logout();
 			setLoading(false);
-			if (!sharedMultisigAddress && path !== 'invoice') {
+			if (path !== 'invoice') {
 				router.push('/login');
 			}
 		}

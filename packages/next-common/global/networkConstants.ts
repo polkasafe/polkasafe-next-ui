@@ -4,15 +4,15 @@
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
 
-import acalaLogo from '~assets/parachains-logos/acala-logo.png';
+// import acalaLogo from '~assets/parachains-logos/acala-logo.png';
 import alephzeroLogo from '~assets/parachains-logos/aleph-zero-logo.jpeg';
 import assethubLogo from '~assets/parachains-logos/assethub-logo.png';
 import astarLogo from '~assets/parachains-logos/astar-logo.png';
 import kusamaLogo from '~assets/parachains-logos/kusama-logo.gif';
-import moonbeamLogo from '~assets/parachains-logos/moonbeam-logo.png';
-import moonriverLogo from '~assets/parachains-logos/moonriver-logo.png';
+// import moonbeamLogo from '~assets/parachains-logos/moonbeam-logo.png';
+// import moonriverLogo from '~assets/parachains-logos/moonriver-logo.png';
 import polkadotLogo from '~assets/parachains-logos/polkadot-logo.jpg';
-import polymeshLogo from '~assets/parachains-logos/polymesh-logo.png';
+// import polymeshLogo from '~assets/parachains-logos/polymesh-logo.png';
 import westendLogo from '~assets/parachains-logos/westend-logo.png';
 import { StaticImageData } from 'next/image';
 import rococoLogo from '~assets/parachains-logos/rococo-logo.jpeg';
@@ -41,7 +41,6 @@ export type ChainPropType = {
 export const networks = {
 	ALEPHZERO: 'alephzero',
 	ASTAR: 'astar',
-	AVAIL: 'avail-goldberg',
 	KHALA: 'khala',
 	KUSAMA: 'kusama',
 	// PASEO: 'paseo',
@@ -169,17 +168,6 @@ export const chainProperties: ChainPropType = {
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.PHA
 	},
-	[networks.AVAIL]: {
-		blockTime: 1000,
-		chainId: 'polkadot:6f09966420b2608d1947ccfb0f2a3624',
-		existentialDeposit: '0.00001',
-		logo: availLogo,
-		// rpcEndpoint: 'wss://rpc-testnet.avail.tools/ws',
-		rpcEndpoint: 'wss://goldberg-testnet-rpc.avail.tools/ws',
-		ss58Format: 42,
-		tokenDecimals: 18,
-		tokenSymbol: tokenSymbol.AVL
-	},
 	[networks.TURING]: {
 		blockTime: 1000,
 		chainId: 'polkadot:d3d2f3a3495dc597434a99d7d449ebad',
@@ -215,12 +203,12 @@ export const chainProperties: ChainPropType = {
 /* eslint-disable sort-keys */
 export const onrampTokens = {
 	POLKADOT: 'polkadot',
-	KUSAMA: 'kusama',
-	ASTAR: 'astar',
-	MOONBEAM: 'moonbeam',
-	MOONRIVER: 'moonriver',
-	POLYMESH: 'polymesh',
-	ACALA: 'acala'
+	KUSAMA: 'kusama'
+	// ASTAR: 'astar',
+	// MOONBEAM: 'moonbeam',
+	// MOONRIVER: 'moonriver',
+	// POLYMESH: 'polymesh',
+	// ACALA: 'acala'
 };
 
 export const onrampTokenProperties: {
@@ -235,34 +223,34 @@ export const onrampTokenProperties: {
 		tokenSymbol: 'ksm',
 		logo: kusamaLogo,
 		offramp: true
-	},
-	[onrampTokens.ASTAR]: {
-		tokenSymbol: 'astr',
-		logo: astarLogo
-	},
-	[onrampTokens.MOONBEAM]: {
-		tokenSymbol: 'glmr',
-		logo: moonbeamLogo,
-		offramp: true
-	},
-	[onrampTokens.MOONRIVER]: {
-		tokenSymbol: 'movr',
-		logo: moonriverLogo
-	},
-	[onrampTokens.POLYMESH]: {
-		tokenSymbol: 'polyx',
-		logo: polymeshLogo
-	},
-	[onrampTokens.ACALA]: {
-		tokenSymbol: 'aca',
-		logo: acalaLogo
 	}
+	// [onrampTokens.ASTAR]: {
+	// tokenSymbol: 'astr',
+	// logo: astarLogo
+	// },
+	// [onrampTokens.MOONBEAM]: {
+	// tokenSymbol: 'glmr',
+	// logo: moonbeamLogo,
+	// offramp: true
+	// },
+	// [onrampTokens.MOONRIVER]: {
+	// tokenSymbol: 'movr',
+	// logo: moonriverLogo
+	// },
+	// [onrampTokens.POLYMESH]: {
+	// tokenSymbol: 'polyx',
+	// logo: polymeshLogo
+	// },
+	// [onrampTokens.ACALA]: {
+	// tokenSymbol: 'aca',
+	// logo: acalaLogo
+	// }
 };
 
 export const crossChainNetwork = {
 	[networks.ASTAR]: {
 		name: 'astar',
-		supportedNetworks: ['acala', 'moonbeam', 'shiden', 'parallel', 'phala']
+		supportedNetworks: ['acala', 'moonbeam', 'parallel', 'phala', 'assethub-polkadot']
 	},
 	// [networks.AVAIL]: {
 	// name: 'avail-goldberg',
@@ -282,7 +270,7 @@ export const crossChainNetwork = {
 			'bifrost',
 			'parallel-heiko',
 			'shiden',
-			'statemine',
+			'assethub-kusama',
 			'kilt-spiritnet',
 			'crust-shadow',
 			'calamari',
@@ -291,13 +279,11 @@ export const crossChainNetwork = {
 	},
 	[networks.PHALA]: {
 		name: 'phala',
-		supportedNetworks: [
-			'khala' // Phala's sister network on Kusama
-		]
+		supportedNetworks: ['khala']
 	},
 	[networks.POLKADOT]: {
 		name: 'polkadot',
-		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala', 'statemint']
+		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala', 'assethub-polkadot']
 	},
 	[networks.ROCOCO]: {
 		name: 'rococo',
@@ -305,13 +291,17 @@ export const crossChainNetwork = {
 			'basilisk' // Rococo is a testnet for Polkadot and Kusama parachains
 		]
 	},
+	// [networks.ROCOCO_ASSETHUB]: {
+	// name: 'rococo',
+	// supportedNetworks: ['rococo']
+	// },
 	[networks.STATEMINE]: {
 		name: 'assethub-kusama',
 		supportedNetworks: ['karura', 'moonriver', 'shiden', 'bifrost', 'parallel-heiko', 'calamari', 'kilt-spiritnet']
 	},
 	[networks.STATEMINT]: {
 		name: 'assethub-polkadot',
-		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala']
+		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala', 'polkadot']
 	},
 	[networks.TURING]: {
 		name: 'avail-turing',
@@ -324,7 +314,7 @@ export const crossChainNetwork = {
 };
 
 export const networkMappingObject = {
-	'asset-hub-polkadot': 'AssetHubPolkadot',
+	'assethub-polkadot': 'AssetHubPolkadot',
 	acala: 'Acala',
 	astar: 'Astar',
 	'bifrost-polkadot': 'BifrostPolkadot',
@@ -337,7 +327,7 @@ export const networkMappingObject = {
 	litentry: 'Litentry',
 	moonbeam: 'Moonbeam',
 	parallel: 'Parallel',
-	'asset-hub-kusama': 'AssetHubKusama',
+	'assethub-kusama': 'AssetHubKusama',
 	'coretime-kusama': 'CoretimeKusama',
 	encointer: 'Encointer',
 	altair: 'Altair',
