@@ -13,7 +13,7 @@ const FiatCurrencyValue = ({ value, className }: { value: string | number; class
 	const fiatValue = Number(value || 0) * Number(currentCurrency?.value || 0);
 	return (
 		<span className={className}>
-			{formatBalance(!Number.isNaN(fiatValue) ? fiatValue : 0)} {currentCurrency.code}
+			{formatBalance(!Number.isNaN(fiatValue) ? fiatValue : 0)} {currentCurrency?.code}
 		</span>
 	);
 };
