@@ -74,7 +74,6 @@ const Home = ({ className }: { className?: string }) => {
 		);
 		setNetwork(m?.network || networks.POLKADOT);
 	}, [activeMultisig, activeOrg?.multisigs]);
-
 	const handleMultisigCreate = async (proxyAddress: string) => {
 		try {
 			if (!multisig || !multisig.address || !proxyAddress || !network) {
@@ -142,12 +141,12 @@ const Home = ({ className }: { className?: string }) => {
 	useEffect(() => {
 		const fetchProxyData = async () => {
 			if (!multisig || !activeMultisig || !network || ['alephzero'].includes(network)) return;
-			const response = await fetch(`https://${network}.api.subscan.io/api/scan/events`, {
+			const response = await fetch(`https://${network}.api.subscan.io/api/v2/scan/events`, {
 				body: JSON.stringify({
 					row: 1,
 					page: 0,
 					module: 'proxy',
-					call: 'PureCreated',
+					event_id: 'PureCreated',
 					address: multisig.address
 				}),
 				headers: SUBSCAN_API_HEADERS,
@@ -158,11 +157,21 @@ const Home = ({ className }: { className?: string }) => {
 			if (responseJSON.data?.count === 0) {
 				return;
 			}
-			const params = JSON.parse(responseJSON.data?.events[0]?.params);
-			const proxyAddress = getEncodedAddress(params[0]?.value, network);
-			if (proxyAddress) {
-				console.log('proxy', proxyAddress);
-				await handleMultisigCreate(proxyAddress);
+			const eventIndex = responseJSON.data?.events[0]?.event_index;
+			if (eventIndex) {
+				const eventResponse = await fetch(`https://${network}.api.subscan.io/api/scan/event`, {
+					body: JSON.stringify({
+						event_index: eventIndex
+					}),
+					headers: SUBSCAN_API_HEADERS,
+					method: 'POST'
+				});
+				const eventJSON = await eventResponse.json();
+				const params = eventJSON.data?.params;
+				const proxyAddress = getEncodedAddress(params[0]?.value, network);
+				if (proxyAddress) {
+					await handleMultisigCreate(proxyAddress);
+				}
 			}
 		};
 		if (multisig?.proxy) {
