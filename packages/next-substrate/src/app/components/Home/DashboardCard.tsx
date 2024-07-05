@@ -49,6 +49,9 @@ const getNameByProxy = (multisig: IMultisigAddress, proxy: string) => {
 	if (typeof multisig.proxy === 'string') {
 		return multisig.name || DEFAULT_MULTISIG_NAME;
 	}
+	if (!multisig.proxy) {
+		return '';
+	}
 	// eslint-disable-next-line no-restricted-syntax
 	for (const { address, name } of multisig.proxy) {
 		if (address === proxy) {
@@ -78,6 +81,7 @@ const DashboardCard = ({
 		notOwnerOfMultisig,
 		selectedProxy
 	} = useGlobalUserDetailsContext();
+	console.log(selectedProxy);
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 	const { activeOrg } = useActiveOrgContext();
 
