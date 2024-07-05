@@ -154,7 +154,7 @@ const History: FC<IHistory> = ({
 
 				const multisigHistoryRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
 					body: JSON.stringify({
-						limit: multisig.proxy ? 5 : 10,
+						limit: multisig?.proxy ? 5 : 10,
 						multisigAddress: isSharedMultisig ? activeMultisig : multisig?.address,
 						network,
 						page: currentPage
@@ -167,7 +167,7 @@ const History: FC<IHistory> = ({
 					error: string;
 				};
 
-				if (multisig.proxy) {
+				if (multisig?.proxy) {
 					const proxyHistoryRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/getHistoryTransaction_substrate`, {
 						body: JSON.stringify({
 							limit: 10 - multisigTransactions.transactions.length,
@@ -197,7 +197,7 @@ const History: FC<IHistory> = ({
 						data.map((item) => ({
 							...item,
 							multisigAddress: activeMultisig,
-							network: multisig.network
+							network: multisig?.network
 						}))
 					);
 					docs += multisigTransactions.count;

@@ -58,7 +58,7 @@ const TxnCard = ({
 			item.network === activeNetwork
 	);
 
-	const network = multisig.network || networks.POLKADOT;
+	const network = multisig?.network || networks.POLKADOT;
 
 	const addressBook = activeOrg && activeOrg?.addressBook ? activeOrg.addressBook : [];
 
