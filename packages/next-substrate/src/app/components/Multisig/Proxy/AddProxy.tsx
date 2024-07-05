@@ -50,7 +50,7 @@ const AddProxy: React.FC<IMultisigProps> = ({ onCancel, signatories, threshold, 
 
 	const multisig = activeOrg?.multisigs?.find((item) => item.address === activeMultisig);
 
-	const network = multisig.network || networks.POLKADOT;
+	const network = multisig?.network || networks.POLKADOT;
 
 	const [txnHash, setTxnHash] = useState<string>('');
 
