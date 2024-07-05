@@ -28,7 +28,7 @@ const RenameMultisig = ({
 	const { activeOrg } = useActiveOrgContext();
 	const { setUserDetailsContextState, userID } = useGlobalUserDetailsContext();
 
-	const network = multisig.network || networks.POLKADOT;
+	const network = multisig?.network || networks.POLKADOT;
 
 	const encodedMultisigAddress = getEncodedAddress(multisig.address || '', network);
 
