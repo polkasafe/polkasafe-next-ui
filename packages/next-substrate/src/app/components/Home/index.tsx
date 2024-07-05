@@ -74,6 +74,8 @@ const Home = ({ className }: { className?: string }) => {
 		);
 		setNetwork(m?.network || networks.POLKADOT);
 	}, [activeMultisig, activeOrg?.multisigs]);
+
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const handleMultisigCreate = async (proxyAddress: string) => {
 		try {
 			if (!multisig || !multisig.address || !proxyAddress || !network) {
@@ -139,6 +141,7 @@ const Home = ({ className }: { className?: string }) => {
 	};
 
 	useEffect(() => {
+		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const fetchProxyData = async () => {
 			if (!multisig || !activeMultisig || !network || ['alephzero'].includes(network)) return;
 			const response = await fetch(`https://${network}.api.subscan.io/api/v2/scan/events`, {
@@ -170,7 +173,8 @@ const Home = ({ className }: { className?: string }) => {
 				const params = eventJSON.data?.params;
 				const proxyAddress = getEncodedAddress(params[0]?.value, network);
 				if (proxyAddress) {
-					await handleMultisigCreate(proxyAddress);
+					console.log('proxy address', proxyAddress);
+					// await handleMultisigCreate(proxyAddress);
 				}
 			}
 		};
@@ -178,9 +182,8 @@ const Home = ({ className }: { className?: string }) => {
 			setHasProxy(true);
 		} else {
 			setHasProxy(false);
-			fetchProxyData();
+			// fetchProxyData();
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [multisig, activeMultisig, network]);
 
 	useEffect(() => {
