@@ -14,7 +14,8 @@ import {
 	NotificationStatus,
 	IMultisigAddress,
 	UserDetailsContextType,
-	Wallet
+	Wallet,
+	IOrganisation
 } from '@next-common/types';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 
@@ -39,6 +40,7 @@ interface Args {
 	approvingAddress: string;
 	note: string;
 	setLoadingMessages: React.Dispatch<React.SetStateAction<string>>;
+	setActiveOrg: React.Dispatch<React.SetStateAction<IOrganisation>>;
 	setUserDetailsContextState: React.Dispatch<React.SetStateAction<UserDetailsContextType>>;
 	records: { [address: string]: ISharedAddressBookRecord };
 	wc_client?: Client;
@@ -58,6 +60,7 @@ export default async function approveProxy({
 	network,
 	note,
 	setLoadingMessages,
+	setActiveOrg,
 	setUserDetailsContextState,
 	wc_client,
 	wc_session_topic,
@@ -149,6 +152,15 @@ export default async function approveProxy({
 					message: 'Your Proxy has been created Successfully!',
 					status: NotificationStatus.SUCCESS
 				});
+				setActiveOrg((prevState) => {
+					const copyMultisigAddresses = [...prevState.multisigs];
+					const index = copyMultisigAddresses.findIndex((item) => item.address === multisig.address);
+					copyMultisigAddresses[index] = multisigData;
+					return {
+						...prevState,
+						multisigs: copyMultisigAddresses
+					};
+				});
 				setUserDetailsContextState((prevState) => {
 					const copyMultisigAddresses = [...prevState.multisigAddresses];
 					const index = copyMultisigAddresses.findIndex((item) => item.address === multisig.address);
@@ -176,12 +188,12 @@ export default async function approveProxy({
 	};
 	const fetchProxyData = async (reject: (reason?: any) => void) => {
 		try {
-			const response = await fetch(`https://${network}.api.subscan.io/api/scan/events`, {
+			const response = await fetch(`https://${network}.api.subscan.io/api/v2/scan/events`, {
 				body: JSON.stringify({
 					row: 1,
 					page: 0,
 					module: 'proxy',
-					call: 'PureCreated',
+					event_id: 'PureCreated',
 					address: multisig.address
 				}),
 				headers: SUBSCAN_API_HEADERS,
@@ -189,12 +201,24 @@ export default async function approveProxy({
 			});
 
 			const responseJSON = await response.json();
-			if (responseJSON.data.count === 0) {
-				throw new Error('error in proxy creation');
-			} else {
-				const params = JSON.parse(responseJSON.data?.events[0]?.params);
+			if (responseJSON.data?.count === 0) {
+				return;
+			}
+			const eventIndex = responseJSON.data?.events[0]?.event_index;
+			if (eventIndex) {
+				const eventResponse = await fetch(`https://${network}.api.subscan.io/api/scan/event`, {
+					body: JSON.stringify({
+						event_index: eventIndex
+					}),
+					headers: SUBSCAN_API_HEADERS,
+					method: 'POST'
+				});
+				const eventJSON = await eventResponse.json();
+				const params = eventJSON.data?.params;
 				const proxyAddress = getEncodedAddress(params[0]?.value, network);
-				await handleMultisigCreate(proxyAddress || '');
+				if (proxyAddress) {
+					await handleMultisigCreate(proxyAddress);
+				}
 			}
 		} catch (error) {
 			console.log(error);

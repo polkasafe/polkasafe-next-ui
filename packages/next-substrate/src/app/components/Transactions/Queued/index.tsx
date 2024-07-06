@@ -100,7 +100,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 				if (activeMultisig && isSharedMultisig && notOwnerOfMultisig) {
 					const { data: queueTransactions, error: queueTransactionsError } = await getMultisigQueueTransactions(
 						activeMultisig,
-						multisig.network,
+						multisig?.network,
 						10,
 						1
 					);
@@ -112,7 +112,11 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 
 					if (queueTransactions)
 						setQueuedTransactions(
-							queueTransactions.map((item) => ({ ...item, multisigAddress: activeMultisig, network: multisig.network }))
+							queueTransactions.map((item) => ({
+								...item,
+								multisigAddress: activeMultisig,
+								network: multisig?.network
+							}))
 						);
 					setLoading(false);
 				} else {
@@ -123,7 +127,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 					body: JSON.stringify({
 						limit: 10,
 						multisigAddress: multisig?.address || activeMultisig,
-						network: multisig.network,
+						network: multisig?.network,
 						page: 1
 					}),
 					headers: firebaseFunctionsHeader(),
@@ -140,7 +144,7 @@ const Queued: FC<IQueued> = ({ loading, setLoading, refetch, setRefetch }) => {
 
 				if (queueTransactions) {
 					setQueuedTransactions(
-						queueTransactions.map((item) => ({ ...item, multisigAddress: activeMultisig, network: multisig.network }))
+						queueTransactions.map((item) => ({ ...item, multisigAddress: activeMultisig, network: multisig?.network }))
 					);
 					setLoading(false);
 				}

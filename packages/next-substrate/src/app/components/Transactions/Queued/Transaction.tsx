@@ -92,7 +92,7 @@ const Transaction: FC<ITransactionProps> = ({
 	const [loadingMessages, setLoadingMessages] = useState('');
 	const [openLoadingModal, setOpenLoadingModal] = useState(false);
 
-	const { activeOrg } = useActiveOrgContext();
+	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [transactionInfoVisible, toggleTransactionVisible] = useState(false);
 	const [callDataString, setCallDataString] = useState<string>(callData || '');
 	const [decodedCallData, setDecodedCallData] = useState<any>(null);
@@ -240,6 +240,7 @@ const Transaction: FC<ITransactionProps> = ({
 					note: note || '',
 					records,
 					router,
+					setActiveOrg,
 					setLoadingMessages,
 					setUserDetailsContextState,
 					wc_client: client,

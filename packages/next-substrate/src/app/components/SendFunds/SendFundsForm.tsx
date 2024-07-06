@@ -135,10 +135,6 @@ const SendFundsForm = ({
 	const [amount, setAmount] = useState(new BN(0));
 	const { activeOrg } = useActiveOrgContext();
 	const { transactionFields } = activeOrg;
-
-	const [isProxy, setIsProxy] = useState<boolean>(false);
-	const [selectedProxyName, setSelectedProxyName] = useState<string>('');
-
 	const [multisig, setMultisig] = useState<IMultisigAddress>(
 		activeOrg?.multisigs?.find(
 			(item) =>
@@ -146,6 +142,14 @@ const SendFundsForm = ({
 				item.network === activeNetwork
 		)
 	);
+	const checkIsProxy =
+		multisig &&
+		multisig.proxy &&
+		(typeof multisig.proxy === 'string' ? [] : multisig.proxy)?.find((mp) => mp?.address === activeMultisig);
+
+	const [selectedProxyName, setSelectedProxyName] = useState<string>(checkIsProxy?.name || '');
+	const [isProxy, setIsProxy] = useState<boolean>(Boolean(checkIsProxy));
+
 	const [network, setNetwork] = useState<string>(
 		selectedNetwork || activeNetwork || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
 	);

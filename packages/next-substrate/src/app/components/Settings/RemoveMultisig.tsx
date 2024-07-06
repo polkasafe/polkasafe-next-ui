@@ -20,7 +20,7 @@ const RemoveMultisigAddress = ({ onCancel, multisig }: { onCancel: () => void; m
 	const { multisigSettings, userID } = useGlobalUserDetailsContext();
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [loading, setLoading] = useState<boolean>(false);
-	const network = multisig.network || networks.POLKADOT;
+	const network = multisig?.network || networks.POLKADOT;
 
 	const encodedMultisigAddress = getEncodedAddress(multisig.address || '', multisig.network);
 
