@@ -81,6 +81,7 @@ const DashboardCard = ({
 		notOwnerOfMultisig,
 		selectedProxy
 	} = useGlobalUserDetailsContext();
+
 	const { currency, currencyPrice } = useGlobalCurrencyContext();
 	const { activeOrg } = useActiveOrgContext();
 
