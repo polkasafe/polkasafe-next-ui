@@ -41,6 +41,7 @@ export type ChainPropType = {
 export const networks = {
 	ALEPHZERO: 'alephzero',
 	ASTAR: 'astar',
+	AVAIL: 'avail',
 	KHALA: 'khala',
 	KUSAMA: 'kusama',
 	// PASEO: 'paseo',
@@ -50,7 +51,7 @@ export const networks = {
 	// ROCOCO_ASSETHUB: 'assethub-rococo',
 	STATEMINE: 'assethub-kusama',
 	STATEMINT: 'assethub-polkadot',
-	TURING: 'avail-turing',
+	// TURING: 'avail-turing',
 	WESTEND: 'westend'
 };
 
@@ -168,12 +169,22 @@ export const chainProperties: ChainPropType = {
 		tokenDecimals: 12,
 		tokenSymbol: tokenSymbol.PHA
 	},
-	[networks.TURING]: {
+	// [networks.TURING]: {
+	// blockTime: 1000,
+	// chainId: 'polkadot:d3d2f3a3495dc597434a99d7d449ebad',
+	// existentialDeposit: '0.00001',
+	// logo: availLogo,
+	// rpcEndpoint: 'wss://turing-rpc.avail.so/ws',
+	// ss58Format: 42,
+	// tokenDecimals: 18,
+	// tokenSymbol: tokenSymbol.T_AVAIL
+	// },
+	[networks.AVAIL]: {
 		blockTime: 1000,
-		chainId: 'polkadot:d3d2f3a3495dc597434a99d7d449ebad',
+		chainId: 'polkadot:b91746b45e0346cc2f815a520b9c6cb4',
 		existentialDeposit: '0.00001',
 		logo: availLogo,
-		rpcEndpoint: 'wss://turing-rpc.avail.so/ws',
+		rpcEndpoint: 'wss://zeref-api.slowops.xyz/ws',
 		ss58Format: 42,
 		tokenDecimals: 18,
 		tokenSymbol: tokenSymbol.T_AVAIL
@@ -303,10 +314,10 @@ export const crossChainNetwork = {
 		name: 'assethub-polkadot',
 		supportedNetworks: ['acala', 'moonbeam', 'astar', 'parallel', 'clover', 'litentry', 'phala', 'polkadot']
 	},
-	[networks.TURING]: {
-		name: 'avail-turing',
-		supportedNetworks: []
-	},
+	// [networks.TURING]: {
+	// name: 'avail-turing',
+	// supportedNetworks: []
+	// },
 	[networks.WESTEND]: {
 		name: 'westend',
 		supportedNetworks: []
