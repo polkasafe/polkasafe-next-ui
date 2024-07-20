@@ -41,6 +41,7 @@ export type ChainPropType = {
 export const networks = {
 	ALEPHZERO: 'alephzero',
 	ASTAR: 'astar',
+	AVAIL: 'avail',
 	KHALA: 'khala',
 	KUSAMA: 'kusama',
 	// PASEO: 'paseo',
@@ -174,6 +175,16 @@ export const chainProperties: ChainPropType = {
 		existentialDeposit: '0.00001',
 		logo: availLogo,
 		rpcEndpoint: 'wss://turing-rpc.avail.so/ws',
+		ss58Format: 42,
+		tokenDecimals: 18,
+		tokenSymbol: tokenSymbol.T_AVAIL
+	},
+	[networks.AVAIL]: {
+		blockTime: 1000,
+		chainId: 'polkadot:b91746b45e0346cc2f815a520b9c6cb4',
+		existentialDeposit: '0.00001',
+		logo: availLogo,
+		rpcEndpoint: 'wss://zeref-api.slowops.xyz/ws',
 		ss58Format: 42,
 		tokenDecimals: 18,
 		tokenSymbol: tokenSymbol.T_AVAIL

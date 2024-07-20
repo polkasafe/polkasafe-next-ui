@@ -37,7 +37,7 @@
     "@walletconnect/web3-provider": "^1.8.0",
     "@web3modal/standalone": "^2.4.3",
     "antd": "5.10.1",
-    "avail-js-sdk": "^0.2.11",
+    "avail-js-sdk": "^0.2.12",
     "bn.js": "^5.2.1",
     "chartjs-adapter-date-fns": "^3.0.0",
     "date-fns": "^3.3.1",

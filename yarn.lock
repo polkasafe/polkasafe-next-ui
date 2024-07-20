@@ -8910,7 +8910,7 @@ autoprefixer@^10.4.12, autoprefixer@^10.4.16:
     picocolors "^1.0.0"
     postcss-value-parser "^4.2.0"
 
-avail-js-sdk@^0.2.11:
+avail-js-sdk@^0.2.12:
   version "0.2.12"
   resolved "https://registry.yarnpkg.com/avail-js-sdk/-/avail-js-sdk-0.2.12.tgz#4de2bfa484fc6aec92fb3f1320a236cf56a74fff"
   integrity sha512-QPMSpyIfX/x0vU5nv3/lhuFUlsgYY3aASD5saKMxnLDn3Cs5anHy1IsqxdHLC12mGs0lE1pOToll5GCc7kzAxg==

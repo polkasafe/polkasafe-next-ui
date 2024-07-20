@@ -51,10 +51,10 @@ const BalanceInput: React.FC<Props> = ({
 
 	const [currency, setCurrency] = useState<string>(network);
 
-	useEffect(() => {
-		setCurrency(network);
-		setBalance(defaultValue || '');
-	}, [defaultValue, network]);
+	// useEffect(() => {
+	// setCurrency(network);
+	// setBalance(defaultValue || '');
+	// }, [defaultValue, network]);
 
 	const tokenCurrencyPrice = !Object.values(networks).includes(currency)
 		? Number(tokensUsdPrice[network]?.value) * (allCurrencyPrices[currencyProperties[currency]?.symbol]?.value || 1)
@@ -81,7 +81,7 @@ const BalanceInput: React.FC<Props> = ({
 			onChange(inputBalance);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [defaultValue, network]);
+	}, [network]);
 
 	const onBalanceChange = (value: number | string | null): void => {
 		const val = Number(value);
