@@ -265,7 +265,7 @@ const Transaction: FC<ITransactionProps> = ({
 				});
 			} else {
 				await approveMultisigTransfer({
-					amount: [networks.ASTAR].includes(network)
+					amount: [networks.ASTAR, networks.AVAIL].includes(network)
 						? bnToBn(decodedCallData.args.calls?.[0]?.args.value as number)
 						: new BN(
 								decodedCallData.args.value ||

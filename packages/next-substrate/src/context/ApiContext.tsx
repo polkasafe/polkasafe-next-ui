@@ -82,7 +82,6 @@ export function ApiContextProvider({ children }: ApiContextProviderProps): React
 						}
 					}));
 					console.log(`API ready for network - ${n}`);
-					console.log(`${a.isConnected} - ${n}`);
 				})
 				.catch((error) => {
 					console.error(error);
