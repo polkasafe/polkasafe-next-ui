@@ -13,7 +13,7 @@ import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetails
 import { currencyProperties } from '@next-common/global/currencyConstants';
 import { DEFAULT_ADDRESS_NAME } from '@next-common/global/default';
 import { chainProperties } from '@next-common/global/networkConstants';
-import { IMultisigAddress, ITxNotification, ITxnCategory, QrState } from '@next-common/types';
+import { IMultisigAddress, ITxNotification, ITxnCategory, QrState, Wallet } from '@next-common/types';
 import AddressComponent from '@next-common/ui-components/AddressComponent';
 import {
 	ArrowRightIcon,
@@ -45,6 +45,7 @@ import NotifyButton from './NotifyButton';
 import TransactionFields from '../TransactionFields';
 import ModalBtn from '../../Settings/ModalBtn';
 import SelectSigner from '../../SelectSigner';
+import SelectSignerWallet from '../../SelectSignerWallet';
 
 interface ISentInfoProps {
 	amount: string | string[];
@@ -61,7 +62,7 @@ interface ISentInfoProps {
 	callDataString: string;
 	recipientAddress?: string | string[];
 	setCallDataString: React.Dispatch<React.SetStateAction<string>>;
-	handleApproveTransaction: (signer: string) => Promise<void>;
+	handleApproveTransaction: (signer: string, wallet?: Wallet) => Promise<void>;
 	handleCancelTransaction: () => Promise<void>;
 	note: string;
 	isProxyApproval: boolean;
@@ -131,8 +132,15 @@ const SentInfo: FC<ISentInfoProps> = ({
 
 	const { isOwnerOfMultisig, owners } = useCheckForOwner(multisig?.address);
 
-	const { address: userAddress, addressBook, activeMultisig, linkedAddresses } = useGlobalUserDetailsContext();
+	const {
+		address: userAddress,
+		addressBook,
+		activeMultisig,
+		linkedAddresses,
+		loggedInWallet
+	} = useGlobalUserDetailsContext();
 	const [initiatorAddress, setInitiatorAddress] = useState<string>(userAddress);
+	const [signerWallet, setSignerWallet] = useState<Wallet>(loggedInWallet);
 	const [showDetails, setShowDetails] = useState<boolean>(false);
 	const [openApproveModal, setOpenApproveModal] = useState<boolean>(false);
 	const [openCancelModal, setOpenCancelModal] = useState<boolean>(false);
@@ -247,15 +255,27 @@ const SentInfo: FC<ISentInfoProps> = ({
 			>
 				<div className='flex flex-col h-full'>
 					<section className='mb-[15px]'>
-						<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Select Signer</label>
-						<div className='flex items-center gap-x-[10px]'>
-							<article className='w-[500px] max-sm:w-full'>
-								<SelectSigner
-									approvers={multisig?.signatories || []}
-									setSigner={setInitiatorAddress}
-								/>
-							</article>
+						<div className='mb-4'>
+							<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Select Signer</label>
+							<div className='flex items-center gap-x-[10px]'>
+								<article className='w-[500px] max-sm:w-full'>
+									<SelectSigner
+										approvers={multisig?.signatories || []}
+										setSigner={setInitiatorAddress}
+									/>
+								</article>
+							</div>
 						</div>
+						{linkedAddresses.length > 0 && (
+							<div>
+								<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Select Wallet</label>
+								<div className='flex items-center gap-x-[10px]'>
+									<article className='w-[500px] max-sm:w-full'>
+										<SelectSignerWallet setSignerWallet={setSignerWallet} />
+									</article>
+								</div>
+							</div>
+						)}
 					</section>
 					<div className='flex items-center justify-between mt-[40px]'>
 						<CancelBtn onClick={() => setOpenApproveModal(false)} />
@@ -267,7 +287,7 @@ const SentInfo: FC<ISentInfoProps> = ({
 								!validSignersForMultisig.includes(initiatorAddress)
 							}
 							onClick={() => {
-								handleApproveTransaction(initiatorAddress);
+								handleApproveTransaction(initiatorAddress, signerWallet);
 								setOpenApproveModal(false);
 							}}
 						/>

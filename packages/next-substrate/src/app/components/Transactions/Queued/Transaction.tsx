@@ -203,12 +203,13 @@ const Transaction: FC<ITransactionProps> = ({
 	}, [decodedCallData, multisig, network]);
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
-	const handleApproveTransaction = async (initiatorAddress: string) => {
+	const handleApproveTransaction = async (initiatorAddress: string, signerWallet?: Wallet) => {
 		if (!apis || !apis[network] || !apis[network].apiReady || !initiatorAddress) {
 			return;
 		}
 
-		if (loggedInWallet !== Wallet.WALLET_CONNECT) await setSigner(apis[network].api, loggedInWallet, network);
+		if (loggedInWallet !== Wallet.WALLET_CONNECT)
+			await setSigner(apis[network].api, signerWallet || loggedInWallet, network);
 
 		if (!multisig) return;
 

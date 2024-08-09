@@ -191,7 +191,7 @@ export default async function approveMultisigTransfer({
 					reject(error);
 				});
 			} else {
-				tx.signAndSend(encodedInitiatorAddress, async ({ status, txHash, events }) => {
+				tx.signAndSend(encodedInitiatorAddress, { withSignedTransaction: true }, async ({ status, txHash, events }) => {
 					if (status.isInvalid) {
 						console.log('Transaction invalid');
 						setLoadingMessages('Transaction invalid');
