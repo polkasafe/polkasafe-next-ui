@@ -26,7 +26,7 @@ const Balance: React.FC<Props> = ({ address, className, onChange, api, apiReady,
 		(api as ApiPromise).query?.system
 			?.account(address)
 			.then((res) => {
-				const balanceStr = res?.data?.free?.toString() || '0';
+				const balanceStr = (res as any)?.data?.free?.toString() || '0';
 				setBalance(balanceStr);
 				if (onChange) {
 					onChange(balanceStr);
