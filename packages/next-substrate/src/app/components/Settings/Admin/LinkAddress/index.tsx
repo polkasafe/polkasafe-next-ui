@@ -19,7 +19,7 @@ const LinkAddress = () => {
 				<div>
 					<span className='flex items-center gap-x-2 text-text_secondary'>
 						<LedgerIcon />
-						Link Address via Remark
+						Link Ledger via Remark
 					</span>
 				</div>
 			</div>
@@ -30,7 +30,7 @@ const LinkAddress = () => {
 					icon={<LedgerIcon />}
 					className='flex items-center p-0 outline-none border-none bg-transparant text-primary'
 				>
-					Link Address
+					Link Ledger
 				</Button>
 			</div>
 		</div>
