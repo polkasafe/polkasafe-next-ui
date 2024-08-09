@@ -1,4 +1,4 @@
-import { Form, Input } from 'antd';
+import { Dropdown, Form, Input } from 'antd';
 import React, { useEffect, useState } from 'react';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import copyText from '@next-substrate/utils/copyText';
@@ -7,6 +7,8 @@ import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import queueNotification from '@next-common/ui-components/QueueNotification';
 import { NotificationStatus } from '@next-common/types';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { chainProperties } from '@next-common/global/networkConstants';
+import { CircleArrowDownIcon } from '@next-common/ui-components/CustomIcons';
 import ModalBtn from '../../ModalBtn';
 import CancelBtn from '../../CancelBtn';
 
@@ -93,6 +95,25 @@ const LinkAddressViaRemark = ({ onCancel }: { onCancel: () => void }) => {
 				help={txHash && !validHash && 'Please enter a valid txn hash'}
 				className='border-0 outline-0 my-0 p-0'
 			>
+				<Dropdown
+					trigger={['click']}
+					className='border border-primary rounded-lg p-1.5 bg-bg-secondary cursor-pointer min-w-[150px]'
+					menu={{
+						items: networkOptions,
+						onClick: (e) => setSelectedNetwork(e.key)
+					}}
+				>
+					<div className='flex justify-between items-center text-white gap-x-2'>
+						<div className='capitalize flex items-center gap-x-2 text-sm'>
+							<ParachainIcon
+								size={15}
+								src={chainProperties[selectedNetwork]?.logo}
+							/>
+							{selectedNetwork}
+						</div>
+						<CircleArrowDownIcon className='text-primary' />
+					</div>
+				</Dropdown>
 				<Input
 					placeholder='Transaction Hash'
 					className='text-sm font-normal m-0 leading-[15px] border-0 outline-0 p-3 placeholder:text-[#505050] bg-bg-secondary rounded-lg text-white'
