@@ -95,6 +95,7 @@ const TransactionSuccessScreen = ({
 								<AddressComponent
 									key={recipient}
 									address={recipient}
+									network={network}
 								/>
 							))}
 						</div>

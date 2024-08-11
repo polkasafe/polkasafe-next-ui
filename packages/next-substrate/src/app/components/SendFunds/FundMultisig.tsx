@@ -44,12 +44,14 @@ const FundMultisig = ({
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { apis } = useGlobalApiContext();
-	const { activeMultisig, loggedInWallet, address } = useGlobalUserDetailsContext();
+	const { activeMultisig, activeNetwork, loggedInWallet, address } = useGlobalUserDetailsContext();
 	const { client, session } = useWalletConnectContext();
 
 	const { activeOrg } = useActiveOrgContext();
 
-	const [network, setNetwork] = useState<string>(activeOrg?.multisigs?.[0]?.network || networks.POLKADOT);
+	const [network, setNetwork] = useState<string>(
+		activeNetwork || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
+	);
 
 	const { accounts } = useGetWalletAccounts(loggedInWallet);
 
@@ -234,7 +236,7 @@ const FundMultisig = ({
 			<div className={className}>
 				<div>
 					<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between max-sm:w-full'>
-						Sending from
+						Sending To
 						<Balance
 							api={apis?.[network]?.api}
 							apiReady={apis?.[network]?.apiReady}

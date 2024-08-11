@@ -75,7 +75,6 @@ import UploadAttachment, { ISubfieldAndAttachment } from './UploadAttachment';
 import AddAddressModal from './AddAddressModal';
 import SetIdentity from './SetIdentity';
 import Delegate from './Delegate';
-import SelectSigner from '../SelectSigner';
 import { sendXCMTransfer } from './utils/sendXCMTransfer';
 import executeTx from '../Apps/CreateProposal/utils/executeTx';
 
@@ -126,8 +125,6 @@ const SendFundsForm = ({
 	const { activeMultisig, activeNetwork, address, loggedInWallet } = useGlobalUserDetailsContext();
 	const { client, session } = useWalletConnectContext();
 	const [xcmSelected, setXcmSelected] = useState<boolean>(false);
-
-	const [initiatorAddress, setInitiatorAddress] = useState<string>(address);
 
 	const { apis } = useGlobalApiContext();
 	const [note, setNote] = useState<string>('');
@@ -433,7 +430,7 @@ const SendFundsForm = ({
 
 	useEffect(() => {
 		const fetchBalanceInfos = async () => {
-			if (!apis || !apis[network] || !apis[network].apiReady || !initiatorAddress || !recipientAndAmount[0].recipient) {
+			if (!apis || !apis[network] || !apis[network].apiReady || !address || !recipientAndAmount[0].recipient) {
 				return;
 			}
 
@@ -451,19 +448,19 @@ const SendFundsForm = ({
 				const txn = transferKeepAlive
 					? apis[network].api.tx.balances.transferKeepAlive(recipientAndAmount[0].recipient, amount)
 					: apis[network].api.tx.balances.transfer(recipientAndAmount[0].recipient, amount);
-				const gasInfo = await txn.paymentInfo(initiatorAddress);
+				const gasInfo = await txn.paymentInfo(address);
 				setTotalGas(new BN(gasInfo.partialFee.toString()));
 			} else {
 				setTotalGas(new BN(0));
 			}
 
 			// initiator balance
-			const initiatorAccountBalance = await apis[network].api.query.system.account(initiatorAddress);
+			const initiatorAccountBalance = await apis[network].api.query.system.account(address);
 			setInitiatorBalance(new BN(initiatorAccountBalance.data.free.toString()));
 			setFetchBalancesLoading(false);
 		};
 		fetchBalanceInfos();
-	}, [amount, apis, initiatorAddress, network, recipientAndAmount, transferKeepAlive]);
+	}, [amount, apis, address, network, recipientAndAmount, transferKeepAlive]);
 
 	// calculate total amount
 	useEffect(() => {
@@ -510,7 +507,7 @@ const SendFundsForm = ({
 	};
 
 	const handleSubmit = async () => {
-		if (!apis || !apis[network] || !apis[network].apiReady || !initiatorAddress) {
+		if (!apis || !apis[network] || !apis[network].apiReady || !address) {
 			return;
 		}
 
@@ -557,7 +554,7 @@ const SendFundsForm = ({
 						addToQueue,
 						api: apis[network].api,
 						attachments: subfieldAttachments,
-						initiatorAddress,
+						initiatorAddress: address,
 						isProxy,
 						loggedInWallet,
 						multisig,
@@ -580,7 +577,7 @@ const SendFundsForm = ({
 					api: apis[network].api,
 					attachments: subfieldAttachments,
 					callDataString: callData,
-					initiatorAddress,
+					initiatorAddress: address,
 					isProxy,
 					loggedInWallet,
 					multisig,
@@ -614,7 +611,7 @@ const SendFundsForm = ({
 			txnParams={transactionType !== ETransactionType.SEND_TOKEN ? txnParams : undefined}
 			txnHash={transactionData?.callHash}
 			created_at={new Date()}
-			sender={initiatorAddress}
+			sender={address}
 			recipients={
 				transactionType === ETransactionType.SEND_TOKEN ? recipientAndAmount.map((item) => item.recipient) : []
 			}
@@ -630,7 +627,7 @@ const SendFundsForm = ({
 				onCancel?.();
 			}}
 			txnHash={transactionData?.callHash || ''}
-			sender={initiatorAddress}
+			sender={address}
 			failedMessage='Oh no! Something went wrong.'
 			waitMessage='Your transaction has failed due to some technical error. Please try again...Details of the transaction are included below'
 			created_at={new Date()}
@@ -785,17 +782,6 @@ const SendFundsForm = ({
 								<Divider className='border-[#505050]'>
 									<SquareDownArrowIcon />
 								</Divider>
-							</div>
-						</section>
-						<section className='mb-[15px]'>
-							<label className='text-primary font-normal text-xs leading-[13px] block mb-[5px]'>Select Signer</label>
-							<div className='flex items-center gap-x-[10px]'>
-								<article className='w-[500px] max-sm:w-full'>
-									<SelectSigner
-										approvers={multisig?.signatories || []}
-										setSigner={setInitiatorAddress}
-									/>
-								</article>
 							</div>
 						</section>
 						{transactionType === ETransactionType.CALL_DATA ? (

@@ -44,7 +44,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 	const [openLinkMultisig, setOpenLinkMultisig] = useState(false);
 	const [openCreateMultisig, setOpenCreateMultisig] = useState(false);
 
-	const { organisations, userID } = useGlobalUserDetailsContext();
+	const { organisations, userID, setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [selectedOrg, setSelectedOrg] = useState<IOrganisation>(activeOrg);
 	const [linkedMultisigs, setLinkedMultisigs] = useState<IMultisigAddress[]>([]);
@@ -165,13 +165,14 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 			}
 			if (addMultisigToOrgData) {
 				console.log('add multsig data', addMultisigToOrgData);
-				// setUserDetailsContextState((prev) => ({
-				// ...prev,
-				// organisations: addMultisigToOrgData
-				// }));
 				setActiveOrg((prev) => ({
 					...prev,
 					multisigs: [...prev.multisigs, ...linkedMultisigs]
+				}));
+				setUserDetailsContextState((prev) => ({
+					...prev,
+					activeMultisig: linkedMultisigs[0].address,
+					activeNetwork: linkedMultisigs[0].network
 				}));
 
 				queueNotification({

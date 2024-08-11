@@ -62,8 +62,8 @@ const Home = ({ className }: { className?: string }) => {
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 
 	const multisigs = activeOrg?.multisigs;
-	const multisig = multisigs?.find(
-		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
+	const [multisig, setMultisig] = useState(
+		multisigs?.find((item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig))
 	);
 	const [network, setNetwork] = useState<string>(multisig?.network);
 
@@ -72,6 +72,7 @@ const Home = ({ className }: { className?: string }) => {
 		const m = activeOrg?.multisigs?.find(
 			(item) => item.address === activeMultisig || checkMultisigWithProxy(item.proxy, activeMultisig)
 		);
+		setMultisig(m);
 		setNetwork(m?.network || networks.POLKADOT);
 	}, [activeMultisig, activeOrg?.multisigs]);
 
