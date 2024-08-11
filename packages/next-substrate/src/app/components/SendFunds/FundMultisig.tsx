@@ -236,7 +236,7 @@ const FundMultisig = ({
 			<div className={className}>
 				<div>
 					<p className='text-primary font-normal mb-2 text-xs leading-[13px] flex items-center justify-between max-sm:w-full'>
-						Sending To
+						Sending to
 						<Balance
 							api={apis?.[network]?.api}
 							apiReady={apis?.[network]?.apiReady}
