@@ -48,7 +48,8 @@ const Transaction: FC<ITransaction> = ({
 	multisigAddress,
 	network,
 	multi_id,
-	approvals
+	approvals,
+	failed
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 }) => {
 	const { apis } = useGlobalApiContext();
@@ -208,7 +209,11 @@ const Transaction: FC<ITransaction> = ({
 									/>
 								</p>
 								<p className='col-span-2 flex items-center justify-end gap-x-4'>
-									<span className='text-success'>Success</span>
+									{failed ? (
+										<span className='text-failure'>Failed</span>
+									) : (
+										<span className='text-success'>Success</span>
+									)}
 									<span className='text-white text-sm'>
 										{transactionInfoVisible ? <CircleArrowUpIcon /> : <CircleArrowDownIcon />}
 									</span>

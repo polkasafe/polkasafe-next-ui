@@ -372,6 +372,7 @@ export interface ITransaction {
 			lastNotified: Date;
 		};
 	};
+	failed?: boolean;
 }
 
 export interface INotification {
