@@ -402,7 +402,7 @@ const SendFundsForm = ({
 		)
 			return;
 
-		const batch = apis[network].api.tx.utility.batch(
+		const batch = apis[network].api.tx.utility.batchAll(
 			recipientAndAmount.map((item) =>
 				transferKeepAlive
 					? apis[network].api.tx.balances.transferKeepAlive(item.recipient, item.amount.toString())
