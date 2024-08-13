@@ -118,7 +118,7 @@ export default async function initMultisigTransfer({
 	// null for transaction initiation
 	const TIME_POINT = null;
 
-	const transferBatchCall = api.tx.utility.batch([...transferCalls]);
+	const transferBatchCall = api.tx.utility.batchAll([...transferCalls]);
 
 	const callData = api.createType('Call', transferBatchCall.method.toHex());
 	const { weight: MAX_WEIGHT } = await calcWeight(callData, api);
