@@ -46,10 +46,11 @@ interface IMultisigProps {
 	onCancel?: () => void;
 	homepage?: boolean;
 	onComplete?: (multisig: IMultisigAddress) => void;
+	selectedNetwork?: string;
 }
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, onComplete }) => {
+const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, onComplete, selectedNetwork }) => {
 	const { setUserDetailsContextState, address: userAddress, loggedInWallet } = useGlobalUserDetailsContext();
 	const { setOpenProxyModal } = useAddMultisigContext();
 	const { activeOrg } = useActiveOrgContext();
@@ -59,7 +60,7 @@ const CreateMultisig: React.FC<IMultisigProps> = ({ onCancel, homepage = false, 
 	const [threshold, setThreshold] = useState<number | null>(2);
 	const [signatories, setSignatories] = useState<string[]>([userAddress]);
 
-	const [network, setNetwork] = useState<string>(networks.POLKADOT);
+	const [network, setNetwork] = useState<string>(selectedNetwork || networks.POLKADOT);
 	const { apis } = useGlobalApiContext();
 
 	const [loading, setLoading] = useState<boolean>(false);

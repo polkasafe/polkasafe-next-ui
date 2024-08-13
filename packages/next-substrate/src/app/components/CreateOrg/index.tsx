@@ -1,4 +1,3 @@
-/* eslint-disable no-tabs */
 import { useCreateOrgStepsContext } from '@next-substrate/context/CreateOrgStepsContext';
 import React, { ReactNode, useState } from 'react';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
@@ -9,6 +8,7 @@ import { IMultisigAddress, IOrganisation } from '@next-common/types';
 import { useGlobalUserDetailsContext } from '@next-substrate/context/UserDetailsContext';
 import { useActiveOrgContext } from '@next-substrate/context/ActiveOrgContext';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
+import { networks } from '@next-common/global/networkConstants';
 import CancelBtn from '../Settings/CancelBtn';
 import OrgNameAndImageStep from './OrgNameAndImageStep';
 import LinkMultisigStep from './LinkMultisigStep';
@@ -21,7 +21,6 @@ interface ISteps {
 }
 
 const CreateOrg = () => {
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const router = useRouter();
 	const [orgImageUrl, setOrgImageUrl] = useState<string>('');
 	const [orgName, setOrgName] = useState<string>('');
@@ -30,6 +29,8 @@ const CreateOrg = () => {
 	const [loading, setLoading] = useState<boolean>(false);
 	const { setUserDetailsContextState } = useGlobalUserDetailsContext();
 	const { setActiveOrg } = useActiveOrgContext();
+
+	const [selectedNetwork, setSelectedNetwork] = useState(networks.POLKADOT);
 
 	const { step, setStep } = useCreateOrgStepsContext();
 	const steps: ISteps[] = [
@@ -50,6 +51,8 @@ const CreateOrg = () => {
 		{
 			component: (
 				<LinkMultisigStep
+					setSelectedNetwork={setSelectedNetwork}
+					selectedNetwork={selectedNetwork}
 					linkedMultisigs={linkedMultisigs}
 					setLinkedMultisigs={setLinkedMultisigs}
 				/>

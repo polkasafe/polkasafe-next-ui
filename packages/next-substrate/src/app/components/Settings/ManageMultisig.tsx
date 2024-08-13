@@ -28,16 +28,17 @@ const ManageMultisig = () => {
 	const { activeMultisig, activeNetwork, userID } = useGlobalUserDetailsContext();
 	const { activeOrg } = useActiveOrgContext();
 
-	const activeMultisigData = activeMultisig
-		? activeOrg?.multisigs.find(
-				(item) =>
-					(item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)) &&
-					item.network === activeNetwork
-			)
-		: undefined;
+	const activeMultisigData =
+		activeMultisig && activeNetwork
+			? activeOrg?.multisigs.find(
+					(item) =>
+						(item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)) &&
+						item.network === activeNetwork
+				)
+			: undefined;
 
 	const [network, setNetwork] = useState<string>(
-		activeMultisigData?.network || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
+		activeNetwork || activeOrg?.multisigs?.[0]?.network || networks.POLKADOT
 	);
 	const [selectedMultisig, setSelectedMultisig] = useState<IMultisigAddress>(
 		activeMultisigData || activeOrg?.multisigs?.[0]
@@ -58,6 +59,7 @@ const ManageMultisig = () => {
 			return;
 		}
 		setSelectedMultisig(activeOrg?.multisigs?.[0]);
+		setNetwork(activeOrg?.multisigs?.[0]?.network);
 	}, [activeMultisig, activeNetwork, activeOrg]);
 
 	useEffect(() => {
