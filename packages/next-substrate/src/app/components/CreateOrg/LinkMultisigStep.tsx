@@ -26,14 +26,17 @@ import ProxyAddress from '../Proxy/ProxyAddress';
 const LinkMultisigStep = ({
 	linkedMultisigs,
 	setLinkedMultisigs,
-	activeOrg
+	activeOrg,
+	selectedNetwork,
+	setSelectedNetwork
 }: {
 	linkedMultisigs: IMultisigAddress[];
 	setLinkedMultisigs: React.Dispatch<React.SetStateAction<IMultisigAddress[]>>;
 	activeOrg?: IOrganisation;
+	selectedNetwork: string;
+	setSelectedNetwork: React.Dispatch<React.SetStateAction<string>>;
 }) => {
 	const { address, multisigSettings } = useGlobalUserDetailsContext();
-	const [selectedNetwork, setSelectedNetwork] = useState(networks.POLKADOT);
 
 	const [loading, setLoading] = useState<boolean>(false);
 
@@ -129,6 +132,7 @@ const LinkMultisigStep = ({
 				onCancel={() => setOpenCreateMultisigModal(false)}
 			>
 				<CreateMultisig
+					selectedNetwork={selectedNetwork}
 					onComplete={(multisig) => {
 						setLinkedMultisigs((prev) => [
 							...prev,

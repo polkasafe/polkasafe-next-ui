@@ -4,7 +4,7 @@
 
 import emptyImage from '@next-common/assets/icons/empty-image.png';
 import { Divider, Dropdown, Spin } from 'antd';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import CreateMultisig from '@next-substrate/app/components/Multisig/CreateMultisig';
 import {
 	ArrowLeftCircle,
@@ -26,6 +26,7 @@ import queueNotification from '@next-common/ui-components/QueueNotification';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
 import LoadingLottie from '@next-common/assets/lottie-graphics/Loading';
+import { networks } from '@next-common/global/networkConstants';
 import LinkMultisigStep from '../CreateOrg/LinkMultisigStep';
 import ReviewOrgStep from '../CreateOrg/ReviewOrgStep';
 import LinkMultisig from './LinkMultisig/LinkMultisig';
@@ -48,6 +49,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 	const { activeOrg, setActiveOrg } = useActiveOrgContext();
 	const [selectedOrg, setSelectedOrg] = useState<IOrganisation>(activeOrg);
 	const [linkedMultisigs, setLinkedMultisigs] = useState<IMultisigAddress[]>([]);
+	const [selectedNetwork, setSelectedNetwork] = useState(networks.POLKADOT);
 
 	const [loading, setLoading] = useState<boolean>(false);
 
@@ -57,6 +59,12 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 		key: JSON.stringify(item),
 		label: <span className='text-white truncate capitalize'>{item.name}</span>
 	}));
+
+	useEffect(() => {
+		if (step === 0) {
+			setLinkedMultisigs([]);
+		}
+	}, [step]);
 
 	const steps = [
 		{
@@ -87,7 +95,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 									/> */}
 									<div className='flex flex-col gap-y-[1px]'>
 										<span className='text-sm text-white capitalize truncate'>{selectedOrg?.name}</span>
-										<span className='text-xs text-text_secondary'>{activeOrg?.members?.length} Members</span>
+										<span className='text-xs text-text_secondary'>{selectedOrg?.members?.length} Members</span>
 									</div>
 								</div>
 								<CircleArrowDownIcon className='text-white' />
@@ -116,9 +124,11 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 		{
 			component: (
 				<LinkMultisigStep
-					activeOrg={activeOrg}
+					activeOrg={selectedOrg}
 					linkedMultisigs={linkedMultisigs}
 					setLinkedMultisigs={setLinkedMultisigs}
+					selectedNetwork={selectedNetwork}
+					setSelectedNetwork={setSelectedNetwork}
 				/>
 			),
 			description: 'To add a MultiSig you can choose from the options below:'
@@ -145,7 +155,7 @@ const AddMultisig: React.FC<IMultisigProps> = ({ isModalPopup, homepage, classNa
 			const addMultisigToOrgRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/addMultisigOrganisation_substrate`, {
 				body: JSON.stringify({
 					multisigs: linkedMultisigs,
-					organisationId: activeOrg?.id
+					organisationId: selectedOrg?.id
 				}),
 				headers: firebaseFunctionsHeader(),
 				method: 'POST'
