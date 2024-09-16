@@ -27,7 +27,6 @@ import setSigner from '@next-substrate/utils/setSigner';
 import styled from 'styled-components';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 import firebaseFunctionsHeader from '@next-common/global/firebaseFunctionsHeader';
-import checkMultisigWithProxy from '@next-substrate/utils/checkMultisigWithProxy';
 
 interface ISignatory {
 	name: string;
@@ -54,24 +53,23 @@ const addRecipientHeading = () => {
 const AddOwner = ({
 	onCancel,
 	className,
-	selectedProxy
+	selectedProxy,
+	selectedMultisig
 }: {
 	onCancel?: () => void;
 	className?: string;
 	selectedProxy: { address: string; name: string };
+	selectedMultisig: IMultisigAddress;
 }) => {
 	const { multisigAddresses, activeMultisig, addressBook, address, setUserDetailsContextState, loggedInWallet } =
 		useGlobalUserDetailsContext();
 	const { api, apiReady, network } = useGlobalApiContext();
-	const multisig = multisigAddresses.find(
-		(item) => item.address === activeMultisig || checkMultisigWithProxy(item.address, activeMultisig)
-	);
 	const [loading, setLoading] = useState(false);
 	const [success, setSuccess] = useState<boolean>(false);
 	const [failure, setFailure] = useState<boolean>(false);
 	const [loadingMessages, setLoadingMessages] = useState<string>('');
 	const [txnHash, setTxnHash] = useState<string>('');
-	const [newThreshold, setNewThreshold] = useState<number>(multisig?.threshold || 2);
+	const [newThreshold, setNewThreshold] = useState<number>(selectedMultisig?.threshold || 2);
 
 	const [signatoriesArray, setSignatoriesArray] = useState<ISignatory[]>([{ address: '', name: '' }]);
 
@@ -119,7 +117,7 @@ const AddOwner = ({
 				const createMultisigRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/createMultisig_substrate`, {
 					body: JSON.stringify({
 						disabled: true,
-						multisigName: multisig?.name,
+						multisigName: selectedMultisig?.name,
 						network,
 						signatories: newSignatories,
 						threshold
@@ -162,7 +160,15 @@ const AddOwner = ({
 
 		await setSigner(api, loggedInWallet);
 
-		const newSignatories = [...multisig!.signatories, ...signatoriesArray.map((item) => item.address)];
+		const newSignatories = [...selectedMultisig!.signatories];
+
+		signatoriesArray.forEach((item) => {
+			if (item.address) {
+				newSignatories.push(item.address);
+			}
+		});
+
+		console.log('new signatores', newSignatories);
 
 		const newMultisigAddress = _createMultisig(newSignatories, newThreshold, chainProperties[network].ss58Format);
 		if (multisigAddresses.some((item) => item.address === newMultisigAddress.multisigAddress)) {
@@ -182,9 +188,9 @@ const AddOwner = ({
 				network,
 				newSignatories,
 				newThreshold,
-				oldMultisigAddress: multisig?.address || activeMultisig,
-				oldSignatories: multisig?.signatories || [],
-				oldThreshold: multisig?.threshold || 2,
+				oldMultisigAddress: selectedMultisig?.address || activeMultisig,
+				oldSignatories: selectedMultisig?.signatories || [],
+				oldThreshold: selectedMultisig?.threshold || 2,
 				proxyAddress: selectedProxy.address || '',
 				recepientAddress: activeMultisig,
 				senderAddress: getSubstrateAddress(address) || address,
@@ -194,7 +200,7 @@ const AddOwner = ({
 			setLoadingMessages('Please Sign The Second Transaction to Remove Old Multisig From Proxy.');
 			await removeOldMultiFromProxy({
 				api,
-				multisigAddress: multisig?.address || '',
+				multisigAddress: selectedMultisig?.address || '',
 				network,
 				newSignatories,
 				newThreshold,
@@ -217,8 +223,8 @@ const AddOwner = ({
 	return success ? (
 		<AddProxySuccessScreen
 			createdBy={address}
-			signatories={multisig?.signatories || []}
-			threshold={multisig?.threshold || 2}
+			signatories={selectedMultisig?.signatories || []}
+			threshold={selectedMultisig?.threshold || 2}
 			txnHash={txnHash}
 			onDone={() => onCancel?.()}
 			successMessage='Multisig Edit in Progress!'
@@ -278,7 +284,7 @@ const AddOwner = ({
 												.filter(
 													(item) =>
 														!signatoriesArray.some((e) => e.address === item.address) &&
-														!multisig?.signatories.includes(item.address)
+														!selectedMultisig?.signatories.includes(item.address)
 												)
 												.map((item) => ({
 													label: item.name,
@@ -339,18 +345,18 @@ const AddOwner = ({
 							<span className='text-white text-sm'>{newThreshold}</span>
 							<Tooltip
 								title={
-									newThreshold === (multisig?.signatories.length || 0) + signatoriesArray.length &&
+									newThreshold === (selectedMultisig?.signatories.length || 0) + signatoriesArray.length &&
 									'Threshold must be Less than or Equal to Signatories'
 								}
 							>
 								<Button
 									onClick={() => {
-										if (newThreshold < (multisig?.signatories.length || 0) + signatoriesArray.length) {
+										if (newThreshold < (selectedMultisig?.signatories.length || 0) + signatoriesArray.length) {
 											setNewThreshold((prev) => prev + 1);
 										}
 									}}
 									className={`p-0 outline-none border rounded-full flex items-center justify-center ${
-										newThreshold === (multisig?.signatories.length || 0) + signatoriesArray.length
+										newThreshold === (selectedMultisig?.signatories.length || 0) + signatoriesArray.length
 											? 'border-text_secondary text-text_secondary'
 											: 'text-primary border-primary'
 									} w-[14.5px] h-[14.5px]`}
@@ -362,7 +368,7 @@ const AddOwner = ({
 						<p className='text-text_secondary font-normal text-sm leading-[15px]'>
 							out of{' '}
 							<span className='text-white font-medium'>
-								{(multisig?.signatories.length || 0) + signatoriesArray.length}
+								{(selectedMultisig?.signatories.length || 0) + signatoriesArray.length}
 							</span>{' '}
 							owners
 						</p>
@@ -375,7 +381,10 @@ const AddOwner = ({
 						loading={loading}
 						disabled={
 							!signatoriesArray.length ||
-							signatoriesArray.some((item) => item.address === '' || multisig?.signatories.includes(item.address))
+							(signatoriesArray.some(
+								(item) => item.address === '' || selectedMultisig?.signatories.includes(item.address)
+							) &&
+								newThreshold === selectedMultisig.threshold)
 						}
 						title='Add'
 					/>

@@ -252,6 +252,7 @@ const ManageMultisig = () => {
 								<AddNewOwnerBtn
 									disabled={!selectedMultisig?.proxy}
 									selectedProxy={selectedProxy}
+									selectedMultisig={selectedMultisig}
 								/>
 							</section>
 						) : (
