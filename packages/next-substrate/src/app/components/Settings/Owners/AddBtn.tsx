@@ -6,14 +6,17 @@ import React, { useState } from 'react';
 import { AddIcon } from '@next-common/ui-components/CustomIcons';
 
 import ModalComponent from '@next-common/ui-components/ModalComponent';
+import { IMultisigAddress } from '@next-common/types';
 import AddOwner from './Add';
 
 const AddNewOwnerBtn = ({
 	disabled,
-	selectedProxy
+	selectedProxy,
+	selectedMultisig
 }: {
 	disabled?: boolean;
 	selectedProxy: { address: string; name: string };
+	selectedMultisig: IMultisigAddress;
 }) => {
 	const [openAddOwnerModal, setOpenAddOwnerModal] = useState(false);
 
@@ -27,6 +30,7 @@ const AddNewOwnerBtn = ({
 				<AddOwner
 					onCancel={() => setOpenAddOwnerModal(false)}
 					selectedProxy={selectedProxy}
+					selectedMultisig={selectedMultisig}
 				/>
 			</ModalComponent>
 			<Button
