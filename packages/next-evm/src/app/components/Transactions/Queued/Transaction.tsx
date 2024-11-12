@@ -346,16 +346,17 @@ const Transaction: FC<ITransactionProps> = ({
 				chainProperties[network].contractNetworks
 			);
 			if (error) {
+				console.log('error in execution', error);
 				queueNotification({
 					header: 'Execution Failed',
-					message: 'Please try Again',
+					message: error.split('(')[0],
 					status: NotificationStatus.ERROR
 				});
 			}
 			if (response) {
 				queueNotification({
 					header: 'Execution started',
-					message: 'Your transaction is executing, it might take a bit time.',
+					message: 'Your transaction is executing, it might take some time.',
 					status: NotificationStatus.INFO
 				});
 				await response.transactionResponse?.wait();

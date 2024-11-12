@@ -37,7 +37,7 @@ const nextConfig = {
     },
     transpilePackages: ["next-common"],
     images: {
-      domains: ['parachains.info', 's2.coinmarketcap.com', 'safe-transaction-assets.safe.global', 'resources.smartlayer.network', 'i.ibb.co', 'logos.covalenthq.com']
+      domains: ['parachains.info', 's2.coinmarketcap.com', 'safe-transaction-assets.safe.global', 'resources.smartlayer.network', 'i.ibb.co', 'logos.covalenthq.com', 'assets.coingecko.com']
     },
     reactStrictMode: true,
     webpack(config) {
