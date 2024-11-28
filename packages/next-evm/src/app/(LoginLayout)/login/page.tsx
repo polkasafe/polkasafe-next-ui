@@ -17,16 +17,20 @@ import { useRouter } from 'next/navigation';
 const ConnectWallet = () => {
 	const router = useRouter();
 	const [loading, setLoading] = useState<boolean>(false);
-	const { connectAddress } = useGlobalUserDetailsContext();
+	const { connectAddress, userID: userPrivyId, organisations } = useGlobalUserDetailsContext();
 	// const sdk = useSDK();
-	const { authenticated, logout } = usePrivy();
+	const { logout } = usePrivy();
 
 	useEffect(() => {
-		if (authenticated) {
-			router.replace('/');
-			console.log('login route to home');
+		if (userPrivyId) {
+			if (!organisations || organisations.length === 0) {
+				router.replace('/create-org');
+			} else {
+				router.replace('/');
+				console.log('login route to home');
+			}
 		}
-	}, [authenticated, router]);
+	}, [organisations, router, userPrivyId]);
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const handleLogin = useCallback(
@@ -41,6 +45,9 @@ const ConnectWallet = () => {
 			} catch (err) {
 				console.log(err);
 				logout();
+				if (typeof window !== 'undefined') {
+					localStorage.removeItem('privy:token');
+				}
 			}
 			setLoading(false);
 		},
@@ -50,7 +57,7 @@ const ConnectWallet = () => {
 	const { login } = useLogin({
 		onComplete(user) {
 			console.log('user', user);
-			handleLogin(user?.id, user?.wallet?.address);
+			// handleLogin(user?.id, user?.wallet?.address);
 		}
 	});
 

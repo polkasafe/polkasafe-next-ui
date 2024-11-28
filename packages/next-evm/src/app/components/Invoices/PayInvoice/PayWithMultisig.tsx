@@ -54,8 +54,6 @@ const PayWithMultisig = ({
 	);
 	const { allAssets } = useMultisigAssetsContext();
 
-	console.log('all assets', allAssets);
-
 	const [selectedMultisig, setSelectedMultisig] = useState<string>(
 		activeMultisig || activeOrg?.multisigs?.[0]?.address || ''
 	);

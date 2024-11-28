@@ -176,11 +176,9 @@ export const MultisigAssetsProvider = ({ children }: { children?: ReactNode }): 
 						};
 					});
 					totalOrgBalance.total = total.toString();
-					console.log('info', tokenInfo);
 				})
 			);
 
-			console.log('total orgg balance', totalOrgBalance);
 			setOrgBalance(totalOrgBalance);
 			setLoading(false);
 		} catch (error) {
