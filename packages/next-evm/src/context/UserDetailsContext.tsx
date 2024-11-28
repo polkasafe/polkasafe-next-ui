@@ -6,7 +6,7 @@
 'use client';
 
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { NETWORK } from '@next-common/global/evm-network-constants';
 import GnosisSafeService from '@next-evm/services/Gnosis';
 import {
@@ -21,7 +21,7 @@ import InvalidNetwork from '@next-common/ui-components/InvalidNetwork';
 import { FIREBASE_FUNCTIONS_URL } from '@next-common/global/apiUrls';
 
 import logout from '@next-evm/utils/logout';
-import { usePrivy, useWallets } from '@privy-io/react-auth';
+import { usePrivy } from '@privy-io/react-auth';
 // import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
 // import nextApiClientFetch from '@next-evm/utils/nextApiClientFetch';
 import firebaseFunctionsHeader from '@next-evm/utils/firebaseFunctionHeaders';
@@ -335,29 +335,25 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 	const { network } = useGlobalApiContext();
 	const router = useRouter();
 	const [gnosisSafe, setGnosisSafe] = useState<GnosisSafeService>({} as any);
-	const { wallets } = useWallets();
 
 	const [loading, setLoading] = useState(false);
 
-	const searchParams = useSearchParams();
+	// const searchParams = useSearchParams();
 
-	const { user, authenticated } = usePrivy();
+	const { user } = usePrivy();
 
-	console.log('user', user);
-
-	const sharedSafeAddress = searchParams.get('safe');
-	const sharedSafeNetwork = searchParams.get('network');
+	// const sharedSafeAddress = searchParams.get('safe');
+	// const sharedSafeNetwork = searchParams.get('network');
 
 	const connectAddress = useCallback(
 		// eslint-disable-next-line @typescript-eslint/no-shadow, sonarjs/cognitive-complexity, @typescript-eslint/no-unused-vars
 		async (userID: string, address?: string, isLogin?: boolean) => {
-			console.log('connectAddress claleed');
 			if (!userID) {
 				return;
 			}
 			setLoading(true);
 			const loginRes = await fetch(`${FIREBASE_FUNCTIONS_URL}/loginEth`, {
-				headers: firebaseFunctionsHeader(wallets?.[0]?.address || address),
+				headers: firebaseFunctionsHeader(address),
 				method: 'POST'
 			});
 			const { data: userData, error: loginError } = (await loginRes.json()) as {
@@ -391,15 +387,13 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 					};
 				});
 				if (!userData.organisations || userData.organisations.length === 0) {
-					console.log('home');
-					router.replace('/create-org');
+					router.push('/create-org');
 				} else if (isLogin) {
 					router.replace('/');
 				}
 			} else {
 				logout();
 				setUserDetailsContextState(initialUserDetailsContext);
-				console.log('in logout block');
 				router.push('/login');
 			}
 			setLoading(false);
@@ -420,11 +414,11 @@ export const UserDetailsProvider = ({ children }: { children?: ReactNode }): Rea
 		// // getSharedSafeAddressData();
 		// return;
 		// }
-		if (authenticated) {
-			console.log('wallet changed');
+		if (typeof window !== 'undefined' && localStorage.getItem('privy:token') && user?.id) {
+			console.log('called from here', user?.wallet?.address);
 			connectAddress(user?.id, user?.wallet?.address);
 		}
-	}, [authenticated, connectAddress, network, router, sharedSafeAddress, sharedSafeNetwork, user]);
+	}, [connectAddress, user?.id, user?.wallet?.address]);
 
 	useEffect(() => {}, []);
 

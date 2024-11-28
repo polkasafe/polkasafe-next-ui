@@ -1,6 +1,5 @@
 import { Button } from 'antd';
 import React, { useCallback, useEffect, useState } from 'react';
-import { useMultisigAssetsContext } from '@next-evm/context/MultisigAssetsContext';
 import { useWallets } from '@privy-io/react-auth';
 import { useActiveOrgContext } from '@next-evm/context/ActiveOrgContext';
 import { IQueuedTransactions, convertSafePendingData } from '@next-evm/utils/convertSafeData/convertSafePending';
@@ -24,8 +23,6 @@ enum ETab {
 
 const OrgInfoTable = ({ className }: { className?: string }) => {
 	const [tab, setTab] = useState(ETab.HISTORY);
-
-	const { allAssets } = useMultisigAssetsContext();
 
 	const { activeOrg } = useActiveOrgContext();
 	const { wallets } = useWallets();
@@ -99,7 +96,6 @@ const OrgInfoTable = ({ className }: { className?: string }) => {
 		fetchAllTransactions();
 	}, [fetchAllTransactions]);
 
-	console.log('allAssets', allAssets);
 	return (
 		<div className={`w-full h-[400px] bg-bg-main rounded-xl p-8 flex flex-col ${className}`}>
 			<div className='flex items-center mb-4 scale-90 w-[111%] origin-top-left'>
