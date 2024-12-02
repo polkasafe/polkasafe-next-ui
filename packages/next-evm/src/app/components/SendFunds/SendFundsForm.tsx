@@ -220,7 +220,8 @@ const SendFundsForm = ({
 				}
 			]);
 		}
-	}, [address, allAssets, defaultSelectedAddress, defaultToken, selectedMultisig]);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [selectedMultisig]);
 
 	useEffect(() => {
 		if (!streamAmount) return;
