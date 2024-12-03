@@ -43,88 +43,90 @@ const Transactions = () => {
 	}, [searchParams]);
 
 	return (
-		<div className='bg-bg-main rounded-xl p-[20.5px] h-full relative'>
-			<AddMultisigModal />
-			{userID || (activeMultisig && isSharedSafe) ? (
-				<>
-					<div className='flex items-center mb-4 scale-90 w-[111%] origin-top-left'>
-						<Button
-							onClick={() => setTab(ETab.QUEUE)}
-							// icon={<QueueIcon />}
-							size='large'
-							className={`font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
-								// eslint-disable-next-line sonarjs/no-duplicate-string
-								tab === ETab.QUEUE && 'text-primary bg-highlight'
-							}`}
-						>
-							Queue
-						</Button>
-						<Button
-							onClick={() => setTab(ETab.HISTORY)}
-							// icon={<HistoryIcon />}
-							size='large'
-							className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
-								tab === ETab.HISTORY && 'text-primary bg-highlight'
-							}`}
-						>
-							History
-						</Button>
-						<Button
-							onClick={() => setTab(ETab.STREAMED)}
-							// icon={<HistoryIcon />}
-							size='large'
-							className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
-								tab === ETab.STREAMED && 'text-primary bg-highlight'
-							}`}
-						>
-							Streamed
-						</Button>
-						<div className='flex-1' />
-						<Button
-							size='large'
-							onClick={() => setRefetch((prev) => !prev)}
-							disabled={loading}
-							icon={
-								<SyncOutlined
-									spin={loading}
-									className='text-primary'
+		<div className='max-h-[calc(100vh-70px-60px)] h-full flex flex-col'>
+			<div className='bg-bg-main rounded-xl p-[20.5px] max-h-full flex-1 flex flex-col relative'>
+				<AddMultisigModal />
+				{userID || (activeMultisig && isSharedSafe) ? (
+					<div className='flex flex-col flex-1 max-h-full'>
+						<div className='flex items-center mb-4 scale-90 w-[111%] origin-top-left'>
+							<Button
+								onClick={() => setTab(ETab.QUEUE)}
+								// icon={<QueueIcon />}
+								size='large'
+								className={`font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
+									// eslint-disable-next-line sonarjs/no-duplicate-string
+									tab === ETab.QUEUE && 'text-primary bg-highlight'
+								}`}
+							>
+								Queue
+							</Button>
+							<Button
+								onClick={() => setTab(ETab.HISTORY)}
+								// icon={<HistoryIcon />}
+								size='large'
+								className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
+									tab === ETab.HISTORY && 'text-primary bg-highlight'
+								}`}
+							>
+								History
+							</Button>
+							<Button
+								onClick={() => setTab(ETab.STREAMED)}
+								// icon={<HistoryIcon />}
+								size='large'
+								className={`rounded-lg font-medium text-sm leading-[15px] w-[100px] text-white outline-none border-none ${
+									tab === ETab.STREAMED && 'text-primary bg-highlight'
+								}`}
+							>
+								Streamed
+							</Button>
+							<div className='flex-1' />
+							<Button
+								size='large'
+								onClick={() => setRefetch((prev) => !prev)}
+								disabled={loading}
+								icon={
+									<SyncOutlined
+										spin={loading}
+										className='text-primary'
+									/>
+								}
+								className='text-primary bg-highlight outline-none border-none font-medium text-sm max-sm:hidden'
+							>
+								Refresh
+							</Button>
+						</div>
+						<div className='flex-1 flex flex-col overflow-y-auto pr-2'>
+							{tab === ETab.STREAMED ? (
+								<Streamed
+									loading={loading}
+									setLoading={setLoading}
+									refetch={refetch}
 								/>
-							}
-							className='text-primary bg-highlight outline-none border-none font-medium text-sm max-sm:hidden'
-						>
-							Refresh
-						</Button>
+							) : tab === ETab.HISTORY ? (
+								<History
+									loading={loading}
+									refetch={refetch}
+									setLoading={setLoading}
+								/>
+							) : (
+								<Queued
+									loading={loading}
+									refetch={refetch}
+									setLoading={setLoading}
+									setRefetch={setRefetch}
+								/>
+							)}
+						</div>
 					</div>
-					<div className='h-full max-h-[690px] overflow-auto pr-2'>
-						{tab === ETab.STREAMED ? (
-							<Streamed
-								loading={loading}
-								setLoading={setLoading}
-								refetch={refetch}
-							/>
-						) : tab === ETab.HISTORY ? (
-							<History
-								loading={loading}
-								refetch={refetch}
-								setLoading={setLoading}
-							/>
-						) : (
-							<Queued
-								loading={loading}
-								refetch={refetch}
-								setLoading={setLoading}
-								setRefetch={setRefetch}
-							/>
-						)}
+				) : (
+					<div className='h-full w-full flex items-center justify-center text-primary font-bold text-lg'>
+						<Link href='/login'>
+							<span>Please Login</span> <ExternalLinkIcon />
+						</Link>
 					</div>
-				</>
-			) : (
-				<div className='h-full w-full flex items-center justify-center text-primary font-bold text-lg'>
-					<Link href='/login'>
-						<span>Please Login</span> <ExternalLinkIcon />
-					</Link>
-				</div>
-			)}
+				)}
+			</div>
 		</div>
 	);
 };
