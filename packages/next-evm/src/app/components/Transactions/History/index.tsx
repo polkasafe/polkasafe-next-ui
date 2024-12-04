@@ -121,7 +121,7 @@ const History: FC<IHistory> = ({ loading, setLoading, refetch }) => {
 	return (
 		<>
 			{transactions && transactions.length > 0 ? (
-				<div className='flex flex-col mb-2'>
+				<div className='flex flex-col gap-y-[10px]'>
 					{transactions
 						.sort((a, b) => (dayjs(a.created_at).isBefore(dayjs(b.created_at)) ? 1 : -1))
 						.map((transaction, index) => {
