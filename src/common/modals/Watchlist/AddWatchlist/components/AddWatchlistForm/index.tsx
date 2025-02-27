@@ -8,6 +8,7 @@ import LoadingLottie from '@common/global-ui-components/LottieAnimations/Loading
 import { watchlistFormFields } from '@common/modals/Watchlist/AddWatchlist/utils/form';
 import { SelectNetwork } from '@common/global-ui-components/SelectNetwork';
 import { ENetwork } from '@common/enum/substrate';
+import { networkConstants } from '@common/constants/substrateNetworkConstant';
 
 export const AddWatchlistForm = ({
 	initialValue,
@@ -73,7 +74,7 @@ export const AddWatchlistForm = ({
 				<Form.Item>
 					<h1 className='text-label mb-2 max-sm:text-xs'>Select Network</h1>
 					<SelectNetwork
-						networks={Object.values(ENetwork)}
+						networks={Object.values(networkConstants).filter((network) => network.disabled).map((network) => network.key)}
 						selectedNetwork={selectedNetwork}
 						onChange={(network) => setSelectedNetwork(network)}
 					/>

@@ -2,9 +2,9 @@ import fetchPonyfill from 'fetch-ponyfill';
 
 const { fetch: fetchPF } = fetchPonyfill();
 
-// const baseUrl = 'https://app.polkasafe.xyz/api/v1';
+const baseUrl = 'https://testing2.polkasafe.xyz/api/v1';
 
-const baseUrl = 'http://localhost:3000/api/v1';
+// const baseUrl = 'http://localhost:3000/api/v1';
 
 export function request<T>(endpoint: string, reqHeaders?: any, options?: RequestInit): Promise<T> {
 	// console.log('baseUrl', baseUrl);
