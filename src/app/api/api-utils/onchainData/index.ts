@@ -14,7 +14,7 @@ interface IResponse {
 
 const getQueueDetails = async (extrinsicBlockWithIndex: string, network: string) => {
 	const queueDataResponse = await axios.post(
-		`https://api-${network}.rootscan.io/v1/extrinsic`,
+		`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/v1/extrinsic`,
 		{
 			extrinsicId: extrinsicBlockWithIndex
 		},

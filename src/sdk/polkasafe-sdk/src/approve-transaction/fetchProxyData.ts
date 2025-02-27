@@ -11,7 +11,7 @@ export const fetchProxyData = async (
 	network: string,
 	statusGrabber: any
 ) => {
-	const response = await fetch(`https://api-${network}.rootscan.io/api/scan/events`, {
+	const response = await fetch(`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/api/scan/events`, {
 		body: JSON.stringify({
 			row: 1,
 			page: 0,

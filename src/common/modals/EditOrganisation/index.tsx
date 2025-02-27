@@ -17,6 +17,7 @@ import { useWalletAccounts } from '@substrate/app/global/hooks/useWalletAccounts
 import { EditIcon } from '@common/global-ui-components/Icons';
 import { useNotification } from '@common/utils/notification';
 import { ERROR_MESSAGES, SUCCESS_MESSAGES } from '@common/utils/messages';
+import { networkConstants } from '@common/constants/substrateNetworkConstant';
 
 export const EditOrganisation = () => {
 	const [openModal, setOpenModal] = useState(false);
@@ -167,7 +168,7 @@ export const EditOrganisation = () => {
 					fetchMultisig={fetchMultisig}
 					multisigs={multisigs}
 					availableSignatories={availableSignatories}
-					networks={Object.values(ENetwork)}
+					networks={Object.values(networkConstants).filter((network) => !network.disabled).map((network) => network.key)}
 					linkedMultisig={linkedMultisigs}
 					onLinkedMultisig={onLinkedMultisig}
 					onRemoveMultisig={onRemoveMultisig}

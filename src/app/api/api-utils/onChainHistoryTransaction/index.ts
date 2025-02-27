@@ -18,7 +18,7 @@ interface IResponse {
 
 const getAllHistoryResponse = async (multisigAddress: string, network: string, page: number, entries: number) => {
 	const allHistoryResponse = await axios.post(
-		`https://api-${network}.rootscan.io/v1/native-transfers`,
+		`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/v1/native-transfers`,
 		{
 			address: multisigAddress,
 			page: page - 1 || 0, // pages start from 0
@@ -147,6 +147,7 @@ export async function onChainHistoryTransaction(
 
 	try {
 		const allTransactions = await getAllHistoryResponse(multisigAddress, network, page, entries);
+		console.log('allTransactions', allTransactions);
 		returnValue.data.transactions = allTransactions;
 	} catch (err) {
 		console.log('Error in getTransfersByAddress:', err);

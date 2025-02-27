@@ -345,7 +345,31 @@ export const networkConstants = {
 				name: 'XRP',
 				symbol: 'XRP',
 				decimals: 6
-			}
+			},
+			{
+				id:3,
+				name: 'VTX',
+				symbol: 'VTX',
+				decimals: 6
+			},
+			{
+				id: 3172,
+				name: 'USDC',
+				symbol: 'USDC',
+				decimals: 6
+			},
+			{
+				id: 1124,
+				name: 'ETH',
+				symbol: 'ETH',
+				decimals: 18
+			},
+			{
+				id: 2148,
+				name: 'SYLO',
+				symbol: 'SYLO',
+				decimals: 18
+			},
 		]
 	}
 };

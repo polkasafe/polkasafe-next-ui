@@ -19,7 +19,7 @@ const nextConfig = {
       },
       transpilePackages: ['next-common'],
       images: {
-          domains: ['parachains.info', 's2.coinmarketcap.com', 'resources.smartlayer.network', 'i.ibb.co', 'www.google.com']
+          domains: ['parachains.info', 's2.coinmarketcap.com', 'resources.smartlayer.network', 'i.ibb.co', 'www.google.com', 'testing2.polkasafe.xyz', 'porcini.rootscan.io', 'assets.coingecko.com', 'api.rootscan.io', 'api-porcini.rootscan.io']
       },
       reactStrictMode: false,
       webpack(config) {

@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const onChainMultisigsByAddress = async (address: string, network: string) => {
 	const { data } = await axios.post(
-		`https://api-${network}.rootscan.io/api/v2/scan/search`,
+		`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/api/v2/scan/search`,
 		{
 			row: 1,
 			key: address

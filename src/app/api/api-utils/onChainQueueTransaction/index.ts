@@ -16,7 +16,7 @@ interface IResponse {
 
 const getQueueTransactions = async (multisigAddress: string, network: string, page: number, entries: number) => {
 	const queueTransactions = await axios.post(
-		`https://api-${network}.rootscan.io/api/scan/multisigs/details`,
+		`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/api/scan/multisigs/details`,
 		{
 			account: multisigAddress,
 			page: page - 1 || 0, // pages start from 0
