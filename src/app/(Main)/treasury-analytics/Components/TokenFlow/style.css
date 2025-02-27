@@ -1,0 +1,18 @@
+.circle-background {
+    fill: none;
+    stroke: #40434C;
+}
+
+.circle-progress-outer {
+    fill: none;
+    stroke: #BF3D3D;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.circle-progress-inner {
+    fill: none;
+    stroke: #55BA74;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}

@@ -1,0 +1,7 @@
+.container {
+  @apply h-screen w-full flex justify-center items-center bg-bg-main;
+}
+
+.image {
+  @apply h-[30px] w-[180px];
+}

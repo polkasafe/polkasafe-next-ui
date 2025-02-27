@@ -1,0 +1,15 @@
+.ant-checkbox-wrapper span:nth-child(2) {
+    flex: 1 1 0% !important;
+}
+
+.ant-checkbox .ant-checkbox-inner {
+    border-color: white !important;
+}
+
+.big_circle {
+    background: radial-gradient(50% 50% at 50% 50%, #1573FE 0%, rgba(54, 0, 96, 0.00) 100%);
+}
+
+.small_circle {
+    background: radial-gradient(50% 50% at 50% 50%, #B379DF 0%, rgba(54, 0, 96, 0.00) 100%);
+}

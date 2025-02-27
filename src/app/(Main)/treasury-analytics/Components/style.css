@@ -1,0 +1,26 @@
+.ant-picker-range .ant-picker-range-separator .ant-picker-separator, .ant-picker-suffix, .ant-picker-clear {
+    color: #1573FE !important;
+}
+
+.ant-picker-panel-container {
+    background-color: #24272E !important;
+    border: 1px solid #1573FE !important;
+}
+
+.ant-picker-dropdown .ant-picker-cell-disabled {
+    color: #505050 !important;
+}
+
+.ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-in-range::before, .ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-range-start:not(.ant-picker-cell-range-start-single)::before, .ant-picker-dropdown .ant-picker-cell-in-view.ant-picker-cell-range-end:not(.ant-picker-cell-range-end-single)::before {
+    background-color: #1573FE;
+}
+
+.ant-segmented .ant-segmented-item-selected {
+    color: white !important;
+    background-color: #24272E !important;
+}
+
+.balance_history .ant-segmented .ant-segmented-item-selected {
+    background-color: #8B8B8B !important;
+    padding-inline: 4px;
+}
