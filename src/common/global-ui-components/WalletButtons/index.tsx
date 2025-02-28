@@ -50,94 +50,33 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 	const walletConnectValue = useAtomValue(wcAtom) as { connect: any; session: any } | null;
 	const connect = walletConnectValue?.connect;
 	const session = walletConnectValue?.session;
-
-	const getAccounts = useCallback(
-		async (chosenWallet: Wallet): Promise<undefined> => {
-			if (typeof window !== 'undefined') {
-				const injectedWindow = window as Window & InjectedWindow;
-
-				const wallet = injectedWindow.injectedWeb3[chosenWallet];
-
-				if (!wallet) {
-					setNoExtenstion?.(true);
-					return;
-				}
-
-				setFetchAccountsLoading?.(true);
-				let injected: Injected | undefined;
-				try {
-					injected = await new Promise((resolve, reject) => {
-						const timeoutId = setTimeout(() => {
-							reject(new Error('Wallet Timeout'));
-						}, 60000); // wait 60 sec
-
-						if (wallet && wallet.enable) {
-							wallet
-								.enable(APP_NAME)
-								.then((value) => {
-									clearTimeout(timeoutId);
-									resolve(value);
-								})
-								.catch((error) => {
-									reject(error);
-								});
-						}
-					});
-				} catch (err) {
-					setFetchAccountsLoading?.(false);
-					console.log(err?.message);
-				}
-				if (!injected) {
-					setFetchAccountsLoading?.(false);
-					return;
-				}
-
-				const accounts = await injected.accounts.get();
-
-				if (accounts.length === 0) {
-					setFetchAccountsLoading?.(false);
-					setNoAccounts?.(true);
-					return;
-				}
-				setFetchAccountsLoading?.(false);
-
-				setAccounts(
-					accounts.map((account) => ({
-						...account,
-						address: getSubstrateAddress(account.address) || account.address
-					}))
-				);
+	const getAddresses = async () => {
+		try {
+			const wallet = selectedWallet === Wallet.SUBWALLET ? (window as any).SubWallet : (window as any).talismanEth;
+			if (!wallet) {
+				setNoExtenstion?.(true);
+				return;
 			}
-		},
-		[setAccounts, setFetchAccountsLoading, setNoAccounts, setNoExtenstion]
-	);
+			setNoExtenstion?.(false);
+
+			const accounts: string[] = await getEvmAddress(wallet);
+			if (!accounts) {
+				return;
+			}
+			console.log('accounts', accounts);
+			setAccounts(
+				accounts.map((account) => ({
+					address: account,
+					name: DEFAULT_ADDRESS_NAME
+				}))
+			);
+			return accounts;
+		} catch (error) {
+			console.error('Error fetching EVM address:', error);
+		}
+	};
 
 	useEffect(() => {
-		const getAddresses = async () => {
-			try {
-				const wallet = selectedWallet === Wallet.SUBWALLET ? (window as any).SubWallet : (window as any).talismanEth;
-				if (!wallet) {
-					setNoExtenstion?.(true);
-					return;
-				}
-				setNoExtenstion?.(false);
-
-				const accounts: string[] = await getEvmAddress(wallet);
-				if (!accounts) {
-					return;
-				}
-				console.log('accounts', accounts);
-				setAccounts(
-					accounts.map((account) => ({
-						address: account,
-						name: DEFAULT_ADDRESS_NAME
-					}))
-				);
-				return accounts;
-			} catch (error) {
-				console.error('Error fetching EVM address:', error);
-			}
-		};
 
 		// Example usage
 		getAddresses();
@@ -174,7 +113,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 			setOpenVaultModal(true);
 			setFetchAccountsLoading?.(true);
 		} else {
-			await getAccounts(wallet);
+			await getAddresses();
 		}
 	};
 
@@ -204,7 +143,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				icon={<SubWalletIcon />}
 				tooltip='Subwallet'
 			/>
-			<WalletButton
+			{/* <WalletButton
 				className={twMerge(
 					selectedWallet === Wallet.TALISMAN ? 'border-primary bg-highlight border border-solid' : 'border-none'
 				)}
@@ -220,7 +159,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 				onClick={(event) => handleWalletClick(event as any, Wallet.WALLET_CONNECT)}
 				icon={<WalletConnectLogo />}
 				tooltip='Wallet Connect'
-			/>
+			/> */}
 			{/* <WalletButton
 				className={twMerge(
 					selectedWallet === Wallet.POLKADOT_VAULT ? 'border-primary bg-highlight border border-solid' : 'border-none'
