@@ -69,24 +69,5 @@ export async function setSigner(api: any, network: ENetwork) {
 	if (!injected) {
 		return;
 	}
-	if (checkAvailNetwork(network)) {
-		const metadata = getInjectorMetadata(api);
-		const prevMetadatas = await injected.metadata?.get();
-		if (
-			prevMetadatas &&
-			prevMetadatas.some(
-				(item) => item.specVersion === metadata.specVersion && item.genesisHash === metadata.genesisHash
-			)
-		) {
-			api.setSigner(injected.signer);
-			return;
-		}
-		await injected.metadata?.provide(metadata);
-		const inj = injected;
-		if (inj?.signer) {
-			api.setSigner(inj.signer);
-			return;
-		}
-	}
 	api.setSigner(injected.signer);
 }
