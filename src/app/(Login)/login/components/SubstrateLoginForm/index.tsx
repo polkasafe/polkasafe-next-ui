@@ -50,7 +50,7 @@ export function SubstrateLoginForm() {
 	const [signing, setSigning] = useState<boolean>(false);
 	const [noAccounts, setNoAccounts] = useState<boolean>(false);
 	const [noExtension, setNoExtension] = useState<boolean>(false);
-	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.POLKADOT);
+	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.SUBWALLET);
 	const [tfaToken, setTfaToken] = useState<string>('');
 
 	const apis = useApi();
