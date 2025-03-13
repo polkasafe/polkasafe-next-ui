@@ -42,7 +42,7 @@ const WalletButtons: React.FC<IWalletButtons> = ({
 	setVaultNetwork,
 	wcAtom
 }: IWalletButtons) => {
-	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.POLKADOT);
+	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.SUBWALLET);
 
 	const [openVaultModal, setOpenVaultModal] = useState<boolean>(false);
 
