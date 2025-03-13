@@ -72,8 +72,6 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 
 		const allTxns = await getMultisigTransactions(encodedMultisigs, limit, page);
 
-		console.log('allTxns', allTxns);
-
 		return NextResponse.json(
 			{
 				data: { transactions: allTxns },

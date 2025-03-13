@@ -57,7 +57,7 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 			})
 			.filter((a: string | null) => Boolean(a));
 
-		const uniqueMultisigIds = Array.from(new Set(multisigIds)) as Array<string>;
+		const uniqueMultisigIds = [...new Set(multisigIds)] as Array<string>;
 
 		return NextResponse.json(
 			{

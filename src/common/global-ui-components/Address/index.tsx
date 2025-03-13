@@ -50,7 +50,7 @@ const Address: React.FC<IAddressComponent> = ({
 	isProxy,
 	signatories,
 	threshold,
-	network = ENetwork.ROOT,
+	network = ENetwork.MYTHOS,
 	addressLength,
 	fullAddress,
 	withEmail,
@@ -68,7 +68,7 @@ const Address: React.FC<IAddressComponent> = ({
 	const addressBook = organisation?.addressBook;
 
 	const addressBookDetails = addressBook?.find(
-		(item) => getSubstrateAddress(address) === getSubstrateAddress(item.address)
+		(item: any) => getSubstrateAddress(address) === getSubstrateAddress(item.address)
 	);
 
 	return (
@@ -172,7 +172,7 @@ const Address: React.FC<IAddressComponent> = ({
 							>
 								<ParachainTooltipIcon
 									size={6}
-									src={networkConstants[network]?.logo}
+									src={networkConstants[network as keyof typeof networkConstants]?.logo}
 								/>
 								{network}
 							</div>

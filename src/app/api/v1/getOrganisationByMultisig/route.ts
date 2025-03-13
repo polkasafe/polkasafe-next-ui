@@ -50,7 +50,7 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 
 		if (organisation.exists) {
 			const data = organisation.data();
-			const multisigsData = Array.from(new Set(data?.multisigs || [])) as Array<string>;
+			const multisigsData = [...new Set(data?.multisigs || [])] as Array<string>;
 
 			const multisigsPromise =
 				multisigsData.map(async (multisigId: string) => {

@@ -6,6 +6,7 @@ import { SwapOutlined } from '@ant-design/icons';
 import { Badge, Tooltip, Form, Divider } from 'antd';
 import React, { useEffect, useState } from 'react';
 
+import { getWalletAccounts } from '@common/utils/getWalletAccounts';
 import { IAddressBook } from '@common/types/substrate';
 import { InjectedAccount } from '@polkadot/extension-inject/types';
 import getEncodedAddress from '@common/utils/getEncodedAddress';
@@ -73,7 +74,7 @@ const SelectSignatories = ({
 		const allAccounts = [...accounts, ...talismanAccounts];
 
 		if (allAccounts && allAccounts.length > 0) {
-			setWalletAccounts(allAccounts.map((account) => ({ address: account, name: DEFAULT_ADDRESS_NAME })));
+			setWalletAccounts(allAccounts.filter(address => address !== userAddress).map((account) => ({ address: account, name: DEFAULT_ADDRESS_NAME })));
 		}
 	};
 
@@ -255,7 +256,9 @@ const SelectSignatories = ({
 						)}
 						{
 							<>
-								<div className='text-sm text-text-disabled'>Addresses imported directly from your wallet</div>
+								<div className='text-sm text-text-disabled'>
+									Addresses imported directly from your Polkadot.js wallet
+								</div>
 								{walletAccounts
 									.filter((item) => !signatories.includes(item.address))
 									.map((account, i) => (

@@ -111,7 +111,8 @@ const MultisigOverview = ({ multisigs }: { multisigs: IMultisig[] }) => {
 			) : (
 				<div className='flex-1 flex flex-col h-full px-4'>
 					<div className='flex justify-start mb-4'>
-						<Dropdown	
+						<Dropdown
+							trigger={['click']}
 							className='border border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer min-w-[260px]'
 							menu={{
 								items: multisigOptions,

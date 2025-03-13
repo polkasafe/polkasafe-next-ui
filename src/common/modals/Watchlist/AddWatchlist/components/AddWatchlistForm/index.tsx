@@ -9,7 +9,6 @@ import { watchlistFormFields } from '@common/modals/Watchlist/AddWatchlist/utils
 import { SelectNetwork } from '@common/global-ui-components/SelectNetwork';
 import { ENetwork } from '@common/enum/substrate';
 import { networkConstants } from '@common/constants/substrateNetworkConstant';
-
 export const AddWatchlistForm = ({
 	initialValue,
 	onSubmit
@@ -37,7 +36,7 @@ export const AddWatchlistForm = ({
 			await onSubmit(payload);
 			notification(SUCCESS_MESSAGES.ADD_ADDRESS_SUCCESS);
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.ADD_ADDRESS_FAILED, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.ADD_ADDRESS_FAILED, description: error || error.message });
 		} finally {
 			setLoading(false);
 		}
@@ -74,7 +73,9 @@ export const AddWatchlistForm = ({
 				<Form.Item>
 					<h1 className='text-label mb-2 max-sm:text-xs'>Select Network</h1>
 					<SelectNetwork
-						networks={Object.values(networkConstants).filter((network) => network.disabled).map((network) => network.key)}
+						networks={Object.values(networkConstants)
+							.filter((network) => !network.disabled)
+							.map((network) => network.key)}
 						selectedNetwork={selectedNetwork}
 						onChange={(network) => setSelectedNetwork(network)}
 					/>

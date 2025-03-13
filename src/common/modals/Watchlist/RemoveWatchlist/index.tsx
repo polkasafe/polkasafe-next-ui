@@ -16,7 +16,7 @@ export const RemoveWatchlist = ({ onSubmit }: { onSubmit: () => Promise<void> })
 			notification(SUCCESS_MESSAGES.REMOVE_ADDRESS_SUCCESS);
 		} catch (error) {
 			console.error(error);
-			notification({ ...ERROR_MESSAGES.REMOVE_ADDRESS_FAILED, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.REMOVE_ADDRESS_FAILED, description: error.message || error });
 		} finally {
 			setLoading(false);
 			setOpenModal(false);

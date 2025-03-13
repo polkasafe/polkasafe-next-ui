@@ -1,7 +1,7 @@
 // Copyright 2022-2023 @Polkasafe/polkaSafe-ui authors & contributors
 // This software may be modified and distributed under the terms
 // of the Apache-2.0 license. See the LICENSE file for details.
- 
+/* eslint-disable no-tabs */
 
 'use client';
 
@@ -10,7 +10,6 @@ import Button from '@common/global-ui-components/Button';
 import { stringToHex, isHex } from '@polkadot/util';
 import { WalletIcon } from '@common/global-ui-components/Icons';
 import Loader from '@common/global-ui-components/Loder';
-import WalletButtons from '@common/global-ui-components/WalletButtons';
 import React, { useEffect, useState } from 'react';
 import { InjectedAccount } from '@polkadot/extension-inject/types';
 import { useRouter } from 'next/navigation';
@@ -36,6 +35,7 @@ import InfoBox from '@common/global-ui-components/InfoBox';
 import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
 import { polkadotVaultSign } from '@substrate/app/(Login)/login/utils/polkadotVaultSign';
 import Typography, { ETypographyVariants } from '@common/global-ui-components/Typography';
+import EvmWalletButtons from '@common/global-ui-components/EvmWalletButtons';
 
 export function SubstrateLoginForm() {
 	const setAtom = useSetAtom(userAtom);
@@ -50,26 +50,26 @@ export function SubstrateLoginForm() {
 	const [signing, setSigning] = useState<boolean>(false);
 	const [noAccounts, setNoAccounts] = useState<boolean>(false);
 	const [noExtension, setNoExtension] = useState<boolean>(false);
-	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.SUBWALLET);
+	const [selectedWallet, setSelectedWallet] = useState<Wallet>(Wallet.POLKADOT);
 	const [tfaToken, setTfaToken] = useState<string>('');
 
 	const apis = useApi();
 
 	const wc = useAtomValue(walletConnectAtom);
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 	const [tokenExpired, setTokenExpired] = useState<boolean>(false);
 
 	const [openSignWithVaultModal, setOpenSignWithVaultModal] = useState<boolean>(false);
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 	const [vaultTxnHash, setVaultTxnHash] = useState<string>('');
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 	const [vaultSignature, setVaultSignature] = useState<string>('');
 
 	const [vaultNetwork, setVaultNetwork] = useState<string>(ENetwork.POLKADOT);
 
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
 	const [{ isQrHashed, qrAddress, qrPayload, qrResolve }, setQrState] = useState<QrState>(() => ({
 		isQrHashed: false,
 		qrAddress: '',
@@ -294,7 +294,7 @@ export function SubstrateLoginForm() {
 			setSigning(false);
 			queueNotification({
 				header: 'Failed',
-				message: error instanceof Error ? error.message : String(error),
+				message: error as string,
 				status: NotificationStatus.ERROR
 			});
 		}
@@ -344,7 +344,7 @@ export function SubstrateLoginForm() {
 									setVaultSignature(data.signature);
 									if (qrResolve) {
 										qrResolve({
-											 
+											// eslint-disable-next-line no-plusplus
 											id: ++qrId,
 											signature: data.signature
 										});
@@ -375,7 +375,7 @@ export function SubstrateLoginForm() {
 			</Typography>
 			{showAccountsDropdown ? (
 				<div className='mt-5'>
-					<WalletButtons
+					<EvmWalletButtons
 						wcAtom={walletConnectAtom}
 						setNoAccounts={setNoAccounts}
 						setFetchAccountsLoading={setFetchAccountsLoading}

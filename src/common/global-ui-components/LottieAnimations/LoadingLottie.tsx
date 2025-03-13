@@ -4,7 +4,7 @@
 
 import Lottie from 'react-lottie-player';
 
-import LoadingScreen from '@common/assets/lottie-files/loading-animation.json';
+import LoadingScreen from '@assets/lottie-files/loading-animation.json';
 
 interface Props {
 	message?: string;

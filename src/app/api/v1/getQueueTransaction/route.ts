@@ -59,6 +59,8 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 			return NextResponse.json({ error: ResponseMessages.INVALID_PAGE }, { status: 400 });
 		}
 
+		console.log('multisigs:::', multisigs);
+
 		const encodedMultisigs = multisigs.map((item: string) => {
 			const [address, network] = item.split('_');
 			const encodeAddress = getEncodedAddress(address, network as ENetwork);
@@ -81,7 +83,7 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 			{ status: 200 }
 		);
 	} catch (err: unknown) {
-		console.error(err);
+		console.error((err as any).message);
 		return NextResponse.json({ error: ResponseMessages.INTERNAL }, { status: 500 });
 	}
 });

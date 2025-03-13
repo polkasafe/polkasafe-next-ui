@@ -118,12 +118,12 @@ const transfer = async ({
 	onFailed
 }: ITransferTransaction) => {
 	const { address, network, threshold, signatories: allSignatories } = multisig;
-	const sender = substrateSender;
-	console.log('allSignatories', allSignatories);
+	const sender = getEncodedAddress(substrateSender, network) || substrateSender;
 
 	// Sort signatories
-	const signatories = allSignatories.filter((s) => getSubstrateAddress(s) !== getSubstrateAddress(sender));
-	console.log('signatories', signatories);
+	const signatories = allSignatories
+		.map((s) => getEncodedAddress(s, network) || s)
+		.filter((s) => getSubstrateAddress(s) !== getSubstrateAddress(sender));
 	const tx = data
 		.map((d) => {
 			if (!d?.amount || !d?.recipient) {
@@ -131,15 +131,9 @@ const transfer = async ({
 			}
 			const { amount, recipient, currency } = d;
 			const accountId = u8aToHex(decodeAddress(recipient));
-			console.log('accountId', accountId);
-			console.log('currency', currency);
-			console.log('network', network);
-			console.log('amount', amount);
 			return getTransferCalls(api, { amount, address: accountId, currency: d.currency }, network);
 		})
 		.filter((tx) => tx !== null);
-
-	console.log('tx', tx);
 
 	if (!tx || tx.length === 0) {
 		return;
@@ -154,10 +148,7 @@ const transfer = async ({
 	};
 
 	const batchOrSingleTx = tx.length > 1 ? api.tx.utility.batchAll(tx) : tx[0];
-	if (!batchOrSingleTx) {
-		return;
-	}
-	const MAX_WEIGHT = (await batchOrSingleTx?.paymentInfo(address))?.weight;
+	const MAX_WEIGHT = (await batchOrSingleTx.paymentInfo(address)).weight;
 	const transaction = getTransaction(batchOrSingleTx);
 	const signableTransaction = api.tx.multisig.asMulti(threshold, signatories, null, transaction, MAX_WEIGHT);
 
@@ -376,13 +367,10 @@ const cancelTransaction = async ({
 }: ICancelTransaction) => {
 	const { network, signatories: allSignatories } = multisig;
 	const sender = getEncodedAddress(substrateSender, network) || substrateSender;
-
-	console.log('sender in cancel', sender);
 	// Sort signatories
 	const signatories = allSignatories
 		.map((s) => getEncodedAddress(s, network) || s)
 		.filter((s) => getSubstrateAddress(s) !== getSubstrateAddress(sender));
-	console.log('signatories in cancel', signatories);
 
 	if (!callHash) {
 		console.log('invalid callHash');
@@ -420,7 +408,6 @@ const approveTransaction = async ({
 }: IApproveTransaction) => {
 	const { network, signatories: allSignatories, threshold, address } = multisig;
 	const sender = getEncodedAddress(substrateSender, network) || substrateSender;
-	console.log('sender in approve', sender);
 	// Sort signatories
 	const signatories = allSignatories
 		.map((s) => getEncodedAddress(s, network) || s)
@@ -483,8 +470,8 @@ const editProxy = async ({
 		throw new Error(ERROR_MESSAGES.INVALID_TRANSACTION);
 	}
 	const encodedSignatories = newSignatories.map((signatory) =>
-		encodeAddress(signatory, networkConstants[network].ss58Format)
-	);
+		signatory.startsWith('0x') ? signatory : encodeAddress(signatory, networkConstants[network as ENetwork].ss58Format)
+);
 	const newMultisigAddress = encodeMultiAddress(encodedSignatories, newThreshold);
 	const accountId = getEncodedAddress(newMultisigAddress, network);
 	const addProxyTx = api.tx.proxy.addProxy(accountId, 'Any', 0);

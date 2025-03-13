@@ -1,4 +1,4 @@
-import {Dropdown} from '@common/global-ui-components/Dropdown';
+import Dropdown from '@common/global-ui-components/Dropdown';
 
 interface IOrganizationDropdown {
 	organizationList: Array<{ label: string; value: string }>;

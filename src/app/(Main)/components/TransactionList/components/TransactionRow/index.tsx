@@ -45,10 +45,6 @@ import { networkConstants } from '@common/constants/substrateNetworkConstant';
 import TransactionFields, {
 	generateCategoryKey
 } from '@substrate/app/(Main)/transactions/components/TransactionFields';
-import { useQueueDetails } from '@substrate/app/global/hooks/queryHooks/useQueueDetails';
-import { useTestDecode } from '@substrate/app/global/hooks/queryHooks/useTestDecode';
-import { useGetMultisigCallDataAndSigner } from '@substrate/app/global/hooks/queryHooks/useGetCallData';
-import { IDashboardTransaction } from '@common/types/substrate';
 
 interface ITransactionRow {
 	callData?: string;
@@ -66,8 +62,6 @@ interface ITransactionRow {
 	initiator: string;
 	transactionFields?: ITxnCategory;
 	multiId?: string;
-	blockNumber: string;
-	extrinsicIndex: number;
 }
 
 const getLabelForTransaction = (type: ETransactionOptions, label?: string) => {
@@ -151,7 +145,7 @@ const getTransactionDetail = (data: Array<any>, network: ENetwork) => {
 };
 
 function TransactionRow({
-	callData: callDataFromProps,
+	callData,
 	callHash,
 	createdAt,
 	to,
@@ -165,9 +159,7 @@ function TransactionRow({
 	variant = ETransactionVariant.SIMPLE,
 	initiator,
 	transactionFields,
-	multiId,
-	blockNumber,
-	extrinsicIndex
+	multiId
 }: ITransactionRow) {
 	const { getApi } = useAllAPI();
 	const [user] = useUser();
@@ -175,6 +167,9 @@ function TransactionRow({
 	const [queueTransaction, setQueueTransactions] = useQueueAtom();
 	const [historyTransaction, setHistoryTransaction] = useHistoryAtom();
 	const notification = useNotification();
+	const isInitiator = getSubstrateAddress(initiator) === getSubstrateAddress(user?.address || '');
+
+	console.log('initiator', initiator, user?.address);
 
 	const [category, setCategory] = useState<string>(
 		transactionFields?.category ? generateCategoryKey(transactionFields?.category) : 'none'
@@ -186,46 +181,18 @@ function TransactionRow({
 		transactionFields || { category: 'none', subfields: {} }
 	);
 
-	const { data: callDataAndSigner } = useGetMultisigCallDataAndSigner({
-		blockNumber: Number(blockNumber),
-		extrinsicIndex: Number(extrinsicIndex),
-		apiData: api
-	});
-
-	const [callData] = callDataAndSigner?.split('-') || [];
-	console.log('initiatorCC', initiator, user?.address);
-
-	const isInitiator = getSubstrateAddress(initiator) === getSubstrateAddress(user?.address || '');
-
 	const { data, isLoading, error } = useDecodeCallData({
 		callData,
 		callHash,
 		apiData: api
 	});
 
-	// const { data: txDetails } = useQueueDetails({
-	// 	extrinsicBlockWithIndex: `${blockNumber}-${extrinsicIndex}`,
-	// 	network
-	// });
-
-	// const { data, isLoading, error } = useTestDecode({
-	// 	blockNumber: Number(blockNumber),
-	// 	extrinsicIndex: Number(extrinsicIndex),
-	// 	callHash,
-	// 	callData: callData as string,
-	// 	apiData: api
-	// });
-
 	const transactionDetails = getTransactionDetail(data, network);
 
 	const [executableTransaction, setExecutableTransaction] = useState<ISubstrateExecuteProps | null>(null);
 	const [reviewTransaction, setReviewTransaction] = useState<IReviewTransaction | null>(null);
 
-	console.log('multisig', organisation?.multisigs);
-	console.log('multisig from props', multisig, network);
-
 	const txMultisig = findMultisig(organisation?.multisigs || [], `${multisig}_${network}`);
-	console.log('txMultisig', txMultisig);
 	const isSignatory = txMultisig?.signatories
 		.map((a) => getSubstrateAddress(a))
 		.includes(getSubstrateAddress(user?.address || '') || '');
@@ -235,7 +202,6 @@ function TransactionRow({
 		.includes(getSubstrateAddress(user?.address || '') || '');
 
 	const buildTransaction = async (type: ETxType) => {
-		console.log('buildTransaction', type);
 		const api = getApi(network)?.api;
 
 		if (!api) {
@@ -405,7 +371,7 @@ function TransactionRow({
 
 					const txWithNull = await Promise.all(payload);
 
-					const transactions = txWithNull.filter((tx) => tx !== null) as Array<IDashboardTransaction>;
+					const transactions = txWithNull.filter((tx) => tx !== null);
 
 					setQueueTransactions({ ...queueTransaction, transactions });
 					notification(SUCCESS_MESSAGES.TRANSACTION_APPROVE_SUCCESS);
@@ -433,11 +399,11 @@ function TransactionRow({
 
 					const transactions = payload.filter((tx) => tx !== null);
 
-					setQueueTransactions({ ...queueTransaction, transactions: transactions as Array<IDashboardTransaction> });
+					setQueueTransactions({ ...queueTransaction, transactions });
 					notification(SUCCESS_MESSAGES.TRANSACTION_REJECT_SUCCESS);
 				}
 			} catch (error) {
-				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			}
 		};
 
@@ -505,7 +471,7 @@ function TransactionRow({
 			notification({ ...INFO_MESSAGES.TRANSACTION_IN_BLOCK });
 			return { error: false };
 		} catch (e) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e instanceof Error ? e.message : String(e) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e || e.message });
 			return { error: true };
 		}
 	};

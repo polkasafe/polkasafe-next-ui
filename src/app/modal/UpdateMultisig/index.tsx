@@ -87,7 +87,7 @@ export const UpdateMultisig = ({ multisig, proxyAddress, addresses, className }:
 					trigger: ETriggers.EDIT_MULTISIG_USERS_START
 				});
 			} catch (error) {
-				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			}
 		};
 		try {
@@ -142,7 +142,7 @@ export const UpdateMultisig = ({ multisig, proxyAddress, addresses, className }:
 			setReviewTransaction(reviewData);
 			setTransactionState(ETransactionState.REVIEW);
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			console.log(error);
 			setTransactionState(ETransactionState.FAILED);
 		}
@@ -160,7 +160,7 @@ export const UpdateMultisig = ({ multisig, proxyAddress, addresses, className }:
 			setTransactionState(ETransactionState.CONFIRM);
 		} catch (e) {
 			setTransactionState(ETransactionState.FAILED);
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e instanceof Error ? e.message : String(e) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e || e.message });
 			setTransactionState(ETransactionState.FAILED);
 		}
 	};
@@ -173,7 +173,7 @@ export const UpdateMultisig = ({ multisig, proxyAddress, addresses, className }:
 				onClick={() => setOpenModal(true)}
 				size='middle'
 			>
-				Edit Multisig
+				Edit Members
 			</Button>
 
 			<Modal

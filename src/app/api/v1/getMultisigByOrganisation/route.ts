@@ -27,7 +27,7 @@ const getDataFromDB = async (docId: string) => {
 			})
 			.filter((a: string | null) => Boolean(a));
 
-		const uniqueMultisigIds = Array.from(new Set(multisigIds)) as Array<string>;
+		const uniqueMultisigIds = [...new Set(multisigIds)] as Array<string>;
 
 		const multisigsData = uniqueMultisigIds.map(async (multisigId: string | any) => {
 			if (multisigId.split('_').length <= 1) {

@@ -7,7 +7,11 @@ import Image from 'next/image';
 import emptyImage from '@common/assets/icons/empty-image.png';
 import dayjs, { Dayjs } from 'dayjs';
 import EmptyStateSVG from '@common/assets/icons/treasury-analytics-icon.svg';
+// import { ITreasury } from '@next-common/types';
 import BalanceHistory from './BalanceHistory';
+// import TopAssetsCard from '../Home/TopAssetsCard';
+// import TransactionsByEachToken from './TransactionsByEachToken';
+// import TotalBalances from './TotalBalances';
 import { useOrganisation } from '@substrate/app/atoms/organisation/organisationAtom';
 import { useUser } from '@substrate/app/atoms/auth/authAtoms';
 import { treasuryAnalytics } from '@sdk/polkasafe-sdk/src/treasury-analytics';
@@ -26,7 +30,7 @@ enum EDateFilters {
 	YEAR = -360,
 	ALL = 0
 }
-
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const TreasuryAnalyticsComponents = () => {
 	const [organisation] = useOrganisation();
 	const [user] = useUser();

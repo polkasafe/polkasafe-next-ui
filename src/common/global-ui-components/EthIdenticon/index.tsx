@@ -4,6 +4,7 @@
 
 import Jazzicon from '@metamask/jazzicon';
 import { useEffect, useRef } from 'react';
+import { twMerge } from 'tailwind-merge';
 
 const EthIdenticon = ({ address, size, className }: { address: string; size: number; className?: string }) => {
 	const ref = useRef<HTMLDivElement>();
@@ -19,7 +20,7 @@ const EthIdenticon = ({ address, size, className }: { address: string; size: num
 	return (
 		<div
 			onClick={() => navigator.clipboard.writeText(address)}
-			className={`cursor-copy ${className}`}
+			className={twMerge('cursor-copy', className)}
 			ref={ref as any}
 		/>
 	);

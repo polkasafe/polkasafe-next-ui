@@ -69,7 +69,7 @@ const SubmitPreImage = ({
 			setLoading(true);
 			await buildTransaction(payload);
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			console.error(error);
 		} finally {
 			setLoading(false);

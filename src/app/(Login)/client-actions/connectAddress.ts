@@ -9,6 +9,6 @@ export const connectAddress = async (address: string) => {
 		const data = await loginToPolkasafe(address);
 		return { data, error: null } as unknown as IGenericResponse<any>;
 	} catch (error) {
-		return { data: null, error: error instanceof Error ? error.message : String(error) };
+		return { data: null, error: error.message || error };
 	}
 };

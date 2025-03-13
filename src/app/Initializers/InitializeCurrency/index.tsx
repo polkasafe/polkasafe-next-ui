@@ -9,7 +9,7 @@ import { useEffect } from 'react';
 import { fetchTokenToUSDPrice, getCurrencyPrices } from '@sdk/polkasafe-sdk/src';
 import { currencyAtom } from '@substrate/app/atoms/currency/currencyAtom';
 import { ENetwork } from '@common/enum/substrate';
-import formatUsdWithUnits from '@common/utils/formatUSDWithUnits';
+import formatUsdWithUnits from 'common/utils/formatUSDWithUnits';
 import { networkConstants } from '@common/constants/substrateNetworkConstant';
 
 function InitializeCurrency() {

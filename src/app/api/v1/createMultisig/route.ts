@@ -7,9 +7,7 @@ import { ResponseMessages } from '@common/constants/responseMessage';
 import { MULTISIG_COLLECTION } from '@common/db/collections';
 import { IDBMultisig } from '@common/types/substrate';
 import { ENetwork, EUserType } from '@common/enum/substrate';
-import { addressToEvm, encodeAddress, encodeMultiAddress, evmToAddress } from '@polkadot/util-crypto';
 import { networkConstants } from '@common/constants/substrateNetworkConstant';
-import { keyring } from '@polkadot/ui-keyring';
 import { bnToBn, objectSpread, u8aSorted } from '@polkadot/util';
 
 import { createKeyMulti } from '@polkadot/util-crypto';
@@ -27,6 +25,7 @@ const updateDB = async (multisigs: Array<IDBMultisig>) => {
 		console.log('Error in updateDB:', err);
 	}
 };
+
 
 function addMultisig(addresses: Array<string>, threshold: number, meta = {}, keyring: KeyringInstance) {
 	let address = createKeyMulti(addresses, threshold);
@@ -46,7 +45,6 @@ function addMultisig(addresses: Array<string>, threshold: number, meta = {}, key
 export const POST = withErrorHandling(async (req: NextRequest) => {
 	try {
 		const { name, signatories, network, threshold, proxy = [] } = await req.json();
-		console.log('signatories', signatories);
 		if (!name || !signatories || !network || !threshold) {
 			return NextResponse.json({ error: ResponseMessages.MISSING_PARAMS }, { status: 400 });
 		}
@@ -59,6 +57,7 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 		if (!threshold) {
 			return NextResponse.json({ error: 'threshold is required' }, { status: 400 });
 		}
+
 		const options = {
 			ss58Format: networkConstants[network as ENetwork].ss58Format,
 			type: 'ethereum'
@@ -69,7 +68,6 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 		};
 		const multiSigAddress = addMultisig(signatories, threshold, multiSigOptions, keyring);
 		console.log('multiSigAddress', multiSigAddress);
-
 		const payload: IDBMultisig = {
 			name,
 			signatories: signatories,

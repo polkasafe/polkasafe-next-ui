@@ -14,11 +14,11 @@ import MultisigDashboard from './components/MultisigDashboard';
 import { isValidOrg } from '@substrate/app/global/utils/isValidOrg';
 
 interface IDashboard {
-	searchParams: Promise<ISearchParams>;
+	searchParams: ISearchParams;
 }
 
 async function Dashboard({ searchParams }: IDashboard) {
-	const { _multisig, _organisation, _network, _tab } = await searchParams;
+	const { _multisig, _organisation, _network, _tab } = searchParams;
 
 	if (!_organisation && !_multisig) {
 		//  if not found redirect to login page

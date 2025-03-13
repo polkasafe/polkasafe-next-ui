@@ -1,8 +1,7 @@
 import { ApiPromise, WsProvider } from "@polkadot/api";
 import { voteOnProposalByMultisig } from "./voteOnProposalByMultisig";
-import { responseMessages } from "../utils/constants/response_messages";
-import { networkConstants } from "@common/constants/substrateNetworkConstant";
-import { ENetwork } from "@common/enum/substrate";
+import { responseMessages } from "src/utils/constants/response_messages";
+import { chainProperties, networks } from "src/utils/constants/network_constants";
 
 type Props = {
     address: string,
@@ -24,9 +23,9 @@ export async function voteOnProposal({ address, network, data }: Props) {
         return { status: 400, error: responseMessages.invalid_params };
     }
     try {
-        if (!Object.keys(networkConstants).includes(network)) return { status: 500, error: responseMessages.internal };
+        if (!Object.values(networks).includes(network)) return { status: 500, error: responseMessages.internal };
 
-        const provider = new WsProvider(networkConstants[network as ENetwork].rpcEndpoint);
+        const provider = new WsProvider(chainProperties[network].rpcEndpoint);
         const api = new ApiPromise({ provider });
         await api.isReady;
         if (!api || !api.isReady) return { status: 500, error: responseMessages.internal };

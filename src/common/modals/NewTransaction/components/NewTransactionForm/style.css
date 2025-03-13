@@ -6,10 +6,10 @@
 }
 .ant-select-selector {
     border: none !important;
-    height: 50px !important; 
+    height: 40px !important;
     box-shadow: none !important;
-    width: 100% !important;
-}
+  }
+  
 
 .ant-select {
     height: 50px !important;

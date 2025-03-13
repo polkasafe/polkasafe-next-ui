@@ -46,7 +46,7 @@ export const WatchListTable = () => {
 				setUser({ ...user, watchlists: newWatchlist });
 			}
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.ERROR_IN_ADDING_WATCHLIST, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.ERROR_IN_ADDING_WATCHLIST, description: error || error.message });
 		}
 	};
 
@@ -73,7 +73,7 @@ export const WatchListTable = () => {
 				setUser({ ...user, watchlists: newWatchlist });
 			}
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.ERROR_IN_ADDING_WATCHLIST, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.ERROR_IN_ADDING_WATCHLIST, description: error || error.message });
 		}
 	};
 

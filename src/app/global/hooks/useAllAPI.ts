@@ -16,8 +16,7 @@ import {
 	availTuringApi,
 	westendApi,
 	peopleChainApi,
-	rootApi,
-	porciniApi
+	mythosApi
 } from '@substrate/app/atoms/api/apiAtom';
 import { useAtomValue } from 'jotai';
 
@@ -35,8 +34,7 @@ export const useAllAPI = () => {
 	// const availTuring = useAtomValue(availTuringApi);
 	const westend = useAtomValue(westendApi);
 	const people = useAtomValue(peopleChainApi);
-	const root = useAtomValue(rootApi);
-	const porcini = useAtomValue(porciniApi);
+	const mythos = useAtomValue(mythosApi);
 
 	const getApi = (network: ENetwork) => {
 		switch (network) {
@@ -66,10 +64,8 @@ export const useAllAPI = () => {
 				return westend;
 			case ENetwork.PEOPLE:
 				return people;
-			case ENetwork.ROOT:
-				return root;
-			case ENetwork.PORCINI:
-				return porcini;
+			case ENetwork.MYTHOS:
+				return mythos;
 			default:
 				return null;
 		}
@@ -88,9 +84,7 @@ export const useAllAPI = () => {
 			[ENetwork.KUSAMA_ASSETHUB]: assethubKusama,
 			[ENetwork.ROCOCO_ASSETHUB]: assethubRococo,
 			[ENetwork.WESTEND]: westend,
-			[ENetwork.PEOPLE]: people,
-			[ENetwork.ROOT]: root,
-			[ENetwork.PORCINI]: porcini
+			[ENetwork.MYTHOS]: mythos
 		},
 		getApi
 	};

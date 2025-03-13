@@ -15,7 +15,7 @@ export function updateTransaction({ address, signature, callhash, transaction }:
 	}
 
 	const body = JSON.stringify({
-		transaction
+		transaction,
 	});
 	return request(`/getQueueTransaction/${callhash}`, handleHeaders({ address, signature }), { method: 'POST', body });
 }

@@ -48,7 +48,6 @@ export const getAllBalance = (assets: Array<IAsset>) => {
 
 export const getOrganisationData = async (organisationId: string) => {
 	const user = getUserFromCookie();
-	console.log('user', user);
 	if (!user?.address || !user?.signature) {
 		return { error: ERROR_MESSAGES.USER_NOT_LOGGED_IN };
 	}

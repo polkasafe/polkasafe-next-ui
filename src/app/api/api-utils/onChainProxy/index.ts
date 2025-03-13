@@ -6,7 +6,7 @@ import axios from 'axios';
 export const onChainProxy = async (multisigAddress: string, network: string) => {
 	try {
 		const res = await axios.post(
-			`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/api/v2/scan/events`,
+			`https://${network}.api.subscan.io/api/v2/scan/events`,
 			{
 				row: 1,
 				page: 0,
@@ -27,7 +27,7 @@ export const onChainProxy = async (multisigAddress: string, network: string) => 
 		}
 
 		const proxyRes = await axios.post(
-			`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/api/scan/event`,
+			`https://${network}.api.subscan.io/api/scan/event`,
 			{
 				event_index: eventIndex
 			},

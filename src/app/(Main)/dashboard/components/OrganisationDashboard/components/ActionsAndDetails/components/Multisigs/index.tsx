@@ -92,7 +92,7 @@ function QuickMultisigs({ multisigs, organisationId }: { multisigs: IMultisig[];
 								<EthIdenticon
 									className='border-primary rounded-full border-2 bg-transparent p-1'
 									address={item.address}
-									size={30}
+									size={20}
 								/>
 							) : (
 								<Identicon
@@ -117,7 +117,7 @@ function QuickMultisigs({ multisigs, organisationId }: { multisigs: IMultisig[];
 							<div className='rounded-md py-1 px-2 text-white flex items-center gap-x-1 bg-network-badge capitalize text-xs'>
 								<ParachainTooltipIcon
 									size={15}
-									src={networkConstants[item.network]?.logo}
+									src={networkConstants[item.network as keyof typeof networkConstants]?.logo}
 									noBg
 								/>
 								{item.network}

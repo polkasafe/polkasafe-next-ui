@@ -4,113 +4,114 @@
 
 'use client';
 
-// import { TransakConfig, Transak } from '@transak/transak-sdk';
-import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
-import { OnrampWebSDK } from '@onramp.money/onramp-web-sdk';
-import { Dropdown, Form, Input } from 'antd';
-import React, { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { ENetwork } from '@common/enum/substrate';
-import Address from '@common/global-ui-components/Address';
-import { IMultisig } from '@common/types/substrate';
-import { onrampTokenProperties, onrampTokens } from '@common/constants/substrateNetworkConstant';
-import ParachainTooltipIcon from '@common/global-ui-components/ParachainTooltipIcon';
-import getEncodedAddress from '@common/utils/getEncodedAddress';
-import { CircleArrowDownIcon, ExternalLinkIcon } from '@common/global-ui-components/Icons';
-import InfoBox from '@common/global-ui-components/InfoBox';
-import ActionButton from '@common/global-ui-components/ActionButton';
-import { useUser } from '@substrate/app/atoms/auth/authAtoms';
-import { useOrganisation } from '@substrate/app/atoms/organisation/organisationAtom';
+// // import { TransakConfig, Transak } from '@transak/transak-sdk';
+// import { MinusCircleOutlined, PlusCircleOutlined } from '@ant-design/icons';
+// import { OnrampWebSDK } from '@onramp.money/onramp-web-sdk';
+// import { Dropdown, Form, Input } from 'antd';
+// import React, { useEffect, useState } from 'react';
+// import Link from 'next/link';
+// import { ENetwork } from '@common/enum/substrate';
+// import Address from '@common/global-ui-components/Address';
+// import { IMultisig } from '@common/types/substrate';
+// import { onrampTokenProperties, onrampTokens } from '@common/constants/substrateNetworkConstant';
+// import ParachainTooltipIcon from '@common/global-ui-components/ParachainTooltipIcon';
+// import getEncodedAddress from '@common/utils/getEncodedAddress';
+// import { CircleArrowDownIcon, ExternalLinkIcon } from '@common/global-ui-components/Icons';
+// import InfoBox from '@common/global-ui-components/InfoBox';
+// import ActionButton from '@common/global-ui-components/ActionButton';
+// import { useUser } from '@substrate/app/atoms/auth/authAtoms';
+// import { useOrganisation } from '@substrate/app/atoms/organisation/organisationAtom';
 
-enum EOnramp {
-	BUY = 1,
-	SELL = 2
-}
+// enum EOnramp {
+// 	BUY = 1,
+// 	SELL = 2
+// }
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const Exchange = () => {
-	const [user] = useUser();
-	const [organisation] = useOrganisation();
+	// const [user] = useUser();
+	// const [organisation] = useOrganisation();
 
-	const multisigOptions = organisation?.multisigs
-		?.filter((item) => [ENetwork.POLKADOT, ENetwork.KUSAMA].includes(item.network))
-		.map((item) => ({
-			key: JSON.stringify(item),
-			label: (
-				<Address
-					isMultisig
-					showNetworkBadge
-					withBadge={false}
-					network={item.network}
-					address={item.address}
-				/>
-			)
-		}));
+	// const multisigOptions = organisation?.multisigs
+	// 	?.filter((item) => [ENetwork.POLKADOT, ENetwork.KUSAMA].includes(item.network))
+	// 	.map((item) => ({
+	// 		key: JSON.stringify(item),
+	// 		label: (
+	// 			<Address
+	// 				isMultisig
+	// 				showNetworkBadge
+	// 				withBadge={false}
+	// 				network={item.network}
+	// 				address={item.address}
+	// 			/>
+	// 		)
+	// 	}));
 
-	const [network, setNetwork] = useState<ENetwork>(
-		multisigOptions && multisigOptions.length > 0
-			? (JSON.parse(multisigOptions[0].key as string) as IMultisig).network
-			: ENetwork.POLKADOT
-	);
+	// const [network, setNetwork] = useState<ENetwork>(
+	// 	multisigOptions && multisigOptions.length > 0
+	// 		? (JSON.parse(multisigOptions[0].key as string) as IMultisig).network
+	// 		: ENetwork.POLKADOT
+	// );
 
-	const [selectedMultisig, setSelectedMultisig] = useState<string>(
-		multisigOptions && multisigOptions.length > 0
-			? (JSON.parse(multisigOptions[0].key as string) as IMultisig).address
-			: ''
-	);
+	// const [selectedMultisig, setSelectedMultisig] = useState<string>(
+	// 	multisigOptions && multisigOptions.length > 0
+	// 		? (JSON.parse(multisigOptions[0].key as string) as IMultisig).address
+	// 		: ''
+	// );
 
-	useEffect(() => {
-		if (multisigOptions && multisigOptions.length > 0) {
-			setSelectedMultisig((JSON.parse(multisigOptions[0].key as string) as IMultisig).address);
-			setNetwork((JSON.parse(multisigOptions[0].key as string) as IMultisig).network);
-		}
-	}, [multisigOptions]);
+	// useEffect(() => {
+	// 	if (multisigOptions && multisigOptions.length > 0) {
+	// 		setSelectedMultisig((JSON.parse(multisigOptions[0].key as string) as IMultisig).address);
+	// 		setNetwork((JSON.parse(multisigOptions[0].key as string) as IMultisig).network);
+	// 	}
+	// }, [multisigOptions]);
 
-	const [onrampFlowType, setOnrampFlowType] = useState<EOnramp>(EOnramp.BUY);
-	const [coinCode, setCoinCode] = useState(onrampTokens.POLKADOT);
-	const [coinAmount, setCoinAmount] = useState<number>();
+	// const [onrampFlowType, setOnrampFlowType] = useState<EOnramp>(EOnramp.BUY);
+	// const [coinCode, setCoinCode] = useState(onrampTokens.POLKADOT);
+	// const [coinAmount, setCoinAmount] = useState<number>();
 
-	const currencyOptions = Object.values(onrampTokens)
-		.filter((token) => (onrampFlowType === EOnramp.SELL ? onrampTokenProperties[token].offramp : true))
-		.map((token) => ({
-			key: token,
-			label: (
-				<span className='text-white flex items-center gap-x-2'>
-					<ParachainTooltipIcon src={onrampTokenProperties[token]?.logo} />
-					{onrampTokenProperties[token]?.tokenSymbol?.toUpperCase()}
-				</span>
-			)
-		}));
+	// const currencyOptions = Object.values(onrampTokens)
+	// 	.filter((token) => (onrampFlowType === EOnramp.SELL ? onrampTokenProperties[token].offramp : true))
+	// 	.map((token) => ({
+	// 		key: token,
+	// 		label: (
+	// 			<span className='text-white flex items-center gap-x-2'>
+	// 				<ParachainTooltipIcon src={onrampTokenProperties[token]?.logo} />
+	// 				{onrampTokenProperties[token]?.tokenSymbol?.toUpperCase()}
+	// 			</span>
+	// 		)
+	// 	}));
 
-	const onConfirm = () => {
-		if (!selectedMultisig || !coinAmount || Number.isNaN(coinAmount)) return;
+	// const onConfirm = () => {
+	// 	if (!selectedMultisig || !coinAmount || Number.isNaN(coinAmount)) return;
 
-		// const transakConfig: TransakConfig = {
-		// apiKey: process.env.NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY,
-		// environment: Transak.ENVIRONMENTS.PRODUCTION,
-		// cryptoAmount: Number(coinAmount),
-		// walletAddress: getEncodedAddress(walletAddress, network) || walletAddress,
-		// productsAvailed: onrampFlowType
-		// };
+	// 	// const transakConfig: TransakConfig = {
+	// 	// apiKey: process.env.NEXT_PUBLIC_POLKASAFE_TRANSAK_API_KEY,
+	// 	// environment: Transak.ENVIRONMENTS.PRODUCTION,
+	// 	// cryptoAmount: Number(coinAmount),
+	// 	// walletAddress: getEncodedAddress(walletAddress, network) || walletAddress,
+	// 	// productsAvailed: onrampFlowType
+	// 	// };
 
-		// const transak = new Transak(transakConfig);
+	// 	// const transak = new Transak(transakConfig);
 
-		// transak.init();
+	// 	// transak.init();
 
-		const onramp = new OnrampWebSDK({
-			appId: Number(process.env.NEXT_ONRAMP_APP_ID),
-			coinAmount: Number(coinAmount),
-			coinCode: onrampTokenProperties[coinCode].tokenSymbol,
-			flowType: onrampFlowType,
-			paymentMethod: 1,
-			walletAddress: getEncodedAddress(selectedMultisig, network) || selectedMultisig
-		});
+	// 	const onramp = new OnrampWebSDK({
+	// 		appId: Number(process.env.NEXT_ONRAMP_APP_ID),
+	// 		coinAmount: Number(coinAmount),
+	// 		coinCode: onrampTokenProperties[coinCode].tokenSymbol,
+	// 		flowType: onrampFlowType,
+	// 		paymentMethod: 1,
+	// 		walletAddress: getEncodedAddress(selectedMultisig, network) || selectedMultisig
+	// 	});
 
-		onramp.show();
-	};
+	// 	onramp.show();
+	// };
 
 	return (
 		<div className={`p-5 origin-top-left bg-bg-main rounded-lg flex justify-center h-full`}>
-			{user && user.address ? (
+			{/* {user && user.address ? (
 				<div className='h-full flex flex-col gap-y-5 bg-bg-secondary rounded-lg p-5'>
 					<div className='w-full flex items-center gap-x-3'>
 						<span
@@ -209,7 +210,7 @@ const Exchange = () => {
 						<span>Please Login</span> <ExternalLinkIcon />
 					</Link>
 				</div>
-			)}
+			)} */}
 		</div>
 	);
 };

@@ -1,13 +1,17 @@
 import { useDashboardContext } from '@common/context/DashboarcContext';
-import { ENetwork, ETransactionCreationType, ETransactionFieldsUpdateType, NotificationStatus } from '@common/enum/substrate';
+import {
+	ENetwork,
+	ETransactionCreationType,
+	ETransactionFieldsUpdateType,
+	NotificationStatus
+} from '@common/enum/substrate';
 import Address from '@common/global-ui-components/Address';
-import BalanceInput from '@common/global-ui-components/BalanceInput';
 import { MultisigDropdown } from '@common/global-ui-components/MultisigDropdown';
 import { RecipientsInputs } from '@common/global-ui-components/RecipientsInputs';
 import Typography, { ETypographyVariants } from '@common/global-ui-components/Typography';
 import { useNotification } from '@common/utils/notification';
 import { useState } from 'react';
-import { Form, FormInstance, Spin } from 'antd';
+import { Form, FormInstance, Input, Spin } from 'antd';
 import BN from 'bn.js';
 import { ERROR_MESSAGES } from '@common/utils/messages';
 import { findMultisig } from '@common/utils/findMultisig';
@@ -20,6 +24,9 @@ import { addNewCategory } from '@sdk/polkasafe-sdk/src/add-new-category';
 import { useUser } from '@substrate/app/atoms/auth/authAtoms';
 import { useOrganisation } from '@substrate/app/atoms/organisation/organisationAtom';
 import AddNewCategory from '@common/modals/AddNewCategory';
+import inputToBn from '@common/utils/inputToBn';
+import ParachainTooltipIcon from '@common/global-ui-components/ParachainTooltipIcon';
+import { networkConstants } from '@common/constants/substrateNetworkConstant';
 
 export interface IRecipientAndAmount {
 	recipient: string;
@@ -70,6 +77,7 @@ export const SendTokens = ({ onClose, form }: { onClose: () => void; form: FormI
 			console.log('form', form.getFieldsValue());
 			const multisigId = `${selectedMultisigDetails.address}_${selectedMultisigDetails.network}`;
 			const tip = form.getFieldValue('tipBalance') as string;
+			console.log('tip', tip);
 			const recipientAndAmount: Array<IRecipientAndAmount> = form.getFieldValue('recipients') || [];
 			const checkRecipient = recipientAndAmount.filter((item) => !item.recipient || item.amount.eq(new BN(0)));
 			if (checkRecipient.length) {
@@ -86,9 +94,10 @@ export const SendTokens = ({ onClose, form }: { onClose: () => void; form: FormI
 					: [],
 				sender: findMultisig(multisigs, multisigId) as IMultisig,
 				selectedProxy: selectedMultisigDetails.proxy,
-				tip,
+				tip: tip || '',
 				type: ETransactionCreationType.SEND_TOKEN,
-				transactionFields: transactionFieldsObject
+				transactionFields: transactionFieldsObject,
+				note: form.getFieldValue('note') || ''
 			};
 
 			console.log({
@@ -100,61 +109,78 @@ export const SendTokens = ({ onClose, form }: { onClose: () => void; form: FormI
 				sender: findMultisig(multisigs, multisigId) as IMultisig,
 				selectedProxy: selectedMultisigDetails.proxy,
 				tip,
-				transactionFields: transactionFieldsObject
+				transactionFields: transactionFieldsObject,
+				note: form.getFieldValue('note')
 			});
 			setLoading(true);
 			await buildTransaction({ ...payload });
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			console.error(error);
 		} finally {
 			setLoading(false);
 		}
 	};
 
-	const handleAddNewCategory = async (updateType: ETransactionFieldsUpdateType, fieldName: string, fieldDesc: string, subfields?: ITransactionCategorySubfields, onCancel?: () => void) => {
+	const handleAddNewCategory = async (
+		updateType: ETransactionFieldsUpdateType,
+		fieldName: string,
+		fieldDesc: string,
+		subfields?: ITransactionCategorySubfields,
+		onCancel?: () => void
+	) => {
 		try {
-            if (!user) {
-                throw new Error('User not found');
-            }
-    
-            if (!organisation || !organisation.id) {
-                throw new Error('Organisation not found');
-            }
+			if (!user) {
+				// eslint-disable-next-line prettier/prettier
+				throw new Error('User not found');
+			}
 
-            setNewCategoryLoading(true);
+			if (!organisation || !organisation.id) {
+				throw new Error('Organisation not found');
+			}
 
-            if (updateType === ETransactionFieldsUpdateType.ADD_CATEGORY) {
-                const { data } = (await addNewCategory({ address: user.address, signature: user.signature, organisationId: organisation.id, transactionFields: {
-                    ...transactionFields,
-                    [fieldName.toLowerCase().split(' ').join('_')]: {
-                        fieldDesc,
-                        fieldName,
-                        subfields: {}
-                    }
-                }  })) as { data: string };
-                if (data && data === 'success') {
-                    setNewCategoryLoading(false);
-                    queueNotification({
-                        header: 'Success!',
-                        message: 'Transaction Fields Updated.',
-                        status: NotificationStatus.SUCCESS
-                    });
-                    setOrganisation({ ...organisation, transactionFields: { ...organisation.transactionFields, [fieldName.toLowerCase().split(' ').join('_')]: {
-                        fieldDesc,
-                        fieldName,
-                        subfields: {}
-                    } } });
-    
+			setNewCategoryLoading(true);
+
+			if (updateType === ETransactionFieldsUpdateType.ADD_CATEGORY) {
+				const { data } = (await addNewCategory({
+					address: user.address,
+					signature: user.signature,
+					organisationId: organisation.id,
+					transactionFields: {
+						...transactionFields,
+						[fieldName.toLowerCase().split(' ').join('_')]: {
+							fieldDesc,
+							fieldName,
+							subfields: {}
+						}
+					}
+				})) as { data: string };
+				if (data && data === 'success') {
+					setNewCategoryLoading(false);
+					queueNotification({
+						header: 'Success!',
+						message: 'Transaction Fields Updated.',
+						status: NotificationStatus.SUCCESS
+					});
+					setOrganisation({
+						...organisation,
+						transactionFields: {
+							...organisation.transactionFields,
+							[fieldName.toLowerCase().split(' ').join('_')]: {
+								fieldDesc,
+								fieldName,
+								subfields: {}
+							}
+						}
+					});
+
 					setTransactionFieldsObject({
 						category: fieldName.toLowerCase().split(' ').join('_'),
 						subfields: {}
-					})
-                    onCancel?.();
-                }
-                return;
-            }
-
+					});
+					onCancel?.();
+				}
+			}
 		} catch (error) {
 			console.log('ERROR', error);
 			queueNotification({
@@ -207,13 +233,73 @@ export const SendTokens = ({ onClose, form }: { onClose: () => void; form: FormI
 						/>
 					</div>
 
-					<BalanceInput
-						network={selectedMultisigDetails.network}
-						label='Tip'
-						onChange={(balance) => console.log(balance)}
-						formName='tipBalance'
-						required={false}
-					/>
+					{/* <Form.Item
+						name='tipBalance'
+						rules={[
+							{ required: true, message: 'Enter a valid amount' },
+							() => ({
+								validator(_, value) {
+									if (Number.isNaN(Number(value))) {
+										return Promise.reject(new Error('Enter a valid number'));
+									}
+									if (value) {
+										const [, isValid] = inputToBn(value, selectedMultisigDetails.network, false);
+										if (!isValid) {
+											return Promise.reject(new Error('Enter a valid amount'));
+										}
+									}
+									return Promise.resolve();
+								}
+							})
+						]}
+					>
+						<label
+							htmlFor='tipBalance'
+							className='text-label mb-[5px] block text-xs font-normal leading-[13px]'
+						>
+							Tip
+						</label>
+						<div className='flex h-[50px] items-center'>
+							<Input
+								name='tipBalance'
+								id='tipBalance'
+								type='number'
+								onChange={(e) => {
+									const [value, isValid] = inputToBn(e.target.value, selectedMultisigDetails.network, false);
+									form.setFieldsValue({ tipBalance: isValid ? value.toString() : '' });
+								}}
+								placeholder={networkConstants[selectedMultisigDetails.network]?.tokenSymbol || 'Tip'}
+								className='bg-bg-secondary h-full w-full rounded-lg border-0 p-3 pr-0 text-sm font-normal leading-[15px] text-white outline-0 placeholder:text-[#505050]'
+							/>
+							<div className='absolute right-0 flex items-center justify-center gap-x-1 pr-3 text-white'>
+								<ParachainTooltipIcon src={networkConstants[selectedMultisigDetails.network]?.logo} />
+								<span>{networkConstants[selectedMultisigDetails.network]?.tokenSymbol}</span>
+							</div>
+						</div>
+					</Form.Item> */}
+					<Form.Item
+						name='note'
+						className='mb-0'
+					>
+						<label
+							htmlFor='note'
+							className='text-label mb-[5px] block text-xs font-normal leading-[13px]'
+						>
+							Note
+						</label>
+						<div className='flex h-[50px] items-center'>
+							<Input
+								name='note'
+								id='note'
+								type='text'
+								onChange={(e) => {
+									form.setFieldsValue({ note: e.target.value });
+								}}
+								placeholder='Enter a note'
+								className='bg-bg-secondary h-full w-full rounded-lg border-0 p-3 pr-0 text-sm font-normal leading-[15px] text-white outline-0 placeholder:text-[#505050]'
+							/>
+						</div>
+					</Form.Item>
 					<div className='w-auto'>
 						<Typography
 							variant={ETypographyVariants.p}
@@ -258,7 +344,14 @@ export const SendTokens = ({ onClose, form }: { onClose: () => void; form: FormI
 							>
 								{transactionFields.none.fieldName}
 							</Button>
-							<AddNewCategory buttonSize='middle' buttonTitle='Add New' buttonClassName='text-xs border border-solid rounded-2xl px-2 py-[1px] text-text-secondary border-text-secondary bg-transparent' iconClassName='text-text-secondary' onSave={handleAddNewCategory} loading={newCategoryLoading} />
+							<AddNewCategory
+								buttonSize='middle'
+								buttonTitle='Add New'
+								buttonClassName='text-xs border border-solid rounded-2xl px-2 py-[1px] text-text-secondary border-text-secondary bg-transparent'
+								iconClassName='text-text-secondary'
+								onSave={handleAddNewCategory}
+								loading={newCategoryLoading}
+							/>
 						</div>
 					</div>
 				</div>

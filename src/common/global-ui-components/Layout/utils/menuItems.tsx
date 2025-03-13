@@ -3,7 +3,6 @@ import {
 	AddressBookIcon,
 	AppsIcon,
 	AssetsIcon,
-	ExchangeIcon,
 	HomeIcon,
 	SettingsIcon,
 	StarIcon,
@@ -29,50 +28,44 @@ export const menuItems = [
 		icon: <AssetsIcon />,
 		title: 'Assets'
 	},
-	// {
-	// 	baseURL: '/exchange',
-	// 	authenticated: true,
-	// 	icon: <ExchangeIcon />,
-	// 	title: 'Exchange'
-	// },
-	// {
-	// 	baseURL: '/watch-list',
-	// 	icon: <StarIcon />,
-	// 	authenticated: true,
-	// 	title: 'Watchlist',
-	// 	noShow: true
-	// },
+	{
+		baseURL: '/watch-list',
+		icon: <StarIcon />,
+		authenticated: true,
+		title: 'Watchlist',
+		noShow: true
+	},
 	{
 		baseURL: '/address-book',
 		authenticated: true,
 		icon: <AddressBookIcon />,
 		title: 'Address Book'
 	},
-	// {
-	// 	baseURL: '/treasury-analytics',
-	// 	authenticated: true,
-	// 	icon: <TreasuryAnalyticsIcon />,
-	// 	title: 'Treasury Analytics',
-	// 	isNew: false
-	// },
-	// {
-	// 	baseURL: '/invoices',
-	// 	authenticated: true,
-	// 	icon: <TreasuryAnalyticsIcon />,
-	// 	title: 'Invoices'
-	// },
-	// {
-	// 	baseURL: '/apps',
-	// 	authenticated: true,
-	// 	icon: <AppsIcon />,
-	// 	title: 'Apps'
-	// },
-	// {
-	// 	baseURL: '/watch-list',
-	// 	authenticated: true,
-	// 	icon: <TreasuryAnalyticsIcon />,
-	// 	title: 'Watch list'
-	// },
+	{
+		baseURL: '/treasury-analytics',
+		authenticated: true,
+		icon: <TreasuryAnalyticsIcon />,
+		title: 'Treasury Analytics',
+		isNew: false
+	},
+	{
+		baseURL: '/invoices',
+		authenticated: true,
+		icon: <TreasuryAnalyticsIcon />,
+		title: 'Invoices'
+	},
+	{
+		baseURL: '/apps',
+		authenticated: true,
+		icon: <AppsIcon />,
+		title: 'Apps'
+	},
+	{
+		baseURL: '/watch-list',
+		authenticated: true,
+		icon: <TreasuryAnalyticsIcon />,
+		title: 'Watch list'
+	},
 	{
 		baseURL: '/settings',
 		authenticated: true,

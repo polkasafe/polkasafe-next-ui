@@ -26,7 +26,7 @@ export const VerifyEmail = ({ address, signature }: { address: string; signature
 				return;
 			}
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.ERROR_IN_SENDING_EMAIL, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.ERROR_IN_SENDING_EMAIL, description: error.message });
 		} finally {
 			setLoading(false);
 		}

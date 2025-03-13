@@ -33,7 +33,7 @@ export const onChainMultisig = async (
 
 	try {
 		const res = await axios.post(
-			`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/api/v2/scan/search`,
+			`https://${network}.api.subscan.io/api/v2/scan/search`,
 			{
 				key: multisigAddress,
 				row: 1

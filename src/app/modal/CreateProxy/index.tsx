@@ -61,7 +61,7 @@ export const CreateProxyModal = ({ multisig, buttonClassName, iconClassName, dis
 					trigger: ETriggers.CREATED_PROXY
 				});
 			} catch (error) {
-				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			}
 		};
 		try {
@@ -125,7 +125,7 @@ export const CreateProxyModal = ({ multisig, buttonClassName, iconClassName, dis
 			notification({ ...INFO_MESSAGES.TRANSACTION_IN_BLOCK });
 			return { error: false };
 		} catch (e) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e instanceof Error ? e.message : String(e) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e || e.message });
 			return { error: true };
 		}
 	};

@@ -16,7 +16,7 @@ interface ISelectNetwork {
 export function SelectNetwork({
 	networks,
 	onChange,
-	selectedNetwork = ENetwork.PORCINI,
+	selectedNetwork = ENetwork.MYTHOS,
 	fetchOnMount
 }: ISelectNetwork) {
 	useEffect(() => {
@@ -53,7 +53,7 @@ export function SelectNetwork({
 						size={15}
 						src={networkConstants[selectedNetwork]?.logo}
 					/>
-					{networkConstants[selectedNetwork]?.name}
+					{selectedNetwork}
 				</div>
 				<CircleArrowDownIcon className='text-primary' />
 			</div>

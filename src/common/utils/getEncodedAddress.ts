@@ -17,16 +17,16 @@ export default function getEncodedAddress(address: string, network: ENetwork | s
 	const ss58Format = networkConstants[network as ENetwork]?.ss58Format;
 	// console.log('ss58Format', ss58Format, network);
 
-	if (!network || ss58Format === undefined || !address) {
-		return address;
+	if ((networkConstants[network as ENetwork] as any)?.isEvm) {
+		return address?.toLowerCase();
 	}
 
-	if (network === ENetwork.ROOT || network === ENetwork.PORCINI) {
-		return address.toLowerCase();
+	if (!network || ss58Format === undefined || !address) {
+		return null;
 	}
 
 	try {
-		return encodeAddress(address, ss58Format).toLowerCase();
+		return encodeAddress(address, ss58Format);
 	} catch (e) {
 		console.error('getEncodedAddress error', e);
 		return null;

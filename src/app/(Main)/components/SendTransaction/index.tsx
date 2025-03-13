@@ -94,12 +94,11 @@ export function SendTransaction({
 			recipient: recipient.address,
 			currency: recipient.currency
 		}));
-		console.log('data', { recipients, multisig, selectedProxy, transactionFields });
 		const transaction: ISubstrateExecuteProps = (await TRANSACTION_BUILDER[ETxType.TRANSFER]({
 			api,
 			data,
 			params: {
-				tip: values.tip
+				tip: values.tip || '0',
 			},
 			isProxy: Boolean(selectedProxy),
 			proxyAddress: selectedProxy,
@@ -197,10 +196,7 @@ export function SendTransaction({
 		const { address } = user;
 		const { sender: multisig, displayName, legalName, elementHandle, websiteUrl, twitterHandle, email } = values;
 		const transaction: ISubstrateExecuteProps = (await TRANSACTION_BUILDER[ETxType.SET_IDENTITY]({
-			api:
-				(multisig.network === ENetwork.POLKADOT || multisig.network === ENetwork.POLKADOT_ASSETHUB) && peopleApi
-					? peopleApi
-					: api,
+			api: (multisig.network === ENetwork.POLKADOT || multisig.network === ENetwork.POLKADOT_ASSETHUB ? peopleApi : api) as ApiPromise,
 			data: {
 				displayName,
 				legalName,
@@ -435,7 +431,6 @@ export function SendTransaction({
 			notification({ ...ERROR_MESSAGES.AUTHENTICATION_FAILED });
 			return;
 		}
-		console.log('values', values);
 		// After successful transaction add the transaction to the queue with the latest transaction on top
 		const onSuccess = ({ newTransaction }: IGenericObject) => {
 			try {
@@ -443,7 +438,8 @@ export function SendTransaction({
 					return;
 				}
 				const transactionFields = (values as ISendTransaction).transactionFields;
-				const newTransactionWithCategories = { ...newTransaction, transactionFields };
+				const note = (values as ISendTransaction).note;
+				const newTransactionWithCategories = { ...newTransaction, transactionFields, note };
 				const payload = [newTransactionWithCategories, ...(queueTransaction?.transactions || [])];
 				const { callHash, network, multisigAddress } = newTransaction;
 				const multisig = findMultisig(organisation?.multisigs || [], multisigAddress);
@@ -454,7 +450,7 @@ export function SendTransaction({
 					address: user.address,
 					signature: user.signature,
 					callhash: callHash,
-					transaction: newTransactionWithCategories
+					transaction: newTransactionWithCategories,
 				});
 				sendNotification({
 					address: user?.address,
@@ -472,7 +468,7 @@ export function SendTransaction({
 					trigger: ETriggers.INIT_MULTISIG_TRANSFER
 				});
 			} catch (error) {
-				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			}
 		};
 		try {
@@ -482,11 +478,13 @@ export function SendTransaction({
 			}
 			const { sender: multisig, type } = values;
 			const apiAtom = getApi(multisig.network);
+			const peopleApiAtom = getApi(ENetwork.PEOPLE) || { api: null };
 			if (!apiAtom) {
 				notification({ ...ERROR_MESSAGES.API_NOT_CONNECTED });
 				return;
 			}
 			const { api } = apiAtom as { api: ApiPromise };
+			const { api: peopleApi } = peopleApiAtom as { api: ApiPromise };
 			if (!api || !api.isReady) {
 				notification({ ...ERROR_MESSAGES.API_NOT_CONNECTED });
 				return;
@@ -502,7 +500,7 @@ export function SendTransaction({
 					break;
 
 				case ETransactionCreationType.SET_IDENTITY:
-					await setIdentity(values as ISetIdentityTransaction, user, api, api, onSuccess);
+					await setIdentity(values as ISetIdentityTransaction, user, api, peopleApi, onSuccess);
 					break;
 
 				case ETransactionCreationType.DELEGATE:
@@ -527,7 +525,7 @@ export function SendTransaction({
 					break;
 			}
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			console.log(error);
 		}
 	};
@@ -544,7 +542,7 @@ export function SendTransaction({
 			notification({ ...INFO_MESSAGES.TRANSACTION_IN_BLOCK });
 			setTransactionState(ETransactionState.CONFIRM);
 		} catch (e) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e instanceof Error ? e.message : String(e) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e || e.message });
 			setTransactionState(ETransactionState.FAILED);
 		}
 	};

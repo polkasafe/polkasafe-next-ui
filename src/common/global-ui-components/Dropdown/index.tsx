@@ -2,7 +2,7 @@
 import React, { ReactNode } from 'react';
 import { Dropdown as AntdDropdown, DropdownProps } from 'antd';
 
-interface IDropdownProps extends Omit<DropdownProps, 'trigger'> {
+interface IDropdownProps extends DropdownProps {
 	children: ReactNode;
 }
 

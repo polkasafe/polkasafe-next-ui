@@ -16,9 +16,9 @@ export default function _createMultisig(
 	ss58Format: number
 ): CreateMultisigResponse {
 	try {
-		const encodedSignatories = signatories.map((signatory) => encodeAddress(signatory, ss58Format));
-		const multisigAddress = encodeMultiAddress(encodedSignatories, threshold);
-
+		const encodedSignatories = signatories.map((signatory) => signatory.startsWith('0x') ? signatory : encodeAddress(signatory, ss58Format));
+		const multisigAddress =  encodeMultiAddress(encodedSignatories, threshold);
+		
 		return { multisigAddress };
 	} catch (error) {
 		return { error: String(error) || '' };

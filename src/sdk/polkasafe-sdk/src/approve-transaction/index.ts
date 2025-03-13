@@ -1,3 +1,4 @@
+import { chainProperties, networks } from '../utils/constants/network_constants'
 import { responseMessages } from '../utils/constants/response_messages'
 import { ApiPromise, WsProvider } from '@polkadot/api'
 import { approveTransactionForWallet } from './approveTransaction'
@@ -8,8 +9,7 @@ import { BN } from 'bn.js'
 import { ApproveTransactionPayload } from './types'
 import { fetchProxyData } from './fetchProxyData'
 import { handleEditProxyMultisigCreate } from './handleEditProxyMultisigCreate'
-import { networkConstants } from '@common/constants/substrateNetworkConstant'
-import { ENetwork } from '@common/enum/substrate'
+
 type Props = {
 	signature: string,
 	address: string,
@@ -36,9 +36,9 @@ export async function approveTransaction({
 		return { status: 400, error: responseMessages.invalid_params }
 	}
 	try {
-		if (!Object.keys(networkConstants).includes(network)) return { status: 500, error: responseMessages.internal }
+		if (!Object.values(networks).includes(network)) return { status: 500, error: responseMessages.internal }
 
-		const provider = new WsProvider(networkConstants[network as ENetwork].rpcEndpoint)
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint)
 		const api = new ApiPromise({ provider })
 		await api.isReady
 
@@ -99,7 +99,7 @@ export async function approveTransaction({
 		if (callDataString && amount && recipientAddress) {
 			AMOUNT_TO_SEND = amount.toNumber()
 			callData = api.createType('Call', callDataString)
-			const { weight: WEIGHT } = await calcWeight(callData as any, api)
+			const { weight: WEIGHT } = await calcWeight(callData, api)
 			weight = WEIGHT
 			if (!callData.hash.eq(callHash)) return { status: 400, error: 'Invalid Call hash' }
 			console.log(AMOUNT_TO_SEND)
@@ -107,7 +107,7 @@ export async function approveTransaction({
 
 		if (callDataString) {
 			callData = api.createType('Call', callDataString)
-			const { weight: WEIGHT } = await calcWeight(callData as any, api)
+			const { weight: WEIGHT } = await calcWeight(callData, api)
 			weight = WEIGHT
 			if (!callData.hash.eq(callHash)) return { status: 400, error: 'Invalid Call hash' }
 		}

@@ -12,11 +12,11 @@ import { isValidOrg } from '@substrate/app/global/utils/isValidOrg';
 import TransactionTemplate from './components/TransactionTemplete';
 
 interface ITransactionProps {
-	searchParams: Promise<ISearchParams>;
+	searchParams: ISearchParams;
 }
 
 export default async function Transaction({ searchParams }: ITransactionProps) {
-	const { _multisig, _organisation, _network, _tab } = await searchParams;
+	const { _multisig, _organisation, _network, _tab } = searchParams;
 
 	if (!_organisation && !_multisig) {
 		//  if not found redirect to login page

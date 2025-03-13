@@ -92,9 +92,9 @@ const Menu = ({ userAddress, organisation, organisations }: IMenuProps) => {
 									authenticated={Boolean(userAddress)}
 									icon={item.icon}
 									pathname={pathname}
-									isNew={false}
+									isNew={item.isNew}
 									title={item.title}
-									noShow={false}
+									noShow={item.noShow}
 								/>
 							);
 						})}

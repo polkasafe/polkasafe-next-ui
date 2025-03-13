@@ -12,6 +12,7 @@ import { DefaultOptionType } from 'antd/es/select';
 import { twMerge } from 'tailwind-merge';
 import getSubstrateAddress from '@common/utils/getSubstrateAddress';
 import EditAddressName from '@common/modals/EditAddressName';
+import { CreateProxyModal } from '@substrate/app/modal/CreateProxy';
 
 interface ISignatories {
 	multisigs: Array<IMultisig>;
@@ -48,20 +49,28 @@ export const Signatories = ({ multisigs }: ISignatories) => {
 						addresses={addresses}
 					/>
 				)}
+				{selectedMultisig && (
+					<CreateProxyModal
+						multisig={selectedMultisig}
+					/>
+				)}
 			</div>
 
 			<div className='flex flex-col gap-x-4 gap-y-12 pt-5 w-full'>
 				<div className='flex gap-x-4 justify-center items-start w-4/5'>
 					<div className={twMerge('flex flex-col gap-y-3 items-start justify-start w-full')}>
+						<div>
+
 						<Typography
 							variant={ETypographyVariants.p}
 							className='uppercase'
 						>
 							MANAGE MULTISIG
 						</Typography>
+						</div>
 						<div className='flex items-center rounded-lg p-2 bg-bg-secondary border-dashed border-2 border-gray-500 w-full'>
 							<Select
-								className='flex items-center justify-start w-full [&_.ant-select-selector]:bg-bg-secondary'
+								className='flex items-center justify-start w-full [&_.ant-select-selection-search]:bg-bg-secondary'
 								defaultValue={`${selectedMultisig.address}_${selectedMultisig.network}`}
 								placeholder='Select a person'
 								onChange={(value) => {

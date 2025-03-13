@@ -11,11 +11,11 @@ import Secure from '@substrate/app/(Main)/Secure';
 import AssetsTemplate from './components/AssetsTemplate';
 
 interface IAssetsProps {
-	searchParams: Promise<ISearchParams>;
+	searchParams: ISearchParams;
 }
 
 async function Assets({ searchParams }: IAssetsProps) {
-	const { _multisig, _organisation, _network } = await searchParams;
+	const { _multisig, _organisation, _network } = searchParams;
 
 	if (!_organisation && !_multisig) {
 		// check local storage for login user details

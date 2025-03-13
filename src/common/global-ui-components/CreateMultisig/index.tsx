@@ -18,7 +18,7 @@ import { useState } from 'react';
 // use availableSignatories to populate the select options
 export const CreateMultisig = ({ networks, availableSignatories, onSubmit, userAddress, onClose }: ICreateMultisig) => {
 	const [loading, setLoading] = useState(false);
-	const [selectedNetwork, setSelectedNetwork] = useState<ENetwork>(ENetwork.ROOT);
+	const [selectedNetwork, setSelectedNetwork] = useState<ENetwork>(ENetwork.MYTHOS);
 	const notification = useNotification();
 
 	const [signatories, setSignatories] = useState<string[]>([userAddress]);
@@ -60,6 +60,12 @@ export const CreateMultisig = ({ networks, availableSignatories, onSubmit, userA
 				return;
 			}
 			setLoading(true);
+			console.log('multisig', {
+				name,
+				signatories,
+				network: selectedNetwork,
+				threshold
+			});
 			await onSubmit({
 				name,
 				signatories,
@@ -68,7 +74,7 @@ export const CreateMultisig = ({ networks, availableSignatories, onSubmit, userA
 			});
 			notification(SUCCESS_MESSAGES.CREATE_MULTISIG_SUCCESS);
 		} catch (e) {
-			notification({ ...ERROR_MESSAGES.CREATE_MULTISIG_FAILED, description: e instanceof Error ? e.message : String(e) });
+			notification({ ...ERROR_MESSAGES.CREATE_MULTISIG_FAILED, description: e || e.message });
 		} finally {
 			setLoading(false);
 			onClose?.();

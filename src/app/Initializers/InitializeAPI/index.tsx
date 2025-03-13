@@ -16,11 +16,9 @@ import {
 	assethubKusamaApi,
 	westendApi,
 	assethubRococoApi,
-	peopleChainApi,
-	rootApi,
-	porciniApi
+	peopleChainApi
 } from '@substrate/app/atoms/api/apiAtom';
-import { useAtom, useSetAtom } from 'jotai';
+import { useSetAtom } from 'jotai';
 import { useEffect } from 'react';
 
 import { initialize } from 'avail-js-sdk';
@@ -29,6 +27,7 @@ import { queueNotification } from '@common/global-ui-components/QueueNotificatio
 import { ENetwork, NotificationStatus } from '@common/enum/substrate';
 import { checkAvailNetwork } from '@substrate/app/global/utils/checkAvailNetwork';
 import { networkConstants } from '@common/constants/substrateNetworkConstant';
+import { mythosApi } from '@substrate/app/atoms/api/apiAtom';
 
 function InitializeAPI() {
 	const setPolkadotApiAtom = useSetAtom(polkadotApi);
@@ -43,8 +42,7 @@ function InitializeAPI() {
 	const setAssethubKusamaApiAtom = useSetAtom(assethubKusamaApi);
 	const setWestendApiAtom = useSetAtom(westendApi);
 	const setAssethubRococoApiAtom = useSetAtom(assethubRococoApi);
-	const setRootApiAtom = useSetAtom(rootApi);
-	const setPorciniApiAtom = useSetAtom(porciniApi);
+	const setMythosApiAtom = useSetAtom(mythosApi);
 
 	const getApiSetter = (network: string) => {
 		switch (network) {
@@ -72,44 +70,41 @@ function InitializeAPI() {
 				return setAssethubRococoApiAtom;
 			case ENetwork.PEOPLE:
 				return setPeoplePolkadotApiAtom;
-			case ENetwork.ROOT:
-				return setRootApiAtom;
-			case ENetwork.PORCINI:
-				return setPorciniApiAtom;
+			case ENetwork.MYTHOS:
+				return setMythosApiAtom;
 			default:
 				return null;
 		}
 	};
 
+
 	const setAllNetworkApi = async () => {
 		try {
-			const data = Object.values(networkConstants)
-				.filter((network) => !network.disabled)
-				.map(async (network) => {
-					const isAvail = checkAvailNetwork(network.key);
-					const provider = isAvail ? null : new WsProvider(network.rpcEndpoint);
-					const availApi = isAvail ? await initialize(network.rpcEndpoint) : null;
-					const api = isAvail ? availApi : new ApiPromise({ provider: provider as WsProvider });
-					if (!api) {
-						queueNotification({
-							header: 'Error',
-							message: `Failed to connect to ${network} network`,
-							status: NotificationStatus.ERROR
-						});
-						return;
-					}
-					await api.isReady;
-					const setAtom = getApiSetter(network.key);
-					if (!setAtom) {
-						return;
-					}
-					console.log(network, 'connected');
-					setAtom({
-						api,
-						apiReady: true,
-						network: network.key
+			const data = Object.values(networkConstants).filter((network) => !network.disabled).map(async (network) => {
+				const isAvail = checkAvailNetwork(network.key);
+				const provider = isAvail ? null : new WsProvider(network.rpcEndpoint);
+				const availApi = isAvail ? await initialize(network.rpcEndpoint) : null;
+				const api = isAvail ? availApi : new ApiPromise({ provider: provider as WsProvider });
+				if (!api) {
+					queueNotification({
+						header: 'Error',
+						message: `Failed to connect to ${network} network`,
+						status: NotificationStatus.ERROR
 					});
+					return;
+				}
+				await api.isReady;
+				const setAtom = getApiSetter(network.key);
+				if (!setAtom) {
+					return;
+				}
+				console.log(network, 'connected');
+				setAtom({
+					api,
+					apiReady: true,
+					network: network.key
 				});
+			});
 			await Promise.all(data);
 		} catch (error) {
 			console.error(error);

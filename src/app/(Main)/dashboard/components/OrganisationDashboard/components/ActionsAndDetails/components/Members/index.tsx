@@ -11,7 +11,6 @@ import { useUser } from '@substrate/app/atoms/auth/authAtoms';
 import { useSearchParams } from 'next/navigation';
 import { IAddressBook } from '@common/types/substrate';
 import { addToAddressBook } from '@sdk/polkasafe-sdk/src/add-to-address-book';
-import { ENetwork } from '@common/enum/substrate';
 
 const columns = [
 	{
@@ -88,7 +87,6 @@ function Members({ members }: IMembers) {
 						<div className='basis-2/6'>
 							<Address
 								address={item}
-								network={ENetwork.ROOT}
 								onlyAddress
 								isMultisig
 								withBadge={false}

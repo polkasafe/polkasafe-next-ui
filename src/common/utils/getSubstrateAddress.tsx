@@ -12,8 +12,8 @@ import { encodeAddress } from '@polkadot/util-crypto';
  */
 export default function getSubstrateAddress(address: string): string | null {
 	try {
-		if (address?.startsWith('0x')) return address.toLowerCase();
-		return address ? encodeAddress(address, 42).toLowerCase() : '';
+		if (address?.startsWith('0x')) return address?.toLowerCase();
+		return address ? encodeAddress(address, 42) : '';
 	} catch (e) {
 		console.error('getSubstrateAddress error', e);
 		return null;

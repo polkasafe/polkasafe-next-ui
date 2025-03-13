@@ -9,9 +9,9 @@ export const withErrorHandling = (handler: { (req: NextRequest, options?: any): 
 		try {
 			return await handler(req, options);
 		} catch (error) {
-			const err = error as Error;
+			const err = error;
 			console.log('Error in API call : ', req.nextUrl);
-			return NextResponse.json({ ...err, message: err instanceof Error ? err.message : String(err) }, { status: (err as any).status });
+			return NextResponse.json({ ...err, message: err.message }, { status: err.status });
 		}
 	};
 };

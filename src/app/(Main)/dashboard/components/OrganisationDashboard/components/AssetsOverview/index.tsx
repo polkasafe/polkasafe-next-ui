@@ -9,8 +9,7 @@ import { useAssets } from '@substrate/app/atoms/assets/assetsAtom';
 import React, { useEffect, useState } from 'react';
 import { Skeleton } from 'antd';
 import { IMultisigAssets } from '@common/types/substrate';
-import { ENetwork } from '@common/enum/substrate';
-import { networkConstants } from '@common/constants/substrateNetworkConstant';
+
 function AssetsOverview() {
 	const [data] = useAssets();
 	const assets = data?.assets;
@@ -18,31 +17,20 @@ function AssetsOverview() {
 	const tokenAssets: Array<IMultisigAssets> = [];
 	const proxyMultiSigAssets = [...(assets || []), ...(assets || []).map((a) => a.proxy || []).flat()];
 	proxyMultiSigAssets?.forEach((asset) => {
-		// push supported tokens
-		networkConstants[asset.network as ENetwork].supportedTokens.forEach((token) => {
-			const tokenBalance = asset[token.symbol.toLowerCase() as keyof typeof asset];
-			if (tokenBalance && typeof tokenBalance === 'object' && 'free' in tokenBalance) {
-				tokenAssets.push({
-					symbol: token.symbol,
-					free: tokenBalance.free
-				} as IMultisigAssets);
-			}
-		});
-
-		// const usdtBalance = asset.usdt?.free;
-		// const usdcBalance = asset.usdc?.free;
-		// if (usdtBalance) {
-		// 	tokenAssets.push({
-		// 		symbol: 'USDT',
-		// 		free: usdtBalance
-		// 	} as IMultisigAssets);
-		// }
-		// if (usdcBalance) {
-		// 	tokenAssets.push({
-		// 		symbol: 'USDC',
-		// 		free: usdcBalance
-		// 	} as IMultisigAssets);
-		// }
+		const usdtBalance = asset.usdt?.free;
+		const usdcBalance = asset.usdc?.free;
+		if (usdtBalance) {
+			tokenAssets.push({
+				symbol: 'USDT',
+				free: usdtBalance
+			} as IMultisigAssets);
+		}
+		if (usdcBalance) {
+			tokenAssets.push({
+				symbol: 'USDC',
+				free: usdcBalance
+			} as IMultisigAssets);
+		}
 	});
 
 	const totalAssets = [...proxyMultiSigAssets, ...tokenAssets].reduce((acc, asset) => {

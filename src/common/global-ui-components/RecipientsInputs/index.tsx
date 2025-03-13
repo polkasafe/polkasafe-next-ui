@@ -221,7 +221,7 @@ export const RecipientsInputs = ({
 											</div>
 										) : (
 											<AutoComplete
-												className='[&>div>span>input]:px-[12px] w-full [&_.ant-select-selector]:bg-bg-secondary'
+												className='[&>div>span>input]:px-[12px] w-full [&_.ant-select-selector]:bg-bg-secondary [&_.ant-select-selector]:h-[50px]'
 												filterOption={(inputValue, options) => {
 													return inputValue && options?.value
 														? getSubstrateAddress(String(options?.value) || '') === getSubstrateAddress(inputValue)

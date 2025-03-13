@@ -12,7 +12,7 @@ import { Metadata } from 'next';
 // import { cookies } from 'next/headers';
 
 export interface IHomeProps {
-	searchParams: Promise<ISearchParams>;
+	searchParams: ISearchParams;
 }
 
 export const metadata: Metadata = {
@@ -27,9 +27,9 @@ export const metadata: Metadata = {
 	}
 };
 
-export default async function Home({ searchParams }: IHomeProps) {
+export default function Home({ searchParams }: IHomeProps) {
 	const user = getUserFromCookie();
-	const { _multisig, _organisation, _network } = await searchParams;
+	const { _multisig, _organisation, _network } = searchParams;
 
 	if (!user) {
 		redirect(LOGIN_URL);

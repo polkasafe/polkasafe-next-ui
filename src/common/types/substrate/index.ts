@@ -66,8 +66,6 @@ export interface IDashboardTransaction {
 	txType?: ETxType;
 	initiator?: string;
 	multiId?: string;
-	blockNumber?: number;
-	extrinsicIndex?: number;
 }
 
 export interface ITransaction {

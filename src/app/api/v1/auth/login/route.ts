@@ -24,8 +24,6 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 	const { headers } = req;
 	const address = headers.get('x-address');
 	const signature = headers.get('x-signature');
-	console.log('address::', address);
-	console.log('signature::', signature);
 	try {
 		// check if address is valid
 		const substrateAddress = getSubstrateAddress(String(address));
@@ -63,7 +61,8 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 				let orgId = currentOrganisation;
 				if (userOrgIds.includes(currentOrganisation)) {
 					orgId = currentOrganisation;
-				} else {
+				}
+				else {
 					orgId = userOrgIds[0];
 				}
 
@@ -73,8 +72,6 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 					signature: signature as string,
 					currentOrganisation: orgId
 				};
-
-				console.log('resUser', resUser);
 
 				if (!data.notification_preferences) {
 					doc.ref.update({
@@ -109,10 +106,9 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 		const newUserResponse: IUserResponse = {
 			address: substrateAddress,
 			type: EUserType.SUBSTRATE,
-			signature: (signature as string) || '0x',
+			signature: signature as string,
 			currentOrganisation: userOrgIds[0]
 		};
-		console.log('newUserResponse', newUserResponse);
 
 		await USER_COLLECTION.doc(substrateAddress).set(newUser, { merge: true });
 		const response = NextResponse.json({ data: newUserResponse }, { status: 200 });

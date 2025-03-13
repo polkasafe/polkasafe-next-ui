@@ -18,7 +18,7 @@ import rococoLogo from '@common/assets/parachains-logos/rococo-logo.jpeg';
 import phalaLogo from '@common/assets/parachains-logos/phala-logo.png';
 import khalaLogo from '@common/assets/parachains-logos/khala-logo.png';
 import availLogo from '@common/assets/parachains-logos/avail-logo.png';
-import rootscanLogo from '@common/assets/parachains-logos/rootscan-logo.png';
+import mythosLogo from '@common/assets/parachains-logos/mythos-logo.jpg';
 import { ENetwork } from '@common/enum/substrate';
 
 export const onrampTokens = {
@@ -81,7 +81,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://avail.subscan.io/',
 		rpcEndpoint: 'wss://zeref-api.slowops.xyz/ws',
 		chainId: 'polkadot:b91746b45e0346cc2f815a520b9c6cb4',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.ALEPHZERO]: {
 		disabled: true,
@@ -96,7 +97,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://alephzero.subscan.io/',
 		rpcEndpoint: 'wss://ws.azero.dev/',
 		chainId: 'polkadot:70255b4d28de0fc4e1a193d7e175ad1c',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.ASTAR]: {
 		disabled: true,
@@ -111,7 +113,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://astar.subscan.io/',
 		rpcEndpoint: 'wss://astar-rpc.dwellir.com/',
 		chainId: 'polkadot:9eb76c5184c4ab8679d2d5d819fdf90b',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.KHALA]: {
 		disabled: true,
@@ -126,7 +129,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://khala.subscan.io/',
 		rpcEndpoint: 'wss://khala.public.curie.radiumblock.co/ws/',
 		chainId: 'polkadot:d43540ba6d3eb4897c28a77d48cb5b72',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.KUSAMA]: {
 		disabled: true,
@@ -141,7 +145,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://kusama.subscan.io/',
 		rpcEndpoint: 'wss://kusama-rpc.polkadot.io',
 		chainId: 'polkadot:b0a8d493285c2df73290dfb7e61f870f',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.PHALA]: {
 		disabled: true,
@@ -156,7 +161,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://phala.subscan.io/',
 		rpcEndpoint: 'wss://phala.api.onfinality.io/public-ws/',
 		chainId: 'polkadot:1bb969d85965e4bb5a651abbedf21a54',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.POLKADOT]: {
 		disabled: true,
@@ -171,7 +177,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://polkadot.subscan.io/',
 		rpcEndpoint: 'wss://rpc.polkadot.io',
 		chainId: 'polkadot:91b171bb158e2d3848fa23a9f1c25182',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.ROCOCO]: {
 		disabled: true,
@@ -186,7 +193,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://rococo.subscan.io/',
 		rpcEndpoint: 'wss://rococo-rpc.polkadot.io',
 		chainId: 'polkadot:6408de7737c59c238890533af25896a2',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.ROCOCO_ASSETHUB]: {
 		disabled: true,
@@ -272,7 +280,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://westend.subscan.io/',
 		rpcEndpoint: 'wss://westend-rpc.polkadot.io',
 		chainId: 'polkadot:e143f23803ac50e8f6f8e62695d1ce9e',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.PEOPLE]: {
 		disabled: true,
@@ -287,7 +296,8 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://people-polkadot.subscan.io/',
 		rpcEndpoint: 'wss://polkadot-people-rpc.polkadot.io',
 		chainId: 'polkadot:91b171bb158e2d3848fa23a9f1c25182',
-		supportedTokens: []
+		supportedTokens: [],
+		isEvm: false
 	},
 	[ENetwork.CENTRIFUGE]: {
 		disabled: true,
@@ -302,74 +312,23 @@ export const networkConstants = {
 		blockExplorerUrl: 'https://centrifuge.subscan.io/',
 		rpcEndpoint: 'wss://centrifuge-rpc.dwellir.com',
 		chainId: 'polkadot:2031',
+		supportedTokens: [],
+		isEvm: false
+	},
+	[ENetwork.MYTHOS]: {
+		disabled: false,
+		key: ENetwork.MYTHOS,
+		name: 'Mythos',
+		blockTime: 7000,
+		logo: mythosLogo,
+		ss58Format: 42,
+		subsquidUrl: '',
+		tokenDecimals: 18,
+		tokenSymbol: 'MYTH',
+		blockExplorerUrl: 'https://mythos.subscan.io/',
+		rpcEndpoint: 'wss://polkadot-mythos-rpc.polkadot.io',
+		chainId: 'polkadot:29972',
+		isEvm: true,
 		supportedTokens: []
-	},
-	[ENetwork.ROOT]: {
-		disabled: false,
-		key: ENetwork.ROOT,
-		name: 'Root',
-		blockTime: 4000,
-		logo: rootscanLogo,
-		ss58Format: 193,
-		subsquidUrl: '',
-		tokenDecimals: 6,
-		tokenSymbol: 'ROOT',
-		blockExplorerUrl: 'wss://porcini.rootnet.app/ws',
-		rpcEndpoint: 'wss://root.rootnet.live/ws',
-		chainId: 'polkadot:91b171bb158e2d3848fa23a9f1c251',
-		supportedTokens: [
-			{
-				id: 2,
-				name: 'XRP',
-				symbol: 'XRP',
-				decimals: 6
-			}
-		]
-	},
-	[ENetwork.PORCINI]: {
-		disabled: false,
-		key: ENetwork.PORCINI,
-		name: 'Porcini',
-		blockTime: 5000,
-		logo: rootscanLogo,
-		ss58Format: 193,
-		subsquidUrl: '',
-		tokenDecimals: 6,
-		tokenSymbol: 'ROOT',
-		blockExplorerUrl: 'https://porcini.rootscan.io/',
-		rpcEndpoint: 'wss://porcini.rootnet.app/archive/ws',
-		chainId: 'polkadot:91b171bb158e2d3848fa23a9f1c251',
-		supportedTokens: [
-			{
-				id: 2,
-				name: 'XRP',
-				symbol: 'XRP',
-				decimals: 6
-			},
-			{
-				id:3,
-				name: 'VTX',
-				symbol: 'VTX',
-				decimals: 6
-			},
-			{
-				id: 3172,
-				name: 'USDC',
-				symbol: 'USDC',
-				decimals: 6
-			},
-			{
-				id: 1124,
-				name: 'ETH',
-				symbol: 'ETH',
-				decimals: 18
-			},
-			{
-				id: 2148,
-				name: 'SYLO',
-				symbol: 'SYLO',
-				decimals: 18
-			},
-		]
 	}
 };

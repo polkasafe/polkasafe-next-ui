@@ -111,13 +111,13 @@ function OverviewCard({ address, name, threshold, signatories, network, classNam
 
 	const multiSigAssets = assets?.find((asset) => asset?.address === selectedAddress && asset?.network === network);
 	const selectedAddressAsset = isProxy ? proxyMultiSigAssets : multiSigAssets;
-	const supportedTokens = networkConstants?.[network].supportedTokens || [];
+	const supportedTokens = networkConstants?.[network as keyof typeof networkConstants]?.supportedTokens || [];
 	const allAssets: Array<{
 		name: string;
 		amount: string;
 	}> = [
 		{
-			name: networkConstants?.[network].tokenSymbol,
+			name: networkConstants?.[network as keyof typeof networkConstants]?.tokenSymbol,
 			amount: selectedAddressAsset?.free || '0'
 		}
 	];
@@ -188,7 +188,7 @@ function OverviewCard({ address, name, threshold, signatories, network, classNam
 							</div>
 							<ParachainTooltipIcon
 								size={15}
-								src={networkConstants[network]?.logo}
+								src={networkConstants[network as keyof typeof networkConstants]?.logo}
 								tooltip={network}
 							/>
 						</div>

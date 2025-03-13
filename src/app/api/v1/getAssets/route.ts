@@ -41,7 +41,7 @@ export const POST = withErrorHandling(async (req: NextRequest) => {
 				return assets.data.map((asset) => ({ ...asset, multisigId }));
 			})
 		);
-		const assetsData = assets.filter((asset) => asset !== null).flat() as Array<IUpdateDBAssetProps>;
+		const assetsData = assets.filter((asset) => asset !== null).flat();
 		updateDB(assetsData);
 		return NextResponse.json({ data: assetsData, error: null });
 	} catch (err: unknown) {

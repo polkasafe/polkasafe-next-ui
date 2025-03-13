@@ -51,7 +51,7 @@ export const Delegation = ({ onClose, form }: { onClose: () => void; form: FormI
 			setLoading(true);
 			await buildTransaction(payload);
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
 			console.error(error);
 		} finally {
 			setLoading(false);
@@ -118,7 +118,7 @@ export const Delegation = ({ onClose, form }: { onClose: () => void; form: FormI
 									<Select
 										onChange={(value) => form.setFieldsValue({ proxyType: value })}
 										options={proxyOption}
-										className='w-full bg-bg-main [&_.ant-select-selector]:bg-bg-secondary [&_.ant-select-selector]:rounded-lg'
+										className='w-full bg-bg-main [&_.ant-select-selection-search]:bg-bg-secondary [&_.ant-select-selection-search]:rounded-lg'
 										defaultValue={[proxyOption[0].value]}
 									/>
 								</div>

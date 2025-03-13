@@ -10,7 +10,7 @@ import { useQuery } from '@tanstack/react-query';
 interface IUseHistoryTransaction {
 	apiData: IApiAtom | null;
 	callHash: string;
-	callData?: string | null;
+	callData?: string;
 }
 
 export function useDecodeCallData({ apiData, callHash, callData }: IUseHistoryTransaction) {
@@ -34,7 +34,6 @@ export function useDecodeCallData({ apiData, callHash, callData }: IUseHistoryTr
 			payload.section = call.section;
 
 			const currentPoint = call?.args as IGenericObject;
-			console.log('currentPoint', currentPoint);
 			// check is there a proxy address
 			const proxyAddress = currentPoint?.real?.Id;
 			if (proxyAddress) {
@@ -42,7 +41,7 @@ export function useDecodeCallData({ apiData, callHash, callData }: IUseHistoryTr
 			}
 
 			// check if there is a dest address
-			const destAddress = typeof currentPoint?.dest === 'string' ? currentPoint?.dest : currentPoint?.dest?.Id;
+			const destAddress = currentPoint?.dest?.Id;
 			if (destAddress) {
 				payload.to = destAddress;
 			}
@@ -98,7 +97,7 @@ export function useDecodeCallData({ apiData, callHash, callData }: IUseHistoryTr
 
 		decodeCallData(callJSONData);
 		// console.log('callJSONData', callJSONData);
-		console.log('allCalls', allCalls);
+		// console.log(allCalls);
 		return allCalls;
 	};
 

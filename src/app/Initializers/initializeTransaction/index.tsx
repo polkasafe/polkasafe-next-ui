@@ -10,7 +10,6 @@ import { useHistoryAtom, useQueueAtom } from '@substrate/app/atoms/transaction/t
 import { useTransactions } from '@substrate/app/global/hooks/queryHooks/useTransactions';
 import { ENetwork, ETransactionType } from '@common/enum/substrate';
 import { useSearchParams } from 'next/navigation';
-import { useQueueTransaction } from '@substrate/app/global/hooks/queryHooks/useQueueTransaction';
 
 function InitializeTransaction() {
 	const [organisation] = useOrganisation();
@@ -21,10 +20,7 @@ function InitializeTransaction() {
 	const singleMultisigId = `${address}_${network}`;
 
 	const multisigs = organisation?.multisigs || [];
-	console.log('multisigs', multisigs);
 	const multisigIds = multisigs.map((multisig) => `${multisig.address}_${multisig.network}`);
-
-	console.log('multisigIds', multisigIds);
 
 	multisigs.forEach((multisig) => {
 		if (multisig.network === ENetwork.POLKADOT || multisig.network === ENetwork.POLKADOT_ASSETHUB) {
@@ -42,8 +38,6 @@ function InitializeTransaction() {
 	// get All the data for the all multisig on multisig
 	const allMultisigIds = isAddedMultisig ? singleIdWithPeople : multisigIds;
 
-	console.log('allMultisigIds', allMultisigIds);
-
 	const [queueCurrentIndex, setQueueCurrentIndex] = useState<number>(0);
 	const [historyCurrentIndex, setHistoryCurrentIndex] = useState<number>(0);
 
@@ -52,10 +46,10 @@ function InitializeTransaction() {
 		type: ETransactionType.HISTORY_TRANSACTION
 	});
 
-	const { data: queueData, isSuccess: queueSuccess } = useQueueTransaction({
-		multisigId: allMultisigIds[queueCurrentIndex]
+	const { data: queueData, isSuccess: queueSuccess } = useTransactions({
+		multisigId: allMultisigIds[queueCurrentIndex],
+		type: ETransactionType.QUEUE_TRANSACTION
 	});
-	console.log('queueData', queueData);
 
 	const getHistoryData = useCallback(() => {
 		if (historySuccess && historyData) {
@@ -81,7 +75,6 @@ function InitializeTransaction() {
 			const transactions = uniqueTransactions.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
 
 			setQueueTransaction({ transactions: transactions, currentIndex: queueCurrentIndex });
-			console.log('transactions::', transactions);
 			// Move to the next ID if there are more left
 			if (queueCurrentIndex < allMultisigIds.length - 1) {
 				setQueueCurrentIndex((prev) => prev + 1);

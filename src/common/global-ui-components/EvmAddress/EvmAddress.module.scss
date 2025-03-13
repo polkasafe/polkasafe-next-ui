@@ -1,0 +1,19 @@
+.container {
+  @apply flex w-full items-center gap-x-3;
+}
+
+.inlineFlex {
+  @apply inline-flex;
+}
+
+.textContainer {
+  @apply flex flex-col gap-y-[6px] text-xs font-normal leading-[13px];
+}
+
+.textActive {
+  @apply text-white;
+}
+
+.textDisabled {
+  @apply text-text_secondary;
+}

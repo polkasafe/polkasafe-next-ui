@@ -34,7 +34,7 @@ export const AddAddressForm = ({
 			await onSubmit(payload);
 			notification(SUCCESS_MESSAGES.ADD_ADDRESS_SUCCESS);
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.ADD_ADDRESS_FAILED, description: error instanceof Error ? error.message : String(error) });
+			notification({ ...ERROR_MESSAGES.ADD_ADDRESS_FAILED, description: error || error.message });
 		} finally {
 			setLoading(false);
 		}

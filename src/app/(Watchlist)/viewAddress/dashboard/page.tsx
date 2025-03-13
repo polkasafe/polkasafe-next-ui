@@ -8,11 +8,11 @@ import { getMultisigDataAndTransactions } from '@substrate/app/(Main)/dashboard/
 import WatchList from '@substrate/app/(Watchlist)/viewAddress/components/Watchlist';
 
 interface IWatchList {
-	searchParams: Promise<ISearchParams>;
+	searchParams: ISearchParams;
 }
 
 async function WatchListPage({ searchParams }: IWatchList) {
-	const { _multisig, _network, _tab } = await searchParams;
+	const { _multisig, _network, _tab } = searchParams;
 	const { multisig } = await getMultisigDataAndTransactions(_multisig, _network);
 	if (!multisig) {
 		throw new Error('Multisig not found');

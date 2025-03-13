@@ -13,7 +13,6 @@ import ParachainTooltipIcon from '@common/global-ui-components/ParachainTooltipI
 import inputToBn from '@common/utils/inputToBn';
 import USDTLogo from '@common/assets/token-icons/usdt-logo.png';
 import USDCLogo from '@common/assets/token-icons/usdc-logo.png';
-import XRPLogo from '@common/assets/token-icons/xrp-logo.png';
 import { twMerge } from 'tailwind-merge';
 import { useState, useRef, useEffect } from 'react';
 
@@ -36,10 +35,8 @@ const getCurrencyLogo = (currency: string) => {
 			return USDTLogo;
 		case 'USDC':
 			return USDCLogo;
-		case 'XRP':
-			return XRPLogo;
 		default:
-			return '';
+			return currency;
 	}
 };
 
@@ -77,8 +74,8 @@ const MultipleAssetsDropDown = ({ network, onChange }: { network: ENetwork; onCh
 
 	return (
 		<Select
-			className='bg-bg-secondary [&_.ant-select-selector]:bg-bg-secondary rounded-r-lg [&_.ant-select-selector]:rounded-r-lg [&_.ant-select-selector]:p-0 w-24'
-			options={options}
+		className='bg-bg-secondary [&_.ant-select-selector]:bg-bg-secondary rounded-r-lg [&_.ant-select-selector]:rounded-r-lg [&_.ant-select-selector]:p-0 w-24'
+		options={options}
 			defaultValue={nativeToken}
 			onChange={onChange}
 		/>

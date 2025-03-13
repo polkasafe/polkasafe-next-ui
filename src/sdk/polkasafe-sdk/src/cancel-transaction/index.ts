@@ -1,9 +1,9 @@
-import { networkConstants } from "@common/constants/substrateNetworkConstant";
+import { chainProperties, networks } from "../utils/constants/network_constants";
 import { responseMessages } from "../utils/constants/response_messages";
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { cancelTransactionForWallet } from "./cancelTrasaction";
 import { CancelTransactionPayloadType } from "./types";
-import { ENetwork } from "@common/enum/substrate";
+
 type Props = {
 	address: string,
 	network: string,
@@ -23,11 +23,11 @@ export async function cancelTransaction({
 	}
 
 	try {
-		if (!Object.keys(networkConstants).includes(network)) {
+		if (!Object.values(networks).includes(network)) {
 			return { status: 500, error: responseMessages.internal };
 		}
 
-		const provider = new WsProvider(networkConstants[network as ENetwork].rpcEndpoint);
+		const provider = new WsProvider(chainProperties[network].rpcEndpoint);
 		const api = new ApiPromise({ provider });
 		await api.isReady;
 		if (!api || !api.isReady) {

@@ -10,7 +10,7 @@ export enum EButtonVariant {
 	DANGER = 'danger'
 }
 
-interface IButtonProps extends Omit<ButtonProps, 'variant'> {
+interface IButtonProps extends ButtonProps {
 	fullWidth?: boolean;
 	variant?: EButtonVariant;
 	className?: string;

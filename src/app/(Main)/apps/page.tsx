@@ -5,11 +5,11 @@ import { LOGIN_URL } from '@substrate/app/global/end-points';
 import { redirect } from 'next/navigation';
 
 interface IApps {
-	searchParams:Promise<ISearchParams>;
+	searchParams: ISearchParams;
 }
 
-export default async function Apps({ searchParams }: IApps) {
-	const { _multisig, _organisation } = await searchParams;
+export default function Apps({ searchParams }: IApps) {
+	const { _multisig, _organisation, _network, _tab } = searchParams;
 	if (!_organisation && !_multisig) {
 		redirect(LOGIN_URL);
 	}

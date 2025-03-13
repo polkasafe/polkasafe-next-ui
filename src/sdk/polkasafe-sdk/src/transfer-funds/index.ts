@@ -1,9 +1,8 @@
-import { networkConstants } from "@common/constants/substrateNetworkConstant";
+import { chainProperties, networks } from "../utils/constants/network_constants";
 import { responseMessages } from "../utils/constants/response_messages";
 import { ApiPromise, WsProvider } from '@polkadot/api';
 import { transferFundsFromWallet } from "./transferFunds";
 import { TransferFundsPayloadType } from "./types";
-import { ENetwork } from "@common/enum/substrate";
 
 type Props = {
     network: string,
@@ -22,9 +21,9 @@ export async function transferFunds({
     }
 
     try {
-        if (!Object.keys(networkConstants).includes(network)) return { status: 500, error: responseMessages.internal };
+        if (!Object.values(networks).includes(network)) return { status: 500, error: responseMessages.internal };
 
-            const provider = new WsProvider(networkConstants[network as ENetwork].rpcEndpoint);
+        const provider = new WsProvider(chainProperties[network].rpcEndpoint);
         const api = new ApiPromise({ provider });
         await api.isReady;
 

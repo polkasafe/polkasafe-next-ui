@@ -15,8 +15,14 @@ interface IResponse {
 }
 
 const getQueueTransactions = async (multisigAddress: string, network: string, page: number, entries: number) => {
-	const queueTransactions = await axios.post(
-		`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/api/scan/multisigs/details`,
+	console.log('multisigAddress', multisigAddress);
+	console.log('network', network);
+	console.log('page', page);
+	console.log('entries', entries);
+
+	try {
+		const queueTransactions = await axios.post(
+			`https://${network}.api.subscan.io/api/scan/multisigs/details`,
 		{
 			account: multisigAddress,
 			page: page - 1 || 0, // pages start from 0
@@ -26,7 +32,13 @@ const getQueueTransactions = async (multisigAddress: string, network: string, pa
 		{ headers: SUBSCAN_API_HEADERS }
 	);
 
+
+	console.log('queueTransactions', queueTransactions);
+	
+
 	const { data: queueData } = queueTransactions.data;
+
+	console.log('queueData', queueData);
 
 	const filteredQueueData =
 		queueData && queueData.multisig?.length
@@ -66,6 +78,11 @@ const getQueueTransactions = async (multisigAddress: string, network: string, pa
 	});
 
 	return Promise.all(queuePromise);
+
+	} catch (err) {
+		console.log('Error in Queue Transactions:', (err as Error));
+	}
+
 };
 
 export async function onChainQueueTransaction(
@@ -74,6 +91,7 @@ export async function onChainQueueTransaction(
 	entries: number,
 	page: number
 ): Promise<IResponse> {
+	console.log('onChainQueueTransaction', multisigAddress, network, entries, page);
 	const returnValue: IResponse = {
 		data: { count: 0, transactions: [] },
 		error: ''
@@ -85,7 +103,7 @@ export async function onChainQueueTransaction(
 		returnValue.data.transactions = queueItems;
 		returnValue.data.count = queueItems.length;
 	} catch (err) {
-		console.log('Error in getTransfersByAddress:', err);
+		console.log('Error in getTransfersByAddress:', (err as any).message);
 		returnValue.error = String(err) || ResponseMessages.TRANSFERS_FETCH_ERROR;
 	}
 

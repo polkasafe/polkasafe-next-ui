@@ -25,7 +25,7 @@ export const LinkMultisig = ({
 	className
 }: ILinkMultisig) => {
 	const [loading, setLoading] = useState(false);
-	const [selectedNetwork, setSelectedNetwork] = useState<ENetwork>(ENetwork.ROOT);
+	const [selectedNetwork, setSelectedNetwork] = useState<ENetwork>(ENetwork.MYTHOS);
 	const notification = useNotification();
 	const handleSubmit = async (values: { multisig: IMultisig }) => {
 		try {
@@ -37,7 +37,7 @@ export const LinkMultisig = ({
 			setLoading(true);
 			await onSubmit?.(multisig);
 		} catch (e) {
-			notification({ ...ERROR_MESSAGES.LINKED_MULTISIG_FAILED, description: e instanceof Error ? e.message : String(e) });
+			notification({ ...ERROR_MESSAGES.LINKED_MULTISIG_FAILED, description: e || e.message });
 		} finally {
 			setLoading(false);
 		}
@@ -53,7 +53,7 @@ export const LinkMultisig = ({
 			setLoading(true);
 			await onRemoveSubmit?.(multisig);
 		} catch (e) {
-			notification({ ...ERROR_MESSAGES.LINKED_MULTISIG_FAILED, description: e instanceof Error ? e.message : String(e) });
+			notification({ ...ERROR_MESSAGES.LINKED_MULTISIG_FAILED, description: e || e.message });
 		} finally {
 			setLoading(false);
 		}

@@ -1,7 +1,7 @@
 import { ESettingsTab } from '@common/enum/substrate';
 import { Signatories } from '@substrate/app/(Main)/settings/components/Actions/components/Signatories';
 import { useOrganisation } from '@substrate/app/atoms/organisation/organisationAtom';
-import { NotificationsUI } from '@common/global-ui-components/Notifications';
+import { NotificationsUI } from '@common/global-ui-components/Notifications/index.tsx';
 import MultisigOverview from '@common/global-ui-components/MultisigOverview';
 import { AdminPanel } from '@common/global-ui-components/AdminPanel/index';
 import React from 'react';

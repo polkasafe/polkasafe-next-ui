@@ -35,7 +35,7 @@ const Message = ({
 				<EthIdenticon
 					className='image identicon'
 					address={userAddress}
-					size={50}
+					size={20}
 				/>
 			) : (
 				<Identicon

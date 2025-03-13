@@ -124,7 +124,7 @@ export function CancelOrKillReferendaForm({
 			setPostData({ ...data, index });
 			setError('');
 		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
+			setError(e.message);
 		} finally {
 			setLoading(false);
 		}

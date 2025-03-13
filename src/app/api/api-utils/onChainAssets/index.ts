@@ -23,7 +23,7 @@ export const onChainAssets = async (address: string, network: ENetwork): Promise
 
 	try {
 		const res = await axios.post(
-			`https://${network === ENetwork.ROOT ? 'api' : 'api-porcini'}.rootscan.io/api/scan/account/tokens`,
+			`https://${network}.api.subscan.io/api/scan/account/tokens`,
 			{ address },
 			{ headers: SUBSCAN_API_HEADERS }
 		);
