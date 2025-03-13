@@ -15,6 +15,7 @@ import USDTLogo from '@common/assets/token-icons/usdt-logo.png';
 import USDCLogo from '@common/assets/token-icons/usdc-logo.png';
 import { twMerge } from 'tailwind-merge';
 import { useState, useRef, useEffect } from 'react';
+import { formatBalance } from '@substrate/app/global/utils/formatBalance';
 
 interface Props {
 	className?: string;
@@ -99,8 +100,17 @@ const BalanceInput: React.FC<Props> = ({
 	const ref = useRef<string>('');
 	useEffect(() => {
 		setSelectedCurrency(networkConstants[network]?.tokenSymbol);
-		onChange(new BN(0), networkConstants[network]?.tokenSymbol);
-		ref.current = '';
+		if (!defaultValue) {
+			onChange(new BN(0), networkConstants[network]?.tokenSymbol);
+		}
+		ref.current = formatBalance(
+			defaultValue || '0',
+			{
+				numberAfterComma: 3,
+				withThousandDelimitor: false
+			},
+			network
+		) || '';
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [network]);
 	return (

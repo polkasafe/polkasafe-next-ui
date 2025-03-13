@@ -11,6 +11,7 @@ import { MULTIPLE_CURRENCY_NETWORKS } from '@common/constants/multipleCurrencyNe
 import { networkConstants } from '@common/constants/substrateNetworkConstant';
 import { IMultisigAssets } from '@common/types/substrate';
 import inputToBn from '@common/utils/inputToBn';
+import UploadRecipientAndAmount from '../uploadRecipientAndAmount';
 
 interface IRecipientInputs {
 	autocompleteAddresses: Array<any>;
@@ -63,12 +64,14 @@ export const RecipientsInputs = ({
 		});
 	};
 	const onAmountChange = (a: BN, i: number, currency?: string) => {
+		console.log('a', a.toString());
 		setRecipientAndAmount((prevState) => {
 			const copyArray = [...prevState];
 			const copyObject = { ...copyArray[i] };
 			copyObject.amount = a;
 			copyObject.currency = currency || '';
 			copyArray[i] = copyObject;
+			console.log('copyArray', copyArray);
 			return copyArray;
 		});
 	};
@@ -112,6 +115,7 @@ export const RecipientsInputs = ({
 			form.setFieldsValue({ recipients: recipientAndAmount });
 		}
 	}, [form, recipientAndAmount]);
+	// console.log('recipientAndAmount', recipientAndAmount.map((item) => ({amount: item.amount.toString(), recipient: item.recipient})));
 
 	// eslint-disable-next-line sonarjs/cognitive-complexity
 	useEffect(() => {
@@ -183,6 +187,22 @@ export const RecipientsInputs = ({
 
 	return (
 		<div>
+			<div className='flex items-center justify-end gap-x-2 w-full'>	
+				<UploadRecipientAndAmount onFileProcessed={(data: Array<{ address: string, amount: number }>) => {
+					console.log('file processed', data);
+					const recipientAndAmount = data.map((item, index) => {
+						const [amount] = inputToBn((item.amount).toString(), network, false)
+						console.log('amount', amount.toString());
+						return {
+							amount,
+							recipient: item.address,
+							currency: networkConstants[network].tokenSymbol
+						}
+					})
+					setRecipientAndAmount(recipientAndAmount);
+				}} />
+
+			</div>
 			<div className='flex flex-col gap-y-3 max-h-72 overflow-y-auto pr-1'>
 				<div className='flex flex-col gap-1'>
 					{recipientAndAmount?.map(({ recipient }, i) => (
@@ -246,6 +266,7 @@ export const RecipientsInputs = ({
 									onChange={(balance, currency) => onAmountChange(balance, i, currency)}
 									multipleCurrency={MULTIPLE_CURRENCY_NETWORKS.includes(network)}
 									className='w-full'
+									defaultValue={recipientAndAmount[i].amount.toString()}
 								/>
 								{i !== 0 && (
 									<Button
