@@ -2,7 +2,7 @@ import fetchPonyfill from 'fetch-ponyfill';
 
 const { fetch: fetchPF } = fetchPonyfill();
 
-const baseUrl = 'https://polkasafe-next-ui.vercel.app/api/v1';
+const baseUrl = 'https://mythos.polkasafe.xyz/api/v1';
 
 // const baseUrl = 'http://localhost:3000/api/v1';
 
