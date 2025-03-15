@@ -661,3 +661,26 @@ export interface IInvoiceTemplate {
 	note: string;
 	created_at: Date;
 }
+
+export interface IStakeTransaction {
+	collators: Array<{
+		address: string;
+		amount: BN;
+	}>;
+	note: string;
+	sender: IMultisig;
+	selectedProxy?: string;
+	type: ETransactionCreationType;
+}
+export interface ICollator {
+    address: string;
+    stake: string;
+    stakers: string;
+}
+
+export interface IClaimRewardsTransaction {
+	sender: IMultisig;
+	selectedProxy?: string;
+	type: ETransactionCreationType;
+	note: string;
+}

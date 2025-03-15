@@ -134,7 +134,9 @@ export enum ETxType {
 	CALL_DATA = 'call_data',
 	SET_PREIMAGE = 'set_preimage',
 	CREATE_PROPOSAL = 'create_proposal',
-	CANCEL_OR_KILL = 'cancel_or_kill'
+	CANCEL_OR_KILL = 'cancel_or_kill',
+	STAKE = 'stake',
+	CLAIM_REWARDS = 'claim_rewards'
 }
 
 export enum ETransactionTab {
@@ -253,7 +255,9 @@ export enum ETransactionCreationType {
 	SET_IDENTITY = 'Set Identity',
 	DELEGATE = 'Delegate',
 	TELEPORT = 'Teleport Assets',
-	MANUAL_EXTRINSIC = 'Manual Extrinsic'
+	MANUAL_EXTRINSIC = 'Manual Extrinsic',
+	STAKE = 'Stake',
+	CLAIM_REWARDS = 'Claim Rewards'
 	// CREATE_NFT = 'Create NFT'
 }
 

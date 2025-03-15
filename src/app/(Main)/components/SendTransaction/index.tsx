@@ -15,6 +15,7 @@ import {
 import {
 	ICallDataTransaction,
 	ICancelOrKillTransaction,
+	IClaimRewardsTransaction,
 	IConnectedUser,
 	IDelegateTransaction,
 	IGenericObject,
@@ -23,6 +24,7 @@ import {
 	IReviewTransaction,
 	ISendTransaction,
 	ISetIdentityTransaction,
+	IStakeTransaction,
 	ISubstrateExecuteProps,
 	ITeleportAssetTransaction
 } from '@common/types/substrate';
@@ -418,6 +420,93 @@ export function SendTransaction({
 		setTransactionState(ETransactionState.REVIEW);
 	};
 
+	const stake = async (
+		values: IStakeTransaction,
+		user: IConnectedUser,
+		api: ApiPromise,
+		onSuccess: ({ newTransaction }: IGenericObject) => void
+	) => {
+		const { address } = user;
+		const { collators, sender: multisig, selectedProxy } = values;
+		const transaction: ISubstrateExecuteProps = (await TRANSACTION_BUILDER[ETxType.STAKE]({
+			api,
+			collators,
+			multisig,
+			proxyAddress: selectedProxy,
+			sender: address,
+			onSuccess,
+			note: values.note
+		})) as ISubstrateExecuteProps;
+		if (!transaction) {
+			notification({ ...ERROR_MESSAGES.TRANSACTION_BUILD_FAILED });
+			return;
+		}
+
+		const fee = (await transaction.tx.paymentInfo(address)).partialFee;
+		const formattedFee = formatBalance(
+			fee.toString(),
+			{
+				numberAfterComma: 3,
+				withThousandDelimitor: false
+			},
+			multisig.network
+		);
+
+		const reviewData = {
+			tx: transaction.tx.toHuman(),
+			from: values.sender?.address,
+			txCost: formattedFee.toString(),
+			network: values.sender.network,
+			createAt: new Date().toISOString()
+		} as IReviewTransaction;
+		setExecutableTransaction(transaction);
+		setReviewTransaction(reviewData);
+		setTransactionState(ETransactionState.REVIEW);
+	};
+
+	const claimRewards = async (
+		values: IClaimRewardsTransaction,
+		user: IConnectedUser,
+		api: ApiPromise,
+		onSuccess: ({ newTransaction }: IGenericObject) => void
+	) => {
+		const { address } = user;
+		const { sender: multisig, selectedProxy, note } = values;
+		const transaction: ISubstrateExecuteProps = (await TRANSACTION_BUILDER[ETxType.CLAIM_REWARDS]({
+			api,
+			multisig,
+			sender: address,
+			proxyAddress: selectedProxy,
+			onSuccess,
+			note
+		})) as ISubstrateExecuteProps;
+		if (!transaction) {
+			notification({ ...ERROR_MESSAGES.TRANSACTION_BUILD_FAILED });
+			return;
+		}
+		
+		const fee = (await transaction.tx.paymentInfo(address)).partialFee;		
+		const formattedFee = formatBalance(
+			fee.toString(),
+			{
+				numberAfterComma: 3,
+				withThousandDelimitor: false
+			},
+			multisig.network
+		);
+
+		const reviewData = {
+			tx: transaction.tx.toHuman(),
+			from: values.sender?.address,
+			txCost: formattedFee.toString(),
+			network: values.sender.network,
+			createAt: new Date().toISOString()
+		} as IReviewTransaction;
+		setExecutableTransaction(transaction);
+		setReviewTransaction(reviewData);
+		setTransactionState(ETransactionState.REVIEW);
+	};
+
 	const buildTransaction = async (
 		values:
 			| ISendTransaction
@@ -426,6 +515,7 @@ export function SendTransaction({
 			| IDelegateTransaction
 			| ICallDataTransaction
 			| ICancelOrKillTransaction
+			| IStakeTransaction
 	) => {
 		if (!user) {
 			notification({ ...ERROR_MESSAGES.AUTHENTICATION_FAILED });
@@ -468,7 +558,7 @@ export function SendTransaction({
 					trigger: ETriggers.INIT_MULTISIG_TRANSFER
 				});
 			} catch (error) {
-				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
+				notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || (error as any).message });
 			}
 		};
 		try {
@@ -518,6 +608,16 @@ export function SendTransaction({
 					break;
 				}
 
+				case ETransactionCreationType.STAKE: {
+					await stake(values as IStakeTransaction, user, api, onSuccess);
+					break;
+				}
+
+				case ETransactionCreationType.CLAIM_REWARDS: {
+					await claimRewards(values as IClaimRewardsTransaction, user, api, onSuccess);
+					break;
+				}
+
 				case ETransactionCreationType.CALL_DATA:
 				case ETransactionCreationType.SUBMIT_PREIMAGE:
 				case ETransactionCreationType.MANUAL_EXTRINSIC:
@@ -525,7 +625,7 @@ export function SendTransaction({
 					break;
 			}
 		} catch (error) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || error.message });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: error || (error as any).message });
 			console.log(error);
 		}
 	};
@@ -542,7 +642,7 @@ export function SendTransaction({
 			notification({ ...INFO_MESSAGES.TRANSACTION_IN_BLOCK });
 			setTransactionState(ETransactionState.CONFIRM);
 		} catch (e) {
-			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e || e.message });
+			notification({ ...ERROR_MESSAGES.TRANSACTION_FAILED, description: e || (e as any).message });
 			setTransactionState(ETransactionState.FAILED);
 		}
 	};

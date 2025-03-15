@@ -4,6 +4,7 @@ import {
 	IApproveTransaction,
 	ICallDataMultisigTransaction,
 	ICancelTransaction,
+	IClaimRewardsTransaction,
 	ICreateProxyTransaction,
 	IDashboardTransaction,
 	IDelegateMultisigTransaction,
@@ -13,6 +14,7 @@ import {
 	IMultisig,
 	IRecipient,
 	ISetIdentityMultisigTransaction,
+	IStakeTransaction,
 	ITeleportTransaction,
 	ITransferTransaction
 } from '@common/types/substrate';
@@ -748,6 +750,120 @@ const cancelOrKill = async ({
 	};
 };
 
+const stake = async ({
+	api,
+	multisig,
+	sender: substrateSender,
+	proxyAddress,
+	collators,
+	note,
+	onSuccess
+}: {
+	api: ApiPromise;
+	multisig: IMultisig;
+	sender: string;
+	collators: Array<{
+		address: string;
+		amount: BN;
+	}>;
+	proxyAddress?: string;
+	note: string;
+	onSuccess: (data: IGenericObject) => void;
+}) => {
+	const { address, network, threshold, signatories: allSignatories } = multisig;
+	const sender = getEncodedAddress(substrateSender, network) || substrateSender;
+
+	// Sort signatories
+	const signatories = allSignatories.filter((s) => getSubstrateAddress(s) !== getSubstrateAddress(sender))
+
+	const totalAmount = collators.reduce((acc, curr) => acc.add(curr.amount), new BN(0));
+
+	const lockTx = api.tx.collatorStaking.lock(totalAmount);
+	const stakeTx = api.tx.collatorStaking.stake(collators.map((c) => ({ candidate: c.address, stake: c.amount })));
+	const tx = api.tx.utility.batch([lockTx, stakeTx]);
+	const { weight: MAX_WEIGHT } = await calcWeight(tx, api);
+	const mainTx = api.tx.multisig.asMulti(threshold, signatories, null, tx, MAX_WEIGHT as any);
+
+
+	const afterSuccess = () => {
+		const newTransaction = {
+			callData: tx.method.toHex(),
+			callHash: tx.method.hash.toString(),
+			network,
+			amountToken: '0',
+			createdAt: new Date(),
+			multisigAddress: address,
+			from: address,
+			approvals: [sender],
+			note
+		} as IDashboardTransaction;
+		console.log(newTransaction, 'Transaction');
+		onSuccess && onSuccess({ newTransaction });
+	};
+
+	return {
+		api,
+		apiReady: true,
+		tx: proxyAddress ? api.tx.proxy.proxy(proxyAddress, null, mainTx) : mainTx as SubmittableExtrinsic<'promise'>,
+		address: sender,
+		onSuccess: afterSuccess,
+		network,
+		errorMessageFallback: ERROR_MESSAGES.TRANSACTION_FAILED
+	};
+};
+
+const claimRewards = async ({
+	api,
+	multisig,
+	sender: substrateSender,
+	proxyAddress,
+	onSuccess,
+	note
+}: {
+	api: ApiPromise;
+	multisig: IMultisig;
+	sender: string;
+	proxyAddress?: string;
+	onSuccess: (data: IGenericObject) => void;
+	note: string;
+}) => {
+	const { address, network, threshold, signatories: allSignatories } = multisig;
+	const sender = getEncodedAddress(substrateSender, network) || substrateSender;
+
+	// Sort signatories
+	const signatories = allSignatories.filter((s) => getSubstrateAddress(s) !== getSubstrateAddress(sender))
+
+	const tx = api.tx.collatorStaking.claimRewards();
+	const { weight: MAX_WEIGHT } = await calcWeight(tx, api);
+	const mainTx = api.tx.multisig.asMulti(threshold, signatories, null, tx, MAX_WEIGHT as any);
+
+	const afterSuccess = () => {
+		const newTransaction = {
+			callData: tx.method.toHex(),
+			callHash: tx.method.hash.toString(),
+			network,
+			amountToken: '0',
+			createdAt: new Date(),
+			multisigAddress: address,
+			from: address,
+			approvals: [sender],
+			note
+		} as IDashboardTransaction;
+		console.log(newTransaction, 'Transaction');
+		onSuccess && onSuccess({ newTransaction });
+	};	
+
+	return {
+		api,
+		apiReady: true,
+		tx: proxyAddress ? api.tx.proxy.proxy(proxyAddress, null, mainTx) : mainTx as SubmittableExtrinsic<'promise'>,
+		address: sender,
+		onSuccess: afterSuccess,
+		network,
+		errorMessageFallback: ERROR_MESSAGES.TRANSACTION_FAILED
+	};
+};
+
 const TRANSACTION_BUILDER = {
 	[ETxType.FUND]: fund,
 	[ETxType.TRANSFER]: transfer,
@@ -759,7 +875,9 @@ const TRANSACTION_BUILDER = {
 	[ETxType.DELEGATE]: delegate,
 	[ETxType.TELEPORT]: teleportAssets,
 	[ETxType.CALL_DATA]: callData,
-	[ETxType.CANCEL_OR_KILL]: cancelOrKill
+	[ETxType.CANCEL_OR_KILL]: cancelOrKill,
+	[ETxType.STAKE]: stake,
+	[ETxType.CLAIM_REWARDS]: claimRewards
 };
 
 export { TRANSACTION_BUILDER };

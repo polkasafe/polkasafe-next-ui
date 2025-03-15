@@ -105,6 +105,11 @@ export const ERROR_MESSAGES = {
 		message: 'Error in adding watchlist',
 		description: 'Error in adding watchlist',
 		status: NotificationStatus.ERROR
+	},
+	INVALID_COLLATOR_ADDRESS: {
+		message: 'Invalid Collator Address',
+		description: 'Collator address is invalid',
+		status: NotificationStatus.ERROR
 	}
 };
 

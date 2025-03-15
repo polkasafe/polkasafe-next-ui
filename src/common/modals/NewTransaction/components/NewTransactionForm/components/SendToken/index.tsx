@@ -24,9 +24,6 @@ import { addNewCategory } from '@sdk/polkasafe-sdk/src/add-new-category';
 import { useUser } from '@substrate/app/atoms/auth/authAtoms';
 import { useOrganisation } from '@substrate/app/atoms/organisation/organisationAtom';
 import AddNewCategory from '@common/modals/AddNewCategory';
-import inputToBn from '@common/utils/inputToBn';
-import ParachainTooltipIcon from '@common/global-ui-components/ParachainTooltipIcon';
-import { networkConstants } from '@common/constants/substrateNetworkConstant';
 
 export interface IRecipientAndAmount {
 	recipient: string;

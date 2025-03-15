@@ -1,6 +1,6 @@
 import { FormInstance } from 'antd';
 import BN from 'bn.js';
-import { ETransactionCreationType } from '@common/enum/substrate';
+import { ENetwork, ETransactionCreationType } from '@common/enum/substrate';
 
 import './style.css';
 import SetIdentity from '@common/modals/NewTransaction/components/NewTransactionForm/components/SetIdentity';
@@ -10,6 +10,8 @@ import { TeleportAssets } from '@common/modals/NewTransaction/components/NewTran
 import CallData from '@common/modals/NewTransaction/components/NewTransactionForm/components/CallData';
 import SubmitPreImage from '@common/modals/NewTransaction/components/NewTransactionForm/components/SubmitPreimage';
 import CreateProposal from '@common/modals/NewTransaction/components/NewTransactionForm/components/CreatePropsal';
+import Stake from './components/Stake';
+import ClaimRewards from './components/ClaimRewards';
 
 export enum ETransactionSteps {
 	BUILD_TRANSACTION = 'New Transaction',
@@ -57,6 +59,20 @@ export function NewTransactionForm({
 					form={form}
 				/>
 			)}
+			{type === ETransactionCreationType.STAKE && (
+				<Stake
+					network={ENetwork.MYTHOS}
+					onClose={onClose}
+					form={form}
+				/>
+			)}
+
+			{type === ETransactionCreationType.CLAIM_REWARDS && (
+				<ClaimRewards
+					form={form}
+				/>
+			)}
+
 			{type === ETransactionCreationType.CALL_DATA && (
 				<CallData
 					onClose={onClose}

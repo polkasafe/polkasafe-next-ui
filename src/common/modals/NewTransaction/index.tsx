@@ -45,7 +45,11 @@ function NewTransaction({
 			{transactionState === ETransactionState.REVIEW && (
 				<ReviewTransaction
 					onSubmit={signTransaction}
-					onClose={() => setTransactionState(ETransactionState.BUILD)}
+					onClose={() => {
+						setTransactionState(ETransactionState.BUILD)
+						setOpenModal(false)
+						form.resetFields();
+					}}
 					reviewTransaction={reviewTransaction as IReviewTransaction}
 				/>
 			)}
