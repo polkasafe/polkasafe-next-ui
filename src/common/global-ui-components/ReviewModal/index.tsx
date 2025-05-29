@@ -12,6 +12,7 @@ import { ApiPromise } from '@polkadot/api';
 import { ApiPromise as AvailApiPromise } from 'avail-js-sdk';
 import formatBnBalance from '@common/utils/formatBnBalance';
 import InfoBox from '@common/global-ui-components/InfoBox';
+import { networkConstants } from '@common/constants/substrateNetworkConstant';
 
 interface IReviewModal {
 	buildTransaction: () => Promise<{ error: boolean }>;
@@ -23,6 +24,7 @@ interface IReviewModal {
 	isCreateProxyTx?: boolean;
 	api?: ApiPromise | AvailApiPromise;
 	disabled?: boolean;
+	handleChangeGasToken: (value: string) => void;
 }
 
 export const ReviewModal = ({
@@ -35,7 +37,8 @@ export const ReviewModal = ({
 	size,
 	isCreateProxyTx,
 	api,
-	disabled
+	disabled,
+	handleChangeGasToken
 }: PropsWithChildren<IReviewModal>) => {
 	const [openModal, setOpenModal] = useState(false);
 	const [loading, setLoading] = useState(false);
@@ -136,6 +139,7 @@ export const ReviewModal = ({
 							}}
 							reviewTransaction={reviewTransaction as IReviewTransaction}
 							disabled={isCreateProxyTx && multisigBalance.lt(reservedProxyDeposit)}
+							onChangeGasToken={handleChangeGasToken}
 						/>
 					</div>
 				)}

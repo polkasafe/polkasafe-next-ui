@@ -7,10 +7,17 @@ import NextTopLoader from 'nextjs-toploader';
 import { getUserFromCookie } from '@substrate/app/global/lib/cookies';
 import { PropsWithChildren } from 'react';
 import { redirect } from 'next/navigation';
-import { CREATE_ORGANISATION_URL, ORGANISATION_DASHBOARD_URL } from '@substrate/app/global/end-points';
+import { ORGANISATION_DASHBOARD_URL } from '@substrate/app/global/end-points';
+import QueryProvider from '@substrate/app/providers/QueryClient';
+import { getWagmiConfig } from '@substrate/app/global/lib/auth-config';
+import { cookieToInitialState } from 'wagmi';
+import { headers } from 'next/headers';
 
-export default function LoginLayout({ children }: PropsWithChildren) {
+export default async function LoginLayout({ children }: PropsWithChildren) {
 	const user = getUserFromCookie();
+	const config = await getWagmiConfig();
+	const initialState = cookieToInitialState(config, (await headers()).get('cookie'));
+	
 
 	if (user) {
 		const { currentOrganisation } = user;
@@ -22,7 +29,11 @@ export default function LoginLayout({ children }: PropsWithChildren) {
 		<html lang='en'>
 			<body>
 				<NextTopLoader />
-				<GlobalLoginLayout>{children}</GlobalLoginLayout>
+				<GlobalLoginLayout>
+					<QueryProvider initialWagmiState={initialState}>
+						{children}
+					</QueryProvider>
+				</GlobalLoginLayout>
 			</body>
 		</html>
 	);

@@ -467,6 +467,7 @@ export interface IReviewTransaction {
 	network: ENetwork;
 	txHash?: string;
 	createdAt?: Date;
+	transactionCall?: SubmittableExtrinsic<'promise'>;
 }
 
 export interface IGetTransaction {

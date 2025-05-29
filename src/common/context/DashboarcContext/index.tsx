@@ -24,6 +24,7 @@ interface IDashboardProvider extends PropsWithChildren {
 	setTransactionState: Dispatch<SetStateAction<ETransactionState>>;
 	reviewTransaction: IReviewTransaction | null;
 	transactionFields: ITransactionFields;
+	handleChangeGasToken: (value: string) => void;
 }
 
 export const DashboardContext = createContext({} as IDashboardProvider);
@@ -41,7 +42,8 @@ export function DashboardProvider({
 	transactionState,
 	setTransactionState,
 	reviewTransaction,
-	transactionFields
+	transactionFields,
+	handleChangeGasToken
 }: IDashboardProvider) {
 	const value = useMemo(
 		() => ({
@@ -56,7 +58,8 @@ export function DashboardProvider({
 			transactionState,
 			reviewTransaction,
 			setTransactionState,
-			transactionFields
+			transactionFields,
+			handleChangeGasToken
 		}),
 		[
 			setTransactionState,
@@ -70,7 +73,8 @@ export function DashboardProvider({
 			transactionState,
 			buildTransaction,
 			reviewTransaction,
-			transactionFields
+			transactionFields,
+			handleChangeGasToken
 		]
 	);
 	return <DashboardContext.Provider value={value}>{children}</DashboardContext.Provider>;

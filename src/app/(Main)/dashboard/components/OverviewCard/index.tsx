@@ -39,39 +39,7 @@ const ExternalLink = ({ network, address }: { network: ENetwork; address: string
 			<a
 				className='w-5'
 				target='_blank'
-				href='https://polkadot.js.org/apps/#/accounts'
-				rel='noreferrer'
-			>
-				<PolkadotIcon />
-			</a>
-			<a
-				className='w-5'
-				target='_blank'
-				href={`https://explorer.polkascan.io/${network}/account/${address}`}
-				rel='noreferrer'
-			>
-				<BrainIcon />
-			</a>
-			<a
-				className='w-5'
-				target='_blank'
-				href={`https://dotscanner.com/${network}/account/${address}?utm_source=polkadotjs`}
-				rel='noreferrer'
-			>
-				<DonateIcon />
-			</a>
-			<a
-				className='w-5'
-				target='_blank'
-				href={`https://${network}.polkaholic.io/account/${address}?group=overview&chainfilters=all`}
-				rel='noreferrer'
-			>
-				<ChainIcon />
-			</a>
-			<a
-				className='w-5'
-				target='_blank'
-				href={`https://${network}.subscan.io/account/${address}`}
+				href={`https://${network === ENetwork.ROOT ? "rookscan.io" : 'porcini.rookscan.io'}/account/${address}`}
 				rel='noreferrer'
 			>
 				<SubscanIcon />

@@ -7,8 +7,7 @@
 
 import AccountSelectionForm from '@common/global-ui-components/AccountSelectionForm';
 import Button from '@common/global-ui-components/Button';
-import { stringToHex, isHex } from '@polkadot/util';
-import { WalletIcon } from '@common/global-ui-components/Icons';
+import { isHex } from '@polkadot/util';
 import Loader from '@common/global-ui-components/Loder';
 import WalletButtons from '@common/global-ui-components/WalletButtons';
 import React, { useEffect, useState } from 'react';
@@ -19,23 +18,20 @@ import { connectAddress } from '@substrate/app/(Login)/client-actions/connectAdd
 import { queueNotification } from '@common/global-ui-components/QueueNotification';
 import { whitelist } from '@substrate/app/(Login)/login/utils/whiteList';
 import { ERROR_MESSAGES } from '@substrate/app/global/genericErrors';
-import { getSignature } from '@substrate/app/(Login)/login/utils/getSignature';
 import { useAtomValue, useSetAtom } from 'jotai';
-import { TFAForm } from '@substrate/app/(Login)/login/components/TFAForm';
 import { clientLogin } from '@substrate/app/(Login)/client-actions/client-login';
 import { CREATE_ORGANISATION_URL, ORGANISATION_DASHBOARD_URL } from '@substrate/app/global/end-points';
 import { userAtom } from '@substrate/app/atoms/auth/authAtoms';
 import { ENetwork, NotificationStatus, Wallet, WcPolkadotMethods } from '@common/enum/substrate';
 import { walletConnectAtom } from '@substrate/app/atoms/walletConnect/walletConnectAtom';
-import { signatureVerify, cryptoWaitReady } from '@polkadot/util-crypto';
-import { networkConstants } from '@common/constants/substrateNetworkConstant';
 import { QrState } from '@common/types/substrate';
 import { useApi } from '@substrate/app/hooks/useApi';
 import Modal from '@common/global-ui-components/Modal';
 import InfoBox from '@common/global-ui-components/InfoBox';
 import { QrDisplayPayload, QrScanSignature } from '@polkadot/react-qr';
-import { polkadotVaultSign } from '@substrate/app/(Login)/login/utils/polkadotVaultSign';
 import Typography, { ETypographyVariants } from '@common/global-ui-components/Typography';
+import { useAuth } from '@futureverse/auth-react';
+import { useAuthUi } from '@futureverse/auth-ui';
 
 export function SubstrateLoginForm() {
 	const setAtom = useSetAtom(userAtom);
@@ -56,6 +52,11 @@ export function SubstrateLoginForm() {
 	const apis = useApi();
 
 	const wc = useAtomValue(walletConnectAtom);
+
+
+	const { openLogin } = useAuthUi();
+	const { userSession } = useAuth();
+	console.log(userSession);
 
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	const [tokenExpired, setTokenExpired] = useState<boolean>(false);
@@ -90,6 +91,12 @@ export function SubstrateLoginForm() {
 
 	const handleConnectWallet = async () => {
 		try {
+			const address = userSession?.eoa;
+			console.log('address', address);
+			if(!address) {
+				openLogin();
+				return;
+			}
 			const substrateAddress = getSubstrateAddress(address);
 			if (!substrateAddress) {
 				queueNotification({
@@ -112,65 +119,11 @@ export function SubstrateLoginForm() {
 				});
 				console.log('ERROR', tokenError);
 				setLoading(false);
-			} else if (typeof token !== 'string' && token?.tfa_token && token?.tfa_token?.token) {
-				setTfaToken(token.tfa_token.token);
-				setLoading(false);
 			} else {
-				let signature = '';
+				let signature = '0x';
 				if (whitelist.includes(getSubstrateAddress(address))) {
 					signature = '0x';
 				}
-				if (
-					!whitelist.includes(getSubstrateAddress(address)) &&
-					selectedWallet !== Wallet.WALLET_CONNECT &&
-					selectedWallet !== Wallet.POLKADOT_VAULT
-				) {
-					setSigning(true);
-					signature = await getSignature(selectedWallet, token, substrateAddress);
-					setSigning(false);
-				}
-
-				if (selectedWallet === Wallet.WALLET_CONNECT && wc && wc.client && wc.session) {
-					const message = stringToHex(token);
-
-					const result = await wc.client!.request<{ signature: string }>({
-						chainId: networkConstants[ENetwork.POLKADOT].chainId,
-						request: {
-							method: WcPolkadotMethods.POLKADOT_SIGN_MESSAGE,
-							params: {
-								address,
-								message
-							}
-						},
-						topic: wc.session!.topic
-					});
-
-					// sr25519 signatures need to wait for WASM to load
-					await cryptoWaitReady();
-					const { isValid: valid } = signatureVerify(message, result.signature, address);
-					if (valid) {
-						signature = result.signature;
-					}
-				}
-
-				if (selectedWallet === Wallet.POLKADOT_VAULT) {
-					setOpenSignWithVaultModal(true);
-					if (!apis || !apis[vaultNetwork]?.apiReady) {
-						return;
-					}
-					const { api } = apis[vaultNetwork];
-
-					signature = await polkadotVaultSign({
-						api,
-						token,
-						setQrState,
-						substrateAddress,
-						setOpenSignWithVaultModal,
-						vaultNetwork,
-						setVaultTxnHash
-					});
-				}
-
 				const { data: userData, error: connectAddressErr } = (await clientLogin(substrateAddress, signature)) as any;
 
 				setLoading(false);
@@ -217,102 +170,12 @@ export function SubstrateLoginForm() {
 		}
 	};
 
-	const handleSubmitAuthCode = async () => {
-		const substrateAddress = getSubstrateAddress(address);
-		if (!substrateAddress) {
-			console.log('INVALID SUBSTRATE ADDRESS');
-			return;
+
+	useEffect(() => {
+		if(userSession) {
+			handleConnectWallet();
 		}
-
-		if (!tfaToken) return;
-
-		setLoading(true);
-		try {
-			// const { data: token, error: validate2FAError } = await nextApiClientFetch<string>(
-			// 	`${SUBSTRATE_API_AUTH_URL}/2fa/validate2FA`,
-			// 	{
-			// 		authCode,
-			// 		tfa_token: tfaToken
-			// 	},
-			// 	{ address: substrateAddress }
-			// );
-			// if (validate2FAError) {
-			// 	if (validate2FAError === '2FA token expired.') {
-			// 		setTokenExpired(true);
-			// 	}
-			// 	queueNotification({
-			// 		header: 'Failed',
-			// 		message: validate2FAError,
-			// 		status: NotificationStatus.ERROR
-			// 	});
-			// 	setLoading(false);
-			// }
-			// if (!validate2FAError && token) {
-			// 	const injectedWindow = typeof window !== 'undefined' && (window as Window & InjectedWindow);
-			// 	if (!injectedWindow) {
-			// 		return;
-			// 	}
-			// 	const wallet = injectedWindow.injectedWeb3[selectedWallet];
-			// 	if (!wallet) {
-			// 		setLoading(false);
-			// 		return;
-			// 	}
-			// 	const injected = wallet && wallet.enable && (await wallet.enable(APP_NAME));
-			// 	const signRaw = injected && injected.signer && injected.signer.signRaw;
-			// 	if (!signRaw) {
-			// 		console.error('Signer not available');
-			// 		return;
-			// 	}
-			// 	setSigning(true);
-			// 	setTfaToken('');
-			// 	const { signature } = await signRaw({
-			// 		address: substrateAddress,
-			// 		data: stringToHex(token),
-			// 		type: 'bytes'
-			// 	});
-			// 	setSigning(false);
-			// 	const { data: userData, error: connectAddressErr } = await userLogin(substrateAddress, signature);
-			// 	if (!connectAddressErr && userData) {
-			// 		setLoading(false);
-			// 		setSigning(false);
-			// 		if (typeof window !== 'undefined') {
-			// 			localStorage.setItem('signature', signature);
-			// 			localStorage.setItem('address', substrateAddress);
-			// 			localStorage.setItem('logged_in_wallet', selectedWallet);
-			// 		}
-			// 		// Update atom state
-			// 		// if (!userData?.organisations || userData?.organisations?.length === 0) {
-			// 		// 	router.replace('/create-org');
-			// 		// } else {
-			// 		// 	router.replace('/');
-			// 		// }
-			// 	}
-			// }
-		} catch (error) {
-			console.log(error);
-			setLoading(false);
-			setSigning(false);
-			queueNotification({
-				header: 'Failed',
-				message: error instanceof Error ? error.message : String(error),
-				status: NotificationStatus.ERROR
-			});
-		}
-	};
-
-	if (tfaToken) {
-		return (
-			<TFAForm
-				onSubmit={handleSubmitAuthCode}
-				onCancel={() => {
-					setTfaToken('');
-					setTokenExpired(false);
-				}}
-				loginDisabled={(noExtension || noAccounts || !address) && showAccountsDropdown}
-				loading={loading}
-			/>
-		);
-	}
+	}, [userSession]);
 
 	return (
 		<>
@@ -413,7 +276,7 @@ export function SubstrateLoginForm() {
 					)}
 				</div>
 			) : null}
-			<Button
+			{/* <Button
 				disabled={(noExtension || noAccounts || !address) && showAccountsDropdown}
 				icon={<WalletIcon />}
 				loading={loading}
@@ -421,7 +284,9 @@ export function SubstrateLoginForm() {
 				onClick={async () => (showAccountsDropdown ? handleConnectWallet() : setShowAccountsDropdown(true))}
 			>
 				Connect Wallet
-			</Button>
+			</Button> */}
+
+			<Button onClick={() => openLogin()}>Login with Futureverse</Button>
 			{signing && <div className='text-white mt-1'>Please Sign This Randomly Generated Text To Login.</div>}
 		</>
 	);

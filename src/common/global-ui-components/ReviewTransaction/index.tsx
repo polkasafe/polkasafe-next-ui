@@ -5,25 +5,67 @@ import Typography, { ETypographyVariants } from '@common/global-ui-components/Ty
 import { IReviewTransaction } from '@common/types/substrate';
 import { useState } from 'react';
 import ReactJson from 'react-json-view';
-import { Spin } from 'antd';
+import { Select, Spin } from 'antd';
 import { ERROR_MESSAGES } from '@common/utils/messages';
 import { useNotification } from '@common/utils/notification';
 import LoadingLottie from '@common/global-ui-components/LottieAnimations/LoadingLottie';
 import { networkConstants } from '@common/constants/substrateNetworkConstant';
 import { ENetwork } from '@common/enum/substrate';
+import { getCurrencyLogo } from '@common/constants/currencyConstants';
+import ParachainTooltipIcon from '../ParachainTooltipIcon';
 
 interface IReviewTransactionProps {
 	onSubmit: () => Promise<void>;
 	onClose: () => void;
+	onChangeGasToken: (value: string) => void;
 	reviewTransaction: IReviewTransaction;
 	disabled?: boolean;
 }
+
+
+const MultipleAssetsDropDown = ({ network, onChange }: { network: ENetwork; onChange: (value: string) => void }) => {
+	const tokens = (networkConstants[network] as any).supportedTokens as Array<{ symbol: string; logo: any }>;
+	const nativeToken = networkConstants[network].tokenSymbol;
+	const options = [
+		{
+			value: nativeToken,
+			label: (
+				<span className='flex gap-2 justify-start items-center ml-2'>
+					<ParachainTooltipIcon src={networkConstants[network]?.logo} />
+					{networkConstants[network]?.tokenSymbol}
+				</span>
+			)
+		}
+	];
+	options.push(
+		...(tokens.map((token) => ({
+			value: token.symbol,
+			label: (
+				<span className='flex gap-x-1 justify-start items-center ml-2'>
+					<ParachainTooltipIcon src={getCurrencyLogo(token.symbol)} />
+					{token.symbol}
+				</span>
+			)
+		})) as any)
+	);
+
+	return (
+		<Select
+			className='bg-bg-secondary w-1/4 [&_.ant-select-selector]:bg-bg-secondary rounded-lg [&_.ant-select-selector]:rounded-lg [&_.ant-select-selector]:p-0'
+			options={options}
+			defaultValue={nativeToken}
+			onChange={onChange}
+		/>
+	);
+};
+
 
 export const ReviewTransaction = ({
 	onSubmit,
 	onClose,
 	reviewTransaction,
-	disabled = false
+	disabled = false,
+	onChangeGasToken
 }: IReviewTransactionProps) => {
 	const { tx, from, to, network, name, proxyAddress, txCost } = reviewTransaction;
 	const [loading, setLoading] = useState(false);
@@ -95,6 +137,7 @@ export const ReviewTransaction = ({
 						</div>
 					</div>
 				)}
+
 				{txCost && (
 					<div>
 						<Typography
@@ -103,13 +146,18 @@ export const ReviewTransaction = ({
 						>
 							Transaction Cost
 						</Typography>
-						<div className='border border-dashed border-text-disabled hover:border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-full'>
+						<div className='border border-dashed border-text-disabled hover:border-primary rounded-lg p-2 bg-bg-secondary cursor-pointer w-full flex items-center gap-x-2 justify-between'>
 							<Typography
 								variant={ETypographyVariants.p}
 								className='text-text-primary'
 							>
-								Gas Fees: {txCost} {networkConstants[network || ENetwork.POLKADOT].tokenSymbol}
+								Gas Fees: {txCost}
 							</Typography>
+
+							<MultipleAssetsDropDown
+								network={network || ENetwork.ROOT}
+								onChange={(value) => onChangeGasToken(value)}
+							/>
 						</div>
 					</div>
 				)}

@@ -197,6 +197,7 @@ export const UpdateMultisig = ({ multisig, proxyAddress, addresses, className }:
 						onSubmit={signTransaction}
 						onClose={() => setTransactionState(ETransactionState.BUILD)}
 						reviewTransaction={reviewTransaction as IReviewTransaction}
+						onChangeGasToken={() => {}}
 					/>
 				)}
 				{transactionState === ETransactionState.CONFIRM && (

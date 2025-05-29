@@ -47,6 +47,11 @@ import { findMultisig } from '@common/utils/findMultisig';
 import getSubstrateAddress from '@common/utils/getSubstrateAddress';
 import { updateTransaction } from '@sdk/polkasafe-sdk/src/transaction/callhash';
 import { BN } from '@polkadot/util';
+import { networkConstants } from '@common/constants/substrateNetworkConstant';
+import { set } from 'lodash';
+import { useFutureverseSigner } from '@futureverse/auth-react';
+import { useAuth } from '@futureverse/auth-react';
+import { SubmittableExtrinsic } from '@polkadot/api/types';
 
 interface ISendTransactionProps {
 	address: string | null;
@@ -74,6 +79,10 @@ export function SendTransaction({
 	const [transactionState, setTransactionState] = useState(ETransactionState.BUILD);
 	const [executableTransaction, setExecutableTransaction] = useState<ISubstrateExecuteProps | null>(null);
 	const [reviewTransaction, setReviewTransaction] = useState<IReviewTransaction | null>(null);
+
+	const { userSession } = useAuth();
+	console.log('userSession', userSession);
+	const signer = useFutureverseSigner();
 
 	// Get multisig and proxy details
 	const multisig = organisation?.multisigs?.find((item) => item.address === address && item.network === network);
@@ -412,6 +421,7 @@ export function SendTransaction({
 
 		const reviewData = {
 			tx: transaction.tx.toHuman(),
+			transactionCall: transaction.tx,
 			from: values.sender?.address,
 			txCost: formattedFee.toString(),
 			network: values.sender.network,
@@ -532,15 +542,40 @@ export function SendTransaction({
 		}
 	};
 
+	const handleChangeGasToken = (value: string) => {
+		if (!reviewTransaction || !executableTransaction) return;
+		const apiAtom = getApi(multisig?.network as ENetwork);
+		if (!apiAtom) return;
+		const { api } = apiAtom as { api: ApiPromise };
+		if (!api || !api.isReady) return;
+		const asset = networkConstants[multisig?.network as ENetwork].supportedTokens.find((token) => token.symbol === value) as any;
+		if (!asset) return;
+		const { transactionCall } = reviewTransaction;
+		const newTx = api.tx.feeProxy.callWithFeePreferences(asset.id, asset.maximumGas, transactionCall);
+		console.log('newTx', newTx.toHuman());	
+		setReviewTransaction({ ...reviewTransaction, tx: newTx.toHuman() as IGenericObject, transactionCall: newTx });
+		setExecutableTransaction({ ...executableTransaction, tx: newTx });
+	};
+
 	const signTransaction = async () => {
 		try {
-			if (!executableTransaction) {
+			if (!executableTransaction || !signer) {
+				console.log('signing tx', executableTransaction, signer, userSession);
 				notification({ ...ERROR_MESSAGES.TRANSACTION_BUILD_FAILED });
 				return;
 			}
 
-			await setSigner(executableTransaction.api, executableTransaction.network);
-			await executeTx(executableTransaction);
+			const apiAtom = getApi(multisig?.network as ENetwork);
+			if (!apiAtom) return;
+			const { api } = apiAtom as { api: any };
+			if (!api || !api.isReady) return;
+			console.log('signing tx', executableTransaction.tx);
+			const signedTx = await signer.signExtrinsic(api, executableTransaction.tx as any, user?.address || '');
+			const result = await signedTx.withResultTransform((result) => {
+				console.log('result', result.toHuman());
+				return result;
+			});
+			console.log('result', result.toHuman());
 			notification({ ...INFO_MESSAGES.TRANSACTION_IN_BLOCK });
 			setTransactionState(ETransactionState.CONFIRM);
 		} catch (e) {
@@ -628,6 +663,7 @@ export function SendTransaction({
 			allApi={allApi}
 			transactionState={transactionState}
 			setTransactionState={setTransactionState}
+			handleChangeGasToken={handleChangeGasToken}
 		>
 			{children}
 		</DashboardProvider>

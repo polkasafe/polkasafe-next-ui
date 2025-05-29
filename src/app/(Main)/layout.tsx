@@ -15,6 +15,10 @@ import SubstrateLayout from '@substrate/app/(Main)/SubstrateLayout';
 import { getOrganisationsByUser } from '@sdk/polkasafe-sdk/src';
 import { IOrganisation } from '@common/types/substrate';
 import { Metadata } from 'next';
+import { getWagmiConfig } from '../global/lib/auth-config';
+import { headers } from 'next/headers';
+import { cookieToInitialState } from 'wagmi';
+
 
 // import InitializeAssets from '@substrate/app/Initializers/InializeAssets';
 // const inter = Inter({ subsets: ['latin'] })
@@ -33,6 +37,8 @@ export const metadata: Metadata = {
 
 export default async function MainLayout({ children }: PropsWithChildren) {
 	const user = getUserFromCookie();
+	const config = await getWagmiConfig();
+	const initialState = cookieToInitialState(config, (await headers()).get('cookie'));
 	if (!user) {
 		redirect(LOGIN_URL);
 	}
@@ -52,14 +58,14 @@ export default async function MainLayout({ children }: PropsWithChildren) {
 			<body>
 				<Provider>
 					<LayoutWrapper>
-						<QueryProvider>
-							<Initializers
-								userAddress={user.address}
-								signature={user.signature}
-								organisations={organisations}
-							/>
-							<NextTopLoader />
-							<SubstrateLayout userAddress={user.address}>{children}</SubstrateLayout>
+						<QueryProvider initialWagmiState={initialState}>
+								<Initializers
+									userAddress={user.address}
+									signature={user.signature}
+									organisations={organisations}
+								/>
+								<NextTopLoader />
+								<SubstrateLayout userAddress={user.address}>{children}</SubstrateLayout>
 						</QueryProvider>
 					</LayoutWrapper>
 				</Provider>

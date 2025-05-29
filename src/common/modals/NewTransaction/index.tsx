@@ -20,7 +20,7 @@ function NewTransaction({
 	openModal: boolean;
 	setOpenModal: (open: boolean) => void;
 }) {
-	const { transactionState, setTransactionState, signTransaction, reviewTransaction } = useDashboardContext();
+	const { transactionState, setTransactionState, signTransaction, reviewTransaction, handleChangeGasToken } = useDashboardContext();
 	const [form] = Form.useForm();
 
 	return (
@@ -47,6 +47,7 @@ function NewTransaction({
 					onSubmit={signTransaction}
 					onClose={() => setTransactionState(ETransactionState.BUILD)}
 					reviewTransaction={reviewTransaction as IReviewTransaction}
+					onChangeGasToken={(value) => handleChangeGasToken(value)}
 				/>
 			)}
 			{transactionState === ETransactionState.CONFIRM && (

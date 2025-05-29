@@ -7,7 +7,7 @@ import { RecipientsInputs } from '@common/global-ui-components/RecipientsInputs'
 import Typography, { ETypographyVariants } from '@common/global-ui-components/Typography';
 import { useNotification } from '@common/utils/notification';
 import { useState } from 'react';
-import { Form, FormInstance, Spin } from 'antd';
+import { Dropdown, Form, FormInstance, Select, Spin } from 'antd';
 import BN from 'bn.js';
 import { ERROR_MESSAGES } from '@common/utils/messages';
 import { findMultisig } from '@common/utils/findMultisig';
@@ -20,12 +20,16 @@ import { addNewCategory } from '@sdk/polkasafe-sdk/src/add-new-category';
 import { useUser } from '@substrate/app/atoms/auth/authAtoms';
 import { useOrganisation } from '@substrate/app/atoms/organisation/organisationAtom';
 import AddNewCategory from '@common/modals/AddNewCategory';
+import { networkConstants } from '@common/constants/substrateNetworkConstant';
+import ParachainTooltipIcon from '@common/global-ui-components/ParachainTooltipIcon';
+import { getCurrencyLogo } from '@common/constants/currencyConstants';
 
 export interface IRecipientAndAmount {
 	recipient: string;
 	amount: BN;
 	currency: string;
 }
+
 
 export const SendTokens = ({ onClose, form }: { onClose: () => void; form: FormInstance }) => {
 	const { multisigs, buildTransaction, addressBook = [], assets, transactionFields } = useDashboardContext();
@@ -206,14 +210,7 @@ export const SendTokens = ({ onClose, form }: { onClose: () => void; form: FormI
 							selectedMultisig={selectedMultisigDetails}
 						/>
 					</div>
-
-					<BalanceInput
-						network={selectedMultisigDetails.network}
-						label='Tip'
-						onChange={(balance) => console.log(balance)}
-						formName='tipBalance'
-						required={false}
-					/>
+					
 					<div className='w-auto'>
 						<Typography
 							variant={ETypographyVariants.p}

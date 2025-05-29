@@ -45,7 +45,7 @@ const getTransferCalls = (api: ApiPromise, data: IRecipient, network: ENetwork) 
 	const token = networkConstants[network].supportedTokens.find((token: any) => token.symbol === data.currency);
 	if (token) {
 		console.log('--------------Asset Data', data.currency, data.address, data.amount.toString());
-		return api.tx.assets.transfer(token.id, data.address, data.amount);
+		return api.tx.assetsExt.transfer(token.id, data.address, data.amount, true);
 	}
 	return null;
 };

@@ -140,7 +140,8 @@ export const CreateProxyModal = ({ multisig, buttonClassName, iconClassName, dis
 				buttonIcon={<AddBoxIcon className={iconClassName || 'text-label'} />}
 				api={api || undefined}
 				isCreateProxyTx
-				disabled={disabled}
+				disabled={true}
+				handleChangeGasToken={() => {}}
 			>
 				Create Proxy
 			</ReviewModal>

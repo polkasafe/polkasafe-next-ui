@@ -322,7 +322,8 @@ export const networkConstants = {
 				id: 2,
 				name: 'XRP',
 				symbol: 'XRP',
-				decimals: 6
+				decimals: 6,
+				maximumGas: 100000
 			}
 		]
 	},
@@ -344,31 +345,36 @@ export const networkConstants = {
 				id: 2,
 				name: 'XRP',
 				symbol: 'XRP',
-				decimals: 6
+				decimals: 6,
+				maximumGas: 100000
 			},
 			{
 				id:3,
 				name: 'VTX',
 				symbol: 'VTX',
-				decimals: 6
+				decimals: 6,
+				maximumGas: 100000
 			},
 			{
 				id: 3172,
 				name: 'USDC',
 				symbol: 'USDC',
-				decimals: 6
+				decimals: 6,
+				maximumGas: 100000
 			},
 			{
 				id: 1124,
 				name: 'ETH',
 				symbol: 'ETH',
-				decimals: 18
+				decimals: 18,
+				maximumGas: 1000000000
 			},
 			{
 				id: 2148,
 				name: 'SYLO',
 				symbol: 'SYLO',
-				decimals: 18
+				decimals: 18,
+				maximumGas: 1000000000
 			},
 		]
 	}
